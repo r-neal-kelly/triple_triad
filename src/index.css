@@ -33,10 +33,32 @@ body,
     color: white;
 }
 
-.Board {
-    display: grid;
+.Arena {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 
     height: 85%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.Hand {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    margin: 0;
+    padding: 10px;
+
+    background-color: rgb(92, 25, 160);
+}
+
+.Board {
+    display: grid;
+    align-content: space-between;
+
     margin: 0;
     padding: 10px;
 
@@ -48,7 +70,9 @@ body,
     flex-direction: column;
     justify-content: center;
 
-    padding: 10%;
+    height: 150px;
+    width: 100px;
+    padding: 10px;
 
     background-color: blue;
 

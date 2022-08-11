@@ -23,10 +23,53 @@ class Game extends React.PureComponent
                 <h1 className="Title">
                     Triple Triad
                 </h1>
-                <Board
+                <Arena
+                    hand_count={this.state.model.hand_count}
                     tile_count={this.state.model.tile_count}
                     column_count={this.state.model.column_count}
                 />
+            </div>
+        );
+    }
+}
+
+class Arena extends React.PureComponent
+{
+    render()
+    {
+        return (
+            <div className="Arena">
+                <Hand
+                    hand_count={this.props.hand_count}
+                />
+                <Board
+                    tile_count={this.props.tile_count}
+                    column_count={this.props.column_count}
+                />
+                <Hand
+                    hand_count={this.props.hand_count}
+                />
+            </div>
+        );
+    }
+}
+
+class Hand extends React.PureComponent
+{
+    render()
+    {
+        return (
+            <div
+                className="Hand"
+            >
+                {
+                    Array(this.props.hand_count).fill(null).map((_, index) =>
+                    {
+                        return (
+                            <Tile key={index} id={index} />
+                        );
+                    })
+                }
             </div>
         );
     }
@@ -75,7 +118,8 @@ class Card extends React.PureComponent
     render()
     {
         return (
-            <div className="Card" />
+            <div className="Card">
+            </div>
         );
     }
 }
