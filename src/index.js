@@ -1,9 +1,9 @@
-import './index.css';
+import "./index.css";
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import Model from './model.js';
+import Model from "./model.js";
 
 class Game extends React.PureComponent
 {
@@ -20,8 +20,13 @@ class Game extends React.PureComponent
     {
         return (
             <div className="Game">
-                <h1>Triple Triad</h1>
-                <Board tile_count={this.state.model.tile_count} />
+                <h1 className="Title">
+                    Triple Triad
+                </h1>
+                <Board
+                    tile_count={this.state.model.tile_count}
+                    column_count={this.state.model.column_count}
+                />
             </div>
         );
     }
@@ -32,13 +37,20 @@ class Board extends React.PureComponent
     render()
     {
         return (
-            <div className="Board">
-                {Array(this.props.tile_count).fill(null).map((_, index) =>
+            <div
+                className="Board"
+                style={{
+                    grid: "auto /" + Array(this.props.column_count).fill(" auto").join(""),
+                }}
+            >
                 {
-                    return (
-                        <Tile key={index} id={index} />
-                    );
-                })}
+                    Array(this.props.tile_count).fill(null).map((_, index) =>
+                    {
+                        return (
+                            <Tile key={index} id={index} />
+                        );
+                    })
+                }
             </div>
         );
     }
@@ -50,7 +62,9 @@ class Tile extends React.PureComponent
     {
         return (
             <div className="Tile">
-                {this.props.id}
+                <div>
+                    {this.props.id}
+                </div>
             </div>
         );
     }
@@ -61,12 +75,12 @@ class Card extends React.PureComponent
     render()
     {
         return (
-            <div />
+            <div className="Card" />
         );
     }
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
     <React.StrictMode>
