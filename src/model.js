@@ -91,10 +91,10 @@ export default class Arena
             throw new Error(`Must have at least 2 players.`);
         } else {
             this.#board = new Board(this, board_row_count, board_column_count);
-            if (player_count > this.#board.Tile_Count()) {
+            if (player_count > this.#board.Cell_Count()) {
                 throw new Error(`The board is too small for ${player_count} player(s).`);
             } else {
-                const max_stake_count = Math.ceil(this.#board.Tile_Count() / player_count);
+                const max_stake_count = Math.ceil(this.#board.Cell_Count() / player_count);
                 this.#players = Array(player_count).fill(new Player(this, max_stake_count));
             }
         }
@@ -193,7 +193,7 @@ class Player
     {
         this.#arena = arena;
 
-        this.#stakes = Array(max_stake_count).fill(this, new Stake(new Card_Base(1, 1, 1, 1, null)));
+        this.#stakes = Array(max_stake_count).fill(this, new Stake(new Card(1, 1, 1, 1, null)));
     }
 
     Arena()
