@@ -14,7 +14,7 @@ class View extends React.Component
         super(props);
 
         this.#state = {
-            model: new Model(2, 3, 3),
+            model: new Model(3, 3, 2),
         };
     }
 
@@ -74,10 +74,10 @@ class Board extends React.PureComponent
                 }}
             >
                 {
-                    Array(this.props.model.Tile_Count()).fill(null).map((_, index) =>
+                    Array(this.props.model.Cell_Count()).fill(null).map((_, index) =>
                     {
                         return (
-                            <Tile
+                            <Cell
                                 key={index}
                                 id={index}
                             />
@@ -96,7 +96,7 @@ class Player extends React.PureComponent
         return (
             <div className="Player">
                 <Hand
-                    model={this.props.model.Hand()}
+                    model={this.props.model}
                 />
             </div>
         );
@@ -109,10 +109,10 @@ class Hand extends React.PureComponent
     {
         return (
             <div className="Hand">
-                {Array(this.props.model.Card_Count()).fill(null).map((_, index) =>
+                {Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
                 {
                     return (
-                        <Tile
+                        <Cell
                             key={index}
                             id={index}
                         />
@@ -123,12 +123,12 @@ class Hand extends React.PureComponent
     }
 }
 
-class Tile extends React.PureComponent
+class Cell extends React.PureComponent
 {
     render()
     {
         return (
-            <div className="Tile">
+            <div className="Cell">
                 <div>
                     {this.props.id}
                 </div>
@@ -137,12 +137,12 @@ class Tile extends React.PureComponent
     }
 }
 
-class Card extends React.PureComponent
+class Stake extends React.PureComponent
 {
     render()
     {
         return (
-            <div className="Card">
+            <div className="Stake">
             </div>
         );
     }

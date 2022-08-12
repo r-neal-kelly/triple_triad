@@ -70,7 +70,7 @@ body,
     background-color: rgb(25, 158, 160);
 }
 
-.Tile {
+.Cell {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -83,4 +83,9 @@ body,
 
     text-align: center;
     color: white;
+}
+
+.Stake {
+    margin: 0;
+    padding: 0;
 }

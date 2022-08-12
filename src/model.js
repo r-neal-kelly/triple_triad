@@ -1,20 +1,101 @@
-export default class Model
+class Pack
+{
+    #tiers;
+
+    constructor(pack_json)
+    {
+
+    }
+}
+
+class Tier
+{
+    #cards;
+
+    constructor(cards_from_json)
+    {
+
+    }
+}
+
+class Card
+{
+    #left;
+    #top;
+    #right;
+    #bottom;
+
+    #picture;
+
+    constructor(left, top, right, bottom, picture)
+    {
+        this.#left = left;
+        this.#top = top;
+        this.#right = right;
+        this.#bottom = bottom;
+
+        this.#picture = picture;
+    }
+
+    Left()
+    {
+        return this.#left;
+    }
+
+    Top()
+    {
+        return this.#top;
+    }
+
+    Right()
+    {
+        return this.#right;
+    }
+
+    Bottom()
+    {
+        return this.#bottom;
+    }
+
+    Picture()
+    {
+        return this.#picture;
+    }
+}
+
+class Collection
+{
+    #pack;
+    #cards;
+
+    #min_tier_index;
+    #max_tier_index;
+
+    constructor()
+    {
+        // should be able to keep an array of cards in the collection
+        // and a min-max from which to randomly select cards from its pack.
+        // if there aren't enough cards in the collections, the remainder can be
+        // randomly selected from the tiers.
+    }
+}
+
+export default class Arena
 {
     #board;
     #players;
 
-    constructor(player_count, board_row_count, board_column_count)
+    constructor(board_row_count, board_column_count, player_count)
     {
         if (player_count < 2) {
             throw new Error(`Must have at least 2 players.`);
         } else {
-            this.#board = new Board(board_row_count, board_column_count);
-
+            this.#board = new Board(this, board_row_count, board_column_count);
             if (player_count > this.#board.Tile_Count()) {
                 throw new Error(`The board is too small for ${player_count} player(s).`);
             } else {
-                const hand_card_count = Math.ceil(this.#board.Tile_Count() / player_count);
-                this.#players = Array(player_count).fill(new Player(hand_card_count));
+                const max_stake_count = Math.ceil(this.#board.Tile_Count() / player_count);
+                this.#players = Array(player_count).fill(new Player(this, max_stake_count));
             }
         }
     }
@@ -41,21 +122,30 @@ export default class Model
 
 class Board
 {
+    #arena;
+
     #row_count;
     #column_count;
-    #tile_count;
+    #cell_count;
 
-    #card_count;
-    #cards;
+    #stake_count;
+    #stakes;
 
-    constructor(row_count, column_count)
+    constructor(arena, row_count, column_count)
     {
+        this.#arena = arena;
+
         this.#row_count = row_count;
         this.#column_count = column_count;
-        this.#tile_count = this.#row_count * this.#column_count;
+        this.#cell_count = this.#row_count * this.#column_count;
 
-        this.#card_count = 0;
-        this.#cards = Array(this.#tile_count).fill(null);
+        this.#stake_count = 0;
+        this.#stakes = Array(this.#cell_count).fill(null);
+    }
+
+    Arena()
+    {
+        return this.#arena;
     }
 
     Row_Count()
@@ -68,27 +158,26 @@ class Board
         return this.#column_count;
     }
 
-    Tile_Count()
+    Cell_Count()
     {
-        return this.#tile_count;
+        return this.#cell_count;
     }
 
-    Card_Count()
+    Stake_Count()
     {
-        return this.#card_count;
+        return this.#stake_count;
     }
 
-    Card(row, column)
+    Stake(row, column)
     {
         if (row < this.Row_Count() && column < this.Column_Count()) {
-            return this.#cards[row * column + column];
+            return this.#stakes[row * column + column];
         } else {
-            throw new Error("Invalid card coordinates.");
+            throw new Error("Invalid stake coordinates.");
         }
-        return null;
     }
 
-    Place_Card(player, hand_card_index)
+    Place_Stake(player, stake_index)
     {
 
     }
@@ -96,68 +185,70 @@ class Board
 
 class Player
 {
-    #board_card_count;
-    #hand;
+    #arena;
 
-    constructor(hand_card_count)
+    #stakes;
+
+    constructor(arena, max_stake_count)
     {
-        this.#board_card_count = 0;
-        this.#hand = new Hand(this, hand_card_count);
+        this.#arena = arena;
+
+        this.#stakes = Array(max_stake_count).fill(this, new Stake(new Card_Base(1, 1, 1, 1, null)));
     }
 
-    Board_Card_Count()
+    Arena()
     {
-        return this.#board_card_count;
+        return this.#arena;
     }
 
-    Hand()
+    Stake_Count()
     {
-        return this.#hand;
-    }
-}
-
-class Hand
-{
-    #player;
-    #cards;
-
-    constructor(player, card_count)
-    {
-        this.#player = player;
-        this.#cards = Array(card_count).fill(new Card(this.#player));
+        return this.#stakes.length;
     }
 
-    Player()
+    Stake(index)
     {
-        return this.#player;
-    }
-
-    Card_Count()
-    {
-        return this.#cards.length;
-    }
-
-    Card(index)
-    {
-        if (index < this.Card_Count()) {
-            return this.#cards[index];
+        if (index < this.Stake_Count()) {
+            return this.#stakes[index];
         } else {
-            throw new Error("Invalid card index.");
+            throw new Error("Invalid stake index.");
         }
     }
+
+    Has_Stake(stake)
+    {
+        return this.#stakes.contains(stake);
+    }
 }
 
-class Card
+class Stake
 {
     #player;
+    #card;
 
-    constructor(player)
+    constructor(player, card)
     {
         this.#player = player;
+        this.#card = card;
     }
 
     Player()
     {
         return this.#player;
+    }
+
+    Card()
+    {
+        return this.#card;
+    }
+
+    Is_In_Hand()
+    {
+        return this.#player.Has_Stake(this);
+    }
+
+    Is_On_Board()
+    {
+        return !this.Is_In_Hand();
     }
 }
