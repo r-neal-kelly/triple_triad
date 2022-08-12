@@ -5,28 +5,28 @@ import ReactDOM from "react-dom/client";
 
 import Model from "./model.js";
 
-class Game extends React.PureComponent
+class View extends React.Component
 {
+    #state;
+
     constructor(props)
     {
         super(props);
 
-        this.state = {
-            model: new Model(),
+        this.#state = {
+            model: new Model(2, 3, 3),
         };
     }
 
     render()
     {
         return (
-            <div className="Game">
+            <div className="View">
                 <h1 className="Title">
                     Triple Triad
                 </h1>
                 <Arena
-                    hand_count={this.state.model.hand_count}
-                    tile_count={this.state.model.tile_count}
-                    column_count={this.state.model.column_count}
+                    model={this.#state.model}
                 />
             </div>
         );
@@ -39,37 +39,24 @@ class Arena extends React.PureComponent
     {
         return (
             <div className="Arena">
-                <Hand
-                    hand_count={this.props.hand_count}
+                <Player
+                    key={0}
+                    model={this.props.model.Player(0)}
                 />
                 <Board
-                    tile_count={this.props.tile_count}
-                    column_count={this.props.column_count}
+                    model={this.props.model.Board()}
                 />
-                <Hand
-                    hand_count={this.props.hand_count}
-                />
-            </div>
-        );
-    }
-}
-
-class Hand extends React.PureComponent
-{
-    render()
-    {
-        return (
-            <div
-                className="Hand"
-            >
+                {Array(this.props.model.Player_Count() - 1).fill(null).map((_, index) =>
                 {
-                    Array(this.props.hand_count).fill(null).map((_, index) =>
-                    {
-                        return (
-                            <Tile key={index} id={index} />
-                        );
-                    })
-                }
+                    const player_index = index + 1;
+
+                    return (
+                        <Player
+                            key={player_index}
+                            model={this.props.model.Player(player_index)}
+                        />
+                    );
+                })}
             </div>
         );
     }
@@ -83,17 +70,54 @@ class Board extends React.PureComponent
             <div
                 className="Board"
                 style={{
-                    grid: "auto /" + Array(this.props.column_count).fill(" auto").join(""),
+                    grid: "auto /" + Array(this.props.model.Column_Count()).fill(" auto").join(""),
                 }}
             >
                 {
-                    Array(this.props.tile_count).fill(null).map((_, index) =>
+                    Array(this.props.model.Tile_Count()).fill(null).map((_, index) =>
                     {
                         return (
-                            <Tile key={index} id={index} />
+                            <Tile
+                                key={index}
+                                id={index}
+                            />
                         );
                     })
                 }
+            </div>
+        );
+    }
+}
+
+class Player extends React.PureComponent
+{
+    render()
+    {
+        return (
+            <div className="Player">
+                <Hand
+                    model={this.props.model.Hand()}
+                />
+            </div>
+        );
+    }
+}
+
+class Hand extends React.PureComponent
+{
+    render()
+    {
+        return (
+            <div className="Hand">
+                {Array(this.props.model.Card_Count()).fill(null).map((_, index) =>
+                {
+                    return (
+                        <Tile
+                            key={index}
+                            id={index}
+                        />
+                    );
+                })}
             </div>
         );
     }
@@ -128,6 +152,6 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
     <React.StrictMode>
-        <Game />
+        <View />
     </React.StrictMode>
 );
