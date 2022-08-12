@@ -1,4 +1,4 @@
-/* Contains all the tiers and their collectible cards. */
+/* Contains all the tiers and all their collectible cards. */
 class Pack
 {
     #tiers;
@@ -9,7 +9,7 @@ class Pack
     }
 }
 
-/* Contains all the collectible cards in a single tier. */
+/* Contains all the collectible cards in a single tier of a pack. */
 class Tier
 {
     #cards;
@@ -66,6 +66,24 @@ class Card
     }
 }
 
+/* Contains a number of card counts and a tier range to generate stakes. */
+class Collection
+{
+    #pack;
+    #card_counts;
+
+    #min_tier_index;
+    #max_tier_index;
+
+    constructor()
+    {
+        // should be able to keep an array of cards in the collection
+        // and a min-max from which to randomly select cards from its pack.
+        // if there aren't enough cards in the array, the remainder can be
+        // randomly selected from the pack's tiers.
+    }
+}
+
 /* Contains a particular card and a count thereof. */
 class Card_Count
 {
@@ -99,35 +117,19 @@ class Card_Count
     }
 }
 
-/* Contains a number of card counts and a tier range to generate stakes. */
-class Collection
-{
-    #pack;
-    #card_counts;
-
-    #min_tier_index;
-    #max_tier_index;
-
-    constructor()
-    {
-        // should be able to keep an array of cards in the collection
-        // and a min-max from which to randomly select cards from its pack.
-        // if there aren't enough cards in the collections, the remainder can be
-        // randomly selected from the tiers.
-    }
-}
-
 /* An instance of a game including a board, its players, and their stakes. */
 export default class Arena
 {
+    #rules;
     #board;
     #players;
 
-    constructor(board_row_count, board_column_count, player_count)
+    constructor(rule_flags, board_row_count, board_column_count, player_count)
     {
         if (player_count < 2) {
             throw new Error(`Must have at least 2 players.`);
         } else {
+            this.#rules = new Rules(rule_flags);
             this.#board = new Board(this, board_row_count, board_column_count);
             if (player_count > this.#board.Cell_Count()) {
                 throw new Error(`The board is too small for ${player_count} player(s).`);
@@ -136,6 +138,11 @@ export default class Arena
                 this.#players = Array(player_count).fill(new Player(this, max_stake_count));
             }
         }
+    }
+
+    Rules()
+    {
+        return this.#rules;
     }
 
     Board()
@@ -157,6 +164,15 @@ export default class Arena
         }
     }
 };
+
+/* A selection of rules which an arena must abide by. */
+class Rules
+{
+    constructor(rule_flags)
+    {
+
+    }
+}
 
 /* Contains stakes actively in play. */
 class Board
@@ -216,9 +232,17 @@ class Board
         }
     }
 
-    Place_Stake(player, stake_index)
+    Place_Stake(player_index, stake_index)
     {
+        // calls Evaluate_Stake after adding the stake.
+    }
 
+    #Evaluate_Stake(row, column)
+    {
+        // this should update adjacents cards by evaluating the rules,
+        // as if a card was just placed in this position.
+        // however, it will be used recursively for cards that have already
+        // been placed to detect if a combo should occur.
     }
 }
 
@@ -226,8 +250,8 @@ class Board
 class Player
 {
     #arena;
-    #collection; // maybe pass this in
 
+    #collection; // how to provide this for the player, and generate it for ai?
     #stakes;
 
     constructor(arena, max_stake_count)
@@ -259,6 +283,18 @@ class Player
     Has_Stake(stake)
     {
         return this.#stakes.contains(stake);
+    }
+
+    Remove_Stake(index)
+    {
+        const stake = Stake(index);
+        if (stake == null) {
+            throw new Error("Cannot remove a null stake.");
+        } else {
+            this.#stakes[index] = null;
+
+            return stake;
+        }
     }
 }
 
