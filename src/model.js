@@ -1,3 +1,4 @@
+/* Contains all the tiers and their collectible cards. */
 class Pack
 {
     #tiers;
@@ -8,6 +9,7 @@ class Pack
     }
 }
 
+/* Contains all the collectible cards in a single tier. */
 class Tier
 {
     #cards;
@@ -18,6 +20,7 @@ class Tier
     }
 }
 
+/* Contains the stats for each individual card in a pack. */
 class Card
 {
     #left;
@@ -63,10 +66,44 @@ class Card
     }
 }
 
+/* Contains a particular card and a count thereof. */
+class Card_Count
+{
+    #card;
+    #count;
+
+    constructor(card, count)
+    {
+        this.#card = card;
+        this.#count = count;
+    }
+
+    Increment()
+    {
+
+    }
+
+    Decrement()
+    {
+
+    }
+
+    Add(count)
+    {
+
+    }
+
+    Subtract(count)
+    {
+
+    }
+}
+
+/* Contains a number of card counts and a tier range to generate stakes. */
 class Collection
 {
     #pack;
-    #cards;
+    #card_counts;
 
     #min_tier_index;
     #max_tier_index;
@@ -80,6 +117,7 @@ class Collection
     }
 }
 
+/* An instance of a game including a board, its players, and their stakes. */
 export default class Arena
 {
     #board;
@@ -120,6 +158,7 @@ export default class Arena
     }
 };
 
+/* Contains stakes actively in play. */
 class Board
 {
     #arena;
@@ -183,9 +222,11 @@ class Board
     }
 }
 
+/* Contains stakes selected for a player. */
 class Player
 {
     #arena;
+    #collection; // maybe pass this in
 
     #stakes;
 
@@ -221,6 +262,7 @@ class Player
     }
 }
 
+/* Contains a card at either in a player's hand or on the board, as well as its current owner. */
 class Stake
 {
     #player;

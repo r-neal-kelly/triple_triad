@@ -14,7 +14,7 @@ class View extends React.Component
         super(props);
 
         this.#state = {
-            model: new Model(3, 3, 4),
+            model: new Model(3, 3, 2),
         };
     }
 
