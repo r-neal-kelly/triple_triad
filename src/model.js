@@ -48,7 +48,7 @@ export class Packs
 
     Packs()
     {
-        return this.#packs.values();
+        return this.#packs.values(); // probably want to sort
     }
 }
 
@@ -216,6 +216,9 @@ export class Collection
         // if there aren't enough cards in the card_count array, the remainder can be
         // randomly selected from the shuffles. card_counts can have cards from any pack.
 
+        // array or hashmap? because we want to read it as sorted, maybe stick to array.
+        // but adding and removing cards will be expensive. so what we could do is a have an
+        // array of arrays so that we can at least narrow down by pack. Pack_Count?
         this.#card_counts = [];
         this.#shuffles = [];
 
@@ -224,13 +227,20 @@ export class Collection
         // just for the player.
     }
 
-    Cards(count)
+    Add_Card(card, count)
     {
-        return [];
+
+    }
+
+    Remove_Card(card, count)
+    {
+
     }
 
     Serialize()
     {
+        // if we serialize by indices into a pack but the pack is changed, there's no way to know the difference.
+        // we could serialize with card names, but that may be overkill here.
         return {};
     }
 
@@ -366,6 +376,45 @@ class Shuffle
 
             return results;
         }
+    }
+}
+
+/* Contains a selection of cards from a collection. */
+class Selection
+{
+    #collection;
+    #cards;
+
+    constructor(collection, count)
+    {
+        this.#collection = collection;
+
+        // this can do the work of selecting the cards instead of any method on collection.
+        // the alternative would come into play only if the data is too complicated on collection?
+    }
+
+    Collection()
+    {
+        return this.#collection;
+    }
+
+    Card_Count()
+    {
+        return this.#cards.length;
+    }
+
+    Card(index)
+    {
+        if (index < this.Card_Count()) {
+            return this.#cards[index];
+        } else {
+            throw new Error("Invalid card index.");
+        }
+    }
+
+    Cards()
+    {
+        return Array.from(this.#cards);
     }
 }
 
