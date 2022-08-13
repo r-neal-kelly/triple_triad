@@ -14,7 +14,7 @@ class Main extends React.Component
 
         this.#state = {
             packs_model: new Model.Packs(),
-            arena_model: new Model.Arena({}, 3, 3, 2),
+            arena_model: new Model.Arena(new Model.Rules(), 3, 3, 2),
         };
     }
 

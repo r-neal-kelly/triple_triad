@@ -428,12 +428,12 @@ export class Arena
     // instead of a player_count, we should just pass an array of collections.
     // in order to let the player choose which cards to use, we'll need to probably
     // have a method on this before the game begins proper.
-    constructor(rule_flags, board_row_count, board_column_count, player_count)
+    constructor(rules, board_row_count, board_column_count, player_count)
     {
         if (player_count < 2) {
             throw new Error(`Must have at least 2 players.`);
         } else {
-            this.#rules = new Rules(rule_flags);
+            this.#rules = rules;
             this.#board = new Board(this, board_row_count, board_column_count);
             if (player_count > this.#board.Cell_Count()) {
                 throw new Error(`The board is too small for ${player_count} player(s).`);
@@ -470,11 +470,13 @@ export class Arena
 };
 
 /* A selection of rules which an arena must abide by. */
-class Rules
+export class Rules
 {
-    constructor(rule_flags)
-    {
+    #is_open;
 
+    constructor()
+    {
+        this.#is_open = true;
     }
 }
 
