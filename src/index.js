@@ -24,6 +24,9 @@ class Main extends React.Component
                 this.state.collection, // this would be the human player's collection
                 new Model.Collection(new Model.Shuffle(this.state.packs.Random_Pack(), 0, 0)), // a cpu
             ],
+            selections: [
+
+            ],
             board_row_count: 3,
             board_column_count: 3,
         });

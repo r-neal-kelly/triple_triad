@@ -205,6 +205,48 @@ class Card
     }
 }
 
+/* Contains a list of individuals cards drawn from a collection, with possible repeats. */
+export class Selection
+{
+    #collection;
+    #cards;
+
+    // I want this to be able to take an array of cards or if that's missing then a random_count and do unique flag.
+    // the random will actually use a collection method to get the cards.
+    // we might want to verify with the collection type if the given cards array actually has cards from the collection.
+    // we'll want to cache the index of the cards for quick access into the collection's array. the index should be on the card.
+    constructor({ collection, cards })
+    {
+        if (collection == null) {
+            throw new Error(`Must have a collection.`);
+        } else if (cards == null || cards.length < 1) {
+            throw new Error(`Must have a least one card in the selection.`);
+        } else {
+            this.#collection = collection;
+            this.#cards = Array.from(cards);
+        }
+    }
+
+    Collection()
+    {
+        return this.#collection;
+    }
+
+    Card_Count()
+    {
+        return this.#cards.length;
+    }
+
+    Card(index)
+    {
+        if (index < this.Card_Count()) {
+            return this.#cards[index];
+        } else {
+            throw new Error("Invalid card index.");
+        }
+    }
+}
+
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 export class Collection
 {
@@ -252,6 +294,8 @@ export class Collection
     {
         delete this.#shuffles[pack_name];
     }
+
+
 
     Serialize()
     {
@@ -404,6 +448,8 @@ export class Arena
     #board;
     #players;
 
+    // we need to pass selections instead of collections because at the end of the game we're going to need to know what
+    // cards to potentially remove from the collection. it will also be used to generate the stakes at the beginning of the game.
     constructor({ rules, collections, board_row_count, board_column_count })
     {
         const player_count = collections.length;
