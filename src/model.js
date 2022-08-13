@@ -471,6 +471,6 @@ class Stake
 
     Is_On_Board()
     {
-        return !this.Is_In_Hand();
+        return !this.Is_On_Player();
     }
 }
