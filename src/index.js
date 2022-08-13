@@ -6,16 +6,27 @@ import * as View from "./view.js";
 
 class Main extends React.Component
 {
-    #state; // does this need to be public for react?
+    state;
 
     constructor(props)
     {
         super(props);
 
-        this.#state = {
-            packs_model: new Model.Packs(),
-            arena_model: new Model.Arena(new Model.Rules(), 3, 3, 2),
-        };
+        this.state = {};
+
+        this.state.packs = new Model.Packs();
+        this.state.rules = new Model.Rules(); // to be serialized
+        this.state.collection = new Model.Collection(new Model.Shuffle(this.state.packs.Random_Pack(), 0, 0)); // to be serialized
+        this.state.arena = new Model.Arena({
+            rules: this.state.rules,
+            // the count of this array informs the number of players
+            collections: [
+                this.state.collection, // this would be the human player's collection
+                new Model.Collection(new Model.Shuffle(this.state.packs.Random_Pack(), 0, 0)), // a cpu
+            ],
+            board_row_count: 3,
+            board_column_count: 3,
+        });
     }
 
     render()
@@ -26,7 +37,7 @@ class Main extends React.Component
                     Triple Triad
                 </h1>
                 <View.Arena
-                    model={this.#state.arena_model}
+                    model={this.state.arena}
                 />
             </div>
         );

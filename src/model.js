@@ -46,9 +46,9 @@ export class Packs
         return this.Array()[Math.floor(Math.random() * this.Pack_Count())];
     }
 
-    Packs()
+    Array()
     {
-        return this.#packs.values(); // probably want to sort
+        return Object.values(this.#packs); // probably want to sort
     }
 }
 
@@ -208,23 +208,20 @@ class Card
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 export class Collection
 {
-    #card_counts;
     #shuffles;
+    #card_counts;
 
-    constructor()
+    constructor(shuffle)
     {
-        // if there aren't enough cards in the card_count array, the remainder can be
-        // randomly selected from the shuffles. card_counts can have cards from any pack.
+        if (shuffle == null) {
+            // if there aren't enough cards amoung the card_counts, then the shuffle is used.
+            throw new Error(`There must be a shuffle in every collection.`);
+        } else {
+            this.#shuffles = {}; // only one shuffle per pack allowed
+            this.#card_counts = {}; // this should be keyed by pack_name, and then the card_counts sorted in an array
 
-        // array or hashmap? because we want to read it as sorted, maybe stick to array.
-        // but adding and removing cards will be expensive. so what we could do is a have an
-        // array of arrays so that we can at least narrow down by pack. Pack_Count?
-        this.#card_counts = [];
-        this.#shuffles = [];
-
-        // perhaps by default we should add a shuffle for the default pack with just a tier range of 0 to 0.
-        // else we should require shuffles to be passed in. we could also have a extension of this class
-        // just for the player.
+            this.Add_Shuffle(shuffle);
+        }
     }
 
     Add_Card(card, count)
@@ -235,6 +232,25 @@ export class Collection
     Remove_Card(card, count)
     {
 
+    }
+
+    Shuffle(pack_name)
+    {
+        return this.#shuffles[pack_name];
+    }
+
+    Add_Shuffle(shuffle)
+    {
+        if (this.#shuffles[shuffle.Pack().Name()]) {
+            throw new Error(`This collection already has a shuffle using the same pack.`);
+        } else {
+            this.#shuffles[shuffle.Pack().Name()] = shuffle;
+        }
+    }
+
+    Remove_Shuffle(pack_name)
+    {
+        delete this.#shuffles[pack_name];
     }
 
     Serialize()
@@ -306,7 +322,7 @@ class Card_Count
 }
 
 /* Provides a fine-tuned way to randomly generate a list of cards from an individual pack. */
-class Shuffle
+export class Shuffle
 {
     #pack;
     #min_tier_index;
@@ -314,7 +330,9 @@ class Shuffle
 
     constructor(pack, min_tier_index, max_tier_index)
     {
-        if (min_tier_index > max_tier_index) {
+        if (pack == null) {
+            throw new Error(`Requires a pack.`);
+        } else if (min_tier_index > max_tier_index) {
             throw new Error(`The min_tier_index is greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
         } else if (max_tier_index >= pack.Tier_Count()) {
             throw new Error(`The max_tier_index indicates a non-existant tier in the pack "${pack.Name()}"`);
@@ -379,74 +397,39 @@ class Shuffle
     }
 }
 
-/* Contains a selection of cards from a collection. */
-class Selection
-{
-    #collection;
-    #cards;
-
-    constructor(collection, count)
-    {
-        this.#collection = collection;
-
-        // this can do the work of selecting the cards instead of any method on collection.
-        // the alternative would come into play only if the data is too complicated on collection?
-    }
-
-    Collection()
-    {
-        return this.#collection;
-    }
-
-    Card_Count()
-    {
-        return this.#cards.length;
-    }
-
-    Card(index)
-    {
-        if (index < this.Card_Count()) {
-            return this.#cards[index];
-        } else {
-            throw new Error("Invalid card index.");
-        }
-    }
-
-    Cards()
-    {
-        return Array.from(this.#cards);
-    }
-}
-
-/* An instance of a game including a board, its players, and their stakes. */
+/* An instance of a game including the rules, the board, the players, their collections, and their stakes. */
 export class Arena
 {
     #rules;
     #board;
     #players;
 
-    // instead of a player_count, we should just pass an array of collections.
-    // in order to let the player choose which cards to use, we'll need to probably
-    // have a method on this before the game begins proper.
-    constructor(rules, board_row_count, board_column_count, player_count)
+    constructor({ rules, collections, board_row_count, board_column_count })
     {
-        if (player_count < 2) {
+        const player_count = collections.length;
+
+        if (rules == null) {
+            throw new Error(`Must have a set of rules to play.`);
+        } else if (player_count < 2) {
             throw new Error(`Must have at least 2 players.`);
         } else {
-            this.#rules = rules;
-            this.#board = new Board(this, board_row_count, board_column_count);
+            this.#board = new Board({
+                arena: this,
+                row_count: board_row_count,
+                column_count: board_column_count,
+            });
+
             if (player_count > this.#board.Cell_Count()) {
                 throw new Error(`The board is too small for ${player_count} player(s).`);
             } else {
                 const stake_count = Math.ceil(this.#board.Cell_Count() / player_count);
-                this.#players = Array(player_count).fill(new Player(this, null, stake_count));
+
+                this.#players = [];
+                for (let idx = 0, end = player_count; idx < end; idx += 1) {
+                    this.#players.push(new Player(this, collections[idx], stake_count));
+                }
             }
         }
-    }
-
-    Rules()
-    {
-        return this.#rules;
     }
 
     Board()
@@ -467,16 +450,56 @@ export class Arena
             throw new Error("Invalid player index.");
         }
     }
+
+    Rules()
+    {
+        return this.#rules;
+    }
+
+    Start({ rules, player_selections })
+    {
+        if (rules == null) {
+            throw new Error(`Must have rules to start a game.`);
+        } else if (player_selections.length > this.Player_Count()) {
+            throw new Error(`Too many player_selections, not enough players.`);
+        }
+    }
 };
 
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
-    #is_open;
+    #open;
+    #random;
 
     constructor()
     {
-        this.#is_open = true;
+        this.#open = true;
+        this.#random = true; // temp until we build up serialization more
+    }
+
+    Clone()
+    {
+        const copy = Object.assign(
+            Object.create(Object.getProptotypeOf(this)),
+            this
+        );
+
+        return copy;
+    }
+
+    Serialize()
+    {
+        return ({
+            open: this.#open,
+            random: this.#random,
+        });
+    }
+
+    Deserialize(data)
+    {
+        this.#open = data.open;
+        this.#random = data.random;
     }
 }
 
@@ -492,13 +515,13 @@ class Board
     #stake_count;
     #stakes;
 
-    constructor(arena, row_count, column_count)
+    constructor({ arena, row_count, column_count })
     {
         this.#arena = arena;
 
         this.#row_count = row_count;
         this.#column_count = column_count;
-        this.#cell_count = this.#row_count * this.#column_count;
+        this.#cell_count = row_count * column_count;
 
         this.#stake_count = 0;
         this.#stakes = Array(this.#cell_count).fill(null);
@@ -613,18 +636,18 @@ class Player
 /* Contains a card either on a player or on the board, and its current claimant. */
 class Stake
 {
-    #player;
+    #claimant;
     #card;
 
-    constructor(player, card)
+    constructor(claimant, card)
     {
-        this.#player = player;
+        this.#claimant = claimant;
         this.#card = card;
     }
 
-    Player()
+    Claimant()
     {
-        return this.#player;
+        return this.#claimant;
     }
 
     Card()
@@ -634,7 +657,7 @@ class Stake
 
     Is_On_Player()
     {
-        return this.#player.Has_Stake(this);
+        return this.#claimant.Has_Stake(this);
     }
 
     Is_On_Board()
