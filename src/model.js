@@ -46,7 +46,7 @@ export class Packs
         return this.Array()[Math.floor(Math.random() * this.Pack_Count())];
     }
 
-    Array()
+    Packs()
     {
         return this.#packs.values();
     }
@@ -61,12 +61,16 @@ class Pack
 
     constructor(packs, pack_from_json)
     {
-        this.#packs = packs;
-        this.#name = pack_from_json.name;
-        this.#tiers = pack_from_json.data.map((tier_from_json) =>
-        {
-            return new Tier(this, tier_from_json);
-        });
+        if (pack_from_json.data.length < 1) {
+            throw new Error(`The pack ${pack_from_json.name} must have at least one tier.`);
+        } else {
+            this.#packs = packs;
+            this.#name = pack_from_json.name;
+            this.#tiers = pack_from_json.data.map((tier_from_json) =>
+            {
+                return new Tier(this, tier_from_json);
+            });
+        }
     }
 
     Packs()
@@ -92,6 +96,11 @@ class Pack
             throw new Error("Invalid tier index.");
         }
     }
+
+    Tiers()
+    {
+        return Array.from(this.#tiers);
+    }
 }
 
 /* Contains all the collectible cards in a single tier of a pack. */
@@ -102,11 +111,15 @@ class Tier
 
     constructor(pack, tier_from_json)
     {
-        this.#pack = pack;
-        this.#cards = tier_from_json.map((card_from_json) =>
-        {
-            return new Card(this, card_from_json);
-        });
+        if (tier_from_json.length < 1) {
+            throw new Error(`Each tier must have at least one card.`);
+        } else {
+            this.#pack = pack;
+            this.#cards = tier_from_json.map((card_from_json) =>
+            {
+                return new Card(this, card_from_json);
+            });
+        }
     }
 
     Pack()
@@ -126,6 +139,11 @@ class Tier
         } else {
             throw new Error("Invalid card index.");
         }
+    }
+
+    Cards()
+    {
+        return Array.from(this.#cards);
     }
 }
 
@@ -187,20 +205,16 @@ class Card
     }
 }
 
-/* Contains a number of card counts and a tier range to generate stakes. */
+/* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 class Collection
 {
     #card_counts;
-
-    #min_tier_index;
-    #max_tier_index;
+    #shuffles;
 
     constructor()
     {
-        // should be able to keep an array of cards in the collection
-        // and a min-max from which to randomly select cards from its pack.
-        // if there aren't enough cards in the array, the remainder can be
-        // randomly selected from the pack's tiers.
+        // if there aren't enough cards in the card_count array, the remainder can be
+        // randomly selected from the shuffles. card_counts can have cards from any pack.
     }
 }
 
@@ -256,6 +270,80 @@ class Card_Count
     Decrement()
     {
         this.Subtract(1);
+    }
+}
+
+/* Provides a fine-tuned way to randomly generate a list of cards from an individual pack. */
+class Shuffle
+{
+    #pack;
+    #min_tier_index;
+    #max_tier_index;
+
+    constructor(pack, min_tier_index, max_tier_index)
+    {
+        if (min_tier_index > max_tier_index) {
+            throw new Error(`The min_tier_index is greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
+        } else if (max_tier_index >= pack.Tier_Count()) {
+            throw new Error(`The max_tier_index indicates a non-existant tier in the pack "${pack.Name()}"`);
+        } else {
+            this.#pack = pack;
+            this.#min_tier_index = min_tier_index;
+            this.#max_tier_index = max_tier_index;
+        }
+    }
+
+    Pack()
+    {
+        return this.#pack;
+    }
+
+    Min_Tier_Index()
+    {
+        return this.#min_tier_index;
+    }
+
+    Max_Tier_Index()
+    {
+        return this.#max_tier_index;
+    }
+
+    Cards(count)
+    {
+        // It's guaranteed that at least one card exists in every tier, and that every pack has at least one tier.
+
+        const tier_count = this.#max_tier_index + 1 - this.#min_tier_index;
+
+        const results = [];
+        for (let idx = 0, end = count; idx < end; idx += 1) {
+            const tier_index = Math.floor(Math.random() * tier_count) + this.#min_tier_index;
+            const tier = this.#pack.Tier(tier_index);
+            results.push(tier.Card(Math.floor(Math.random() * tier.Card_Count())));
+        }
+
+        return results;
+    }
+
+    Unique_Cards(count)
+    {
+        const cards = [];
+        for (let idx = this.#min_tier_index, end = this.#max_tier_index + 1; idx < end; idx += 1) {
+            cards.push(...this.#pack.Tier(idx).Cards());
+        }
+
+        if (count > cards.length) {
+            throw new Error(`The count exceeds the number of available unique cards.`);
+        } else {
+            const results = [];
+            for (let idx = 0, end = count; idx < end; idx += 1) {
+                const card_index = Math.floor(Math.random() * cards.length);
+                results.push_back(cards[card_index]);
+                cards[card_index] = cards[cards.length - 1];
+                cards.pop();
+            }
+
+            return results;
+        }
     }
 }
 
@@ -402,7 +490,7 @@ class Player
     {
         this.#arena = arena;
 
-        this.#stakes = Array(max_stake_count).fill(this, new Stake(new Card(1, 1, 1, 1, null)));
+        this.#stakes = Array(max_stake_count).fill(this, new Stake(this, null));
     }
 
     Arena()
