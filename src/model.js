@@ -413,6 +413,8 @@ export class Arena
         } else if (player_count < 2) {
             throw new Error(`Must have at least 2 players.`);
         } else {
+            this.#rules = rules.Clone();
+
             this.#board = new Board({
                 arena: this,
                 row_count: board_row_count,
@@ -481,7 +483,7 @@ export class Rules
     Clone()
     {
         const copy = Object.assign(
-            Object.create(Object.getProptotypeOf(this)),
+            Object.create(Object.getPrototypeOf(this)),
             this
         );
 
