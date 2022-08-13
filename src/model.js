@@ -206,7 +206,7 @@ class Card
 }
 
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
-class Collection
+export class Collection
 {
     #card_counts;
     #shuffles;
@@ -215,6 +215,28 @@ class Collection
     {
         // if there aren't enough cards in the card_count array, the remainder can be
         // randomly selected from the shuffles. card_counts can have cards from any pack.
+
+        this.#card_counts = [];
+        this.#shuffles = [];
+
+        // perhaps by default we should add a shuffle for the default pack with just a tier range of 0 to 0.
+        // else we should require shuffles to be passed in. we could also have a extension of this class
+        // just for the player.
+    }
+
+    Cards(count)
+    {
+        return [];
+    }
+
+    Serialize()
+    {
+        return {};
+    }
+
+    Deserialize(data)
+    {
+
     }
 }
 
@@ -354,6 +376,9 @@ export class Arena
     #board;
     #players;
 
+    // instead of a player_count, we should just pass an array of collections.
+    // in order to let the player choose which cards to use, we'll need to probably
+    // have a method on this before the game begins proper.
     constructor(rule_flags, board_row_count, board_column_count, player_count)
     {
         if (player_count < 2) {
@@ -364,8 +389,8 @@ export class Arena
             if (player_count > this.#board.Cell_Count()) {
                 throw new Error(`The board is too small for ${player_count} player(s).`);
             } else {
-                const max_stake_count = Math.ceil(this.#board.Cell_Count() / player_count);
-                this.#players = Array(player_count).fill(new Player(this, max_stake_count));
+                const stake_count = Math.ceil(this.#board.Cell_Count() / player_count);
+                this.#players = Array(player_count).fill(new Player(this, null, stake_count));
             }
         }
     }
@@ -482,20 +507,24 @@ class Board
 class Player
 {
     #arena;
-
-    #collection; // how to provide this for the player, and generate it for ai?
+    #collection;
     #stakes;
 
-    constructor(arena, max_stake_count)
+    constructor(arena, collection, stake_count)
     {
         this.#arena = arena;
-
-        this.#stakes = Array(max_stake_count).fill(this, new Stake(this, null));
+        this.#collection = collection;
+        this.#stakes = Array(stake_count).fill(this, new Stake(this, null)); // we need to generate the cards from the collection.
     }
 
     Arena()
     {
         return this.#arena;
+    }
+
+    Collection()
+    {
+        return this.#collection;
     }
 
     Stake_Count()
