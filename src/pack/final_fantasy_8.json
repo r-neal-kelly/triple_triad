@@ -1,0 +1,1015 @@
+{
+    "name": "Final Fantasy 8",
+    "data": [
+        [
+            {
+                "name": "Geezard",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 1,
+                "right": 4,
+                "bottom": 1
+            },
+            {
+                "name": "Funguar",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 1,
+                "bottom": 1
+            },
+            {
+                "name": "Bite Bug",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 1,
+                "right": 3,
+                "bottom": 3
+            },
+            {
+                "name": "Red Bat",
+                "image": "",
+                "element": "",
+                "left": 2,
+                "top": 6,
+                "right": 1,
+                "bottom": 1
+            },
+            {
+                "name": "Blobra",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 2,
+                "right": 3,
+                "bottom": 1
+            },
+            {
+                "name": "Gayla",
+                "image": "",
+                "element": "Lightning",
+                "left": 4,
+                "top": 2,
+                "right": 1,
+                "bottom": 4
+            },
+            {
+                "name": "Gesper",
+                "image": "",
+                "element": "",
+                "left": 1,
+                "top": 1,
+                "right": 5,
+                "bottom": 4
+            },
+            {
+                "name": "Fastitocalon-F",
+                "image": "",
+                "element": "Earth",
+                "left": 1,
+                "top": 3,
+                "right": 5,
+                "bottom": 2
+            },
+            {
+                "name": "Blood Soul",
+                "image": "",
+                "element": "",
+                "left": 1,
+                "top": 2,
+                "right": 1,
+                "bottom": 6
+            },
+            {
+                "name": "Caterchipillar",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 4,
+                "right": 2,
+                "bottom": 4
+            },
+            {
+                "name": "Cockatrice",
+                "image": "",
+                "element": "Lightning",
+                "left": 6,
+                "top": 2,
+                "right": 1,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "Grat",
+                "image": "",
+                "element": "",
+                "left": 1,
+                "top": 7,
+                "right": 1,
+                "bottom": 3
+            },
+            {
+                "name": "Buel",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 6,
+                "right": 2,
+                "bottom": 2
+            },
+            {
+                "name": "Mesmerize",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 5,
+                "right": 3,
+                "bottom": 3
+            },
+            {
+                "name": "Glacial Eye",
+                "image": "",
+                "element": "Ice",
+                "left": 3,
+                "top": 6,
+                "right": 1,
+                "bottom": 4
+            },
+            {
+                "name": "Belhelmel",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 3,
+                "right": 4,
+                "bottom": 5
+            },
+            {
+                "name": "Thrustaevis",
+                "image": "",
+                "element": "Wind",
+                "left": 5,
+                "top": 5,
+                "right": 3,
+                "bottom": 2
+            },
+            {
+                "name": "Anacondaur",
+                "image": "",
+                "element": "Poison",
+                "left": 5,
+                "top": 5,
+                "right": 1,
+                "bottom": 3
+            },
+            {
+                "name": "Creeps",
+                "image": "",
+                "element": "Lightning",
+                "left": 2,
+                "top": 5,
+                "right": 2,
+                "bottom": 5
+            },
+            {
+                "name": "Grendel",
+                "image": "",
+                "element": "Lightning",
+                "left": 2,
+                "top": 4,
+                "right": 4,
+                "bottom": 5
+            },
+            {
+                "name": "Jelleye",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 3,
+                "right": 2,
+                "bottom": 1
+            },
+            {
+                "name": "Grand Mantis",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 2,
+                "bottom": 5
+            }
+        ],
+        [
+            {
+                "name": "Forbidden",
+                "image": "",
+                "element": "",
+                "left": 2,
+                "top": 6,
+                "right": 6,
+                "bottom": 3
+            },
+            {
+                "name": "Armadodo",
+                "image": "",
+                "element": "Earth",
+                "left": 6,
+                "top": 6,
+                "right": 3,
+                "bottom": 1
+            },
+            {
+                "name": "Tri-Face",
+                "image": "",
+                "element": "Poison",
+                "left": 5,
+                "top": 3,
+                "right": 5,
+                "bottom": 5
+            },
+            {
+                "name": "Fastitocalon",
+                "image": "",
+                "element": "Earth",
+                "left": 3,
+                "top": 7,
+                "right": 5,
+                "bottom": 1
+            },
+            {
+                "name": "Snow Lion",
+                "image": "",
+                "element": "Ice",
+                "left": 3,
+                "top": 7,
+                "right": 1,
+                "bottom": 5
+            },
+            {
+                "name": "Ochu",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 6,
+                "bottom": 3
+            },
+            {
+                "name": "SAM08G",
+                "image": "",
+                "element": "Fire",
+                "left": 4,
+                "top": 5,
+                "right": 6,
+                "bottom": 2
+            },
+            {
+                "name": "Death Claw",
+                "image": "",
+                "element": "Fire",
+                "left": 2,
+                "top": 4,
+                "right": 4,
+                "bottom": 7
+            },
+            {
+                "name": "Cactuar",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 6,
+                "right": 2,
+                "bottom": 6
+            },
+            {
+                "name": "Tonberry",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 3,
+                "right": 6,
+                "bottom": 4
+            },
+            {
+                "name": "Abyss Worm",
+                "image": "",
+                "element": "Earth",
+                "left": 5,
+                "top": 7,
+                "right": 2,
+                "bottom": 3
+            }
+        ],
+        [
+            {
+                "name": "Turtapod",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 2,
+                "right": 3,
+                "bottom": 6
+            },
+            {
+                "name": "Vysage",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 6,
+                "right": 5,
+                "bottom": 4
+            },
+            {
+                "name": "T-Rexaur",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 4,
+                "right": 6,
+                "bottom": 2
+            },
+            {
+                "name": "Bomb",
+                "image": "",
+                "element": "Fire",
+                "left": 3,
+                "top": 2,
+                "right": 7,
+                "bottom": 6
+            },
+            {
+                "name": "Blitz",
+                "image": "",
+                "element": "Lightning",
+                "left": 7,
+                "top": 1,
+                "right": 6,
+                "bottom": 4
+            },
+            {
+                "name": "Wendigo",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 7,
+                "right": 3,
+                "bottom": 1
+            },
+            {
+                "name": "Torama",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 7,
+                "right": 4,
+                "bottom": 4
+            },
+            {
+                "name": "Imp",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 3,
+                "right": 7,
+                "bottom": 3
+            },
+            {
+                "name": "Blue Dragon",
+                "image": "",
+                "element": "Poison",
+                "left": 3,
+                "top": 6,
+                "right": 2,
+                "bottom": 7
+            },
+            {
+                "name": "Adamantoise",
+                "image": "",
+                "element": "Earth",
+                "left": 6,
+                "top": 4,
+                "right": 5,
+                "bottom": 5
+            },
+            {
+                "name": "Hexadragon",
+                "image": "",
+                "element": "Fire",
+                "left": 3,
+                "top": 7,
+                "right": 5,
+                "bottom": 4
+            }
+        ],
+        [
+            {
+                "name": "Iron Giant",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 6,
+                "right": 5,
+                "bottom": 6
+            },
+            {
+                "name": "Behemoth",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 3,
+                "right": 6,
+                "bottom": 5
+            },
+            {
+                "name": "Chimera",
+                "image": "",
+                "element": "Water",
+                "left": 3,
+                "top": 7,
+                "right": 6,
+                "bottom": 5
+            },
+            {
+                "name": "PuPu",
+                "image": "",
+                "element": "",
+                "left": 1,
+                "top": 3,
+                "right": 10,
+                "bottom": 2
+            },
+            {
+                "name": "Elastoid",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 6,
+                "right": 2,
+                "bottom": 6
+            },
+            {
+                "name": "GIM47N",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 5,
+                "right": 5,
+                "bottom": 7
+            },
+            {
+                "name": "Malboro",
+                "image": "",
+                "element": "Poison",
+                "left": 2,
+                "top": 7,
+                "right": 7,
+                "bottom": 4
+            },
+            {
+                "name": "Ruby Dragon",
+                "image": "",
+                "element": "Fire",
+                "left": 4,
+                "top": 7,
+                "right": 2,
+                "bottom": 7
+            },
+            {
+                "name": "Elnoyle",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 5,
+                "right": 3,
+                "bottom": 7
+            },
+            {
+                "name": "Tonberry King",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 4,
+                "right": 6,
+                "bottom": 7
+            },
+            {
+                "name": "Wedge, Biggs",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 6,
+                "right": 6,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "Fujin, Raijin",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 2,
+                "right": 8,
+                "bottom": 8
+            },
+            {
+                "name": "Elvoret",
+                "image": "",
+                "element": "Wind",
+                "left": 4,
+                "top": 7,
+                "right": 8,
+                "bottom": 3
+            },
+            {
+                "name": "X-ATM092",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 4,
+                "right": 8,
+                "bottom": 7
+            },
+            {
+                "name": "Granaldo",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 7,
+                "right": 2,
+                "bottom": 8
+            },
+            {
+                "name": "Gerogero",
+                "image": "",
+                "element": "Poison",
+                "left": 3,
+                "top": 1,
+                "right": 8,
+                "bottom": 8
+            },
+            {
+                "name": "Iguion",
+                "image": "",
+                "element": "",
+                "left": 2,
+                "top": 8,
+                "right": 2,
+                "bottom": 8
+            },
+            {
+                "name": "Abadon",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 6,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "Trauma",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 4,
+                "right": 8,
+                "bottom": 5
+            },
+            {
+                "name": "Oilboyle",
+                "image": "",
+                "element": "",
+                "left": 8,
+                "top": 1,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "Shumi Tribe",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 6,
+                "right": 5,
+                "bottom": 8
+            },
+            {
+                "name": "Krysta",
+                "image": "",
+                "element": "",
+                "left": 1,
+                "top": 7,
+                "right": 5,
+                "bottom": 8
+            }
+        ],
+        [
+            {
+                "name": "Propagator",
+                "image": "",
+                "element": "",
+                "left": 8,
+                "top": 8,
+                "right": 4,
+                "bottom": 4
+            },
+            {
+                "name": "Jumbo Cactuar",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 8,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "Tri-Point",
+                "image": "",
+                "element": "Lightning",
+                "left": 8,
+                "top": 8,
+                "right": 5,
+                "bottom": 2
+            },
+            {
+                "name": "Gargantua",
+                "image": "",
+                "element": "",
+                "left": 8,
+                "top": 5,
+                "right": 6,
+                "bottom": 6
+            },
+            {
+                "name": "Mobile Type 8",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 8,
+                "right": 6,
+                "bottom": 7
+            },
+            {
+                "name": "Sphinxara",
+                "image": "",
+                "element": "",
+                "left": 8,
+                "top": 8,
+                "right": 3,
+                "bottom": 5
+            },
+            {
+                "name": "Tiamat",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 8,
+                "right": 8,
+                "bottom": 5
+            },
+            {
+                "name": "BGH251F2",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 5,
+                "right": 7,
+                "bottom": 8
+            },
+            {
+                "name": "Red Giant",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 6,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "Catoblepas",
+                "image": "",
+                "element": "",
+                "left": 7,
+                "top": 1,
+                "right": 8,
+                "bottom": 7
+            },
+            {
+                "name": "Ultima Weapon",
+                "image": "",
+                "element": "",
+                "left": 8,
+                "top": 7,
+                "right": 7,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "Chubby Chocobo",
+                "image": "",
+                "element": "",
+                "left": 9,
+                "top": 4,
+                "right": 4,
+                "bottom": 8
+            },
+            {
+                "name": "Angelo",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 9,
+                "right": 6,
+                "bottom": 7
+            },
+            {
+                "name": "Gilgamesh",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 3,
+                "right": 7,
+                "bottom": 9
+            },
+            {
+                "name": "MiniMog",
+                "image": "",
+                "element": "",
+                "left": 2,
+                "top": 9,
+                "right": 3,
+                "bottom": 9
+            },
+            {
+                "name": "Chicobo",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 9,
+                "right": 4,
+                "bottom": 8
+            },
+            {
+                "name": "Quezacotl",
+                "image": "",
+                "element": "Lightning",
+                "left": 4,
+                "top": 2,
+                "right": 9,
+                "bottom": 9
+            },
+            {
+                "name": "Shiva",
+                "image": "",
+                "element": "Ice",
+                "left": 9,
+                "top": 6,
+                "right": 7,
+                "bottom": 4
+            },
+            {
+                "name": "Ifrit",
+                "image": "",
+                "element": "Fire",
+                "left": 8,
+                "top": 9,
+                "right": 6,
+                "bottom": 2
+            },
+            {
+                "name": "Siren",
+                "image": "",
+                "element": "",
+                "left": 2,
+                "top": 8,
+                "right": 9,
+                "bottom": 6
+            },
+            {
+                "name": "Sacred",
+                "image": "",
+                "element": "Earth",
+                "left": 9,
+                "top": 5,
+                "right": 1,
+                "bottom": 9
+            },
+            {
+                "name": "Minotaur",
+                "image": "",
+                "element": "Earth",
+                "left": 9,
+                "top": 9,
+                "right": 5,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "Carbuncle",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 8,
+                "right": 4,
+                "bottom": 10
+            },
+            {
+                "name": "Diablos",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 10,
+                "bottom": 8
+            },
+            {
+                "name": "Leviathan",
+                "image": "",
+                "element": "Water",
+                "left": 7,
+                "top": 7,
+                "right": 10,
+                "bottom": 1
+            },
+            {
+                "name": "Odin",
+                "image": "",
+                "element": "",
+                "left": 5,
+                "top": 8,
+                "right": 10,
+                "bottom": 3
+            },
+            {
+                "name": "Pandemona",
+                "image": "",
+                "element": "Wind",
+                "left": 7,
+                "top": 10,
+                "right": 1,
+                "bottom": 7
+            },
+            {
+                "name": "Cerberus",
+                "image": "",
+                "element": "",
+                "left": 10,
+                "top": 7,
+                "right": 4,
+                "bottom": 6
+            },
+            {
+                "name": "Alexander",
+                "image": "",
+                "element": "Holy",
+                "left": 2,
+                "top": 9,
+                "right": 10,
+                "bottom": 4
+            },
+            {
+                "name": "Phoenix",
+                "image": "",
+                "element": "Fire",
+                "left": 10,
+                "top": 7,
+                "right": 2,
+                "bottom": 7
+            },
+            {
+                "name": "Bahamut",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 10,
+                "right": 8,
+                "bottom": 2
+            },
+            {
+                "name": "Doomtrain",
+                "image": "",
+                "element": "Poison",
+                "left": 10,
+                "top": 3,
+                "right": 1,
+                "bottom": 10
+            },
+            {
+                "name": "Eden",
+                "image": "",
+                "element": "",
+                "left": 10,
+                "top": 4,
+                "right": 4,
+                "bottom": 9
+            }
+        ],
+        [
+            {
+                "name": "Ward",
+                "image": "",
+                "element": "",
+                "left": 8,
+                "top": 10,
+                "right": 7,
+                "bottom": 2
+            },
+            {
+                "name": "Kiros",
+                "image": "",
+                "element": "",
+                "left": 10,
+                "top": 6,
+                "right": 7,
+                "bottom": 6
+            },
+            {
+                "name": "Laguna",
+                "image": "",
+                "element": "",
+                "left": 9,
+                "top": 5,
+                "right": 10,
+                "bottom": 3
+            },
+            {
+                "name": "Selphie",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 10,
+                "right": 8,
+                "bottom": 6
+            },
+            {
+                "name": "Quistis",
+                "image": "",
+                "element": "",
+                "left": 2,
+                "top": 9,
+                "right": 6,
+                "bottom": 10
+            },
+            {
+                "name": "Irvine",
+                "image": "",
+                "element": "",
+                "left": 10,
+                "top": 2,
+                "right": 6,
+                "bottom": 9
+            },
+            {
+                "name": "Zell",
+                "image": "",
+                "element": "",
+                "left": 6,
+                "top": 8,
+                "right": 5,
+                "bottom": 10
+            },
+            {
+                "name": "Rinoa",
+                "image": "",
+                "element": "",
+                "left": 10,
+                "top": 4,
+                "right": 10,
+                "bottom": 2
+            },
+            {
+                "name": "Edea",
+                "image": "",
+                "element": "",
+                "left": 3,
+                "top": 10,
+                "right": 10,
+                "bottom": 3
+            },
+            {
+                "name": "Seifer",
+                "image": "",
+                "element": "",
+                "left": 4,
+                "top": 6,
+                "right": 9,
+                "bottom": 10
+            },
+            {
+                "name": "Squall",
+                "image": "",
+                "element": "",
+                "left": 9,
+                "top": 10,
+                "right": 4,
+                "bottom": 6
+            }
+        ]
+    ]
+}

@@ -1,75 +1,195 @@
+import final_fantasy_8_pack_from_json from "./pack/final_fantasy_8.json"
+
+/* Contains all available packs. */
+export class Packs
+{
+    #pack_count;
+    #packs;
+
+    constructor()
+    {
+        const packs_from_json = [
+            final_fantasy_8_pack_from_json,
+        ];
+
+        this.#pack_count = packs_from_json.length;
+        this.#packs = {};
+
+        packs_from_json.forEach((pack_from_json) =>
+        {
+            if (this.#packs[pack_from_json.name] != null) {
+                throw new Error(`Pack with the name "${pack_from_json.name}" already exists.`);
+            } else {
+                this.#packs[pack_from_json.name] = new Pack(this, pack_from_json);
+            }
+        });
+    }
+
+    Pack_Count()
+    {
+        return this.#pack_count;
+    }
+
+    Pack(name)
+    {
+        const pack = this.#packs[name];
+
+        if (pack == null) {
+            throw new Error("Invalid pack name.");
+        } else {
+            return pack;
+        }
+    }
+
+    Random_Pack()
+    {
+        return this.Array()[Math.floor(Math.random() * this.Pack_Count())];
+    }
+
+    Array()
+    {
+        return this.#packs.values();
+    }
+}
+
 /* Contains all the tiers and all their collectible cards. */
 class Pack
 {
+    #packs;
+    #name;
     #tiers;
 
-    constructor(pack_json)
+    constructor(packs, pack_from_json)
     {
+        this.#packs = packs;
+        this.#name = pack_from_json.name;
+        this.#tiers = pack_from_json.data.map((tier_from_json) =>
+        {
+            return new Tier(this, tier_from_json);
+        });
+    }
 
+    Packs()
+    {
+        return this.#packs;
+    }
+
+    Name()
+    {
+        return this.#name;
+    }
+
+    Tier_Count()
+    {
+        return this.#tiers.length;
+    }
+
+    Tier(index)
+    {
+        if (index < this.Tier_Count()) {
+            return this.#tiers[index];
+        } else {
+            throw new Error("Invalid tier index.");
+        }
     }
 }
 
 /* Contains all the collectible cards in a single tier of a pack. */
 class Tier
 {
+    #pack;
     #cards;
 
-    constructor(cards_from_json)
+    constructor(pack, tier_from_json)
     {
+        this.#pack = pack;
+        this.#cards = tier_from_json.map((card_from_json) =>
+        {
+            return new Card(this, card_from_json);
+        });
+    }
 
+    Pack()
+    {
+        return this.#pack;
+    }
+
+    Card_Count()
+    {
+        return this.#cards.length;
+    }
+
+    Card(index)
+    {
+        if (index < this.Card_Count()) {
+            return this.#cards[index];
+        } else {
+            throw new Error("Invalid card index.");
+        }
     }
 }
 
-/* Contains the stats for each individual card in a pack. */
+/* Contains the data for each individual card in a pack. */
 class Card
 {
-    #left;
-    #top;
-    #right;
-    #bottom;
+    #tier;
+    #data;
 
-    #picture;
-
-    constructor(left, top, right, bottom, picture)
+    constructor(tier, card_from_json)
     {
-        this.#left = left;
-        this.#top = top;
-        this.#right = right;
-        this.#bottom = bottom;
+        this.#tier = tier;
+        this.#data = card_from_json;
+    }
 
-        this.#picture = picture;
+    Pack()
+    {
+        return this.#tier.Pack();
+    }
+
+    Tier()
+    {
+        return this.#tier;
+    }
+
+    Name()
+    {
+        return this.#data.name;
+    }
+
+    Image()
+    {
+        return this.#data.image;
+    }
+
+    Element()
+    {
+        return this.#data.element;
     }
 
     Left()
     {
-        return this.#left;
+        return this.#data.left;
     }
 
     Top()
     {
-        return this.#top;
+        return this.#data.top;
     }
 
     Right()
     {
-        return this.#right;
+        return this.#data.right;
     }
 
     Bottom()
     {
-        return this.#bottom;
-    }
-
-    Picture()
-    {
-        return this.#picture;
+        return this.#data.bottom;
     }
 }
 
 /* Contains a number of card counts and a tier range to generate stakes. */
 class Collection
 {
-    #pack;
     #card_counts;
 
     #min_tier_index;
@@ -92,33 +212,55 @@ class Card_Count
 
     constructor(card, count)
     {
-        this.#card = card;
-        this.#count = count;
+        if (count < 0) {
+            throw new Error(`Count must be greater than or equal to 0.`)
+        } else {
+            this.#card = card;
+            this.#count = count;
+        }
     }
 
-    Increment()
+    Card()
     {
-
+        return this.#card;
     }
 
-    Decrement()
+    Count()
     {
-
+        return this.#count;
     }
 
     Add(count)
     {
-
+        if (this.#count + count < this.#count) {
+            throw new Error(`Cannot add ${count} to the count.`);
+        } else {
+            this.#count += count;
+        }
     }
 
     Subtract(count)
     {
+        if (this.#count - count > this.#count) {
+            throw new Error(`Cannot subtract ${count} from the count.`);
+        } else {
+            this.#count -= count;
+        }
+    }
 
+    Increment()
+    {
+        this.Add(1);
+    }
+
+    Decrement()
+    {
+        this.Subtract(1);
     }
 }
 
 /* An instance of a game including a board, its players, and their stakes. */
-export default class Arena
+export class Arena
 {
     #rules;
     #board;
@@ -235,6 +377,8 @@ class Board
     Place_Stake(player_index, stake_index)
     {
         // calls Evaluate_Stake after adding the stake.
+
+        // maybe we should have this on the player type as well, because we'll have to track which stake is selected.
     }
 
     #Evaluate_Stake(row, column)
@@ -298,7 +442,7 @@ class Player
     }
 }
 
-/* Contains a card at either in a player's hand or on the board, as well as its current owner. */
+/* Contains a card either on a player or on the board, and its current claimant. */
 class Stake
 {
     #player;
@@ -320,7 +464,7 @@ class Stake
         return this.#card;
     }
 
-    Is_In_Hand()
+    Is_On_Player()
     {
         return this.#player.Has_Stake(this);
     }
