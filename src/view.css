@@ -79,13 +79,15 @@ body,
     width: 100px;
     padding: 10px;
 
-    background-color: blue;
+    background-color: transparent;
 
     text-align: center;
     color: white;
 }
 
 .Stake {
+    height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
 }

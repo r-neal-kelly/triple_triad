@@ -49,6 +49,7 @@ class Board extends React.Component
                             <Cell
                                 key={index}
                                 id={index}
+                                model={this.props.model}
                             />
                         );
                     })
@@ -84,6 +85,7 @@ class Hand extends React.Component
                         <Cell
                             key={index}
                             id={index}
+                            model={this.props.model}
                         />
                     );
                 })}
@@ -96,11 +98,20 @@ class Cell extends React.Component
 {
     render()
     {
+        const stake = this.props.model.Stake(this.props.id);
+
         return (
             <div className="Cell">
-                <div>
-                    {this.props.id}
-                </div>
+                {stake ?
+                    <Stake
+                        key={this.props.id}
+                        id={this.props.id}
+                        model={stake}
+                    /> :
+                    <div>
+                        {this.props.id}
+                    </div>
+                }
             </div>
         );
     }
@@ -110,8 +121,15 @@ class Stake extends React.Component
 {
     render()
     {
+        const color = this.props.model.Color();
+
         return (
-            <div className="Stake">
+            <div
+                className="Stake"
+                style={{
+                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                }}
+            >
             </div>
         );
     }

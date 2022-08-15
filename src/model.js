@@ -223,66 +223,53 @@ class Card
     }
 }
 
-/* Contains a list of individuals cards drawn from a collection, with possible repeats. */
-export class Selection
+/* Contains RGBA values for a color. */
+export class Color
 {
-    #collection;
-    #cards;
+    #red;
+    #green;
+    #blue;
+    #alpha;
 
-    // if given a cards array, it will accept that as the selection,
-    // else it can generate a random selection from the collection
     constructor({
-        collection,
-
-        cards = null,
-
-        random_card_count,
-        allow_random_repeats = true,
-        allow_random_multiple_packs = false,
+        red = 0,
+        green = 0,
+        blue = 0,
+        alpha = 1.0,
     })
     {
-        if (collection == null) {
-            throw new Error(`Must have a collection.`);
+        if (red < 0 || red > 255 ||
+            green < 0 || green > 255 ||
+            blue < 0 || blue > 255) {
+            throw new Error(`Color must be from 0 to 255.`);
+        } else if (alpha < 0.0 || alpha > 1.0) {
+            throw new Error(`Alpha must be from 0.0 to 1.0`);
         } else {
-            this.#collection = collection;
-
-            if (cards != null) {
-                if (cards.length < 1) {
-                    throw new Error(`Must have a least one card in the selection.`);
-                } else {
-                    this.#cards = Array.from(cards);
-                }
-            } else {
-                if (random_card_count < 1) {
-                    throw new Error(`Must have a least one card in the selection.`);
-                } else {
-                    this.#cards = collection.Random_Cards({
-                        card_count: random_card_count,
-                        allow_repeats: allow_random_repeats,
-                        allow_multiple_packs: allow_random_multiple_packs,
-                    });
-                }
-            }
+            this.#red = red;
+            this.#green = green;
+            this.#blue = blue;
+            this.#alpha = alpha;
         }
     }
 
-    Collection()
+    Red()
     {
-        return this.#collection;
+        return this.#red;
     }
 
-    Card_Count()
+    Green()
     {
-        return this.#cards.length;
+        return this.#green;
     }
 
-    Card(index)
+    Blue()
     {
-        if (index < this.Card_Count()) {
-            return this.#cards[index];
-        } else {
-            throw new Error("Invalid card index.");
-        }
+        return this.#blue;
+    }
+
+    Alpha()
+    {
+        return this.#alpha;
     }
 }
 
@@ -706,6 +693,79 @@ export class Rules
     }
 }
 
+/* Contains a list of individuals cards drawn from a collection, with possible repeats. */
+export class Selection
+{
+    #collection;
+    #color;
+    #cards;
+
+    // if given a cards array, it will accept that as the selection,
+    // else it can generate a random selection from the collection
+    constructor({
+        collection,
+        color,
+
+        cards = null,
+
+        random_card_count,
+        allow_random_repeats = true,
+        allow_random_multiple_packs = false,
+    })
+    {
+        if (collection == null) {
+            throw new Error(`Must have a collection.`);
+        } else if (color == null) {
+            throw new Error(`Must have a color.`);
+        } else {
+            this.#collection = collection;
+            this.#color = color;
+
+            if (cards != null) {
+                if (cards.length < 1) {
+                    throw new Error(`Must have a least one card in the selection.`);
+                } else {
+                    this.#cards = Array.from(cards);
+                }
+            } else {
+                if (random_card_count < 1) {
+                    throw new Error(`Must have a least one card in the selection.`);
+                } else {
+                    this.#cards = collection.Random_Cards({
+                        card_count: random_card_count,
+                        allow_repeats: allow_random_repeats,
+                        allow_multiple_packs: allow_random_multiple_packs,
+                    });
+                }
+            }
+        }
+    }
+
+    Collection()
+    {
+        return this.#collection;
+    }
+
+    Color()
+    {
+        return this.#color;
+    }
+
+    Card_Count()
+    {
+        return this.#cards.length;
+    }
+
+    Card(index)
+    {
+        if (index < this.Card_Count()) {
+            return this.#cards[index];
+        } else {
+            throw new Error("Invalid card index.");
+        }
+    }
+}
+
 /* Contains stakes actively in play. */
 class Board
 {
@@ -754,13 +814,21 @@ class Board
         return this.#stake_count;
     }
 
-    Stake(row, column)
+    Stake(index)
     {
+        if (index < 0 || index >= this.#stakes.length) {
+            throw new Error(`Invalid stake index.`);
+        } else {
+            return this.#stakes[index];
+        }
+
+        /*
         if (row < this.Row_Count() && column < this.Column_Count()) {
             return this.#stakes[row * column + column];
         } else {
             throw new Error("Invalid stake coordinates.");
         }
+        */
     }
 
     Place_Stake(player_index, stake_index)
@@ -826,6 +894,11 @@ class Player
         return this.#selection;
     }
 
+    Color()
+    {
+        return this.Selection().Color();
+    }
+
     Stake_Count()
     {
         return this.#stakes.length;
@@ -881,6 +954,11 @@ class Stake
     Card()
     {
         return this.#card;
+    }
+
+    Color()
+    {
+        return this.Claimant().Color();
     }
 
     Is_On_Player()

@@ -40,6 +40,11 @@ class Main extends React.Component
             selections: [
                 new Model.Selection({
                     collection: this.state.collection,
+                    color: new Model.Color({
+                        red: 0,
+                        green: 0,
+                        blue: 255,
+                    }),
                     random_card_count: this.state.rules.Selection_Count(),
                 }),
                 new Model.Selection({
@@ -49,6 +54,11 @@ class Main extends React.Component
                             min_tier_index: 0,
                             max_tier_index: 0,
                         }),
+                    }),
+                    color: new Model.Color({
+                        red: 255,
+                        green: 0,
+                        blue: 0,
                     }),
                     random_card_count: this.state.rules.Selection_Count(),
                 }),
