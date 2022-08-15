@@ -20,7 +20,10 @@ export class Packs
             if (this.#packs[pack_from_json.name] != null) {
                 throw new Error(`Pack with the name "${pack_from_json.name}" already exists.`);
             } else {
-                this.#packs[pack_from_json.name] = new Pack(this, pack_from_json);
+                this.#packs[pack_from_json.name] = new Pack({
+                    packs: this,
+                    pack_from_json,
+                });
             }
         });
     }
@@ -59,7 +62,10 @@ class Pack
     #name;
     #tiers;
 
-    constructor(packs, pack_from_json)
+    constructor({
+        packs,
+        pack_from_json,
+    })
     {
         if (pack_from_json.data.length < 1) {
             throw new Error(`The pack ${pack_from_json.name} must have at least one tier.`);
@@ -68,7 +74,10 @@ class Pack
             this.#name = pack_from_json.name;
             this.#tiers = pack_from_json.data.map((tier_from_json) =>
             {
-                return new Tier(this, tier_from_json);
+                return new Tier({
+                    pack: this,
+                    tier_from_json,
+                });
             });
         }
     }
@@ -109,7 +118,10 @@ class Tier
     #pack;
     #cards;
 
-    constructor(pack, tier_from_json)
+    constructor({
+        pack,
+        tier_from_json,
+    })
     {
         if (tier_from_json.length < 1) {
             throw new Error(`Each tier must have at least one card.`);
@@ -117,7 +129,10 @@ class Tier
             this.#pack = pack;
             this.#cards = tier_from_json.map((card_from_json) =>
             {
-                return new Card(this, card_from_json);
+                return new Card({
+                    tier: this,
+                    card_from_json,
+                });
             });
         }
     }
@@ -153,7 +168,10 @@ class Card
     #tier;
     #data;
 
-    constructor(tier, card_from_json)
+    constructor({
+        tier,
+        card_from_json,
+    })
     {
         this.#tier = tier;
         this.#data = card_from_json;
@@ -211,19 +229,40 @@ export class Selection
     #collection;
     #cards;
 
-    // I want this to be able to take an array of cards or if that's missing then a random_count and do unique flag.
-    // the random will actually use a collection method to get the cards.
-    // we might want to verify with the collection type if the given cards array actually has cards from the collection.
-    // we'll want to cache the index of the cards for quick access into the collection's array. the index should be on the card.
-    constructor({ collection, cards })
+    // if given a cards array, it will accept that as the selection,
+    // else it can generate a random selection from the collection
+    constructor({
+        collection,
+
+        cards = null,
+
+        random_card_count,
+        allow_random_repeats = true,
+        allow_random_multiple_packs = false,
+    })
     {
         if (collection == null) {
             throw new Error(`Must have a collection.`);
-        } else if (cards == null || cards.length < 1) {
-            throw new Error(`Must have a least one card in the selection.`);
         } else {
             this.#collection = collection;
-            this.#cards = Array.from(cards);
+
+            if (cards != null) {
+                if (cards.length < 1) {
+                    throw new Error(`Must have a least one card in the selection.`);
+                } else {
+                    this.#cards = Array.from(cards);
+                }
+            } else {
+                if (random_card_count < 1) {
+                    throw new Error(`Must have a least one card in the selection.`);
+                } else {
+                    this.#cards = collection.Random_Cards({
+                        card_count: random_card_count,
+                        allow_repeats: allow_random_repeats,
+                        allow_multiple_packs: allow_random_multiple_packs,
+                    });
+                }
+            }
         }
     }
 
@@ -250,19 +289,63 @@ export class Selection
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 export class Collection
 {
+    #shuffle_count;
     #shuffles;
+    #default_shuffle;
     #card_counts;
 
-    constructor(shuffle)
+    constructor({
+        default_shuffle,
+    })
     {
-        if (shuffle == null) {
+        if (default_shuffle == null) {
             // if there aren't enough cards amoung the card_counts, then the shuffle is used.
-            throw new Error(`There must be a shuffle in every collection.`);
+            throw new Error(`There must be a default_shuffle in every collection.`);
         } else {
+            this.#shuffle_count = 0;
             this.#shuffles = {}; // only one shuffle per pack allowed
+            this.#default_shuffle = default_shuffle;
             this.#card_counts = {}; // this should be keyed by pack_name, and then the card_counts sorted in an array
 
-            this.Add_Shuffle(shuffle);
+            this.Add_Shuffle(default_shuffle);
+        }
+    }
+
+    Shuffle_Count()
+    {
+        return this.#shuffle_count;
+    }
+
+    Shuffle(pack_name)
+    {
+        return this.#shuffles[pack_name];
+    }
+
+    Default_Shuffle()
+    {
+        return this.#default_shuffle;
+    }
+
+    Random_Shuffle()
+    {
+        return Object.values(this.#shuffles)[Math.floor(Math.random() * this.Shuffle_Count())];
+    }
+
+    Add_Shuffle(shuffle)
+    {
+        if (this.#shuffles[shuffle.Pack().Name()]) {
+            throw new Error(`This collection already has a shuffle using the same pack.`);
+        } else {
+            this.#shuffle_count += 1;
+            this.#shuffles[shuffle.Pack().Name()] = shuffle;
+        }
+    }
+
+    Remove_Shuffle(pack_name)
+    {
+        if (this.#shuffles[pack_name]) {
+            this.#shuffle_count -= 1;
+            delete this.#shuffles[pack_name];
         }
     }
 
@@ -276,26 +359,21 @@ export class Collection
 
     }
 
-    Shuffle(pack_name)
+    Random_Cards({
+        card_count,
+        allow_repeats = true,
+        allow_multiple_packs = false,
+    })
     {
-        return this.#shuffles[pack_name];
-    }
+        // we need to be able to select random cards from the card_counts too, but for now we'll keep it easy
+        // we also need to add the functionality to use multiple packs, but one thing at a time here
 
-    Add_Shuffle(shuffle)
-    {
-        if (this.#shuffles[shuffle.Pack().Name()]) {
-            throw new Error(`This collection already has a shuffle using the same pack.`);
+        if (allow_repeats) {
+            return this.Random_Shuffle().Cards(card_count);
         } else {
-            this.#shuffles[shuffle.Pack().Name()] = shuffle;
+            return this.Random_Shuffle().Unique_Cards(card_count);
         }
     }
-
-    Remove_Shuffle(pack_name)
-    {
-        delete this.#shuffles[pack_name];
-    }
-
-
 
     Serialize()
     {
@@ -316,7 +394,10 @@ class Card_Count
     #card;
     #count;
 
-    constructor(card, count)
+    constructor({
+        card,
+        count,
+    })
     {
         if (count < 0) {
             throw new Error(`Count must be greater than or equal to 0.`)
@@ -372,7 +453,11 @@ export class Shuffle
     #min_tier_index;
     #max_tier_index;
 
-    constructor(pack, min_tier_index, max_tier_index)
+    constructor({
+        pack,
+        min_tier_index,
+        max_tier_index,
+    })
     {
         if (pack == null) {
             throw new Error(`Requires a pack.`);
@@ -441,43 +526,49 @@ export class Shuffle
     }
 }
 
-/* An instance of a game including the rules, the board, the players, their collections, and their stakes. */
+/* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
 export class Arena
 {
     #rules;
     #board;
     #players;
 
-    // we need to pass selections instead of collections because at the end of the game we're going to need to know what
-    // cards to potentially remove from the collection. it will also be used to generate the stakes at the beginning of the game.
-    constructor({ rules, collections, board_row_count, board_column_count })
+    constructor({
+        rules,
+        selections,
+    })
     {
-        const player_count = collections.length;
-
         if (rules == null) {
             throw new Error(`Must have a set of rules to play.`);
-        } else if (player_count < 2) {
-            throw new Error(`Must have at least 2 players.`);
+        } else if (selections == null) {
+            throw new Error(`Must have an array of selections for each player.`);
         } else {
-            this.#rules = rules.Clone();
+            //this.#rules = rules.Clone();
+            this.#rules = rules;
 
             this.#board = new Board({
                 arena: this,
-                row_count: board_row_count,
-                column_count: board_column_count,
             });
 
-            if (player_count > this.#board.Cell_Count()) {
-                throw new Error(`The board is too small for ${player_count} player(s).`);
+            const player_count = rules.Player_Count();
+            if (selections.length !== player_count) {
+                throw new Error(`Must have a selection for each player, no more and no less.`);
             } else {
-                const stake_count = Math.ceil(this.#board.Cell_Count() / player_count);
-
                 this.#players = [];
                 for (let idx = 0, end = player_count; idx < end; idx += 1) {
-                    this.#players.push(new Player(this, collections[idx], stake_count));
+                    this.#players.push(new Player({
+                        arena: this,
+                        arena_id: idx,
+                        selection: selections[idx],
+                    }));
                 }
             }
         }
+    }
+
+    Rules()
+    {
+        return this.#rules;
     }
 
     Board()
@@ -498,32 +589,51 @@ export class Arena
             throw new Error("Invalid player index.");
         }
     }
-
-    Rules()
-    {
-        return this.#rules;
-    }
-
-    Start({ rules, player_selections })
-    {
-        if (rules == null) {
-            throw new Error(`Must have rules to start a game.`);
-        } else if (player_selections.length > this.Player_Count()) {
-            throw new Error(`Too many player_selections, not enough players.`);
-        }
-    }
 };
 
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
+    #row_count;
+    #column_count;
+    #cell_count;
+    #player_count;
+    #selection_count;
+
     #open;
     #random;
 
-    constructor()
+    constructor({
+        row_count = 3,
+        column_count = 3,
+        player_count = 2,
+
+        open = true,
+        random = false,
+    })
     {
-        this.#open = true;
-        this.#random = true; // temp until we build up serialization more
+        if (player_count < 2) {
+            throw new Error(`Must have at least 2 players.`);
+        } else {
+            this.#row_count = row_count;
+            this.#column_count = column_count;
+            this.#player_count = player_count;
+
+            this.#open = open;
+            this.#random = random;
+
+            this.#Update_Counts();
+
+            if (this.Player_Count() > this.Cell_Count()) {
+                throw new Error(`A cell count of ${this.Cell_Count()} is to few for ${player_count} players.`);
+            }
+        }
+    }
+
+    #Update_Counts()
+    {
+        this.#cell_count = this.#row_count * this.#column_count;
+        this.#selection_count = Math.ceil(this.#cell_count / this.#player_count);
     }
 
     Clone()
@@ -534,50 +644,6 @@ export class Rules
         );
 
         return copy;
-    }
-
-    Serialize()
-    {
-        return ({
-            open: this.#open,
-            random: this.#random,
-        });
-    }
-
-    Deserialize(data)
-    {
-        this.#open = data.open;
-        this.#random = data.random;
-    }
-}
-
-/* Contains stakes actively in play. */
-class Board
-{
-    #arena;
-
-    #row_count;
-    #column_count;
-    #cell_count;
-
-    #stake_count;
-    #stakes;
-
-    constructor({ arena, row_count, column_count })
-    {
-        this.#arena = arena;
-
-        this.#row_count = row_count;
-        this.#column_count = column_count;
-        this.#cell_count = row_count * column_count;
-
-        this.#stake_count = 0;
-        this.#stakes = Array(this.#cell_count).fill(null);
-    }
-
-    Arena()
-    {
-        return this.#arena;
     }
 
     Row_Count()
@@ -593,6 +659,94 @@ class Board
     Cell_Count()
     {
         return this.#cell_count;
+    }
+
+    Player_Count()
+    {
+        return this.#player_count;
+    }
+
+    Selection_Count()
+    {
+        return this.#selection_count;
+    }
+
+    Open()
+    {
+        return this.#open;
+    }
+
+    Random()
+    {
+        return this.#random;
+    }
+
+    Serialize()
+    {
+        return ({
+            row_count: this.#row_count,
+            column_count: this.#column_count,
+            player_count: this.#player_count,
+
+            open: this.#open,
+            random: this.#random,
+        });
+    }
+
+    Deserialize(data)
+    {
+        this.#row_count = data.row_count;
+        this.#column_count = data.column_count;
+        this.#player_count = data.player_count;
+
+        this.#open = data.open;
+        this.#random = data.random;
+
+        this.#Update_Counts();
+    }
+}
+
+/* Contains stakes actively in play. */
+class Board
+{
+    #arena;
+
+    #stake_count;
+    #stakes;
+
+    constructor({
+        arena,
+    })
+    {
+        this.#arena = arena;
+
+        this.#stake_count = 0;
+        this.#stakes = Array(this.Cell_Count()).fill(null);
+    }
+
+    Arena()
+    {
+        return this.#arena;
+    }
+
+    Rules()
+    {
+        return this.Arena().Rules();
+    }
+
+    Row_Count()
+    {
+        return this.Rules().Row_Count();
+    }
+
+    Column_Count()
+    {
+        return this.Rules().Column_Count();
+    }
+
+    Cell_Count()
+    {
+        return this.Rules().Cell_Count();
     }
 
     Stake_Count()
@@ -629,14 +783,27 @@ class Board
 class Player
 {
     #arena;
-    #collection;
+    #arena_id;
+    #selection;
     #stakes;
 
-    constructor(arena, collection, stake_count)
+    constructor({
+        arena,
+        arena_id,
+        selection,
+    })
     {
         this.#arena = arena;
-        this.#collection = collection;
-        this.#stakes = Array(stake_count).fill(this, new Stake(this, null)); // we need to generate the cards from the collection.
+        this.#arena_id = arena_id;
+        this.#selection = selection;
+        this.#stakes = [];
+
+        for (let idx = 0, end = selection.Card_Count(); idx < end; idx += 1) {
+            this.#stakes.push(new Stake({
+                claimant: this,
+                card: selection.Card(idx),
+            }));
+        }
     }
 
     Arena()
@@ -644,9 +811,19 @@ class Player
         return this.#arena;
     }
 
-    Collection()
+    Arena_ID()
     {
-        return this.#collection;
+        return this.#arena_id;
+    }
+
+    Rules()
+    {
+        return this.Arena().Rules();
+    }
+
+    Selection()
+    {
+        return this.#selection;
     }
 
     Stake_Count()
@@ -687,7 +864,10 @@ class Stake
     #claimant;
     #card;
 
-    constructor(claimant, card)
+    constructor({
+        claimant,
+        card,
+    })
     {
         this.#claimant = claimant;
         this.#card = card;
