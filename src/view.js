@@ -4,15 +4,25 @@ import React from "react";
 
 export class Arena extends React.Component
 {
+    // temp
+    async Test(data)
+    {
+        console.log("Test worked.");
+    }
+
     render()
     {
+        this.props.messanger.Subscribe("Test", this.Test); // temp
+
         return (
             <div className="Arena">
                 <Player
                     key={0}
+                    messanger={this.props.messanger}
                     model={this.props.model.Player(0)}
                 />
                 <Board
+                    messanger={this.props.messanger}
                     model={this.props.model.Board()}
                 />
                 {Array(this.props.model.Player_Count() - 1).fill(null).map((_, index) =>
@@ -22,6 +32,7 @@ export class Arena extends React.Component
                     return (
                         <Player
                             key={player_index}
+                            messanger={this.props.messanger}
                             model={this.props.model.Player(player_index)}
                         />
                     );
@@ -49,6 +60,7 @@ class Board extends React.Component
                             <Cell
                                 key={index}
                                 id={index}
+                                messanger={this.props.messanger}
                                 model={this.props.model}
                             />
                         );
@@ -66,6 +78,7 @@ class Player extends React.Component
         return (
             <div className="Player">
                 <Hand
+                    messanger={this.props.messanger}
                     model={this.props.model}
                 />
             </div>
@@ -85,6 +98,7 @@ class Hand extends React.Component
                         <Cell
                             key={index}
                             id={index}
+                            messanger={this.props.messanger}
                             model={this.props.model}
                         />
                     );
@@ -106,6 +120,7 @@ class Cell extends React.Component
                     <Stake
                         key={this.props.id}
                         id={this.props.id}
+                        messanger={this.props.messanger}
                         model={stake}
                     /> :
                     <div>
@@ -119,6 +134,12 @@ class Cell extends React.Component
 
 class Stake extends React.Component
 {
+    // temp
+    async Test()
+    {
+        await this.props.messanger.Publish("Test");
+    }
+
     render()
     {
         const color = this.props.model.Color();
@@ -129,6 +150,7 @@ class Stake extends React.Component
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                 }}
+                onClick={() => this.Test(this)} // temp
             >
             </div>
         );

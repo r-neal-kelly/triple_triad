@@ -1,16 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
+import Messanger from "./messanger.js";
 import * as Model from "./model.js";
 import * as View from "./view.js";
 
 class Main extends React.Component
 {
+    #messanger;
     state;
 
     constructor(props)
     {
         super(props);
+
+        this.#messanger = new Messanger();
 
         this.state = {};
 
@@ -76,6 +80,7 @@ class Main extends React.Component
                     Triple Triad
                 </h1>
                 <View.Arena
+                    messanger={this.#messanger}
                     model={this.state.arena}
                 />
             </div>
@@ -86,7 +91,5 @@ class Main extends React.Component
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
-    <React.StrictMode>
-        <Main />
-    </React.StrictMode>
+    <Main />
 );
