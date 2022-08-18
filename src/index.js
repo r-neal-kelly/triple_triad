@@ -7,7 +7,7 @@ import * as View from "./view.js";
 
 class Main extends React.Component
 {
-    #messenger;
+    #messenger; // this maybe should be on the state object, so that we have a clean sweep of it when this is regen'd
     state;
 
     constructor(props)

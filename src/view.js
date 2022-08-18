@@ -5,19 +5,19 @@ import React from "react";
 export class Arena extends React.Component
 {
     // temp
-    #test_handle;
+    #test_subscription;
 
     async Subscribe()
     {
-        this.#test_handle = await this.props.messenger.Subscribe("Test", this.Test.bind(this));
+        this.#test_subscription = await this.props.messenger.Subscribe("Test", { handler: this.Test.bind(this) });
     }
 
     async Unsubscribe()
     {
-        await this.props.messenger.Unsubscribe(this.#test_handle);
+        await this.props.messenger.Unsubscribe(this.#test_subscription);
     }
 
-    async Test(message_data)
+    async Test(publisher_data)
     {
         await this.Unsubscribe();
 
@@ -174,6 +174,7 @@ class Stake extends React.Component
 
         console.log("Finished waiting for all subscriptions.");
     }
+    //
 
     render()
     {

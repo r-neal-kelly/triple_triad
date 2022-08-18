@@ -1,113 +1,180 @@
-/* Used to obfuscate the actual type, which is determined by the Message class. */
-type Handle_ID = any;
+/* Used both to subscribe and publish events. */
+type Publisher_Name =
+    string;
 
-/* Individual messages, which use their own internal method of uniquely identifying their handles. */
-class Message
+/* Sent to a publisher's subscriber's handlers when an event occurs. */
+type Publisher_Data =
+    any;
+
+/* Uniquely identifies a subscriber when paired with a publisher name. */
+type Subscriber_ID =
+    number;
+
+/* Used as a callback for each subscriber when an event occurs. */
+type Subscriber_Handler =
+    (publisher_data: Publisher_Data) => void | Promise<void>;
+
+/* Used when publishing an event. */
+interface Publisher_Info
 {
-    #handlers: object;
-    #new_handle_id: number;
+    data: Publisher_Data;
+}
+
+/* Used when subscribing to a publisher. */
+interface Subscriber_Info
+{
+    handler: Subscriber_Handler;
+}
+
+/* Contains a register of subscribers which can be published to. */
+class Publisher
+{
+    #subscribers: object;
+    #subscriber_count: number;
+    #next_subscriber_id: number;
 
     constructor()
     {
-        this.#handlers = {};
-        this.#new_handle_id = 0;
+        this.#subscribers = {};
+        this.#subscriber_count = 0;
+        this.#next_subscriber_id = 0;
     }
 
-    async Subscribe(handler):
-        Promise<Handle_ID>
+    async Subscriber_Count():
+        Promise<number>
     {
-        if (this.#new_handle_id + 1 < this.#new_handle_id) {
-            throw new Error(`Ran out of unique ids.`);
+        return this.#subscriber_count;
+    }
+
+    async Subscriber(subscriber_id: Subscriber_ID):
+        Promise<Subscriber>
+    {
+        if (this.#subscribers[subscriber_id] == null) {
+            throw new Error(`The subscriber_id "${subscriber_id}" does not exist on this publisher.`);
         } else {
-            const handle_id = this.#new_handle_id;
-            this.#new_handle_id += 1;
-
-            this.#handlers[handle_id] = handler;
-
-            return handle_id;
+            return this.#subscribers[subscriber_id];
         }
     }
 
-    async Unsubscribe(handle_id: Handle_ID):
-        Promise<void>
+    async Subscribe(subscriber_info: Subscriber_Info):
+        Promise<Subscriber_ID>
     {
-        delete this.#handlers[handle_id];
+        if (this.#next_subscriber_id + 1 < this.#next_subscriber_id) {
+            throw new Error(`Ran out of unique subscriber_ids.`);
+        } else {
+            const subscriber_id = this.#next_subscriber_id;
+            this.#next_subscriber_id += 1;
+
+            this.#subscribers[subscriber_id] = new Subscriber(subscriber_info);
+            this.#subscriber_count += 1;
+
+            return subscriber_id;
+        }
     }
 
-    async Publish(message_data: any = null):
+    async Unsubscribe(subscriber_id: Subscriber_ID):
+        Promise<void>
+    {
+        if (this.#subscribers[subscriber_id] == null) {
+            throw new Error(`The subscriber_id "${subscriber_id}" does not exist on this publisher.`);
+        } else {
+            delete this.#subscribers[subscriber_id];
+            this.#subscriber_count -= 1;
+        }
+    }
+
+    async Publish({ data }: Publisher_Info):
         Promise<Promise<void[]>>
     {
-        return Promise.all(Object.values(this.#handlers).map(async function (handler)
+        return Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
         {
-            await handler(message_data);
+            await (await subscriber.Handler())(data);
         }));
     }
 }
 
-/* Used to Unsubscribe through the messenger. A unique handle is returned for every subscription. */
-class Handle
+/* Contains relevant info and options that are used when publishing an event to a subscriber. */
+class Subscriber
 {
-    #message_name: string;
-    #handle_id: Handle_ID;
+    #handler: Subscriber_Handler;
 
-    constructor(message_name: string, handle_id: Handle_ID)
+    constructor({ handler }: Subscriber_Info)
     {
-        this.#message_name = message_name;
-        this.#handle_id = handle_id;
+        this.#handler = handler;
     }
 
-    Message_Name():
-        string
+    async Handler()
     {
-        return this.#message_name;
-    }
-
-    Handle_ID():
-        Handle_ID
-    {
-        return this.#handle_id;
+        return this.#handler;
     }
 }
 
-/* A simple pub-sub, used to decouple events, event creators, and event handlers. */
+/* A handle to a subscriber and their publisher, for the sake of unsubscribing. */
+class Subscription
+{
+    #publisher_name: Publisher_Name;
+    #subscriber_id: Subscriber_ID;
+
+    constructor(publisher_name: Publisher_Name, subscriber_id: Subscriber_ID)
+    {
+        this.#publisher_name = publisher_name;
+        this.#subscriber_id = subscriber_id;
+    }
+
+    async Publisher_Name():
+        Promise<Publisher_Name>
+    {
+        return this.#publisher_name;
+    }
+
+    async Subscriber_ID():
+        Promise<Subscriber_ID>
+    {
+        return this.#subscriber_id;
+    }
+}
+
+/* Used to decouple events, event creators, and event handlers, using the pub-sub pattern. */
 export default class Messenger
 {
-    #messages: object;
+    #publishers: object;
 
     constructor()
     {
-        this.#messages = {};
+        this.#publishers = {};
     }
 
-    async Subscribe(message_name: string, handler: (message_data: any) => void):
-        Promise<Handle>
+    async Subscribe(publisher_name: Publisher_Name, subscriber_info: Subscriber_Info):
+        Promise<Subscription>
     {
-        let message = this.#messages[message_name];
-        if (message == null) {
-            message = new Message();
-            this.#messages[message_name] = message;
+        let publisher = this.#publishers[publisher_name];
+        if (publisher == null) {
+            publisher = new Publisher();
+            this.#publishers[publisher_name] = publisher;
         }
 
-        return await new Handle(message_name, await message.Subscribe(handler));
+        return new Subscription(publisher_name, await publisher.Subscribe(subscriber_info));
     }
 
-    async Unsubscribe(handle: Handle):
+    async Unsubscribe(subscription: Subscription):
         Promise<void>
     {
-        const message = this.#messages[handle.Message_Name()];
-        if (message == null) {
-            throw new Error(`Message by the name of "${handle.Message_Name()}" does not exist.`);
+        const publisher = this.#publishers[await subscription.Publisher_Name()];
+        if (publisher == null) {
+            throw new Error(`Publisher by the name of "${await subscription.Publisher_Name()}" does not exist.`);
         } else {
-            await message.Unsubscribe(handle.Handle_ID());
+            await publisher.Unsubscribe(await subscription.Subscriber_ID());
         }
     }
 
-    async Publish(message_name: string, message_data: any = null):
+    async Publish(publisher_name: Publisher_Name, publisher_info: Publisher_Info):
         Promise<void>
     {
-        const message = this.#messages[message_name];
-        if (message != null) {
-            await message.Publish(message_data);
+        const publisher = this.#publishers[publisher_name];
+        if (publisher == null) {
+            throw new Error(`Publisher by the name of "${publisher_name}" does not exist.`);
+        } else {
+            await publisher.Publish(publisher_info);
         }
     }
 }
