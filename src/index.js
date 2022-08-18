@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import Messenger from "./messenger.js";
+import Messenger from "./messenger.ts";
 import * as Model from "./model.js";
 import * as View from "./view.js";
 

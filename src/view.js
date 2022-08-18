@@ -14,14 +14,12 @@ export class Arena extends React.Component
 
     async Unsubscribe()
     {
-        await this.props.messenger.Unsubscribe("Test", this.#test_handle);
+        await this.props.messenger.Unsubscribe(this.#test_handle);
     }
 
-    async Test(data)
+    async Test(message_data)
     {
         await this.Unsubscribe();
-
-        console.log("Test worked.");
 
         await new Promise((resolve, reject) =>
         {
@@ -39,8 +37,6 @@ export class Arena extends React.Component
 
     render()
     {
-        this.Subscribe(); // temp
-
         return (
             <div className="Arena">
                 <Player
@@ -66,6 +62,16 @@ export class Arena extends React.Component
                 })}
             </div>
         );
+    }
+
+    componentDidMount()
+    {
+        this.Subscribe();
+    }
+
+    componentWillUnmount()
+    {
+        this.Unsubscribe();
     }
 }
 
