@@ -74,8 +74,9 @@ class Message
 
     async Publish(data = null)
     {
-        for (const handler of Object.values(this.#handlers)) {
+        return Promise.all(Object.values(this.#handlers).map(async function (handler)
+        {
             await handler(data);
-        }
+        }));
     }
 }

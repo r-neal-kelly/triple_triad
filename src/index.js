@@ -1,20 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import Messanger from "./messanger.js";
+import Messenger from "./messenger.js";
 import * as Model from "./model.js";
 import * as View from "./view.js";
 
 class Main extends React.Component
 {
-    #messanger;
+    #messenger;
     state;
 
     constructor(props)
     {
         super(props);
 
-        this.#messanger = new Messanger();
+        this.#messenger = new Messenger();
 
         this.state = {};
 
@@ -80,7 +80,7 @@ class Main extends React.Component
                     Triple Triad
                 </h1>
                 <View.Arena
-                    messanger={this.#messanger}
+                    messenger={this.#messenger}
                     model={this.state.arena}
                 />
             </div>
