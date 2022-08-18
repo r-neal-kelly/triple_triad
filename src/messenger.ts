@@ -18,6 +18,7 @@ type Subscriber_Handler =
 interface Publisher_Info
 {
     data: Publisher_Data;
+    disable_until_complete: boolean; // discards any subsequent events from this publisher until the current one completes
 }
 
 /* Used when subscribing to a publisher. */
@@ -29,15 +30,32 @@ interface Subscriber_Info
 /* Contains a register of subscribers which can be published to. */
 class Publisher
 {
+    #is_enabled: boolean;
     #subscribers: object;
     #subscriber_count: number;
     #next_subscriber_id: number;
 
     constructor()
     {
+        this.#is_enabled = true;
         this.#subscribers = {};
         this.#subscriber_count = 0;
         this.#next_subscriber_id = 0;
+    }
+
+    async Is_Enabled()
+    {
+        return this.#is_enabled;
+    }
+
+    async Enable()
+    {
+        this.#is_enabled = true;
+    }
+
+    async Disable()
+    {
+        this.#is_enabled = false;
     }
 
     async Subscriber_Count():
@@ -83,13 +101,24 @@ class Publisher
         }
     }
 
-    async Publish({ data }: Publisher_Info):
-        Promise<Promise<void[]>>
+    async Publish({ data = null, disable_until_complete = false }: Publisher_Info)
     {
-        return Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
-        {
-            await (await subscriber.Handler())(data);
-        }));
+        if (await this.Is_Enabled()) {
+            const promises = Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
+            {
+                await (await subscriber.Handler())(data);
+            }));
+
+            if (disable_until_complete) {
+                await this.Disable();
+                await promises;
+                await this.Enable();
+
+                return;
+            } else {
+                return promises;
+            }
+        }
     }
 }
 

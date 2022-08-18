@@ -854,6 +854,7 @@ class Player
     #arena_id;
     #selection;
     #stakes;
+    #selected_stake_index;
 
     constructor({
         arena,
@@ -865,6 +866,7 @@ class Player
         this.#arena_id = arena_id;
         this.#selection = selection;
         this.#stakes = [];
+        this.#selected_stake_index = null;
 
         for (let idx = 0, end = selection.Card_Count(); idx < end; idx += 1) {
             this.#stakes.push(new Stake({
@@ -872,6 +874,11 @@ class Player
                 card: selection.Card(idx),
             }));
         }
+    }
+
+    ID()
+    {
+        return this.#arena_id;
     }
 
     Arena()
@@ -909,24 +916,54 @@ class Player
         if (index < this.Stake_Count()) {
             return this.#stakes[index];
         } else {
-            throw new Error("Invalid stake index.");
+            throw new Error(`Invalid stake index.`);
         }
     }
 
     Has_Stake(stake)
     {
-        return this.#stakes.contains(stake);
+        return this.#stakes.includes(stake);
     }
 
-    Remove_Stake(index)
+    Select_Stake(index)
     {
-        const stake = Stake(index);
-        if (stake == null) {
-            throw new Error("Cannot remove a null stake.");
+        if (index == null) {
+            this.#selected_stake_index = null;
+        } else if (index < this.Stake_Count()) {
+            this.#selected_stake_index = index;
         } else {
-            this.#stakes[index] = null;
+            throw new Error(`Invalid stake index.`);
+        }
+    }
 
-            return stake;
+    Selected_Stake()
+    {
+        if (this.#selected_stake_index != null) {
+            return this.Stake(this.#selected_stake_index);
+        } else {
+            return null;
+        }
+    }
+
+    Remove_Selected_Stake()
+    {
+        if (this.#selected_stake_index != null) {
+            const selected_stake = this.#stakes[this.#selected_stake_index];
+
+            if (this.Stake_Count() > 1) {
+                for (let idx = this.#selected_stake_index + 1, end = this.Stake_Count(); idx < end; idx += 1) {
+                    this.#stakes[idx - 1] = this.#stakes[idx];
+                }
+                this.#stakes.pop();
+            } else {
+                this.#stakes.pop();
+            }
+
+            this.#selected_stake_index = null;
+
+            return selected_stake;
+        } else {
+            throw new Error(`No selected stake to remove.`);
         }
     }
 }

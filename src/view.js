@@ -4,37 +4,6 @@ import React from "react";
 
 export class Arena extends React.Component
 {
-    // temp
-    #test_subscription;
-
-    async Subscribe()
-    {
-        this.#test_subscription = await this.props.messenger.Subscribe("Test", { handler: this.Test.bind(this) });
-    }
-
-    async Unsubscribe()
-    {
-        await this.props.messenger.Unsubscribe(this.#test_subscription);
-    }
-
-    async Test(publisher_data)
-    {
-        await this.Unsubscribe();
-
-        await new Promise((resolve, reject) =>
-        {
-            setTimeout(() =>
-            {
-                resolve();
-            }, 1000);
-        });
-
-        console.log("Waited a second.");
-
-        await this.Subscribe();
-    }
-    //
-
     render()
     {
         return (
@@ -63,16 +32,6 @@ export class Arena extends React.Component
             </div>
         );
     }
-
-    componentDidMount()
-    {
-        this.Subscribe();
-    }
-
-    componentWillUnmount()
-    {
-        this.Unsubscribe();
-    }
 }
 
 class Board extends React.Component
@@ -89,14 +48,26 @@ class Board extends React.Component
                 {
                     Array(this.props.model.Cell_Count()).fill(null).map((_, index) =>
                     {
-                        return (
-                            <Cell
-                                key={index}
-                                id={index}
-                                messenger={this.props.messenger}
-                                model={this.props.model}
-                            />
-                        );
+                        const stake = this.props.model.Stake(index);
+                        if (stake != null) {
+                            return (
+                                <Stake
+                                    key={index}
+                                    id={index}
+                                    messenger={this.props.messenger}
+                                    model={stake}
+                                />
+                            );
+                        } else {
+                            return (
+                                <Cell
+                                    key={index}
+                                    id={index}
+                                    messenger={this.props.messenger}
+                                    model={this.props.model}
+                                />
+                            );
+                        }
                     })
                 }
             </div>
@@ -106,6 +77,62 @@ class Board extends React.Component
 
 class Player extends React.Component
 {
+    #subscriptions;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+    }
+
+    async On_Player_Stake_Select({ index })
+    {
+        this.props.model.Select_Stake(index);
+
+        await new Promise((resolve, reject) =>
+        {
+            setTimeout(() =>
+            {
+                resolve();
+            }, 1000);
+        });
+
+        console.log(`Player ${this.props.model.ID()} selected ${this.props.model.Selected_Stake().Card().Name()}`);
+
+        this.forceUpdate(); // maybe temp
+    }
+
+    async Subscribe(publisher_name, handler)
+    {
+        publisher_name += "_" + this.props.model.ID();
+        this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
+    }
+
+    async Unsubscribe(publisher_name)
+    {
+        publisher_name += "_" + this.props.model.ID();
+        await this.props.messenger.Unsubscribe(this.#subscriptions[publisher_name]);
+    }
+
+    async Unsubscribe_All()
+    {
+        await Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
+    componentDidMount()
+    {
+        this.Subscribe("Player_Stake_Select", this.On_Player_Stake_Select);
+    }
+
+    componentWillUnmount()
+    {
+        this.Unsubscribe_All();
+    }
+
     render()
     {
         return (
@@ -125,17 +152,31 @@ class Hand extends React.Component
     {
         return (
             <div className="Hand">
-                {Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
                 {
-                    return (
-                        <Cell
-                            key={index}
-                            id={index}
-                            messenger={this.props.messenger}
-                            model={this.props.model}
-                        />
-                    );
-                })}
+                    Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
+                    {
+                        const stake = this.props.model.Stake(index);
+                        if (stake != null) {
+                            return (
+                                <Stake
+                                    key={index}
+                                    id={index}
+                                    messenger={this.props.messenger}
+                                    model={stake}
+                                />
+                            );
+                        } else {
+                            return (
+                                <Cell
+                                    key={index}
+                                    id={index}
+                                    messenger={this.props.messenger}
+                                    model={this.props.model}
+                                />
+                            );
+                        }
+                    })
+                }
             </div>
         );
     }
@@ -145,21 +186,13 @@ class Cell extends React.Component
 {
     render()
     {
-        const stake = this.props.model.Stake(this.props.id);
-
         return (
-            <div className="Cell">
-                {stake ?
-                    <Stake
-                        key={this.props.id}
-                        id={this.props.id}
-                        messenger={this.props.messenger}
-                        model={stake}
-                    /> :
-                    <div>
-                        {this.props.id}
-                    </div>
-                }
+            <div
+                className="Cell"
+            >
+                <div>
+                    {this.props.id}
+                </div>
             </div>
         );
     }
@@ -167,27 +200,36 @@ class Cell extends React.Component
 
 class Stake extends React.Component
 {
-    // temp
-    async Test()
+    async On_Click(event)
     {
-        await this.props.messenger.Publish("Test", {});
+        event.stopPropagation();
 
-        console.log("Finished waiting for all subscriptions.");
+        if (this.props.model.Is_On_Player()) {
+            await this.props.messenger.Publish("Player_Stake_Select_" + this.props.model.Claimant().ID(), {
+                data: {
+                    event,
+                    index: this.props.id,
+                },
+                disable_until_complete: true,
+            });
+        }
     }
-    //
 
     render()
     {
         const color = this.props.model.Color();
+        const is_on_player = this.props.model.Is_On_Player();
 
         return (
             <div
                 className="Stake"
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                    cursor: `${is_on_player ? "pointer" : "default"}`,
                 }}
-                onClick={() => this.Test.bind(this)()} // temp
+                onClick={event => this.On_Click.bind(this)(event)}
             >
+                {this.props.model.Card().Name()}
             </div>
         );
     }
