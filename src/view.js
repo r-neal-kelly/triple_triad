@@ -100,7 +100,7 @@ class Player extends React.Component
 
         console.log(`Player ${this.props.model.ID()} selected ${this.props.model.Selected_Stake().Card().Name()}`);
 
-        this.forceUpdate(); // maybe temp
+        this.forceUpdate(); // maybe temp, but we could hook into the player index into the publisher data, and let this method only act when the indices match and then just use the same event name for anywhere else in the application that would possible need to update. that way this module doesn't need to push something further up the tree and be aware of everything
     }
 
     async Subscribe(publisher_name, handler)
