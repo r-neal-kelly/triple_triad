@@ -519,6 +519,8 @@ export class Arena
     #rules;
     #board;
     #players;
+    #current_player_index;
+    #is_input_enabled;
 
     constructor({
         rules,
@@ -549,6 +551,10 @@ export class Arena
                         selection: selections[idx],
                     }));
                 }
+
+                this.#current_player_index = Math.floor(Math.random() * player_count);
+
+                this.#is_input_enabled = true;
             }
         }
     }
@@ -575,6 +581,26 @@ export class Arena
         } else {
             throw new Error("Invalid player index.");
         }
+    }
+
+    Current_Player_Index()
+    {
+        return this.#current_player_index;
+    }
+
+    Is_Input_Enabled()
+    {
+        return this.#is_input_enabled;
+    }
+
+    Enable_Input()
+    {
+        this.#is_input_enabled = true;
+    }
+
+    Disable_Input()
+    {
+        this.#is_input_enabled = false;
     }
 };
 
@@ -966,6 +992,12 @@ class Player
             throw new Error(`No selected stake to remove.`);
         }
     }
+
+    Is_On_Turn()
+    {
+        return true; // temp
+        //return this.Arena().Current_Player_Index() == this.ID();
+    }
 }
 
 /* Contains a card either on a player or on the board, and its current claimant. */
@@ -981,6 +1013,11 @@ class Stake
     {
         this.#claimant = claimant;
         this.#card = card;
+    }
+
+    Arena()
+    {
+        return this.Claimant().Arena();
     }
 
     Claimant()

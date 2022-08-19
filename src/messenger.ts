@@ -200,9 +200,7 @@ export default class Messenger
         Promise<void>
     {
         const publisher = this.#publishers[publisher_name];
-        if (publisher == null) {
-            throw new Error(`Publisher by the name of "${publisher_name}" does not exist.`);
-        } else {
+        if (publisher != null) {
             await publisher.Publish(publisher_info);
         }
     }

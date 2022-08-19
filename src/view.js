@@ -2,8 +2,38 @@ import "./view.css";
 
 import React from "react";
 
+const before_player_select_stake_msg = "Before_Player_Select_Stake";
+const on_player_select_stake_msg = "On_Player_Select_Stake";
+const after_player_select_stake_msg = "After_Player_Select_Stake";
+
 export class Arena extends React.Component
 {
+    // temp
+    componentDidMount()
+    {
+        this.props.messenger.Subscribe(before_player_select_stake_msg, {
+            handler: ({ player_index, stake_index }) =>
+            {
+                console.log(`Before Player Select Stake: player_index == ${player_index}, stake_index == ${stake_index}`);
+            }
+        });
+
+        this.props.messenger.Subscribe(on_player_select_stake_msg, {
+            handler: ({ player_index, stake_index }) =>
+            {
+                console.log(`On Player Select Stake: player_index == ${player_index}, stake_index == ${stake_index}`);
+            }
+        });
+
+        this.props.messenger.Subscribe(after_player_select_stake_msg, {
+            handler: ({ player_index, stake_index }) =>
+            {
+                console.log(`After Player Select Stake: player_index == ${player_index}, stake_index == ${stake_index}`);
+            }
+        });
+    }
+    // temp
+
     render()
     {
         return (
@@ -86,9 +116,9 @@ class Player extends React.Component
         this.#subscriptions = {};
     }
 
-    async On_Player_Stake_Select({ index })
+    async On_Player_Select_Stake({ stake_index })
     {
-        this.props.model.Select_Stake(index);
+        this.props.model.Select_Stake(stake_index);
 
         await new Promise((resolve, reject) =>
         {
@@ -100,18 +130,17 @@ class Player extends React.Component
 
         console.log(`Player ${this.props.model.ID()} selected ${this.props.model.Selected_Stake().Card().Name()}`);
 
-        this.forceUpdate(); // maybe temp, but we could hook into the player index into the publisher data, and let this method only act when the indices match and then just use the same event name for anywhere else in the application that would possible need to update. that way this module doesn't need to push something further up the tree and be aware of everything
+        // need to make sure this and setState can be called on multiple components without too much loss in efficiency
+        this.forceUpdate();
     }
 
     async Subscribe(publisher_name, handler)
     {
-        publisher_name += "_" + this.props.model.ID();
         this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
     }
 
     async Unsubscribe(publisher_name)
     {
-        publisher_name += "_" + this.props.model.ID();
         await this.props.messenger.Unsubscribe(this.#subscriptions[publisher_name]);
     }
 
@@ -125,7 +154,7 @@ class Player extends React.Component
 
     componentDidMount()
     {
-        this.Subscribe("Player_Stake_Select", this.On_Player_Stake_Select);
+        this.Subscribe(on_player_select_stake_msg + "_" + this.props.model.ID(), this.On_Player_Select_Stake);
     }
 
     componentWillUnmount()
@@ -204,14 +233,41 @@ class Stake extends React.Component
     {
         event.stopPropagation();
 
-        if (this.props.model.Is_On_Player()) {
-            await this.props.messenger.Publish("Player_Stake_Select_" + this.props.model.Claimant().ID(), {
-                data: {
-                    event,
-                    index: this.props.id,
-                },
-                disable_until_complete: true,
-            });
+        const arena = this.props.model.Arena();
+        if (arena.Is_Input_Enabled()) {
+            arena.Disable_Input();
+
+            if (this.props.model.Is_On_Player()) {
+                const player = this.props.model.Claimant();
+                if (player.Is_On_Turn()) {
+                    const player_index = player.ID();
+                    const stake_index = this.props.id;
+                    const publisher_info = Object.freeze({
+                        data: Object.freeze({
+                            player_index,
+                            stake_index,
+                        }),
+                        disable_until_complete: true,
+                    });
+
+                    await Promise.all([
+                        this.props.messenger.Publish(before_player_select_stake_msg + "_" + player_index, publisher_info),
+                        this.props.messenger.Publish(before_player_select_stake_msg, publisher_info),
+                    ]);
+
+                    await Promise.all([
+                        this.props.messenger.Publish(on_player_select_stake_msg + "_" + player_index, publisher_info),
+                        this.props.messenger.Publish(on_player_select_stake_msg, publisher_info),
+                    ]);
+
+                    await Promise.all([
+                        this.props.messenger.Publish(after_player_select_stake_msg + "_" + player_index, publisher_info),
+                        this.props.messenger.Publish(after_player_select_stake_msg, publisher_info),
+                    ]);
+                }
+            }
+
+            arena.Enable_Input();
         }
     }
 
