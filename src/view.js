@@ -261,8 +261,8 @@ class Player_Stake extends React.PureComponent
 
     async On_Player_Select_Stake({ stake_index })
     {
-        if (this.props.id == stake_index) {
-            this.props.model.Claimant().Select_Stake(this.props.id);
+        if (this.props.id === stake_index) {
+            this.props.model.Claimant().Select_Stake(stake_index);
             this.setState({ is_selected: true });
         } else {
             this.setState({ is_selected: false });
@@ -295,17 +295,14 @@ class Player_Stake extends React.PureComponent
 
     render()
     {
-        console.log("rendering");
-
         const color = this.props.model.Color();
         const is_of_human = this.props.model.Is_Of_Human();
-        const is_selected = this.props.model.Is_Selected();
         const is_selectable = this.props.model.Is_Selectable();
 
         return (
             <div
                 className={
-                    is_selected ?
+                    this.state.is_selected ?
                         `Player_Selected_Stake` :
                         `Player_Stake`
                 }
