@@ -520,6 +520,7 @@ export class Arena
     #board;
     #players;
     #turn_queue;
+    #turn_queue_index;
     #is_input_enabled;
 
     constructor({
@@ -552,6 +553,7 @@ export class Arena
                 }
 
                 this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
+                this.#turn_queue_index = 0;
 
                 this.#is_input_enabled = true;
             }
@@ -584,7 +586,7 @@ export class Arena
 
     Current_Player()
     {
-        return this.#turn_queue[0];
+        return this.#turn_queue[this.#turn_queue_index];
     }
 
     Current_Player_Index()
@@ -609,11 +611,10 @@ export class Arena
 
     Next_Turn()
     {
-        const current_player = this.Current_Player();
-        for (let idx = 0, end = this.#turn_queue.length - 1; idx < end; idx += 1) {
-            this.#turn_queue[idx] = this.#turn_queue[idx + 1];
+        this.#turn_queue_index += 1;
+        if (this.#turn_queue_index === this.#turn_queue.length) {
+            this.#turn_queue_index = 0;
         }
-        this.#turn_queue[this.#turn_queue.length - 1] = current_player;
     }
 };
 
@@ -1023,7 +1024,7 @@ class Player
 
     Is_On_Turn()
     {
-        return this.Arena().Current_Player() == this;
+        return this.Arena().Current_Player() === this;
     }
 }
 
@@ -1087,8 +1088,13 @@ class Stake
         return !this.Is_On_Player();
     }
 
+    Is_Selected()
+    {
+        return this.Claimant().Selected_Stake() == this;
+    }
+
     Is_Selectable()
     {
-        return this.Is_On_Player() && this.Claimant().Is_On_Turn();
+        return !this.Is_Selected() && this.Is_On_Player() && this.Claimant().Is_On_Turn();
     }
 }

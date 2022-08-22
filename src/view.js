@@ -166,16 +166,6 @@ class Player extends React.Component
     {
         this.props.model.Select_Stake(stake_index);
 
-        await new Promise((resolve, reject) =>
-        {
-            setTimeout(() =>
-            {
-                resolve();
-            }, 1000);
-        });
-
-        console.log(`Player ${this.props.model.ID()} selected ${this.props.model.Selected_Stake().Card().Name()}`);
-
         // need to make sure this and setState can be called on multiple components without too much loss in efficiency
         this.forceUpdate();
     }
@@ -212,6 +202,12 @@ class Player extends React.Component
     {
         return (
             <div className="Player">
+                <Player_Turn_Icon
+                    key={this.props.id}
+                    id={this.props.id}
+                    messenger={this.props.messenger}
+                    model={this.props.model}
+                />
                 <div className="Hand">
                     {
                         Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
@@ -228,6 +224,24 @@ class Player extends React.Component
                         })
                     }
                 </div>
+            </div>
+        );
+    }
+}
+
+class Player_Turn_Icon extends React.Component
+{
+    render()
+    {
+        return (
+            <div
+                className="Player_Turn_Icon"
+            >
+                {
+                    this.props.model.Is_On_Turn() ?
+                        `˅` :
+                        ``
+                }
             </div>
         );
     }
@@ -281,14 +295,20 @@ class Player_Stake extends React.Component
     {
         const color = this.props.model.Color();
         const is_of_human = this.props.model.Is_Of_Human();
+        const is_selected = this.props.model.Is_Selected();
         const is_selectable = this.props.model.Is_Selectable();
 
         return (
             <div
-                className="Player_Stake"
+                className={
+                    is_selected ?
+                        `Player_Selected_Stake` :
+                        `Player_Stake`
+                }
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                    cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`
+                    cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`,
+                    zIndex: `${this.props.id}`,
                 }}
                 onClick={
                     is_of_human && is_selectable ?

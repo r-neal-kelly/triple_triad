@@ -46,9 +46,31 @@ body,
     padding: 0;
 }
 
+.Board {
+    display: grid;
+    align-content: space-between;
+
+    margin: 0;
+    padding: 10px;
+
+    background-color: rgb(25, 158, 160);
+}
+
 .Player {
+    display: flex;
+    flex-direction: column;
+
     margin: 0;
     padding: 0;
+}
+
+.Player_Turn_Icon {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+
+    color: white;
+    text-align: center;
 }
 
 .Hand {
@@ -62,19 +84,10 @@ body,
     background-color: rgb(92, 25, 160);
 }
 
-.Board {
-    display: grid;
-    align-content: space-between;
-
-    margin: 0;
-    padding: 10px;
-
-    background-color: rgb(25, 158, 160);
-}
-
 .Board_Cell,
 .Board_Stake,
-.Player_Stake {
+.Player_Stake,
+.Player_Selected_Stake {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -88,10 +101,8 @@ body,
 
     text-align: center;
     color: white;
-
-    cursor: pointer;
 }
 
-.Board_Stake {
-    cursor: default;
+.Player_Selected_Stake {
+    border: 1px solid white;
 }
