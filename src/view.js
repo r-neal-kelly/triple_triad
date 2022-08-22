@@ -81,7 +81,7 @@ class Board extends React.Component
                         const stake = this.props.model.Stake(index);
                         if (stake != null) {
                             return (
-                                <Stake
+                                <Board_Stake
                                     key={index}
                                     id={index}
                                     messenger={this.props.messenger}
@@ -90,7 +90,7 @@ class Board extends React.Component
                             );
                         } else {
                             return (
-                                <Cell
+                                <Board_Cell
                                     key={index}
                                     id={index}
                                     messenger={this.props.messenger}
@@ -100,6 +100,52 @@ class Board extends React.Component
                         }
                     })
                 }
+            </div>
+        );
+    }
+}
+
+class Board_Cell extends React.Component
+{
+    async On_Click(event)
+    {
+        event.stopPropagation();
+
+        console.log("w");
+    }
+
+    render()
+    {
+        return (
+            <div
+                className="Board_Cell"
+                onClick={event => this.On_Click.bind(this)(event)}
+            >
+                <div>
+                    {this.props.id}
+                </div>
+            </div>
+        );
+    }
+}
+
+class Board_Stake extends React.Component
+{
+    async On_Click(event)
+    {
+        event.stopPropagation();
+    }
+
+    render()
+    {
+        return (
+            <div
+                className="Board_Stake"
+                onClick={event => this.On_Click.bind(this)(event)}
+            >
+                <div>
+                    {this.props.model.Card().Name()}
+                </div>
             </div>
         );
     }
@@ -166,68 +212,28 @@ class Player extends React.Component
     {
         return (
             <div className="Player">
-                <Hand
-                    messenger={this.props.messenger}
-                    model={this.props.model}
-                />
-            </div>
-        );
-    }
-}
-
-class Hand extends React.Component
-{
-    render()
-    {
-        return (
-            <div className="Hand">
-                {
-                    Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
+                <div className="Hand">
                     {
-                        const stake = this.props.model.Stake(index);
-                        if (stake != null) {
+                        Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
+                        {
+                            const stake = this.props.model.Stake(index);
                             return (
-                                <Stake
+                                <Player_Stake
                                     key={index}
                                     id={index}
                                     messenger={this.props.messenger}
                                     model={stake}
                                 />
                             );
-                        } else {
-                            return (
-                                <Cell
-                                    key={index}
-                                    id={index}
-                                    messenger={this.props.messenger}
-                                    model={this.props.model}
-                                />
-                            );
-                        }
-                    })
-                }
-            </div>
-        );
-    }
-}
-
-class Cell extends React.Component
-{
-    render()
-    {
-        return (
-            <div
-                className="Cell"
-            >
-                <div>
-                    {this.props.id}
+                        })
+                    }
                 </div>
             </div>
         );
     }
 }
 
-class Stake extends React.Component
+class Player_Stake extends React.Component
 {
     async On_Click(event)
     {
@@ -274,16 +280,21 @@ class Stake extends React.Component
     render()
     {
         const color = this.props.model.Color();
-        const is_on_player = this.props.model.Is_On_Player();
+        const is_of_human = this.props.model.Is_Of_Human();
+        const is_selectable = this.props.model.Is_Selectable();
 
         return (
             <div
-                className="Stake"
+                className="Player_Stake"
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                    cursor: `${is_on_player ? "pointer" : "default"}`,
+                    cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`
                 }}
-                onClick={event => this.On_Click.bind(this)(event)}
+                onClick={
+                    is_of_human && is_selectable ?
+                        event => this.On_Click.bind(this)(event) :
+                        () => { }
+                }
             >
                 {this.props.model.Card().Name()}
             </div>

@@ -72,8 +72,9 @@ body,
     background-color: rgb(25, 158, 160);
 }
 
-.Cell,
-.Stake {
+.Board_Cell,
+.Board_Stake,
+.Player_Stake {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -87,4 +88,10 @@ body,
 
     text-align: center;
     color: white;
+
+    cursor: pointer;
+}
+
+.Board_Stake {
+    cursor: default;
 }

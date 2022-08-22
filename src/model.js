@@ -519,7 +519,7 @@ export class Arena
     #rules;
     #board;
     #players;
-    #current_player_index;
+    #turn_queue;
     #is_input_enabled;
 
     constructor({
@@ -532,7 +532,6 @@ export class Arena
         } else if (selections == null) {
             throw new Error(`Must have an array of selections for each player.`);
         } else {
-            //this.#rules = rules.Clone();
             this.#rules = rules;
 
             this.#board = new Board({
@@ -552,7 +551,7 @@ export class Arena
                     }));
                 }
 
-                this.#current_player_index = Math.floor(Math.random() * player_count);
+                this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
 
                 this.#is_input_enabled = true;
             }
@@ -583,9 +582,14 @@ export class Arena
         }
     }
 
+    Current_Player()
+    {
+        return this.#turn_queue[0];
+    }
+
     Current_Player_Index()
     {
-        return this.#current_player_index;
+        return this.Current_Player().ID();
     }
 
     Is_Input_Enabled()
@@ -601,6 +605,15 @@ export class Arena
     Disable_Input()
     {
         this.#is_input_enabled = false;
+    }
+
+    Next_Turn()
+    {
+        const current_player = this.Current_Player();
+        for (let idx = 0, end = this.#turn_queue.length - 1; idx < end; idx += 1) {
+            this.#turn_queue[idx] = this.#turn_queue[idx + 1];
+        }
+        this.#turn_queue[this.#turn_queue.length - 1] = current_player;
     }
 };
 
@@ -724,6 +737,7 @@ export class Selection
 {
     #collection;
     #color;
+    #is_of_human;
     #cards;
 
     // if given a cards array, it will accept that as the selection,
@@ -731,6 +745,7 @@ export class Selection
     constructor({
         collection,
         color,
+        is_of_human = true,
 
         cards = null,
 
@@ -746,6 +761,7 @@ export class Selection
         } else {
             this.#collection = collection;
             this.#color = color;
+            this.#is_of_human = is_of_human;
 
             if (cards != null) {
                 if (cards.length < 1) {
@@ -777,6 +793,16 @@ export class Selection
         return this.#color;
     }
 
+    Is_Of_Human()
+    {
+        return this.#is_of_human;
+    }
+
+    Is_Of_Computer()
+    {
+        return !this.Is_Of_Human();
+    }
+
     Card_Count()
     {
         return this.#cards.length;
@@ -798,7 +824,7 @@ class Board
     #arena;
 
     #stake_count;
-    #stakes;
+    #cells_or_stakes;
 
     constructor({
         arena,
@@ -807,7 +833,7 @@ class Board
         this.#arena = arena;
 
         this.#stake_count = 0;
-        this.#stakes = Array(this.Cell_Count()).fill(null);
+        this.#cells_or_stakes = Array(this.Cell_Count()).fill(null);
     }
 
     Arena()
@@ -842,29 +868,21 @@ class Board
 
     Stake(index)
     {
-        if (index < 0 || index >= this.#stakes.length) {
+        if (index < 0 || index >= this.#cells_or_stakes.length) {
             throw new Error(`Invalid stake index.`);
         } else {
-            return this.#stakes[index];
+            return this.#cells_or_stakes[index];
         }
-
-        /*
-        if (row < this.Row_Count() && column < this.Column_Count()) {
-            return this.#stakes[row * column + column];
-        } else {
-            throw new Error("Invalid stake coordinates.");
-        }
-        */
     }
 
-    Place_Stake(player_index, stake_index)
+    Place_Stake(index, stake)
     {
         // calls Evaluate_Stake after adding the stake.
 
         // maybe we should have this on the player type as well, because we'll have to track which stake is selected.
     }
 
-    #Evaluate_Stake(row, column)
+    #Evaluate_Stake(index)
     {
         // this should update adjacents cards by evaluating the rules,
         // as if a card was just placed in this position.
@@ -932,6 +950,16 @@ class Player
         return this.Selection().Color();
     }
 
+    Is_Human()
+    {
+        return this.Selection().Is_Of_Human();
+    }
+
+    Is_Computer()
+    {
+        return this.Selection().Is_Of_Computer();
+    }
+
     Stake_Count()
     {
         return this.#stakes.length;
@@ -995,8 +1023,7 @@ class Player
 
     Is_On_Turn()
     {
-        return true; // temp
-        //return this.Arena().Current_Player_Index() == this.ID();
+        return this.Arena().Current_Player() == this;
     }
 }
 
@@ -1020,9 +1047,24 @@ class Stake
         return this.Claimant().Arena();
     }
 
+    Board()
+    {
+        return this.Claimant().Arena().Board();
+    }
+
     Claimant()
     {
         return this.#claimant;
+    }
+
+    Is_Of_Human()
+    {
+        return this.Claimant().Is_Human();
+    }
+
+    Is_Of_Computer()
+    {
+        return this.Claimant().Is_Computer();
     }
 
     Card()
@@ -1037,11 +1079,16 @@ class Stake
 
     Is_On_Player()
     {
-        return this.#claimant.Has_Stake(this);
+        return this.Claimant().Has_Stake(this);
     }
 
     Is_On_Board()
     {
         return !this.Is_On_Player();
+    }
+
+    Is_Selectable()
+    {
+        return this.Is_On_Player() && this.Claimant().Is_On_Turn();
     }
 }

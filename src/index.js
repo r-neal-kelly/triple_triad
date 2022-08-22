@@ -49,6 +49,7 @@ class Main extends React.Component
                         green: 0,
                         blue: 255,
                     }),
+                    is_of_human: true,
                     random_card_count: this.state.rules.Selection_Count(),
                 }),
                 new Model.Selection({
@@ -64,6 +65,7 @@ class Main extends React.Component
                         green: 0,
                         blue: 0,
                     }),
+                    is_of_human: false,
                     random_card_count: this.state.rules.Selection_Count(),
                 }),
             ],
