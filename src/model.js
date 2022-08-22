@@ -1090,7 +1090,7 @@ class Stake
 
     Is_Selected()
     {
-        return this.Claimant().Selected_Stake() == this;
+        return this.Claimant().Selected_Stake() === this;
     }
 
     Is_Selectable()

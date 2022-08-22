@@ -153,51 +153,6 @@ class Board_Stake extends React.Component
 
 class Player extends React.Component
 {
-    #subscriptions;
-
-    constructor(props)
-    {
-        super(props);
-
-        this.#subscriptions = {};
-    }
-
-    async On_Player_Select_Stake({ stake_index })
-    {
-        this.props.model.Select_Stake(stake_index);
-
-        // need to make sure this and setState can be called on multiple components without too much loss in efficiency
-        this.forceUpdate();
-    }
-
-    async Subscribe(publisher_name, handler)
-    {
-        this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
-    }
-
-    async Unsubscribe(publisher_name)
-    {
-        await this.props.messenger.Unsubscribe(this.#subscriptions[publisher_name]);
-    }
-
-    async Unsubscribe_All()
-    {
-        await Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
-    }
-
-    componentDidMount()
-    {
-        this.Subscribe(on_player_select_stake_msg + "_" + this.props.model.ID(), this.On_Player_Select_Stake);
-    }
-
-    componentWillUnmount()
-    {
-        this.Unsubscribe_All();
-    }
-
     render()
     {
         return (
@@ -247,8 +202,21 @@ class Player_Turn_Icon extends React.Component
     }
 }
 
-class Player_Stake extends React.Component
+class Player_Stake extends React.PureComponent
 {
+    #subscriptions;
+    state;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+
+        this.state = {};
+        this.state.is_selected = this.props.model.Is_Selected();
+    }
+
     async On_Click(event)
     {
         event.stopPropagation();
@@ -291,8 +259,44 @@ class Player_Stake extends React.Component
         }
     }
 
+    async On_Player_Select_Stake({ stake_index })
+    {
+        if (this.props.id == stake_index) {
+            this.props.model.Claimant().Select_Stake(this.props.id);
+            this.setState({ is_selected: true });
+        } else {
+            this.setState({ is_selected: false });
+        }
+    }
+
+    componentDidMount()
+    {
+        const player = this.props.model.Claimant();
+        const player_index = player.ID();
+
+        [
+            [
+                on_player_select_stake_msg + "_" + player_index,
+                this.On_Player_Select_Stake,
+            ],
+        ].forEach(async function ([publisher_name, handler])
+        {
+            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
+        }, this);
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
     render()
     {
+        console.log("rendering");
+
         const color = this.props.model.Color();
         const is_of_human = this.props.model.Is_Of_Human();
         const is_selected = this.props.model.Is_Selected();
