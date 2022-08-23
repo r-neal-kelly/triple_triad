@@ -2,6 +2,11 @@
     box-sizing: border-box;
 }
 
+:root {
+    --card_height: 150px;
+    --card_width: 100px;
+}
+
 html,
 body,
 .Root {
@@ -62,24 +67,28 @@ body,
 
     margin: 0;
     padding: 0;
+
+    position: relative;
 }
 
 .Player_Turn_Icon {
+    height: 20px;
     width: 100%;
     margin: 0;
     padding: 0;
+
+    position: absolute;
+    top: -20px;
 
     color: white;
     text-align: center;
 }
 
 .Hand {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    position: relative;
 
     margin: 0;
-    padding: 10px;
+    padding: 0;
 
     background-color: rgb(92, 25, 160);
 }
@@ -92,15 +101,35 @@ body,
     flex-direction: column;
     justify-content: center;
 
-    height: 150px;
-    width: 100px;
-    margin: 10px;
+    height: var(--card_height);
+    width: var(--card_width);
+    margin: 0;
     padding: 10px;
 
     background-color: transparent;
 
     text-align: center;
     color: white;
+
+    cursor: default;
+}
+
+.Board_Cell,
+.Board_Stake {
+    margin: 10px;
+}
+
+.Player_Stake,
+.Player_Selected_Stake {
+    position: relative;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.Player_Stake {
+    border: 1px solid black;
 }
 
 .Player_Selected_Stake {

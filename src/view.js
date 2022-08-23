@@ -2,44 +2,23 @@ import "./view.css";
 
 import React from "react";
 
-const before_player_select_stake_msg = "Before_Player_Select_Stake";
-const on_player_select_stake_msg = "On_Player_Select_Stake";
-const after_player_select_stake_msg = "After_Player_Select_Stake";
+const before_player_select_stake_msg = `Before_Player_Select_Stake`;
+const on_player_select_stake_msg = `On_Player_Select_Stake`;
+const after_player_select_stake_msg = `After_Player_Select_Stake`;
+
+const before_player_place_stake_msg = `Before_Player_Place_Stake`;
+const on_player_place_stake_msg = `On_Player_Place_Stake`;
+const after_player_place_stake_msg = `After_Player_Place_Stake`;
 
 export class Arena extends React.Component
 {
-    // temp
-    componentDidMount()
-    {
-        this.props.messenger.Subscribe(before_player_select_stake_msg, {
-            handler: ({ player_index, stake_index }) =>
-            {
-                console.log(`Before Player Select Stake: player_index == ${player_index}, stake_index == ${stake_index}`);
-            }
-        });
-
-        this.props.messenger.Subscribe(on_player_select_stake_msg, {
-            handler: ({ player_index, stake_index }) =>
-            {
-                console.log(`On Player Select Stake: player_index == ${player_index}, stake_index == ${stake_index}`);
-            }
-        });
-
-        this.props.messenger.Subscribe(after_player_select_stake_msg, {
-            handler: ({ player_index, stake_index }) =>
-            {
-                console.log(`After Player Select Stake: player_index == ${player_index}, stake_index == ${stake_index}`);
-            }
-        });
-    }
-    // temp
-
     render()
     {
         return (
             <div className="Arena">
                 <Player
                     key={0}
+                    id={0}
                     messenger={this.props.messenger}
                     model={this.props.model.Player(0)}
                 />
@@ -54,6 +33,7 @@ export class Arena extends React.Component
                     return (
                         <Player
                             key={player_index}
+                            id={player_index}
                             messenger={this.props.messenger}
                             model={this.props.model.Player(player_index)}
                         />
@@ -66,6 +46,45 @@ export class Arena extends React.Component
 
 class Board extends React.Component
 {
+    #subscriptions;
+    state;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+
+        this.state = {};
+    }
+
+    async On_Player_Place_Stake({ cell_index })
+    {
+        this.props.model.Place_Player_Selected_Stake(cell_index);
+        this.forceUpdate();
+    }
+
+    componentDidMount()
+    {
+        [
+            [
+                on_player_place_stake_msg,
+                this.On_Player_Place_Stake,
+            ],
+        ].forEach(async function ([publisher_name, handler])
+        {
+            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
+        }, this);
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
     render()
     {
         return (
@@ -105,13 +124,78 @@ class Board extends React.Component
     }
 }
 
-class Board_Cell extends React.Component
+class Board_Cell extends React.PureComponent
 {
+    #subscriptions;
+    state;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+
+        this.state = {};
+        this.state.is_on_human_turn = this.props.model.Is_On_Human_Turn();
+        this.state.is_selectable = this.props.model.Is_Cell_Selectable(this.props.id);
+    }
+
     async On_Click(event)
     {
         event.stopPropagation();
 
-        console.log("w");
+        if (this.state.is_selectable) {
+            const player_index = this.props.model.Current_Player_Index();
+            const cell_index = this.props.id;
+            const publisher_info = Object.freeze({
+                data: Object.freeze({
+                    player_index,
+                    cell_index,
+                }),
+                disable_until_complete: true,
+            });
+
+            await Promise.all([
+                this.props.messenger.Publish(before_player_place_stake_msg + `_` + player_index, publisher_info),
+                this.props.messenger.Publish(before_player_place_stake_msg, publisher_info),
+            ]);
+
+            await Promise.all([
+                this.props.messenger.Publish(on_player_place_stake_msg + `_` + player_index, publisher_info),
+                this.props.messenger.Publish(on_player_place_stake_msg, publisher_info),
+            ]);
+
+            await Promise.all([
+                this.props.messenger.Publish(after_player_place_stake_msg + `_` + player_index, publisher_info),
+                this.props.messenger.Publish(after_player_place_stake_msg, publisher_info),
+            ]);
+        }
+    }
+
+    async After_Player_Select_Stake()
+    {
+        this.setState({ is_selectable: this.props.model.Is_Cell_Selectable(this.props.id) });
+    }
+
+    componentDidMount()
+    {
+        [
+            [
+                after_player_select_stake_msg,
+                this.After_Player_Select_Stake,
+            ],
+        ].forEach(async function ([publisher_name, handler])
+        {
+            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
+        }, this);
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
     }
 
     render()
@@ -119,6 +203,9 @@ class Board_Cell extends React.Component
         return (
             <div
                 className="Board_Cell"
+                style={{
+                    cursor: `${this.state.is_on_human_turn && this.state.is_selectable ? `pointer` : `default`}`,
+                }}
                 onClick={event => this.On_Click.bind(this)(event)}
             >
                 <div>
@@ -131,17 +218,16 @@ class Board_Cell extends React.Component
 
 class Board_Stake extends React.Component
 {
-    async On_Click(event)
-    {
-        event.stopPropagation();
-    }
-
     render()
     {
+        const color = this.props.model.Color();
+
         return (
             <div
                 className="Board_Stake"
-                onClick={event => this.On_Click.bind(this)(event)}
+                style={{
+                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                }}
             >
                 <div>
                     {this.props.model.Card().Name()}
@@ -153,25 +239,72 @@ class Board_Stake extends React.Component
 
 class Player extends React.Component
 {
+    #subscriptions;
+    state;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+
+        this.state = {};
+    }
+
+    async After_This_Player_Place_Stake()
+    {
+        this.forceUpdate();
+    }
+
+    componentDidMount()
+    {
+        const player_index = this.props.id;
+
+        [
+            [
+                after_player_place_stake_msg + `_` + player_index,
+                this.After_This_Player_Place_Stake,
+            ],
+        ].forEach(async function ([publisher_name, handler])
+        {
+            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
+        }, this);
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
     render()
     {
+        const stake_count = this.props.model.Stake_Count();
+
         return (
-            <div className="Player">
+            <div
+                className="Player"
+            >
                 <Player_Turn_Icon
                     key={this.props.id}
                     id={this.props.id}
                     messenger={this.props.messenger}
                     model={this.props.model}
                 />
-                <div className="Hand">
+                <div
+                    className="Hand"
+                >
                     {
-                        Array(this.props.model.Stake_Count()).fill(null).map((_, index) =>
+                        Array(stake_count).fill(null).map((_, index) =>
                         {
                             const stake = this.props.model.Stake(index);
                             return (
                                 <Player_Stake
                                     key={index}
                                     id={index}
+                                    count={stake_count}
                                     messenger={this.props.messenger}
                                     model={stake}
                                 />
@@ -310,6 +443,7 @@ class Player_Stake extends React.PureComponent
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                     cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`,
                     zIndex: `${this.props.id}`,
+                    top: `calc((0px - var(--card_height)) / 3 * ${this.props.id})`,
                 }}
                 onClick={
                     is_of_human && is_selectable ?

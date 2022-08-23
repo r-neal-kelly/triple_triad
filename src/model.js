@@ -609,6 +609,16 @@ export class Arena
         this.#is_input_enabled = false;
     }
 
+    Is_On_Human_Turn()
+    {
+        return this.Current_Player().Is_Human();
+    }
+
+    Is_On_Computer_Turn()
+    {
+        return !this.Is_On_Human_Turn();
+    }
+
     Next_Turn()
     {
         this.#turn_queue_index += 1;
@@ -825,7 +835,7 @@ class Board
     #arena;
 
     #stake_count;
-    #cells_or_stakes;
+    #cells;
 
     constructor({
         arena,
@@ -834,7 +844,7 @@ class Board
         this.#arena = arena;
 
         this.#stake_count = 0;
-        this.#cells_or_stakes = Array(this.Cell_Count()).fill(null);
+        this.#cells = Array(this.Cell_Count()).fill(null);
     }
 
     Arena()
@@ -869,26 +879,59 @@ class Board
 
     Stake(index)
     {
-        if (index < 0 || index >= this.#cells_or_stakes.length) {
+        if (index < 0 || index >= this.#cells.length) {
             throw new Error(`Invalid stake index.`);
         } else {
-            return this.#cells_or_stakes[index];
+            return this.#cells[index];
         }
     }
 
-    Place_Stake(index, stake)
+    Place_Player_Selected_Stake(index)
     {
-        // calls Evaluate_Stake after adding the stake.
+        if (this.#cells[index] != null) {
+            throw new Error(`Stake already exists in cell ${index}.`);
+        } else {
+            const current_player = this.Current_Player();
+            const selected_stake = current_player.Remove_Selected_Stake();
 
-        // maybe we should have this on the player type as well, because we'll have to track which stake is selected.
+            this.#cells[index] = selected_stake;
+            this.#stake_count += 1;
+
+            this.#Evaluate_Cell(index);
+        }
     }
 
-    #Evaluate_Stake(index)
+    #Evaluate_Cell(index)
     {
         // this should update adjacents cards by evaluating the rules,
         // as if a card was just placed in this position.
         // however, it will be used recursively for cards that have already
         // been placed to detect if a combo should occur.
+    }
+
+    Current_Player()
+    {
+        return this.Arena().Current_Player();
+    }
+
+    Current_Player_Index()
+    {
+        return this.Arena().Current_Player_Index();
+    }
+
+    Is_On_Human_Turn()
+    {
+        return this.Current_Player().Is_Human();
+    }
+
+    Is_On_Computer_Turn()
+    {
+        return this.Current_Player().Is_Computer();
+    }
+
+    Is_Cell_Selectable(index)
+    {
+        return this.Current_Player().Has_Selected_Stake() && this.Stake(index) == null;
     }
 }
 
@@ -998,6 +1041,11 @@ class Player
         } else {
             return null;
         }
+    }
+
+    Has_Selected_Stake()
+    {
+        return this.Selected_Stake() != null;
     }
 
     Remove_Selected_Stake()
