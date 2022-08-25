@@ -10,7 +10,7 @@ const before_player_place_stake_msg = `Before_Player_Place_Stake`;
 const on_player_place_stake_msg = `On_Player_Place_Stake`;
 const after_player_place_stake_msg = `After_Player_Place_Stake`;
 
-export class Arena extends React.Component
+export class Arena extends React.PureComponent
 {
     render()
     {
@@ -44,7 +44,7 @@ export class Arena extends React.Component
     }
 }
 
-class Board extends React.Component
+class Board extends React.PureComponent
 {
     #subscriptions;
     state;
@@ -225,7 +225,7 @@ class Board_Cell extends React.PureComponent
     }
 }
 
-class Board_Stake extends React.Component
+class Board_Stake extends React.PureComponent
 {
     render()
     {
@@ -246,7 +246,7 @@ class Board_Stake extends React.Component
     }
 }
 
-class Player extends React.Component
+class Player extends React.PureComponent
 {
     #subscriptions;
     state;
@@ -304,6 +304,9 @@ class Player extends React.Component
                 />
                 <div
                     className="Hand"
+                    style={{
+                        height: `calc(var(--card_height) / 3 * 2 * ${stake_count})`,
+                    }}
                 >
                     {
                         Array(stake_count).fill(null).map((_, index) =>
@@ -326,7 +329,7 @@ class Player extends React.Component
     }
 }
 
-class Player_Turn_Icon extends React.Component
+class Player_Turn_Icon extends React.PureComponent
 {
     render()
     {
