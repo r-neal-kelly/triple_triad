@@ -177,12 +177,21 @@ class Board_Cell extends React.PureComponent
         this.setState({ is_selectable: this.props.model.Is_Cell_Selectable(this.props.id) });
     }
 
+    async After_Player_Place_Stake()
+    {
+        this.setState({ is_selectable: false });
+    }
+
     componentDidMount()
     {
         [
             [
                 after_player_select_stake_msg,
                 this.After_Player_Select_Stake,
+            ],
+            [
+                after_player_place_stake_msg,
+                this.After_Player_Place_Stake,
             ],
         ].forEach(async function ([publisher_name, handler])
         {
@@ -392,7 +401,7 @@ class Player_Stake extends React.PureComponent
         }
     }
 
-    async On_Player_Select_Stake({ stake_index })
+    async On_This_Player_Select_Stake({ stake_index })
     {
         if (this.props.id === stake_index) {
             this.props.model.Claimant().Select_Stake(stake_index);
@@ -400,6 +409,11 @@ class Player_Stake extends React.PureComponent
         } else {
             this.setState({ is_selected: false });
         }
+    }
+
+    async After_This_Player_Place_Stake()
+    {
+        this.setState({ is_selected: false });
     }
 
     componentDidMount()
@@ -410,7 +424,11 @@ class Player_Stake extends React.PureComponent
         [
             [
                 on_player_select_stake_msg + "_" + player_index,
-                this.On_Player_Select_Stake,
+                this.On_This_Player_Select_Stake,
+            ],
+            [
+                after_player_place_stake_msg + `_` + player_index,
+                this.After_This_Player_Place_Stake,
             ],
         ].forEach(async function ([publisher_name, handler])
         {
