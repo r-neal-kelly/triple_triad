@@ -87,6 +87,7 @@ body,
 .Hand {
     position: relative;
 
+    width: var(--card_width);
     margin: 0;
     padding: 0;
 
