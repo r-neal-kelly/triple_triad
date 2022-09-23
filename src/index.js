@@ -7,8 +7,11 @@ import * as View from "./view.js";
 
 class Main extends React.Component
 {
-    #messenger; // this maybe should be on the state object, so that we have a clean sweep of it when this is regen'd
-    state;
+    #messenger;
+    #packs;
+    #rules;
+    #collection;
+    #arena;
 
     constructor(props)
     {
@@ -16,12 +19,10 @@ class Main extends React.Component
 
         this.#messenger = new Messenger();
 
-        this.state = {};
-
-        this.state.packs = new Model.Packs();
+        this.#packs = new Model.Packs();
 
         // to be serialized
-        this.state.rules = new Model.Rules({
+        this.#rules = new Model.Rules({
             row_count: 3,
             column_count: 3,
             player_count: 2,
@@ -31,31 +32,31 @@ class Main extends React.Component
         });
 
         // to be serialized
-        this.state.collection = new Model.Collection({
+        this.#collection = new Model.Collection({
             default_shuffle: new Model.Shuffle({
-                pack: this.state.packs.Random_Pack(),
+                pack: this.#packs.Random_Pack(),
                 min_tier_index: 0,
                 max_tier_index: 0,
             }),
         });
 
-        this.state.arena = new Model.Arena({
-            rules: this.state.rules,
+        this.#arena = new Model.Arena({
+            rules: this.#rules,
             selections: [
                 new Model.Selection({
-                    collection: this.state.collection,
+                    collection: this.#collection,
                     color: new Model.Color({
                         red: 0,
                         green: 0,
                         blue: 255,
                     }),
                     is_of_human: true,
-                    random_card_count: this.state.rules.Selection_Count(),
+                    random_card_count: this.#rules.Selection_Count(),
                 }),
                 new Model.Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
-                            pack: this.state.packs.Random_Pack(),
+                            pack: this.#packs.Random_Pack(),
                             min_tier_index: 0,
                             max_tier_index: 0,
                         }),
@@ -66,10 +67,18 @@ class Main extends React.Component
                         blue: 0,
                     }),
                     is_of_human: false,
-                    random_card_count: this.state.rules.Selection_Count(),
+                    random_card_count: this.#rules.Selection_Count(),
                 }),
             ],
         });
+    }
+
+    componentDidMount()
+    {
+    }
+
+    componentWillUnmount()
+    {
     }
 
     render()
@@ -81,7 +90,7 @@ class Main extends React.Component
                 </h1>
                 <View.Arena
                     messenger={this.#messenger}
-                    model={this.state.arena}
+                    model={this.#arena}
                 />
             </div>
         );

@@ -10,8 +10,29 @@ const before_player_place_stake_msg = `Before_Player_Place_Stake`;
 const on_player_place_stake_msg = `On_Player_Place_Stake`;
 const after_player_place_stake_msg = `After_Player_Place_Stake`;
 
-export class Arena extends React.PureComponent
+export class Arena extends React.Component
 {
+    #subscriptions;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+    }
+
+    componentDidMount()
+    {
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
     render()
     {
         return (
@@ -44,18 +65,15 @@ export class Arena extends React.PureComponent
     }
 }
 
-class Board extends React.PureComponent
+class Board extends React.Component
 {
     #subscriptions;
-    state;
 
     constructor(props)
     {
         super(props);
 
         this.#subscriptions = {};
-
-        this.state = {};
     }
 
     async On_Player_Place_Stake({ cell_index })
@@ -124,62 +142,68 @@ class Board extends React.PureComponent
     }
 }
 
-class Board_Cell extends React.PureComponent
+class Board_Cell extends React.Component
 {
     #subscriptions;
-    state;
 
     constructor(props)
     {
         super(props);
 
         this.#subscriptions = {};
-
-        this.state = {};
-        this.state.is_on_human_turn = this.props.model.Is_On_Human_Turn();
-        this.state.is_selectable = this.props.model.Is_Cell_Selectable(this.props.id);
     }
 
     async On_Click(event)
     {
         event.stopPropagation();
 
-        if (this.state.is_selectable) {
-            const player_index = this.props.model.Current_Player_Index();
-            const cell_index = this.props.id;
-            const publisher_info = Object.freeze({
-                data: Object.freeze({
-                    player_index,
-                    cell_index,
-                }),
-                disable_until_complete: true,
-            });
+        const arena = this.props.model.Arena();
+        if (arena.Is_Input_Enabled()) {
+            arena.Disable_Input();
 
-            await Promise.all([
-                this.props.messenger.Publish(before_player_place_stake_msg + `_` + player_index, publisher_info),
-                this.props.messenger.Publish(before_player_place_stake_msg, publisher_info),
-            ]);
+            if (this.props.model.Is_Cell_Selectable(this.props.id)) {
+                const player_index = this.props.model.Current_Player_Index();
+                const cell_index = this.props.id;
+                const publisher_info = Object.freeze({
+                    data: Object.freeze({
+                        player_index,
+                        cell_index,
+                    }),
+                    disable_until_complete: true,
+                });
 
-            await Promise.all([
-                this.props.messenger.Publish(on_player_place_stake_msg + `_` + player_index, publisher_info),
-                this.props.messenger.Publish(on_player_place_stake_msg, publisher_info),
-            ]);
+                await Promise.all([
+                    this.props.messenger.Publish(before_player_place_stake_msg + `_` + player_index, publisher_info),
+                    this.props.messenger.Publish(before_player_place_stake_msg, publisher_info),
+                ]);
 
-            await Promise.all([
-                this.props.messenger.Publish(after_player_place_stake_msg + `_` + player_index, publisher_info),
-                this.props.messenger.Publish(after_player_place_stake_msg, publisher_info),
-            ]);
+                await Promise.all([
+                    this.props.messenger.Publish(on_player_place_stake_msg + `_` + player_index, publisher_info),
+                    this.props.messenger.Publish(on_player_place_stake_msg, publisher_info),
+                ]);
+
+                await Promise.all([
+                    this.props.messenger.Publish(after_player_place_stake_msg + `_` + player_index, publisher_info),
+                    this.props.messenger.Publish(after_player_place_stake_msg, publisher_info),
+                ]);
+            }
+
+            arena.Enable_Input();
         }
     }
 
     async After_Player_Select_Stake()
     {
-        this.setState({ is_selectable: this.props.model.Is_Cell_Selectable(this.props.id) });
+        if (this.props.model.Is_Cell_Selectable(this.props.id)) {
+            // we only need to update the cursor for empty cells
+            this.forceUpdate();
+        }
     }
 
     async After_Player_Place_Stake()
     {
-        this.setState({ is_selectable: false });
+        // we update all cells because they could all potentially change after one stake being placed
+        this.forceUpdate();
     }
 
     componentDidMount()
@@ -209,11 +233,14 @@ class Board_Cell extends React.PureComponent
 
     render()
     {
+        const is_on_human_turn = this.props.model.Is_On_Human_Turn();
+        const is_selectable = this.props.model.Is_Cell_Selectable(this.props.id);
+
         return (
             <div
                 className="Board_Cell"
                 style={{
-                    cursor: `${this.state.is_on_human_turn && this.state.is_selectable ? `pointer` : `default`}`,
+                    cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
                 }}
                 onClick={event => this.On_Click.bind(this)(event)}
             >
@@ -225,8 +252,29 @@ class Board_Cell extends React.PureComponent
     }
 }
 
-class Board_Stake extends React.PureComponent
+class Board_Stake extends React.Component
 {
+    #subscriptions;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+    }
+
+    componentDidMount()
+    {
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
     render()
     {
         const color = this.props.model.Color();
@@ -246,18 +294,15 @@ class Board_Stake extends React.PureComponent
     }
 }
 
-class Player extends React.PureComponent
+class Player extends React.Component
 {
     #subscriptions;
-    state;
 
     constructor(props)
     {
         super(props);
 
         this.#subscriptions = {};
-
-        this.state = {};
     }
 
     async After_This_Player_Place_Stake()
@@ -329,8 +374,29 @@ class Player extends React.PureComponent
     }
 }
 
-class Player_Turn_Icon extends React.PureComponent
+class Player_Turn_Icon extends React.Component
 {
+    #subscriptions;
+
+    constructor(props)
+    {
+        super(props);
+
+        this.#subscriptions = {};
+    }
+
+    componentDidMount()
+    {
+    }
+
+    componentWillUnmount()
+    {
+        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        {
+            return this.props.messenger.Unsubscribe(subscription);
+        }));
+    }
+
     render()
     {
         return (
@@ -347,19 +413,15 @@ class Player_Turn_Icon extends React.PureComponent
     }
 }
 
-class Player_Stake extends React.PureComponent
+class Player_Stake extends React.Component
 {
     #subscriptions;
-    state;
 
     constructor(props)
     {
         super(props);
 
         this.#subscriptions = {};
-
-        this.state = {};
-        this.state.is_selected = this.props.model.Is_Selected();
     }
 
     async On_Click(event)
@@ -408,15 +470,9 @@ class Player_Stake extends React.PureComponent
     {
         if (this.props.id === stake_index) {
             this.props.model.Claimant().Select_Stake(stake_index);
-            this.setState({ is_selected: true });
-        } else {
-            this.setState({ is_selected: false });
         }
-    }
 
-    async After_This_Player_Place_Stake()
-    {
-        this.setState({ is_selected: false });
+        this.forceUpdate();
     }
 
     componentDidMount()
@@ -428,10 +484,6 @@ class Player_Stake extends React.PureComponent
             [
                 on_player_select_stake_msg + "_" + player_index,
                 this.On_This_Player_Select_Stake,
-            ],
-            [
-                after_player_place_stake_msg + `_` + player_index,
-                this.After_This_Player_Place_Stake,
             ],
         ].forEach(async function ([publisher_name, handler])
         {
@@ -456,7 +508,7 @@ class Player_Stake extends React.PureComponent
         return (
             <div
                 className={
-                    this.state.is_selected ?
+                    this.props.model.Is_Selected() ?
                         `Player_Selected_Stake` :
                         `Player_Stake`
                 }
