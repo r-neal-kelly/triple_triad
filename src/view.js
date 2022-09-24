@@ -78,7 +78,7 @@ class Board extends React.Component
 
     async On_Player_Place_Stake({ cell_index })
     {
-        this.props.model.Place_Player_Selected_Stake(cell_index);
+        this.props.model.Place_Current_Player_Selected_Stake(cell_index);
         this.forceUpdate();
     }
 
@@ -435,7 +435,7 @@ class Player_Stake extends React.Component
             if (this.props.model.Is_On_Player()) {
                 const player = this.props.model.Claimant();
                 if (player.Is_On_Turn()) {
-                    const player_index = player.ID();
+                    const player_index = player.Index();
                     const stake_index = this.props.id;
                     const publisher_info = Object.freeze({
                         data: Object.freeze({
@@ -478,7 +478,7 @@ class Player_Stake extends React.Component
     componentDidMount()
     {
         const player = this.props.model.Claimant();
-        const player_index = player.ID();
+        const player_index = player.Index();
 
         [
             [

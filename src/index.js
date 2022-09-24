@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import Messenger from "./messenger.ts";
-import * as Model from "./model.js";
+import * as Model from "./model.ts";
 import * as View from "./view.js";
 
 class Main extends React.Component
@@ -51,7 +51,7 @@ class Main extends React.Component
                         blue: 255,
                     }),
                     is_of_human: true,
-                    random_card_count: this.#rules.Selection_Count(),
+                    random_card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Selection({
                     collection: new Model.Collection({
@@ -67,7 +67,7 @@ class Main extends React.Component
                         blue: 0,
                     }),
                     is_of_human: false,
-                    random_card_count: this.#rules.Selection_Count(),
+                    random_card_count: this.#rules.Selection_Card_Count(),
                 }),
             ],
         });
