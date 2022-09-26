@@ -5,13 +5,13 @@ import React from "react";
 import * as Messenger_m from "./messenger";
 import * as Model from "./model";
 
-const before_player_select_stake_msg = `Before_Player_Select_Stake`;
-const on_player_select_stake_msg = `On_Player_Select_Stake`;
-const after_player_select_stake_msg = `After_Player_Select_Stake`;
+const before_player_select_stake_msg: Messenger_m.Publisher_Name = `Before_Player_Select_Stake`;
+const on_player_select_stake_msg: Messenger_m.Publisher_Name = `On_Player_Select_Stake`;
+const after_player_select_stake_msg: Messenger_m.Publisher_Name = `After_Player_Select_Stake`;
 
-const before_player_place_stake_msg = `Before_Player_Place_Stake`;
-const on_player_place_stake_msg = `On_Player_Place_Stake`;
-const after_player_place_stake_msg = `After_Player_Place_Stake`;
+const before_player_place_stake_msg: Messenger_m.Publisher_Name = `Before_Player_Place_Stake`;
+const on_player_place_stake_msg: Messenger_m.Publisher_Name = `On_Player_Place_Stake`;
+const after_player_place_stake_msg: Messenger_m.Publisher_Name = `After_Player_Place_Stake`;
 
 class Subscriptions
 {
@@ -110,7 +110,7 @@ export class Arena extends React.Component<Arena_Props>
                 />
                 {Array(this.props.model.Player_Count() - 1).fill(null).map((_, index) =>
                 {
-                    const player_index = index + 1;
+                    const player_index: Model.Player_Index = index + 1;
 
                     return (
                         <Player
@@ -146,7 +146,8 @@ class Board extends React.Component<Board_Props>
         cell_index,
     }: {
         cell_index: Model.Cell_Index,
-    })
+    }):
+        Promise<void>
     {
         this.props.model.Place_Current_Player_Selected_Stake(cell_index);
         this.forceUpdate();
@@ -182,7 +183,7 @@ class Board extends React.Component<Board_Props>
                 {
                     Array(this.props.model.Cell_Count()).fill(null).map((_, index) =>
                     {
-                        const stake = this.props.model.Stake(index);
+                        const stake: Model.Stake | null = this.props.model.Stake(index);
                         if (stake != null) {
                             return (
                                 <Board_Stake
@@ -226,18 +227,19 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    async On_Click(event: React.SyntheticEvent)
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
     {
         event.stopPropagation();
 
-        const arena = this.props.model.Arena();
+        const arena: Model.Arena = this.props.model.Arena();
         if (arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
             if (this.props.model.Is_Cell_Selectable(this.props.index)) {
-                const player_index = this.props.model.Current_Player_Index();
-                const cell_index = this.props.index;
-                const publisher_info = Object.freeze({
+                const player_index: Model.Player_Index = this.props.model.Current_Player_Index();
+                const cell_index: Model.Cell_Index = this.props.index;
+                const publisher_info: Messenger_m.Publisher_Info = Object.freeze({
                     data: Object.freeze({
                         player_index,
                         cell_index,
@@ -265,7 +267,8 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         }
     }
 
-    async After_Player_Select_Stake()
+    async After_Player_Select_Stake():
+        Promise<void>
     {
         if (this.props.model.Is_Cell_Selectable(this.props.index)) {
             // we only need to update the cursor for empty cells
@@ -273,7 +276,8 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         }
     }
 
-    async After_Player_Place_Stake()
+    async After_Player_Place_Stake():
+        Promise<void>
     {
         // we update all cells because they could all potentially change after one stake being placed
         this.forceUpdate();
@@ -303,8 +307,8 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     render():
         JSX.Element
     {
-        const is_on_human_turn = this.props.model.Is_On_Human_Turn();
-        const is_selectable = this.props.model.Is_Cell_Selectable(this.props.index);
+        const is_on_human_turn: boolean = this.props.model.Is_On_Human_Turn();
+        const is_selectable: boolean = this.props.model.Is_Cell_Selectable(this.props.index);
 
         return (
             <div
@@ -355,7 +359,7 @@ class Board_Stake extends React.Component<Board_Stake_Props>
     render():
         JSX.Element
     {
-        const color = this.props.model.Color();
+        const color: Model.Color = this.props.model.Color();
 
         return (
             <div
@@ -389,7 +393,8 @@ class Player extends React.Component<Player_Props>
         this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    async After_This_Player_Place_Stake()
+    async After_This_Player_Place_Stake():
+        Promise<void>
     {
         this.forceUpdate();
     }
@@ -397,7 +402,7 @@ class Player extends React.Component<Player_Props>
     componentDidMount():
         void
     {
-        const player_index = this.props.index;
+        const player_index: Model.Player_Index = this.props.index;
 
         this.#subscriptions.Subscribe([
             [
@@ -416,7 +421,7 @@ class Player extends React.Component<Player_Props>
     render():
         JSX.Element
     {
-        const stake_count = this.props.model.Stake_Count();
+        const stake_count: Model.Stake_Count = this.props.model.Stake_Count();
 
         return (
             <div
@@ -437,7 +442,7 @@ class Player extends React.Component<Player_Props>
                     {
                         Array(stake_count).fill(null).map((_, index) =>
                         {
-                            const stake = this.props.model.Stake(index);
+                            const stake: Model.Stake = this.props.model.Stake(index);
                             return (
                                 <Player_Stake
                                     key={index}
@@ -518,20 +523,21 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    async On_Click(event: React.SyntheticEvent)
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
     {
         event.stopPropagation();
 
-        const arena = this.props.model.Arena();
+        const arena: Model.Arena = this.props.model.Arena();
         if (arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
             if (this.props.model.Is_On_Player()) {
-                const player = this.props.model.Claimant();
+                const player: Model.Player = this.props.model.Claimant();
                 if (player.Is_On_Turn()) {
-                    const player_index = player.Index();
-                    const stake_index = this.props.index;
-                    const publisher_info = Object.freeze({
+                    const player_index: Model.Player_Index = player.Index();
+                    const stake_index: Model.Stake_Index = this.props.index;
+                    const publisher_info: Messenger_m.Publisher_Info = Object.freeze({
                         data: Object.freeze({
                             player_index,
                             stake_index,
@@ -564,7 +570,8 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         stake_index,
     }: {
         stake_index: Model.Stake_Index,
-    })
+    }):
+        Promise<void>
     {
         if (this.props.index === stake_index) {
             this.props.model.Claimant().Select_Stake(stake_index);
@@ -576,7 +583,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     componentDidMount():
         void
     {
-        const player_index = this.props.model.Claimant().Index();
+        const player_index: Model.Player_Index = this.props.model.Claimant().Index();
 
         this.#subscriptions.Subscribe([
             [
@@ -595,9 +602,9 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     render():
         JSX.Element
     {
-        const color = this.props.model.Color();
-        const is_of_human = this.props.model.Is_Of_Human();
-        const is_selectable = this.props.model.Is_Selectable();
+        const color: Model.Color = this.props.model.Color();
+        const is_of_human: boolean = this.props.model.Is_Of_Human();
+        const is_selectable: boolean = this.props.model.Is_Selectable();
 
         return (
             <div

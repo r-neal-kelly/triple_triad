@@ -49,7 +49,7 @@ export type Player_Index =
 export type Cell_Index =
     Index;
 
-type Stake_Count =
+export type Stake_Count =
     Count;
 
 export type Stake_Index =
