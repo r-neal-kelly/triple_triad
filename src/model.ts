@@ -530,7 +530,7 @@ export class Collection
         return {};
     }
 
-    Deserialize(data: object):
+    Deserialize(save_data: object):
         void
     {
 
@@ -864,7 +864,9 @@ export class Rules
         } else {
             this.#row_count = row_count;
             this.#column_count = column_count;
+            this.#cell_count = 0;
             this.#player_count = player_count;
+            this.#selection_card_count = 0;
 
             this.#open = open;
             this.#random = random;
@@ -938,7 +940,7 @@ export class Rules
     }
 
     Serialize():
-        object
+        Rules_Save_Data
     {
         return ({
             row_count: this.#row_count,
@@ -950,18 +952,27 @@ export class Rules
         });
     }
 
-    Deserialize(data/*: object*/)
+    Deserialize(save_data: Rules_Save_Data)
     {
         // for this type we could just remake the object instead of deserialize, but that pattern may not hold?
-        this.#row_count = data.row_count;
-        this.#column_count = data.column_count;
-        this.#player_count = data.player_count;
+        this.#row_count = save_data.row_count;
+        this.#column_count = save_data.column_count;
+        this.#player_count = save_data.player_count;
 
-        this.#open = data.open;
-        this.#random = data.random;
+        this.#open = save_data.open;
+        this.#random = save_data.random;
 
         this.#Update_Counts();
     }
+}
+
+type Rules_Save_Data = {
+    row_count: Count,
+    column_count: Count,
+    player_count: Player_Count,
+
+    open: boolean,
+    random: boolean,
 }
 
 /* Contains a list of individuals cards drawn from a collection, with possible repeats. */

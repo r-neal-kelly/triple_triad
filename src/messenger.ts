@@ -31,7 +31,7 @@ interface Subscriber_Info
 class Publisher
 {
     #is_enabled: boolean;
-    #subscribers: object;
+    #subscribers: { [index: Subscriber_ID]: Subscriber };
     #subscriber_count: number;
     #next_subscriber_id: number;
 
@@ -166,7 +166,7 @@ class Subscription
 /* Used to decouple events, event creators, and event handlers, using the pub-sub pattern. */
 export default class Messenger
 {
-    #publishers: object;
+    #publishers: { [index: Publisher_Name]: Publisher };
 
     constructor()
     {
