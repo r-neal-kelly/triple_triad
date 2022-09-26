@@ -1,16 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import Messenger from "./messenger";
+import * as Messenger_m from "./messenger";
 import * as Model from "./model";
 import * as View from "./view";
 
 type Main_Props = {
 }
 
-class Main extends React.Component
+class Main extends React.Component<Main_Props>
 {
-    #messenger: Messenger;
+    #messenger: Messenger_m.Messenger;
     #packs: Model.Packs;
     #rules: Model.Rules;
     #collection: Model.Collection;
@@ -20,7 +20,7 @@ class Main extends React.Component
     {
         super(props);
 
-        this.#messenger = new Messenger();
+        this.#messenger = new Messenger_m.Messenger();
 
         this.#packs = new Model.Packs();
 
@@ -76,15 +76,18 @@ class Main extends React.Component
         });
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
     }
 
-    render()
+    render():
+        JSX.Element
     {
         return (
             <div className="View" >
@@ -100,8 +103,13 @@ class Main extends React.Component
     }
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+const root_element: HTMLElement | null = document.getElementById("root");
+if (root_element == null) {
+    throw new Error(`'root_element' could not be found in the dom.`);
+} else {
+    const root_component: ReactDOM.Root = ReactDOM.createRoot(root_element);
 
-root.render(
-    <Main />
-);
+    root_component.render(
+        <Main />
+    );
+}

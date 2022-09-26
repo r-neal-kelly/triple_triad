@@ -43,16 +43,16 @@ type Shuffle_Count =
 type Player_Count =
     Count;
 
-type Player_Index =
+export type Player_Index =
     Index;
 
-type Cell_Index =
+export type Cell_Index =
     Index;
 
 type Stake_Count =
     Count;
 
-type Stake_Index =
+export type Stake_Index =
     Index;
 
 /* Packs and their components as provided and represented by parsed JSON. */
@@ -1091,7 +1091,7 @@ class Random_Selection extends Selection
 }
 
 /* Contains stakes actively in play. */
-class Board
+export class Board
 {
     #arena: Arena;
 
@@ -1213,7 +1213,7 @@ class Board
 }
 
 /* Contains stakes selected for a player. */
-class Player
+export class Player
 {
     #arena: Arena;
     #index: Player_Index;
@@ -1366,7 +1366,7 @@ class Player
 }
 
 /* Contains a card either on a player or on the board, and its current claimant. */
-class Stake
+export class Stake
 {
     #claimant: Player;
     #card: Card;

@@ -2,6 +2,9 @@ import "./view.css";
 
 import React from "react";
 
+import * as Messenger_m from "./messenger";
+import * as Model from "./model";
+
 const before_player_select_stake_msg = `Before_Player_Select_Stake`;
 const on_player_select_stake_msg = `On_Player_Select_Stake`;
 const after_player_select_stake_msg = `After_Player_Select_Stake`;
@@ -10,38 +13,96 @@ const before_player_place_stake_msg = `Before_Player_Place_Stake`;
 const on_player_place_stake_msg = `On_Player_Place_Stake`;
 const after_player_place_stake_msg = `After_Player_Place_Stake`;
 
-export class Arena extends React.Component
+class Subscriptions
 {
-    #subscriptions;
+    #owner: any;
+    #messenger: Messenger_m.Messenger;
+    #subscriptions: { [index: Messenger_m.Publisher_Name]: Messenger_m.Subscription };
 
-    constructor(props)
+    constructor(
+        owner: any,
+        messenger: Messenger_m.Messenger,
+    )
     {
-        super(props);
-
+        this.#owner = owner;
+        this.#messenger = messenger;
         this.#subscriptions = {};
     }
 
-    componentDidMount()
+    async Subscribe(
+        subscription_tuples: Array<[
+            Messenger_m.Publisher_Name,
+            Messenger_m.Subscriber_Handler,
+        ]>,
+    ):
+        Promise<void[]>
     {
+        return Promise.all(subscription_tuples.map(async function (
+            this: Subscriptions,
+            [
+                publisher_name,
+                subscription_handler,
+            ],
+        )
+        {
+            this.#subscriptions[publisher_name] = await this.#messenger.Subscribe(
+                publisher_name,
+                {
+                    handler: subscription_handler.bind(this.#owner),
+                }
+            );
+        }, this));
     }
 
-    componentWillUnmount()
+    async Unsubscribe_All():
+        Promise<void[]>
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
+        return Promise.all(Object.values(this.#subscriptions).map((subscription) =>
         {
-            return this.props.messenger.Unsubscribe(subscription);
+            return this.#messenger.Unsubscribe(subscription);
         }));
     }
+}
 
-    render()
+type Arena_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Arena,
+}
+
+export class Arena extends React.Component<Arena_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Arena_Props)
+    {
+        super(props);
+
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
+    }
+
+    componentDidMount():
+        void
+    {
+        this.#subscriptions.Subscribe([
+        ]);
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.#subscriptions.Unsubscribe_All();
+    }
+
+    render():
+        JSX.Element
     {
         return (
             <div className="Arena">
                 <Player
                     key={0}
-                    id={0}
                     messenger={this.props.messenger}
                     model={this.props.model.Player(0)}
+                    index={0}
                 />
                 <Board
                     messenger={this.props.messenger}
@@ -54,9 +115,9 @@ export class Arena extends React.Component
                     return (
                         <Player
                             key={player_index}
-                            id={player_index}
                             messenger={this.props.messenger}
                             model={this.props.model.Player(player_index)}
+                            index={player_index}
                         />
                     );
                 })}
@@ -65,45 +126,51 @@ export class Arena extends React.Component
     }
 }
 
-class Board extends React.Component
-{
-    #subscriptions;
+type Board_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Board,
+}
 
-    constructor(props)
+class Board extends React.Component<Board_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Board_Props)
     {
         super(props);
 
-        this.#subscriptions = {};
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    async On_Player_Place_Stake({ cell_index })
+    async On_Player_Place_Stake({
+        cell_index,
+    }: {
+        cell_index: Model.Cell_Index,
+    })
     {
         this.props.model.Place_Current_Player_Selected_Stake(cell_index);
         this.forceUpdate();
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
-        [
+        this.#subscriptions.Subscribe([
             [
                 on_player_place_stake_msg,
                 this.On_Player_Place_Stake,
             ],
-        ].forEach(async function ([publisher_name, handler])
-        {
-            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
-        }, this);
+        ]);
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
+        this.#subscriptions.Unsubscribe_All();
     }
 
-    render()
+    render():
+        JSX.Element
     {
         return (
             <div
@@ -120,18 +187,18 @@ class Board extends React.Component
                             return (
                                 <Board_Stake
                                     key={index}
-                                    id={index}
                                     messenger={this.props.messenger}
                                     model={stake}
+                                    index={index}
                                 />
                             );
                         } else {
                             return (
                                 <Board_Cell
                                     key={index}
-                                    id={index}
                                     messenger={this.props.messenger}
                                     model={this.props.model}
+                                    index={index}
                                 />
                             );
                         }
@@ -142,18 +209,24 @@ class Board extends React.Component
     }
 }
 
-class Board_Cell extends React.Component
-{
-    #subscriptions;
+type Board_Cell_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Board,
+    index: Model.Cell_Index,
+}
 
-    constructor(props)
+class Board_Cell extends React.Component<Board_Cell_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Board_Cell_Props)
     {
         super(props);
 
-        this.#subscriptions = {};
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    async On_Click(event)
+    async On_Click(event: React.SyntheticEvent)
     {
         event.stopPropagation();
 
@@ -161,9 +234,9 @@ class Board_Cell extends React.Component
         if (arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
-            if (this.props.model.Is_Cell_Selectable(this.props.id)) {
+            if (this.props.model.Is_Cell_Selectable(this.props.index)) {
                 const player_index = this.props.model.Current_Player_Index();
-                const cell_index = this.props.id;
+                const cell_index = this.props.index;
                 const publisher_info = Object.freeze({
                     data: Object.freeze({
                         player_index,
@@ -194,7 +267,7 @@ class Board_Cell extends React.Component
 
     async After_Player_Select_Stake()
     {
-        if (this.props.model.Is_Cell_Selectable(this.props.id)) {
+        if (this.props.model.Is_Cell_Selectable(this.props.index)) {
             // we only need to update the cursor for empty cells
             this.forceUpdate();
         }
@@ -206,9 +279,10 @@ class Board_Cell extends React.Component
         this.forceUpdate();
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
-        [
+        this.#subscriptions.Subscribe([
             [
                 after_player_select_stake_msg,
                 this.After_Player_Select_Stake,
@@ -217,24 +291,20 @@ class Board_Cell extends React.Component
                 after_player_place_stake_msg,
                 this.After_Player_Place_Stake,
             ],
-        ].forEach(async function ([publisher_name, handler])
-        {
-            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
-        }, this);
+        ]);
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
+        this.#subscriptions.Unsubscribe_All();
     }
 
-    render()
+    render():
+        JSX.Element
     {
         const is_on_human_turn = this.props.model.Is_On_Human_Turn();
-        const is_selectable = this.props.model.Is_Cell_Selectable(this.props.id);
+        const is_selectable = this.props.model.Is_Cell_Selectable(this.props.index);
 
         return (
             <div
@@ -245,37 +315,45 @@ class Board_Cell extends React.Component
                 onClick={event => this.On_Click.bind(this)(event)}
             >
                 <div>
-                    {this.props.id}
+                    {this.props.index}
                 </div>
             </div>
         );
     }
 }
 
-class Board_Stake extends React.Component
-{
-    #subscriptions;
+type Board_Stake_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Stake,
+    index: Model.Stake_Index,
+}
 
-    constructor(props)
+class Board_Stake extends React.Component<Board_Stake_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Board_Stake_Props)
     {
         super(props);
 
-        this.#subscriptions = {};
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
+        this.#subscriptions.Subscribe([
+        ]);
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
+        this.#subscriptions.Unsubscribe_All();
     }
 
-    render()
+    render():
+        JSX.Element
     {
         const color = this.props.model.Color();
 
@@ -294,15 +372,21 @@ class Board_Stake extends React.Component
     }
 }
 
-class Player extends React.Component
-{
-    #subscriptions;
+type Player_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Player,
+    index: Model.Player_Index,
+}
 
-    constructor(props)
+class Player extends React.Component<Player_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Player_Props)
     {
         super(props);
 
-        this.#subscriptions = {};
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
     async After_This_Player_Place_Stake()
@@ -310,30 +394,27 @@ class Player extends React.Component
         this.forceUpdate();
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
-        const player_index = this.props.id;
+        const player_index = this.props.index;
 
-        [
+        this.#subscriptions.Subscribe([
             [
                 after_player_place_stake_msg + `_` + player_index,
                 this.After_This_Player_Place_Stake,
             ],
-        ].forEach(async function ([publisher_name, handler])
-        {
-            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
-        }, this);
+        ]);
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
+        this.#subscriptions.Unsubscribe_All();
     }
 
-    render()
+    render():
+        JSX.Element
     {
         const stake_count = this.props.model.Stake_Count();
 
@@ -342,10 +423,10 @@ class Player extends React.Component
                 className="Player"
             >
                 <Player_Turn_Icon
-                    key={this.props.id}
-                    id={this.props.id}
+                    key={this.props.index}
                     messenger={this.props.messenger}
                     model={this.props.model}
+                    index={this.props.index}
                 />
                 <div
                     className="Hand"
@@ -360,10 +441,9 @@ class Player extends React.Component
                             return (
                                 <Player_Stake
                                     key={index}
-                                    id={index}
-                                    count={stake_count}
                                     messenger={this.props.messenger}
                                     model={stake}
+                                    index={index}
                                 />
                             );
                         })
@@ -374,30 +454,38 @@ class Player extends React.Component
     }
 }
 
-class Player_Turn_Icon extends React.Component
-{
-    #subscriptions;
+type Player_Turn_Icon_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Player,
+    index: Model.Player_Index,
+}
 
-    constructor(props)
+class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Player_Turn_Icon_Props)
     {
         super(props);
 
-        this.#subscriptions = {};
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
+        this.#subscriptions.Subscribe([
+        ]);
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
+        this.#subscriptions.Unsubscribe_All();
     }
 
-    render()
+    render():
+        JSX.Element
     {
         return (
             <div
@@ -413,18 +501,24 @@ class Player_Turn_Icon extends React.Component
     }
 }
 
-class Player_Stake extends React.Component
-{
-    #subscriptions;
+type Player_Stake_Props = {
+    messenger: Messenger_m.Messenger,
+    model: Model.Stake,
+    index: Model.Stake_Index,
+}
 
-    constructor(props)
+class Player_Stake extends React.Component<Player_Stake_Props>
+{
+    #subscriptions: Subscriptions;
+
+    constructor(props: Player_Stake_Props)
     {
         super(props);
 
-        this.#subscriptions = {};
+        this.#subscriptions = new Subscriptions(this, this.props.messenger);
     }
 
-    async On_Click(event)
+    async On_Click(event: React.SyntheticEvent)
     {
         event.stopPropagation();
 
@@ -436,7 +530,7 @@ class Player_Stake extends React.Component
                 const player = this.props.model.Claimant();
                 if (player.Is_On_Turn()) {
                     const player_index = player.Index();
-                    const stake_index = this.props.id;
+                    const stake_index = this.props.index;
                     const publisher_info = Object.freeze({
                         data: Object.freeze({
                             player_index,
@@ -466,40 +560,40 @@ class Player_Stake extends React.Component
         }
     }
 
-    async On_This_Player_Select_Stake({ stake_index })
+    async On_This_Player_Select_Stake({
+        stake_index,
+    }: {
+        stake_index: Model.Stake_Index,
+    })
     {
-        if (this.props.id === stake_index) {
+        if (this.props.index === stake_index) {
             this.props.model.Claimant().Select_Stake(stake_index);
         }
 
         this.forceUpdate();
     }
 
-    componentDidMount()
+    componentDidMount():
+        void
     {
-        const player = this.props.model.Claimant();
-        const player_index = player.Index();
+        const player_index = this.props.model.Claimant().Index();
 
-        [
+        this.#subscriptions.Subscribe([
             [
                 on_player_select_stake_msg + "_" + player_index,
                 this.On_This_Player_Select_Stake,
             ],
-        ].forEach(async function ([publisher_name, handler])
-        {
-            this.#subscriptions[publisher_name] = await this.props.messenger.Subscribe(publisher_name, { handler: handler.bind(this) });
-        }, this);
+        ]);
     }
 
-    componentWillUnmount()
+    componentWillUnmount():
+        void
     {
-        Promise.all(Object.values(this.#subscriptions).map(subscription =>
-        {
-            return this.props.messenger.Unsubscribe(subscription);
-        }));
+        this.#subscriptions.Unsubscribe_All();
     }
 
-    render()
+    render():
+        JSX.Element
     {
         const color = this.props.model.Color();
         const is_of_human = this.props.model.Is_Of_Human();
@@ -515,8 +609,8 @@ class Player_Stake extends React.Component
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                     cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`,
-                    zIndex: `${this.props.id}`,
-                    top: `calc((0px - var(--card_height)) / 3 * ${this.props.id})`,
+                    zIndex: `${this.props.index}`,
+                    top: `calc((0px - var(--card_height)) / 3 * ${this.props.index})`,
                 }}
                 onClick={
                     is_of_human && is_selectable ?

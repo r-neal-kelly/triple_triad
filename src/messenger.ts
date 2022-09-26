@@ -1,29 +1,27 @@
 /* Used both to subscribe and publish events. */
-type Publisher_Name =
+export type Publisher_Name =
     string;
 
 /* Sent to a publisher's subscriber's handlers when an event occurs. */
-type Publisher_Data =
+export type Publisher_Data =
     any;
 
 /* Uniquely identifies a subscriber when paired with a publisher name. */
-type Subscriber_ID =
+export type Subscriber_ID =
     number;
 
 /* Used as a callback for each subscriber when an event occurs. */
-type Subscriber_Handler =
+export type Subscriber_Handler =
     (publisher_data: Publisher_Data) => void | Promise<void>;
 
 /* Used when publishing an event. */
-interface Publisher_Info
-{
+export type Publisher_Info = {
     data: Publisher_Data;
     disable_until_complete: boolean; // discards any subsequent events from this publisher until the current one completes
 }
 
 /* Used when subscribing to a publisher. */
-interface Subscriber_Info
-{
+export type Subscriber_Info = {
     handler: Subscriber_Handler;
 }
 
@@ -139,7 +137,7 @@ class Subscriber
 }
 
 /* A handle to a subscriber and their publisher, for the sake of unsubscribing. */
-class Subscription
+export class Subscription
 {
     #publisher_name: Publisher_Name;
     #subscriber_id: Subscriber_ID;
@@ -164,7 +162,7 @@ class Subscription
 }
 
 /* Used to decouple events, event creators, and event handlers, using the pub-sub pattern. */
-export default class Messenger
+export class Messenger
 {
     #publishers: { [index: Publisher_Name]: Publisher };
 
