@@ -367,10 +367,10 @@ export class Color
         blue = 0,
         alpha = 1.0,
     }: {
-        red: number,
-        green: number,
-        blue: number,
-        alpha: number,
+        red?: number,
+        green?: number,
+        blue?: number,
+        alpha?: number,
     })
     {
         if (red < 0 || red > 255 ||
@@ -851,12 +851,12 @@ export class Rules
         open = true,
         random = false,
     }: {
-        row_count: Count,
-        column_count: Count,
-        player_count: Player_Count,
+        row_count?: Count,
+        column_count?: Count,
+        player_count?: Player_Count,
 
-        open: boolean,
-        random: boolean,
+        open?: boolean,
+        random?: boolean,
     })
     {
         if (player_count < 2) {
@@ -1000,13 +1000,13 @@ export class Selection
     }: {
         collection: Collection,
         color: Color,
-        is_of_human: boolean,
+        is_of_human?: boolean,
 
-        cards: Array<Card> | null,
+        cards?: Array<Card> | null,
 
         random_card_count: Card_Count,
-        allow_random_repeats: boolean,
-        allow_random_multiple_packs: boolean,
+        allow_random_repeats?: boolean,
+        allow_random_multiple_packs?: boolean,
     })
     {
         // might be able to get away with null checks because of the type system

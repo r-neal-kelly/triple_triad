@@ -1,19 +1,22 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import Messenger from "./messenger.ts";
-import * as Model from "./model.ts";
-import * as View from "./view.js";
+import Messenger from "./messenger";
+import * as Model from "./model";
+import * as View from "./view";
+
+type Main_Props = {
+}
 
 class Main extends React.Component
 {
-    #messenger;
-    #packs;
-    #rules;
-    #collection;
-    #arena;
+    #messenger: Messenger;
+    #packs: Model.Packs;
+    #rules: Model.Rules;
+    #collection: Model.Collection;
+    #arena: Model.Arena;
 
-    constructor(props)
+    constructor(props: Main_Props)
     {
         super(props);
 
@@ -84,8 +87,8 @@ class Main extends React.Component
     render()
     {
         return (
-            <div className="View">
-                <h1 className="Title">
+            <div className="View" >
+                <h1 className="Title" >
                     Triple Triad
                 </h1>
                 <View.Arena
@@ -97,7 +100,7 @@ class Main extends React.Component
     }
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
 root.render(
     <Main />
