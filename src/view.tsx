@@ -5,13 +5,40 @@ import React from "react";
 import * as Messenger from "./messenger";
 import * as Model from "./model";
 
-const before_player_select_stake_msg: Messenger.Publisher_Name = `Before_Player_Select_Stake`;
-const on_player_select_stake_msg: Messenger.Publisher_Name = `On_Player_Select_Stake`;
-const after_player_select_stake_msg: Messenger.Publisher_Name = `After_Player_Select_Stake`;
+const BEFORE_: Messenger.Publisher_Name = `Before_`;
+const ON_: Messenger.Publisher_Name = `On_`;
+const AFTER_: Messenger.Publisher_Name = `After_`;
 
-const before_player_place_stake_msg: Messenger.Publisher_Name = `Before_Player_Place_Stake`;
-const on_player_place_stake_msg: Messenger.Publisher_Name = `On_Player_Place_Stake`;
-const after_player_place_stake_msg: Messenger.Publisher_Name = `After_Player_Place_Stake`;
+const PLAYER_SELECT_STAKE: Messenger.Publisher_Name = `Player_Select_Stake`;
+const PLAYER_PLACE_STAKE: Messenger.Publisher_Name = `Player_Place_Stake`;
+
+async function Publish_Event({
+    messenger,
+    publisher_name_affix,
+    publisher_name_suffixes,
+    publisher_info,
+}: {
+    messenger: Messenger.Instance,
+    publisher_name_affix: Messenger.Publisher_Name,
+    publisher_name_suffixes: Array<Messenger.Publisher_Name>,
+    publisher_info: Messenger.Publisher_Info,
+}):
+    Promise<void>
+{
+    for (const publisher_name_prefix of [BEFORE_, ON_, AFTER_]) {
+        const promises: Array<Promise<void>> = publisher_name_suffixes.map(function (
+            publisher_name_suffix: Messenger.Publisher_Name,
+        ):
+            Promise<void>
+        {
+            return messenger.Publish(publisher_name_prefix + publisher_name_affix + `_` + publisher_name_suffix, publisher_info);
+        });
+        promises.push(
+            messenger.Publish(publisher_name_prefix + publisher_name_affix, publisher_info),
+        );
+        await Promise.all(promises);
+    }
+}
 
 class Subscriptions
 {
@@ -163,7 +190,7 @@ class Board extends React.Component<Board_Props>
     {
         this.#subscriptions.Subscribe([
             [
-                on_player_place_stake_msg,
+                ON_ + PLAYER_PLACE_STAKE,
                 this.On_Player_Place_Stake,
             ],
         ]);
@@ -244,28 +271,21 @@ class Board_Cell extends React.Component<Board_Cell_Props>
             if (this.props.model.Is_Cell_Selectable(this.props.index)) {
                 const player_index: Model.Player_Index = this.props.model.Current_Player_Index();
                 const cell_index: Model.Cell_Index = this.props.index;
-                const publisher_info: Messenger.Publisher_Info = Object.freeze({
-                    data: Object.freeze({
-                        player_index,
-                        cell_index,
+
+                await Publish_Event({
+                    messenger: this.props.messenger,
+                    publisher_name_affix: PLAYER_PLACE_STAKE,
+                    publisher_name_suffixes: [
+                        player_index.toString(),
+                    ],
+                    publisher_info: Object.freeze({
+                        data: Object.freeze({
+                            player_index,
+                            cell_index,
+                        }),
+                        disable_until_complete: true,
                     }),
-                    disable_until_complete: true,
                 });
-
-                await Promise.all([
-                    this.props.messenger.Publish(before_player_place_stake_msg + `_` + player_index, publisher_info),
-                    this.props.messenger.Publish(before_player_place_stake_msg, publisher_info),
-                ]);
-
-                await Promise.all([
-                    this.props.messenger.Publish(on_player_place_stake_msg + `_` + player_index, publisher_info),
-                    this.props.messenger.Publish(on_player_place_stake_msg, publisher_info),
-                ]);
-
-                await Promise.all([
-                    this.props.messenger.Publish(after_player_place_stake_msg + `_` + player_index, publisher_info),
-                    this.props.messenger.Publish(after_player_place_stake_msg, publisher_info),
-                ]);
             }
 
             arena.Enable_Input();
@@ -293,11 +313,11 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     {
         this.#subscriptions.Subscribe([
             [
-                after_player_select_stake_msg,
+                AFTER_ + PLAYER_SELECT_STAKE,
                 this.After_Player_Select_Stake,
             ],
             [
-                after_player_place_stake_msg,
+                AFTER_ + PLAYER_PLACE_STAKE,
                 this.After_Player_Place_Stake,
             ],
         ]);
@@ -411,7 +431,7 @@ class Player extends React.Component<Player_Props>
 
         this.#subscriptions.Subscribe([
             [
-                after_player_place_stake_msg + `_` + player_index,
+                AFTER_ + PLAYER_PLACE_STAKE + `_` + player_index,
                 this.After_This_Player_Place_Stake,
             ],
         ]);
@@ -542,28 +562,21 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                 if (player.Is_On_Turn()) {
                     const player_index: Model.Player_Index = player.Index();
                     const stake_index: Model.Stake_Index = this.props.index;
-                    const publisher_info: Messenger.Publisher_Info = Object.freeze({
-                        data: Object.freeze({
-                            player_index,
-                            stake_index,
+
+                    await Publish_Event({
+                        messenger: this.props.messenger,
+                        publisher_name_affix: PLAYER_SELECT_STAKE,
+                        publisher_name_suffixes: [
+                            player_index.toString(),
+                        ],
+                        publisher_info: Object.freeze({
+                            data: Object.freeze({
+                                player_index,
+                                stake_index,
+                            }),
+                            disable_until_complete: true,
                         }),
-                        disable_until_complete: true,
                     });
-
-                    await Promise.all([
-                        this.props.messenger.Publish(before_player_select_stake_msg + "_" + player_index, publisher_info),
-                        this.props.messenger.Publish(before_player_select_stake_msg, publisher_info),
-                    ]);
-
-                    await Promise.all([
-                        this.props.messenger.Publish(on_player_select_stake_msg + "_" + player_index, publisher_info),
-                        this.props.messenger.Publish(on_player_select_stake_msg, publisher_info),
-                    ]);
-
-                    await Promise.all([
-                        this.props.messenger.Publish(after_player_select_stake_msg + "_" + player_index, publisher_info),
-                        this.props.messenger.Publish(after_player_select_stake_msg, publisher_info),
-                    ]);
                 }
             }
 
@@ -592,7 +605,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
 
         this.#subscriptions.Subscribe([
             [
-                on_player_select_stake_msg + "_" + player_index,
+                ON_ + PLAYER_SELECT_STAKE + `_` + player_index,
                 this.On_This_Player_Select_Stake,
             ],
         ]);
