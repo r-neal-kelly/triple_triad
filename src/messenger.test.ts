@@ -1,6 +1,6 @@
-import * as Messenger_m from "./messenger";
+import * as Messenger from "./messenger";
 
 it("should do a test", (): void =>
 {
-    new Messenger_m.Messenger();
+    new Messenger.Instance();
 });

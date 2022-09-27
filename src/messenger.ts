@@ -162,7 +162,7 @@ export class Subscription
 }
 
 /* Used to decouple events, event creators, and event handlers, using the pub-sub pattern. */
-export class Messenger
+export class Instance
 {
     #publishers: { [index: Publisher_Name]: Publisher };
 

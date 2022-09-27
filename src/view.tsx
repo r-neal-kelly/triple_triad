@@ -2,26 +2,26 @@ import "./view.css";
 
 import React from "react";
 
-import * as Messenger_m from "./messenger";
+import * as Messenger from "./messenger";
 import * as Model from "./model";
 
-const before_player_select_stake_msg: Messenger_m.Publisher_Name = `Before_Player_Select_Stake`;
-const on_player_select_stake_msg: Messenger_m.Publisher_Name = `On_Player_Select_Stake`;
-const after_player_select_stake_msg: Messenger_m.Publisher_Name = `After_Player_Select_Stake`;
+const before_player_select_stake_msg: Messenger.Publisher_Name = `Before_Player_Select_Stake`;
+const on_player_select_stake_msg: Messenger.Publisher_Name = `On_Player_Select_Stake`;
+const after_player_select_stake_msg: Messenger.Publisher_Name = `After_Player_Select_Stake`;
 
-const before_player_place_stake_msg: Messenger_m.Publisher_Name = `Before_Player_Place_Stake`;
-const on_player_place_stake_msg: Messenger_m.Publisher_Name = `On_Player_Place_Stake`;
-const after_player_place_stake_msg: Messenger_m.Publisher_Name = `After_Player_Place_Stake`;
+const before_player_place_stake_msg: Messenger.Publisher_Name = `Before_Player_Place_Stake`;
+const on_player_place_stake_msg: Messenger.Publisher_Name = `On_Player_Place_Stake`;
+const after_player_place_stake_msg: Messenger.Publisher_Name = `After_Player_Place_Stake`;
 
 class Subscriptions
 {
     #owner: any;
-    #messenger: Messenger_m.Messenger;
-    #subscriptions: { [index: Messenger_m.Publisher_Name]: Messenger_m.Subscription };
+    #messenger: Messenger.Instance;
+    #subscriptions: { [index: Messenger.Publisher_Name]: Messenger.Subscription };
 
     constructor(
         owner: any,
-        messenger: Messenger_m.Messenger,
+        messenger: Messenger.Instance,
     )
     {
         this.#owner = owner;
@@ -31,8 +31,8 @@ class Subscriptions
 
     async Subscribe(
         subscription_tuples: Array<[
-            Messenger_m.Publisher_Name,
-            Messenger_m.Subscriber_Handler,
+            Messenger.Publisher_Name,
+            Messenger.Subscriber_Handler,
         ]>,
     ):
         Promise<void[]>
@@ -43,13 +43,14 @@ class Subscriptions
                 publisher_name,
                 subscription_handler,
             ],
-        )
+        ):
+            Promise<void>
         {
             this.#subscriptions[publisher_name] = await this.#messenger.Subscribe(
                 publisher_name,
                 {
                     handler: subscription_handler.bind(this.#owner),
-                }
+                },
             );
         }, this));
     }
@@ -57,15 +58,19 @@ class Subscriptions
     async Unsubscribe_All():
         Promise<void[]>
     {
-        return Promise.all(Object.values(this.#subscriptions).map((subscription) =>
+        return Promise.all(Object.values(this.#subscriptions).map(function (
+            this: Subscriptions,
+            subscription,
+        ):
+            Promise<void>
         {
             return this.#messenger.Unsubscribe(subscription);
-        }));
+        }, this));
     }
 }
 
 type Arena_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Arena,
 }
 
@@ -127,7 +132,7 @@ export class Arena extends React.Component<Arena_Props>
 }
 
 type Board_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Board,
 }
 
@@ -211,7 +216,7 @@ class Board extends React.Component<Board_Props>
 }
 
 type Board_Cell_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Board,
     index: Model.Cell_Index,
 }
@@ -239,7 +244,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
             if (this.props.model.Is_Cell_Selectable(this.props.index)) {
                 const player_index: Model.Player_Index = this.props.model.Current_Player_Index();
                 const cell_index: Model.Cell_Index = this.props.index;
-                const publisher_info: Messenger_m.Publisher_Info = Object.freeze({
+                const publisher_info: Messenger.Publisher_Info = Object.freeze({
                     data: Object.freeze({
                         player_index,
                         cell_index,
@@ -327,7 +332,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 }
 
 type Board_Stake_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Stake,
     index: Model.Stake_Index,
 }
@@ -377,7 +382,7 @@ class Board_Stake extends React.Component<Board_Stake_Props>
 }
 
 type Player_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Player,
     index: Model.Player_Index,
 }
@@ -460,7 +465,7 @@ class Player extends React.Component<Player_Props>
 }
 
 type Player_Turn_Icon_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Player,
     index: Model.Player_Index,
 }
@@ -507,7 +512,7 @@ class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
 }
 
 type Player_Stake_Props = {
-    messenger: Messenger_m.Messenger,
+    messenger: Messenger.Instance,
     model: Model.Stake,
     index: Model.Stake_Index,
 }
@@ -537,7 +542,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                 if (player.Is_On_Turn()) {
                     const player_index: Model.Player_Index = player.Index();
                     const stake_index: Model.Stake_Index = this.props.index;
-                    const publisher_info: Messenger_m.Publisher_Info = Object.freeze({
+                    const publisher_info: Messenger.Publisher_Info = Object.freeze({
                         data: Object.freeze({
                             player_index,
                             stake_index,

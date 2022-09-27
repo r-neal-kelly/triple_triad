@@ -426,17 +426,12 @@ export class Collection
         default_shuffle: Shuffle,
     })
     {
-        if (default_shuffle == null) {
-            // if there aren't enough cards amoung the card_and_counts, then the default_shuffle is used.
-            throw new Error(`There must be a default_shuffle in every collection.`);
-        } else {
-            this.#default_shuffle = default_shuffle;
-            this.#shuffle_count = 0;
-            this.#shuffles = {};
-            this.#pack_card_and_counts = {};
+        this.#default_shuffle = default_shuffle;
+        this.#shuffle_count = 0;
+        this.#shuffles = {};
+        this.#pack_card_and_counts = {};
 
-            this.Add_Shuffle(default_shuffle);
-        }
+        this.Add_Shuffle(default_shuffle);
     }
 
     Shuffle_Count():
@@ -621,12 +616,10 @@ export class Shuffle
         max_tier_index: Tier_Index,
     })
     {
-        if (pack == null) {
-            throw new Error(`Requires a pack.`);
-        } else if (min_tier_index > max_tier_index) {
-            throw new Error(`The min_tier_index is greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
+        if (min_tier_index > max_tier_index) {
+            throw new Error(`The min_tier_index cannot be greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
         } else if (max_tier_index >= pack.Tier_Count()) {
-            throw new Error(`The max_tier_index indicates a non-existant tier in the pack "${pack.Name()}"`);
+            throw new Error(`The max_tier_index includes a non-existant tier in the pack "${pack.Name()}"`);
         } else {
             this.#pack = pack;
             this.#min_tier_index = min_tier_index;
@@ -717,35 +710,29 @@ export class Arena
         selections: Array<Selection>
     })
     {
-        if (rules == null) {
-            throw new Error(`Must have a set of rules to play.`);
-        } else if (selections == null) {
-            throw new Error(`Must have an array of selections for each player.`);
+        this.#rules = rules;
+
+        this.#board = new Board({
+            arena: this,
+        });
+
+        const player_count: Player_Count = rules.Player_Count();
+        if (selections.length !== player_count) {
+            throw new Error(`Must have a selection for each player, no more and no less.`);
         } else {
-            this.#rules = rules;
-
-            this.#board = new Board({
-                arena: this,
-            });
-
-            const player_count: Player_Count = rules.Player_Count();
-            if (selections.length !== player_count) {
-                throw new Error(`Must have a selection for each player, no more and no less.`);
-            } else {
-                this.#players = [];
-                for (let idx = 0, end = player_count; idx < end; idx += 1) {
-                    this.#players.push(new Player({
-                        arena: this,
-                        index: idx,
-                        selection: selections[idx],
-                    }));
-                }
-
-                this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
-                this.#turn_queue_index = 0;
-
-                this.#is_input_enabled = true;
+            this.#players = [];
+            for (let idx = 0, end = player_count; idx < end; idx += 1) {
+                this.#players.push(new Player({
+                    arena: this,
+                    index: idx,
+                    selection: selections[idx],
+                }));
             }
+
+            this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
+            this.#turn_queue_index = 0;
+
+            this.#is_input_enabled = true;
         }
     }
 
@@ -975,67 +962,33 @@ type Rules_Save_Data = {
     random: boolean,
 }
 
-/* Contains a list of individuals cards drawn from a collection, with possible repeats. */
+/* Contains a list of individuals cards drawn from a collection and their color, with possible repeats. */
 export class Selection
 {
-    // we might should inherit from this as a base class and have two distinct classes to create,
-    // either with the handful of cards or with a random count. shame we can't have multiple ctors
     #collection: Collection;
     #color: Color;
-    #is_of_human: boolean;
     #cards: Array<Card>;
+    #is_of_human: boolean;
 
-    // if given a cards array, it will accept that as the selection,
-    // else it can generate a random selection from the collection
     constructor({
         collection,
         color,
-        is_of_human = true,
-
-        cards = null,
-
-        random_card_count,
-        allow_random_repeats = true,
-        allow_random_multiple_packs = false,
+        cards,
+        is_of_human,
     }: {
         collection: Collection,
         color: Color,
-        is_of_human?: boolean,
-
-        cards?: Array<Card> | null,
-
-        random_card_count: Card_Count,
-        allow_random_repeats?: boolean,
-        allow_random_multiple_packs?: boolean,
+        cards: Array<Card>,
+        is_of_human: boolean,
     })
     {
-        // might be able to get away with null checks because of the type system
-        if (collection == null) {
-            throw new Error(`Must have a collection.`);
-        } else if (color == null) {
-            throw new Error(`Must have a color.`);
+        if (cards.length < 1) {
+            throw new Error(`Must have a least one card in the selection.`);
         } else {
             this.#collection = collection;
             this.#color = color;
+            this.#cards = Array.from(cards);
             this.#is_of_human = is_of_human;
-
-            if (cards != null) {
-                if (cards.length < 1) {
-                    throw new Error(`Must have a least one card in the selection.`);
-                } else {
-                    this.#cards = Array.from(cards);
-                }
-            } else {
-                if (random_card_count < 1) {
-                    throw new Error(`Must have a least one card in the selection.`);
-                } else {
-                    this.#cards = collection.Random_Cards({
-                        card_count: random_card_count,
-                        allow_repeats: allow_random_repeats,
-                        allow_multiple_packs: allow_random_multiple_packs,
-                    });
-                }
-            }
         }
     }
 
@@ -1080,14 +1033,43 @@ export class Selection
     }
 }
 
-class Manual_Selection extends Selection
+/* Utilizes a manual supply of cards to create a selection. */
+export type Manual_Selection =
+    Selection;
+
+/* Utilizes random generation of cards to create a selection. */
+export class Random_Selection extends Selection
 {
+    constructor({
+        collection,
+        color,
+        is_of_human,
 
-}
+        card_count,
+        allow_repeats = true,
+        allow_multiple_packs = false,
+    }: {
+        collection: Collection,
+        color: Color,
+        is_of_human: boolean,
 
-class Random_Selection extends Selection
-{
+        card_count: Card_Count,
+        allow_repeats?: boolean,
+        allow_multiple_packs?: boolean,
+    })
+    {
+        if (card_count < 1) {
+            throw new Error(`'card_count' must be greater than 0 for a selection.`);
+        } else {
+            const cards: Array<Card> = collection.Random_Cards({
+                card_count,
+                allow_repeats,
+                allow_multiple_packs,
+            });
 
+            super({ collection, color, cards, is_of_human });
+        }
+    }
 }
 
 /* Contains stakes actively in play. */

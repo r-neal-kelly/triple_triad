@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import * as Messenger_m from "./messenger";
+import * as Messenger from "./messenger";
 import * as Model from "./model";
 import * as View from "./view";
 
@@ -10,7 +10,7 @@ type Main_Props = {
 
 class Main extends React.Component<Main_Props>
 {
-    #messenger: Messenger_m.Messenger;
+    #messenger: Messenger.Instance;
     #packs: Model.Packs;
     #rules: Model.Rules;
     #collection: Model.Collection;
@@ -20,7 +20,7 @@ class Main extends React.Component<Main_Props>
     {
         super(props);
 
-        this.#messenger = new Messenger_m.Messenger();
+        this.#messenger = new Messenger.Instance();
 
         this.#packs = new Model.Packs();
 
@@ -46,7 +46,7 @@ class Main extends React.Component<Main_Props>
         this.#arena = new Model.Arena({
             rules: this.#rules,
             selections: [
-                new Model.Selection({
+                new Model.Random_Selection({
                     collection: this.#collection,
                     color: new Model.Color({
                         red: 0,
@@ -54,9 +54,9 @@ class Main extends React.Component<Main_Props>
                         blue: 255,
                     }),
                     is_of_human: true,
-                    random_card_count: this.#rules.Selection_Card_Count(),
+                    card_count: this.#rules.Selection_Card_Count(),
                 }),
-                new Model.Selection({
+                new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Random_Pack(),
@@ -70,7 +70,7 @@ class Main extends React.Component<Main_Props>
                         blue: 0,
                     }),
                     is_of_human: false,
-                    random_card_count: this.#rules.Selection_Card_Count(),
+                    card_count: this.#rules.Selection_Card_Count(),
                 }),
             ],
         });
