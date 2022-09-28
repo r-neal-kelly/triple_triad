@@ -145,6 +145,8 @@ export class Subscription
     {
         this.#publisher_name = publisher_name;
         this.#subscriber_id = subscriber_id;
+
+        Object.freeze(this);
     }
 
     async Publisher_Name():
