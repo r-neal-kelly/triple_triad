@@ -102,19 +102,18 @@ class Publisher
     async Publish({ data = null, disable_until_complete = false }: Publisher_Info)
     {
         if (await this.Is_Enabled()) {
-            const promises = Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
-            {
-                await (await subscriber.Handler())(data);
-            }));
-
             if (disable_until_complete) {
                 await this.Disable();
-                await promises;
+                await Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
+                {
+                    await (await subscriber.Handler())(data);
+                }));
                 await this.Enable();
-
-                return;
             } else {
-                return promises;
+                await Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
+                {
+                    await (await subscriber.Handler())(data);
+                }));
             }
         }
     }

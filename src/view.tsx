@@ -3,6 +3,7 @@ import "./view.css";
 import React from "react";
 
 import * as Messenger from "./messenger";
+import * as Event from "./event";
 import * as Model from "./model";
 
 const BEFORE_: Messenger.Publisher_Name = `Before_`;
