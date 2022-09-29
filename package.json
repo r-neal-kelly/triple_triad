@@ -28,7 +28,8 @@
             "react-app/jest"
         ],
         "rules": {
-            "react/jsx-pascal-case": "off"
+            "react/jsx-pascal-case": "off",
+            "no-empty-pattern": "off"
         }
     },
     "browserslist": {

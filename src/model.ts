@@ -1303,6 +1303,12 @@ export class Player
         }
     }
 
+    Selected_Stake_Index():
+        Stake_Index | null
+    {
+        return this.#selected_stake_index;
+    }
+
     Selected_Stake():
         Stake | null
     {

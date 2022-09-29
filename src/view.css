@@ -136,3 +136,10 @@ body,
 .Player_Selected_Stake {
     border: 1px solid white;
 }
+
+.Arena {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

@@ -12,6 +12,18 @@ const AFTER: Event.Name_Prefix = Event.AFTER;
 const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
 const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
 
+interface Player_Select_Stake_Data
+{
+    player_index: Model.Player_Index,
+    stake_index: Model.Stake_Index,
+};
+
+interface Player_Place_Stake_Data
+{
+    player_index: Model.Player_Index,
+    cell_index: Model.Cell_Index,
+};
+
 type Arena_Props = {
     event_grid: Event.Grid,
     model: Model.Arena,
@@ -177,11 +189,11 @@ class Board extends React.Component<Board_Props>
         }
     }
 
-    async On_Player_Place_Stake({
-        cell_index,
-    }: {
-        cell_index: Model.Cell_Index,
-    }):
+    async On_Player_Place_Stake(
+        {
+            cell_index,
+        }: Player_Place_Stake_Data,
+    ):
         Promise<void>
     {
         this.Model().Place_Current_Player_Selected_Stake(cell_index);
@@ -295,7 +307,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                     data: {
                         player_index,
                         cell_index,
-                    },
+                    } as Player_Place_Stake_Data,
                     is_atomic: true,
                 });
             }
@@ -304,7 +316,10 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         }
     }
 
-    async After_Player_Select_Stake():
+    async After_Player_Select_Stake(
+        {
+        }: Player_Select_Stake_Data,
+    ):
         Promise<void>
     {
         if (this.Model().Is_Cell_Selectable(this.props.index)) {
@@ -313,7 +328,10 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         }
     }
 
-    async After_Player_Place_Stake():
+    async After_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
         Promise<void>
     {
         // we update all cells because they could all potentially change after one stake being placed
@@ -494,7 +512,28 @@ class Player extends React.Component<Player_Props>
         return stakes;
     }
 
-    async After_This_Player_Place_Stake():
+    async On_This_Player_Select_Stake(
+        {
+            stake_index,
+        }: Player_Select_Stake_Data,
+    ):
+        Promise<void>
+    {
+        const previous_selected_stake_index: Model.Stake_Index | null = this.Model().Selected_Stake_Index();
+        if (previous_selected_stake_index !== stake_index) {
+            this.Model().Select_Stake(stake_index);
+            this.Stake(stake_index).forceUpdate();
+
+            if (previous_selected_stake_index != null) {
+                this.Stake(previous_selected_stake_index).forceUpdate();
+            }
+        }
+    }
+
+    async After_This_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
         Promise<void>
     {
         this.forceUpdate();
@@ -509,6 +548,10 @@ class Player extends React.Component<Player_Props>
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
+                {
+                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Select_Stake,
+                },
                 {
                     event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE, player_index.toString()),
                     event_handler: this.After_This_Player_Place_Stake,
@@ -666,7 +709,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                         data: {
                             player_index,
                             stake_index,
-                        },
+                        } as Player_Select_Stake_Data,
                         is_atomic: true,
                     });
                 }
@@ -676,33 +719,13 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         }
     }
 
-    async On_This_Player_Select_Stake({
-        stake_index,
-    }: {
-        stake_index: Model.Stake_Index,
-    }):
-        Promise<void>
-    {
-        if (this.props.index === stake_index) {
-            this.Model().Claimant().Select_Stake(stake_index);
-        }
-
-        this.forceUpdate();
-    }
-
     componentDidMount():
         void
     {
-        const player_index: Model.Player_Index = this.Model().Claimant().Index();
-
         this.props.event_grid.Add(this);
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
-                {
-                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Select_Stake,
-                },
             ],
         );
     }
