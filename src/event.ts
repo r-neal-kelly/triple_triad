@@ -1,8 +1,8 @@
 import * as Messenger from "./messenger";
 
-export const BEFORE: Name_Part = `Before`;
-export const ON: Name_Part = `On`;
-export const AFTER: Name_Part = `After`;
+export const BEFORE: Name_Prefix = `Before`;
+export const ON: Name_Prefix = `On`;
+export const AFTER: Name_Prefix = `After`;
 
 export class Grid
 {
@@ -288,7 +288,13 @@ export type Handler =
 export type Listener_Handle =
     Messenger.Subscription;
 
-export type Name_Part =
+export type Name_Prefix =
+    string;
+
+export type Name_Affix =
+    string;
+
+export type Name_Suffix =
     string;
 
 export class Name
@@ -302,9 +308,9 @@ export class Name
     }
 
     constructor(
-        prefix: Name_Part,
-        affix: Name_Part,
-        suffix?: Name_Part | null,
+        prefix: Name_Prefix,
+        affix: Name_Affix,
+        suffix?: Name_Suffix | null,
     )
     {
         if (prefix !== BEFORE &&
@@ -336,8 +342,8 @@ export class Name
 };
 
 export type Info = {
-    name_affix: Name_Part,
-    name_suffixes?: Array<Name_Part>,
+    name_affix: Name_Affix,
+    name_suffixes?: Array<Name_Suffix>,
     data?: Data,
     is_atomic?: boolean,
 };
@@ -348,8 +354,8 @@ export type Data =
 class Instance
 {
     #messenger: Messenger.Instance;
-    #name_affix: Name_Part;
-    #name_suffixes: Array<Name_Part>;
+    #name_affix: Name_Affix;
+    #name_suffixes: Array<Name_Suffix>;
     #data: Data;
     #is_atomic: boolean;
 
@@ -399,7 +405,7 @@ class Instance
                 if (!this.#is_stopped) {
                     const promises: Array<Promise<void>> = this.#name_suffixes.map(async function (
                         this: Instance,
-                        name_suffix: Name_Part,
+                        name_suffix: Name_Suffix,
                     ):
                         Promise<void>
                     {

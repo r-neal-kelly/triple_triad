@@ -5,12 +5,12 @@ import React from "react";
 import * as Event from "./event";
 import * as Model from "./model";
 
-const BEFORE: Event.Name_Part = Event.BEFORE;
-const ON: Event.Name_Part = Event.ON;
-const AFTER: Event.Name_Part = Event.AFTER;
+const BEFORE: Event.Name_Prefix = Event.BEFORE;
+const ON: Event.Name_Prefix = Event.ON;
+const AFTER: Event.Name_Prefix = Event.AFTER;
 
-const PLAYER_SELECT_STAKE: Event.Name_Part = `Player_Select_Stake`;
-const PLAYER_PLACE_STAKE: Event.Name_Part = `Player_Place_Stake`;
+const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
+const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
 
 type Arena_Props = {
     event_grid: Event.Grid,
@@ -27,7 +27,13 @@ export class Arena extends React.Component<Arena_Props>
         super(props);
 
         this.#board = null;
-        this.#players = new Array(this.props.model.Player_Count()).fill(null);
+        this.#players = new Array(this.Model().Player_Count()).fill(null);
+    }
+
+    Model():
+        Model.Arena
+    {
+        return this.props.model;
     }
 
     Board():
@@ -43,7 +49,7 @@ export class Arena extends React.Component<Arena_Props>
     Player(player_index: Model.Player_Index):
         Player
     {
-        if (player_index >= 0 && player_index < this.#players.length) {
+        if (player_index < 0 || player_index >= this.#players.length) {
             throw new Error(`'player_index' of '${player_index}' is invalid.`);
         } else if (!this.#players[player_index]) {
             throw new Error(`Component has not yet been rendered.`);
@@ -94,7 +100,7 @@ export class Arena extends React.Component<Arena_Props>
                     parent={this}
                     ref={ref => this.#players[0] = ref}
                     event_grid={this.props.event_grid}
-                    model={this.props.model.Player(0)}
+                    model={this.Model().Player(0)}
                     index={0}
                 />
                 <Board
@@ -102,23 +108,25 @@ export class Arena extends React.Component<Arena_Props>
                     parent={this}
                     ref={ref => this.#board = ref}
                     event_grid={this.props.event_grid}
-                    model={this.props.model.Board()}
+                    model={this.Model().Board()}
                 />
-                {Array(this.props.model.Player_Count() - 1).fill(null).map((_, index) =>
                 {
-                    const player_index: Model.Player_Index = index + 1;
+                    Array(this.Model().Player_Count() - 1).fill(null).map((_, index: Model.Player_Index) =>
+                    {
+                        const player_index: Model.Player_Index = index + 1;
 
-                    return (
-                        <Player
-                            key={`player_${player_index}`}
-                            parent={this}
-                            ref={ref => this.#players[player_index] = ref}
-                            event_grid={this.props.event_grid}
-                            model={this.props.model.Player(player_index)}
-                            index={player_index}
-                        />
-                    );
-                })}
+                        return (
+                            <Player
+                                key={`player_${player_index}`}
+                                parent={this}
+                                ref={ref => this.#players[player_index] = ref}
+                                event_grid={this.props.event_grid}
+                                model={this.Model().Player(player_index)}
+                                index={player_index}
+                            />
+                        );
+                    })
+                }
             </div>
         );
     }
@@ -132,10 +140,41 @@ type Board_Props = {
 
 class Board extends React.Component<Board_Props>
 {
+    #cells: Array<Board_Cell | Board_Stake | null>;
+
+    constructor(props: Board_Props)
+    {
+        super(props);
+
+        this.#cells = new Array(this.Model().Cell_Count()).fill(null);
+    }
+
+    Model():
+        Model.Board
+    {
+        return this.props.model;
+    }
+
     Arena():
         Arena
     {
         return this.props.parent;
+    }
+
+    Cell_Or_Stake(cell_index: Model.Cell_Index):
+        Board_Cell | Board_Stake
+    {
+        if (cell_index < 0 || cell_index >= this.#cells.length) {
+            throw new Error(`'cell_index' of '${cell_index}' is invalid.`);
+        } else if (!this.#cells[cell_index]) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            if (this.#cells[cell_index] instanceof Board_Cell) {
+                return this.#cells[cell_index] as Board_Cell;
+            } else {
+                return this.#cells[cell_index] as Board_Stake;
+            }
+        }
     }
 
     async On_Player_Place_Stake({
@@ -145,7 +184,7 @@ class Board extends React.Component<Board_Props>
     }):
         Promise<void>
     {
-        this.props.model.Place_Current_Player_Selected_Stake(cell_index);
+        this.Model().Place_Current_Player_Selected_Stake(cell_index);
         this.forceUpdate();
     }
 
@@ -177,29 +216,33 @@ class Board extends React.Component<Board_Props>
             <div
                 className="Board"
                 style={{
-                    grid: "auto /" + Array(this.props.model.Column_Count()).fill(" auto").join(""),
+                    grid: "auto /" + Array(this.Model().Column_Count()).fill(" auto").join(""),
                 }}
             >
                 {
-                    Array(this.props.model.Cell_Count()).fill(null).map((_, index) =>
+                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
                     {
-                        const stake: Model.Stake | null = this.props.model.Stake(index);
-                        if (stake != null) {
+                        const stake: Model.Stake | null = this.Model().Stake(cell_index);
+                        if (stake == null) {
                             return (
-                                <Board_Stake
-                                    key={index}
+                                <Board_Cell
+                                    key={cell_index}
+                                    parent={this}
+                                    ref={ref => this.#cells[cell_index] = ref}
                                     event_grid={this.props.event_grid}
-                                    model={stake}
-                                    index={index}
+                                    model={this.Model()}
+                                    index={cell_index}
                                 />
                             );
                         } else {
                             return (
-                                <Board_Cell
-                                    key={index}
+                                <Board_Stake
+                                    key={cell_index}
+                                    parent={this}
+                                    ref={ref => this.#cells[cell_index] = ref}
                                     event_grid={this.props.event_grid}
-                                    model={this.props.model}
-                                    index={index}
+                                    model={stake}
+                                    index={cell_index}
                                 />
                             );
                         }
@@ -211,6 +254,7 @@ class Board extends React.Component<Board_Props>
 }
 
 type Board_Cell_Props = {
+    parent: Board,
     event_grid: Event.Grid,
     model: Model.Board,
     index: Model.Cell_Index,
@@ -218,17 +262,29 @@ type Board_Cell_Props = {
 
 class Board_Cell extends React.Component<Board_Cell_Props>
 {
+    Model():
+        Model.Board
+    {
+        return this.props.model;
+    }
+
+    Board():
+        Board
+    {
+        return this.props.parent;
+    }
+
     async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
         event.stopPropagation();
 
-        const arena: Model.Arena = this.props.model.Arena();
+        const arena: Model.Arena = this.Model().Arena();
         if (arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
-            if (this.props.model.Is_Cell_Selectable(this.props.index)) {
-                const player_index: Model.Player_Index = this.props.model.Current_Player_Index();
+            if (this.Model().Is_Cell_Selectable(this.props.index)) {
+                const player_index: Model.Player_Index = this.Model().Current_Player_Index();
                 const cell_index: Model.Cell_Index = this.props.index;
 
                 this.props.event_grid.Send_Event({
@@ -251,7 +307,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     async After_Player_Select_Stake():
         Promise<void>
     {
-        if (this.props.model.Is_Cell_Selectable(this.props.index)) {
+        if (this.Model().Is_Cell_Selectable(this.props.index)) {
             // we only need to update the cursor for empty cells
             this.forceUpdate();
         }
@@ -292,8 +348,8 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     render():
         JSX.Element
     {
-        const is_on_human_turn: boolean = this.props.model.Is_On_Human_Turn();
-        const is_selectable: boolean = this.props.model.Is_Cell_Selectable(this.props.index);
+        const is_on_human_turn: boolean = this.Model().Is_On_Human_Turn();
+        const is_selectable: boolean = this.Model().Is_Cell_Selectable(this.props.index);
 
         return (
             <div
@@ -312,6 +368,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 }
 
 type Board_Stake_Props = {
+    parent: Board,
     event_grid: Event.Grid,
     model: Model.Stake,
     index: Model.Stake_Index,
@@ -319,6 +376,18 @@ type Board_Stake_Props = {
 
 class Board_Stake extends React.Component<Board_Stake_Props>
 {
+    Model():
+        Model.Stake
+    {
+        return this.props.model;
+    }
+
+    Board():
+        Board
+    {
+        return this.props.parent;
+    }
+
     componentDidMount():
         void
     {
@@ -339,7 +408,7 @@ class Board_Stake extends React.Component<Board_Stake_Props>
     render():
         JSX.Element
     {
-        const color: Model.Color = this.props.model.Color();
+        const color: Model.Color = this.Model().Color();
 
         return (
             <div
@@ -349,7 +418,7 @@ class Board_Stake extends React.Component<Board_Stake_Props>
                 }}
             >
                 <div>
-                    {this.props.model.Card().Name()}
+                    {this.Model().Card().Name()}
                 </div>
             </div>
         );
@@ -365,10 +434,64 @@ type Player_Props = {
 
 class Player extends React.Component<Player_Props>
 {
+    #turn_icon: Player_Turn_Icon | null;
+    #stakes: Array<Player_Stake | null>;
+
+    constructor(props: Player_Props)
+    {
+        super(props);
+
+        this.#turn_icon = null;
+        this.#stakes = new Array(this.Model().Stake_Count()).fill(null);
+    }
+
+    Model():
+        Model.Player
+    {
+        return this.props.model;
+    }
+
     Arena():
         Arena
     {
         return this.props.parent;
+    }
+
+    Turn_Icon():
+        Player_Turn_Icon
+    {
+        if (!this.#turn_icon) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#turn_icon as Player_Turn_Icon;
+        }
+    }
+
+    Stake(stake_index: Model.Stake_Index):
+        Player_Stake
+    {
+        if (stake_index < 0 || stake_index >= this.#stakes.length) {
+            throw new Error(`'stake_index' of '${stake_index}' is invalid.`);
+        } else if (!this.#stakes[stake_index]) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#stakes[stake_index] as Player_Stake;
+        }
+    }
+
+    Stakes():
+        Array<Player_Stake>
+    {
+        const stakes: Array<Player_Stake> = [];
+        for (const stake of this.#stakes) {
+            if (!stake) {
+                throw new Error(`Component has not yet been rendered.`);
+            } else {
+                stakes.push(stake);
+            }
+        }
+
+        return stakes;
     }
 
     async After_This_Player_Place_Stake():
@@ -403,7 +526,7 @@ class Player extends React.Component<Player_Props>
     render():
         JSX.Element
     {
-        const stake_count: Model.Stake_Count = this.props.model.Stake_Count();
+        const stake_count: Model.Stake_Count = this.Model().Stake_Count();
 
         return (
             <div
@@ -411,8 +534,10 @@ class Player extends React.Component<Player_Props>
             >
                 <Player_Turn_Icon
                     key={this.props.index}
+                    parent={this}
+                    ref={ref => this.#turn_icon = ref}
                     event_grid={this.props.event_grid}
-                    model={this.props.model}
+                    model={this.Model()}
                     index={this.props.index}
                 />
                 <div
@@ -422,15 +547,16 @@ class Player extends React.Component<Player_Props>
                     }}
                 >
                     {
-                        Array(stake_count).fill(null).map((_, index) =>
+                        Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
                         {
-                            const stake: Model.Stake = this.props.model.Stake(index);
                             return (
                                 <Player_Stake
-                                    key={index}
+                                    key={stake_index}
+                                    parent={this}
+                                    ref={ref => this.#stakes[stake_index] = ref}
                                     event_grid={this.props.event_grid}
-                                    model={stake}
-                                    index={index}
+                                    model={this.Model().Stake(stake_index)}
+                                    index={stake_index}
                                 />
                             );
                         })
@@ -442,6 +568,7 @@ class Player extends React.Component<Player_Props>
 }
 
 type Player_Turn_Icon_Props = {
+    parent: Player,
     event_grid: Event.Grid,
     model: Model.Player,
     index: Model.Player_Index,
@@ -449,6 +576,18 @@ type Player_Turn_Icon_Props = {
 
 class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
 {
+    Model():
+        Model.Player
+    {
+        return this.props.model;
+    }
+
+    Player():
+        Player
+    {
+        return this.props.parent;
+    }
+
     componentDidMount():
         void
     {
@@ -474,7 +613,7 @@ class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
                 className="Player_Turn_Icon"
             >
                 {
-                    this.props.model.Is_On_Turn() ?
+                    this.Model().Is_On_Turn() ?
                         `˅` :
                         ``
                 }
@@ -484,6 +623,7 @@ class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
 }
 
 type Player_Stake_Props = {
+    parent: Player,
     event_grid: Event.Grid,
     model: Model.Stake,
     index: Model.Stake_Index,
@@ -491,17 +631,29 @@ type Player_Stake_Props = {
 
 class Player_Stake extends React.Component<Player_Stake_Props>
 {
+    Model():
+        Model.Stake
+    {
+        return this.props.model;
+    }
+
+    Player():
+        Player
+    {
+        return this.props.parent;
+    }
+
     async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
         event.stopPropagation();
 
-        const arena: Model.Arena = this.props.model.Arena();
+        const arena: Model.Arena = this.Model().Arena();
         if (arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
-            if (this.props.model.Is_On_Player()) {
-                const player: Model.Player = this.props.model.Claimant();
+            if (this.Model().Is_On_Player()) {
+                const player: Model.Player = this.Model().Claimant();
                 if (player.Is_On_Turn()) {
                     const player_index: Model.Player_Index = player.Index();
                     const stake_index: Model.Stake_Index = this.props.index;
@@ -532,7 +684,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         Promise<void>
     {
         if (this.props.index === stake_index) {
-            this.props.model.Claimant().Select_Stake(stake_index);
+            this.Model().Claimant().Select_Stake(stake_index);
         }
 
         this.forceUpdate();
@@ -541,7 +693,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     componentDidMount():
         void
     {
-        const player_index: Model.Player_Index = this.props.model.Claimant().Index();
+        const player_index: Model.Player_Index = this.Model().Claimant().Index();
 
         this.props.event_grid.Add(this);
         this.props.event_grid.Add_Many_Listeners(
@@ -564,14 +716,14 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     render():
         JSX.Element
     {
-        const color: Model.Color = this.props.model.Color();
-        const is_of_human: boolean = this.props.model.Is_Of_Human();
-        const is_selectable: boolean = this.props.model.Is_Selectable();
+        const color: Model.Color = this.Model().Color();
+        const is_of_human: boolean = this.Model().Is_Of_Human();
+        const is_selectable: boolean = this.Model().Is_Selectable();
 
         return (
             <div
                 className={
-                    this.props.model.Is_Selected() ?
+                    this.Model().Is_Selected() ?
                         `Player_Selected_Stake` :
                         `Player_Stake`
                 }
@@ -587,7 +739,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                         () => { }
                 }
             >
-                {this.props.model.Card().Name()}
+                {this.Model().Card().Name()}
             </div>
         );
     }
