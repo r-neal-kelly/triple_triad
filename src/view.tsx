@@ -2,128 +2,38 @@ import "./view.css";
 
 import React from "react";
 
-import * as Messenger from "./messenger";
 import * as Event from "./event";
 import * as Model from "./model";
 
-const BEFORE_: Messenger.Publisher_Name = `Before_`;
-const ON_: Messenger.Publisher_Name = `On_`;
-const AFTER_: Messenger.Publisher_Name = `After_`;
+const BEFORE: Event.Name_Part = Event.BEFORE;
+const ON: Event.Name_Part = Event.ON;
+const AFTER: Event.Name_Part = Event.AFTER;
 
-const PLAYER_SELECT_STAKE: Messenger.Publisher_Name = `Player_Select_Stake`;
-const PLAYER_PLACE_STAKE: Messenger.Publisher_Name = `Player_Place_Stake`;
-
-async function Publish_Event({
-    messenger,
-    publisher_name_affix,
-    publisher_name_suffixes,
-    publisher_info,
-}: {
-    messenger: Messenger.Instance,
-    publisher_name_affix: Messenger.Publisher_Name,
-    publisher_name_suffixes: Array<Messenger.Publisher_Name>,
-    publisher_info: Messenger.Publisher_Info,
-}):
-    Promise<void>
-{
-    for (const publisher_name_prefix of [BEFORE_, ON_, AFTER_]) {
-        const promises: Array<Promise<void>> = publisher_name_suffixes.map(function (
-            publisher_name_suffix: Messenger.Publisher_Name,
-        ):
-            Promise<void>
-        {
-            return messenger.Publish(publisher_name_prefix + publisher_name_affix + `_` + publisher_name_suffix, publisher_info);
-        });
-        promises.push(
-            messenger.Publish(publisher_name_prefix + publisher_name_affix, publisher_info),
-        );
-        await Promise.all(promises);
-    }
-}
-
-class Subscriptions
-{
-    #owner: any;
-    #messenger: Messenger.Instance;
-    #subscriptions: { [index: Messenger.Publisher_Name]: Messenger.Subscription };
-
-    constructor(
-        owner: any,
-        messenger: Messenger.Instance,
-    )
-    {
-        this.#owner = owner;
-        this.#messenger = messenger;
-        this.#subscriptions = {};
-    }
-
-    async Subscribe(
-        subscription_tuples: Array<[
-            Messenger.Publisher_Name,
-            Messenger.Subscriber_Handler,
-        ]>,
-    ):
-        Promise<void[]>
-    {
-        return Promise.all(subscription_tuples.map(async function (
-            this: Subscriptions,
-            [
-                publisher_name,
-                subscription_handler,
-            ],
-        ):
-            Promise<void>
-        {
-            this.#subscriptions[publisher_name] = await this.#messenger.Subscribe(
-                publisher_name,
-                {
-                    handler: subscription_handler.bind(this.#owner),
-                },
-            );
-        }, this));
-    }
-
-    async Unsubscribe_All():
-        Promise<void[]>
-    {
-        return Promise.all(Object.values(this.#subscriptions).map(function (
-            this: Subscriptions,
-            subscription,
-        ):
-            Promise<void>
-        {
-            return this.#messenger.Unsubscribe(subscription);
-        }, this));
-    }
-}
+const PLAYER_SELECT_STAKE: Event.Name_Part = `Player_Select_Stake`;
+const PLAYER_PLACE_STAKE: Event.Name_Part = `Player_Place_Stake`;
 
 type Arena_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Arena,
 }
 
 export class Arena extends React.Component<Arena_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Arena_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     componentDidMount():
         void
     {
-        this.#subscriptions.Subscribe([
-        ]);
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():
@@ -133,12 +43,12 @@ export class Arena extends React.Component<Arena_Props>
             <div className="Arena">
                 <Player
                     key={0}
-                    messenger={this.props.messenger}
+                    event_grid={this.props.event_grid}
                     model={this.props.model.Player(0)}
                     index={0}
                 />
                 <Board
-                    messenger={this.props.messenger}
+                    event_grid={this.props.event_grid}
                     model={this.props.model.Board()}
                 />
                 {Array(this.props.model.Player_Count() - 1).fill(null).map((_, index) =>
@@ -148,7 +58,7 @@ export class Arena extends React.Component<Arena_Props>
                     return (
                         <Player
                             key={player_index}
-                            messenger={this.props.messenger}
+                            event_grid={this.props.event_grid}
                             model={this.props.model.Player(player_index)}
                             index={player_index}
                         />
@@ -160,21 +70,12 @@ export class Arena extends React.Component<Arena_Props>
 }
 
 type Board_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Board,
 }
 
 class Board extends React.Component<Board_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Board_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     async On_Player_Place_Stake({
         cell_index,
     }: {
@@ -189,18 +90,22 @@ class Board extends React.Component<Board_Props>
     componentDidMount():
         void
     {
-        this.#subscriptions.Subscribe([
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
             [
-                ON_ + PLAYER_PLACE_STAKE,
-                this.On_Player_Place_Stake,
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
+                    event_handler: this.On_Player_Place_Stake,
+                },
             ],
-        ]);
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():
@@ -221,7 +126,7 @@ class Board extends React.Component<Board_Props>
                             return (
                                 <Board_Stake
                                     key={index}
-                                    messenger={this.props.messenger}
+                                    event_grid={this.props.event_grid}
                                     model={stake}
                                     index={index}
                                 />
@@ -230,7 +135,7 @@ class Board extends React.Component<Board_Props>
                             return (
                                 <Board_Cell
                                     key={index}
-                                    messenger={this.props.messenger}
+                                    event_grid={this.props.event_grid}
                                     model={this.props.model}
                                     index={index}
                                 />
@@ -244,22 +149,13 @@ class Board extends React.Component<Board_Props>
 }
 
 type Board_Cell_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Board,
     index: Model.Cell_Index,
 }
 
 class Board_Cell extends React.Component<Board_Cell_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Board_Cell_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -273,19 +169,16 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 const player_index: Model.Player_Index = this.props.model.Current_Player_Index();
                 const cell_index: Model.Cell_Index = this.props.index;
 
-                await Publish_Event({
-                    messenger: this.props.messenger,
-                    publisher_name_affix: PLAYER_PLACE_STAKE,
-                    publisher_name_suffixes: [
+                this.props.event_grid.Send_Event({
+                    name_affix: PLAYER_PLACE_STAKE,
+                    name_suffixes: [
                         player_index.toString(),
                     ],
-                    publisher_info: Object.freeze({
-                        data: Object.freeze({
-                            player_index,
-                            cell_index,
-                        }),
-                        disable_until_complete: true,
-                    }),
+                    data: {
+                        player_index,
+                        cell_index,
+                    },
+                    is_atomic: true,
                 });
             }
 
@@ -312,22 +205,26 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     componentDidMount():
         void
     {
-        this.#subscriptions.Subscribe([
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
             [
-                AFTER_ + PLAYER_SELECT_STAKE,
-                this.After_Player_Select_Stake,
+                {
+                    event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
+                    event_handler: this.After_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE),
+                    event_handler: this.After_Player_Place_Stake,
+                },
             ],
-            [
-                AFTER_ + PLAYER_PLACE_STAKE,
-                this.After_Player_Place_Stake,
-            ],
-        ]);
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():
@@ -353,33 +250,28 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 }
 
 type Board_Stake_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Stake,
     index: Model.Stake_Index,
 }
 
 class Board_Stake extends React.Component<Board_Stake_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Board_Stake_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     componentDidMount():
         void
     {
-        this.#subscriptions.Subscribe([
-        ]);
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():
@@ -403,22 +295,13 @@ class Board_Stake extends React.Component<Board_Stake_Props>
 }
 
 type Player_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Player,
     index: Model.Player_Index,
 }
 
 class Player extends React.Component<Player_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Player_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     async After_This_Player_Place_Stake():
         Promise<void>
     {
@@ -430,18 +313,22 @@ class Player extends React.Component<Player_Props>
     {
         const player_index: Model.Player_Index = this.props.index;
 
-        this.#subscriptions.Subscribe([
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
             [
-                AFTER_ + PLAYER_PLACE_STAKE + `_` + player_index,
-                this.After_This_Player_Place_Stake,
+                {
+                    event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.After_This_Player_Place_Stake,
+                },
             ],
-        ]);
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():
@@ -455,7 +342,7 @@ class Player extends React.Component<Player_Props>
             >
                 <Player_Turn_Icon
                     key={this.props.index}
-                    messenger={this.props.messenger}
+                    event_grid={this.props.event_grid}
                     model={this.props.model}
                     index={this.props.index}
                 />
@@ -472,7 +359,7 @@ class Player extends React.Component<Player_Props>
                             return (
                                 <Player_Stake
                                     key={index}
-                                    messenger={this.props.messenger}
+                                    event_grid={this.props.event_grid}
                                     model={stake}
                                     index={index}
                                 />
@@ -486,33 +373,28 @@ class Player extends React.Component<Player_Props>
 }
 
 type Player_Turn_Icon_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Player,
     index: Model.Player_Index,
 }
 
 class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Player_Turn_Icon_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     componentDidMount():
         void
     {
-        this.#subscriptions.Subscribe([
-        ]);
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():
@@ -533,22 +415,13 @@ class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
 }
 
 type Player_Stake_Props = {
-    messenger: Messenger.Instance,
+    event_grid: Event.Grid,
     model: Model.Stake,
     index: Model.Stake_Index,
 }
 
 class Player_Stake extends React.Component<Player_Stake_Props>
 {
-    #subscriptions: Subscriptions;
-
-    constructor(props: Player_Stake_Props)
-    {
-        super(props);
-
-        this.#subscriptions = new Subscriptions(this, this.props.messenger);
-    }
-
     async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -564,19 +437,16 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                     const player_index: Model.Player_Index = player.Index();
                     const stake_index: Model.Stake_Index = this.props.index;
 
-                    await Publish_Event({
-                        messenger: this.props.messenger,
-                        publisher_name_affix: PLAYER_SELECT_STAKE,
-                        publisher_name_suffixes: [
+                    this.props.event_grid.Send_Event({
+                        name_affix: PLAYER_SELECT_STAKE,
+                        name_suffixes: [
                             player_index.toString(),
                         ],
-                        publisher_info: Object.freeze({
-                            data: Object.freeze({
-                                player_index,
-                                stake_index,
-                            }),
-                            disable_until_complete: true,
-                        }),
+                        data: {
+                            player_index,
+                            stake_index,
+                        },
+                        is_atomic: true,
                     });
                 }
             }
@@ -604,18 +474,22 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     {
         const player_index: Model.Player_Index = this.props.model.Claimant().Index();
 
-        this.#subscriptions.Subscribe([
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
             [
-                ON_ + PLAYER_SELECT_STAKE + `_` + player_index,
-                this.On_This_Player_Select_Stake,
+                {
+                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Select_Stake,
+                },
             ],
-        ]);
+        );
     }
 
     componentWillUnmount():
         void
     {
-        this.#subscriptions.Unsubscribe_All();
+        this.props.event_grid.Remove(this);
     }
 
     render():

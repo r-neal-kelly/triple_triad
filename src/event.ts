@@ -155,7 +155,7 @@ export class Grid
     async Send_Event(event_info: Info):
         Promise<void>
     {
-        await new Instance(event_info).Start(this.#messenger);
+        await new Instance(this.#messenger, event_info).Start();
     }
 };
 
@@ -188,7 +188,7 @@ class Listeners
         const listener_handle: Listener_Handle = await messenger.Subscribe(
             listener_info.event_name.As_String(),
             {
-                handler: listener_info.handler.bind(object),
+                handler: listener_info.event_handler.bind(object),
             } as Messenger.Subscriber_Info,
         );
         this.#listener_handles.add(listener_handle);
@@ -279,10 +279,10 @@ class Listeners
 
 export type Listener_Info = {
     event_name: Name,
-    handler: Listener_Handler,
+    event_handler: Handler,
 };
 
-export type Listener_Handler =
+export type Handler =
     Messenger.Subscriber_Handler;
 
 export type Listener_Handle =
@@ -347,6 +347,7 @@ export type Data =
 
 class Instance
 {
+    #messenger: Messenger.Instance;
     #name_affix: Name_Part;
     #name_suffixes: Array<Name_Part>;
     #data: Data;
@@ -355,18 +356,24 @@ class Instance
     #is_started: boolean;
     #is_stopped: boolean;
 
-    constructor({
-        name_affix,
-        name_suffixes = [],
-        data = {},
-        is_atomic = true,
-    }: Info)
+    constructor(
+        messenger: Messenger.Instance,
+        {
+            name_affix,
+            name_suffixes = [],
+            data = {},
+            is_atomic = true,
+        }: Info
+    )
     {
         if (data.event != null) {
             throw new Error(`'data' contains a property called 'event' which will be overridden.`);
+        } else if (Object.isFrozen(data)) {
+            throw new Error(`'data' must not be frozen in order to add this event to it. It will then be frozen for you.`);
         } else {
             data.event = this;
 
+            this.#messenger = messenger;
             this.#name_affix = name_affix;
             this.#name_suffixes = Array.from(name_suffixes);
             this.#data = Object.freeze(data);
@@ -377,7 +384,7 @@ class Instance
         }
     }
 
-    async Start(messenger: Messenger.Instance):
+    async Start():
         Promise<void>
     {
         if (this.#is_started) {
@@ -396,13 +403,13 @@ class Instance
                     ):
                         Promise<void>
                     {
-                        await messenger.Publish(
+                        await this.#messenger.Publish(
                             new Name(name_prefix, this.#name_affix, name_suffix).As_String(),
                             publisher_info,
                         );
                     }, this);
                     promises.push(
-                        messenger.Publish(
+                        this.#messenger.Publish(
                             new Name(name_prefix, this.#name_affix).As_String(),
                             publisher_info,
                         ),

@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import * as Messenger from "./messenger";
 import * as Event from "./event";
 import * as Model from "./model";
 import * as View from "./view";
@@ -11,7 +10,6 @@ type Main_Props = {
 
 class Main extends React.Component<Main_Props>
 {
-    #messenger: Messenger.Instance;
     #event_grid: Event.Grid;
     #packs: Model.Packs;
     #rules: Model.Rules;
@@ -22,7 +20,6 @@ class Main extends React.Component<Main_Props>
     {
         super(props);
 
-        this.#messenger = new Messenger.Instance();
         this.#event_grid = new Event.Grid();
 
         this.#packs = new Model.Packs();
@@ -98,7 +95,7 @@ class Main extends React.Component<Main_Props>
                     Triple Triad
                 </h1>
                 <View.Arena
-                    messenger={this.#messenger}
+                    event_grid={this.#event_grid}
                     model={this.#arena}
                 />
             </div>
