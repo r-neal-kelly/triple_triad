@@ -19,6 +19,54 @@ type Arena_Props = {
 
 export class Arena extends React.Component<Arena_Props>
 {
+    #board: Board | null;
+    #players: Array<Player | null>;
+
+    constructor(props: Arena_Props)
+    {
+        super(props);
+
+        this.#board = null;
+        this.#players = new Array(this.props.model.Player_Count()).fill(null);
+    }
+
+    Board():
+        Board
+    {
+        if (!this.#board) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#board as Board;
+        }
+    }
+
+    Player(player_index: Model.Player_Index):
+        Player
+    {
+        if (player_index >= 0 && player_index < this.#players.length) {
+            throw new Error(`'player_index' of '${player_index}' is invalid.`);
+        } else if (!this.#players[player_index]) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#players[player_index] as Player;
+        }
+    }
+
+    Players():
+        Array<Player>
+    {
+        const players: Array<Player> = [];
+        for (const player of this.#players) {
+            if (!player) {
+                throw new Error(`Component has not yet been rendered.`);
+            } else {
+                players.push(player);
+            }
+        }
+
+        return players;
+    }
+
     componentDidMount():
         void
     {
@@ -42,12 +90,17 @@ export class Arena extends React.Component<Arena_Props>
         return (
             <div className="Arena">
                 <Player
-                    key={0}
+                    key={`player_${0}`}
+                    parent={this}
+                    ref={ref => this.#players[0] = ref}
                     event_grid={this.props.event_grid}
                     model={this.props.model.Player(0)}
                     index={0}
                 />
                 <Board
+                    key={`board`}
+                    parent={this}
+                    ref={ref => this.#board = ref}
                     event_grid={this.props.event_grid}
                     model={this.props.model.Board()}
                 />
@@ -57,7 +110,9 @@ export class Arena extends React.Component<Arena_Props>
 
                     return (
                         <Player
-                            key={player_index}
+                            key={`player_${player_index}`}
+                            parent={this}
+                            ref={ref => this.#players[player_index] = ref}
                             event_grid={this.props.event_grid}
                             model={this.props.model.Player(player_index)}
                             index={player_index}
@@ -70,12 +125,19 @@ export class Arena extends React.Component<Arena_Props>
 }
 
 type Board_Props = {
+    parent: Arena,
     event_grid: Event.Grid,
     model: Model.Board,
 }
 
 class Board extends React.Component<Board_Props>
 {
+    Arena():
+        Arena
+    {
+        return this.props.parent;
+    }
+
     async On_Player_Place_Stake({
         cell_index,
     }: {
@@ -295,6 +357,7 @@ class Board_Stake extends React.Component<Board_Stake_Props>
 }
 
 type Player_Props = {
+    parent: Arena,
     event_grid: Event.Grid,
     model: Model.Player,
     index: Model.Player_Index,
@@ -302,6 +365,12 @@ type Player_Props = {
 
 class Player extends React.Component<Player_Props>
 {
+    Arena():
+        Arena
+    {
+        return this.props.parent;
+    }
+
     async After_This_Player_Place_Stake():
         Promise<void>
     {
