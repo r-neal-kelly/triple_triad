@@ -343,7 +343,7 @@ export type Info = {
 };
 
 export type Data =
-    Messenger.Publisher_Data;
+    Object;
 
 class Instance
 {
@@ -363,15 +363,15 @@ class Instance
             name_suffixes = [],
             data = {},
             is_atomic = true,
-        }: Info
+        }: Info,
     )
     {
-        if (data.event != null) {
+        if ((data as any)["event"] != null) {
             throw new Error(`'data' contains a property called 'event' which will be overridden.`);
         } else if (Object.isFrozen(data)) {
             throw new Error(`'data' must not be frozen in order to add this event to it. It will then be frozen for you.`);
         } else {
-            data.event = this;
+            (data as any)["event"] = this;
 
             this.#messenger = messenger;
             this.#name_affix = name_affix;
