@@ -1401,7 +1401,15 @@ export class Computer_Player extends Player
         }
 
         // these will need to be chosen based on observing the rules and cards around empty cells on the board.
-        // currently we just do it randomly
+        // currently we just do it randomly.
+        // essentially, we'll put a non-state-changing array of board-frames, each as if a stake was placed in a free-cell.
+        // and we do that for all stakes. so if there's 8 free cells we would end up with 8 cell * 5 stakes worth of frames.
+        // that will use the board's rule evaluation so we don't have to repeat it here.
+        // then we can use another layer of ai here to determine which frame it likes the best. things like there being more
+        // stakes in their favor are heavily weighted, otherwise it can go with more subtle algorithms such as leaving a
+        // vulnerable card. we might do a series of steps by predicting which card the next player will put on the board and
+        // going from there, but we'll avoid doing that for now because it's extremely non-trivial.
+        // doing things this way means that we need to make the Stake type static and unchangleable and move claimant status to the board.
         const stake_index: Stake_Index = Math.floor(Math.random() * this.Stake_Count());
         const cell_index: Cell_Index = empty_cells[Math.floor(Math.random() * empty_cells.length)];
 
