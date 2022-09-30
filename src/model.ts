@@ -722,11 +722,20 @@ export class Arena
         } else {
             this.#players = [];
             for (let idx = 0, end = player_count; idx < end; idx += 1) {
-                this.#players.push(new Player({
-                    arena: this,
-                    index: idx,
-                    selection: selections[idx],
-                }));
+                const selection: Selection = selections[idx];
+                if (selection.Is_Of_Human()) {
+                    this.#players.push(new Human_Player({
+                        arena: this,
+                        index: idx,
+                        selection: selections[idx],
+                    }));
+                } else {
+                    this.#players.push(new Computer_Player({
+                        arena: this,
+                        index: idx,
+                        selection: selections[idx],
+                    }));
+                }
             }
 
             this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
@@ -809,13 +818,16 @@ export class Arena
     Next_Turn():
         boolean
     {
-        // we need to do something when the turns are up. keep track of max_turns maybe, which should be easily calc'd.
-        this.#turn_queue_index += 1;
-        if (this.#turn_queue_index === this.#turn_queue.length) {
-            this.#turn_queue_index = 0;
-        }
+        if (this.Board().Cell_Count() !== this.Board().Stake_Count()) {
+            this.#turn_queue_index += 1;
+            if (this.#turn_queue_index === this.#turn_queue.length) {
+                this.#turn_queue_index = 0;
+            }
 
-        return false; // this should return true if the game is over
+            return false;
+        } else {
+            return true;
+        }
     }
 };
 
@@ -1139,8 +1151,14 @@ export class Board
         }
     }
 
+    Cells():
+        Array<Stake | null>
+    {
+        return Array.from(this.#cells);
+    }
+
     Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
-        void
+        boolean
     {
         if (this.#cells[cell_index] != null) {
             throw new Error(`Stake already exists in cell_index ${cell_index}.`);
@@ -1152,6 +1170,8 @@ export class Board
             this.#stake_count += 1;
 
             this.#Evaluate_Cell(cell_index);
+
+            return this.Arena().Next_Turn();
         }
     }
 
@@ -1238,6 +1258,12 @@ export class Player
         Rules
     {
         return this.Arena().Rules();
+    }
+
+    Board():
+        Board
+    {
+        return this.Arena().Board();
     }
 
     Index():
@@ -1351,6 +1377,51 @@ export class Player
         boolean
     {
         return this.Arena().Current_Player() === this;
+    }
+}
+
+export class Human_Player extends Player
+{
+}
+
+export class Computer_Player extends Player
+{
+    Select_Stake_And_Cell():
+        {
+            selection_indices: Array<Stake_Index>,
+            cell_index: Cell_Index,
+        }
+    {
+        const cells: Array<Stake | null> = this.Board().Cells();
+        const empty_cells: Array<Cell_Index> = [];
+        for (let idx = 0, end = cells.length; idx < end; idx += 1) {
+            if (cells[idx] == null) {
+                empty_cells.push(idx);
+            }
+        }
+
+        // these will need to be chosen based on observing the rules and cards around empty cells on the board.
+        // currently we just do it randomly
+        const stake_index: Stake_Index = Math.floor(Math.random() * this.Stake_Count());
+        const cell_index: Cell_Index = empty_cells[Math.floor(Math.random() * empty_cells.length)];
+
+        // used to give the impression that the ai is choosing a stake. smoothly lands on the stake it selects.
+        // we can add other impression algorithms heres and choose them randomly
+        const selection_indices: Array<Stake_Index> = [];
+        for (let idx = 0, end = this.Stake_Count(); idx < end; idx += 1) {
+            selection_indices.push(idx);
+        }
+        if (selection_indices[selection_indices.length - 1] !== stake_index) {
+            for (let idx = this.Stake_Count() - 1, end = stake_index; idx > end;) {
+                idx -= 1;
+                selection_indices.push(idx);
+            }
+        }
+
+        return ({
+            selection_indices,
+            cell_index,
+        });
     }
 }
 

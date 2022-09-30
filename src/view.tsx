@@ -5,17 +5,38 @@ import React from "react";
 import * as Event from "./event";
 import * as Model from "./model";
 
+const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
+
 const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
 const AFTER: Event.Name_Prefix = Event.AFTER;
 
+const GAME_START: Event.Name_Affix = `Game_Start`;
+const GAME_STOP: Event.Name_Affix = `Game_Stop`;
 const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
+const PLAYER_STOP_TURN: Event.Name_Affix = `Player_Stop_Turn`;
 const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
 const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
+
+// might want to turn these into full classes so that the sender has to fill out the info properly.
+// that would mean changing how the event types add the event instance to the data
+interface Game_Start_Data
+{
+}
+
+interface Game_Stop_Data
+{
+}
 
 interface Player_Start_Turn_Data
 {
     player_index: Model.Player_Index,
+}
+
+interface Player_Stop_Turn_Data
+{
+    player_index: Model.Player_Index,
+    is_game_over: boolean,
 }
 
 interface Player_Select_Stake_Data
@@ -101,16 +122,12 @@ export class Arena extends React.Component<Arena_Props>
         return players;
     }
 
-    componentDidMount():
-        void
+    async On_Game_Start(
+        {
+        }: Game_Start_Data,
+    ):
+        Promise<void>
     {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-            ],
-        );
-
         const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
         this.props.event_grid.Send_Event({
             name_affix: PLAYER_START_TURN,
@@ -120,6 +137,80 @@ export class Arena extends React.Component<Arena_Props>
             data: {
                 player_index: current_player_index,
             } as Player_Start_Turn_Data,
+            is_atomic: true,
+        });
+    }
+
+    async On_Game_Stop(
+        {
+        }: Game_Start_Data,
+    ):
+        Promise<void>
+    {
+        console.log("game over");
+
+        // we would display the winner at this point.
+    }
+
+    async On_Player_Stop_Turn(
+        {
+            is_game_over,
+        }: Player_Stop_Turn_Data,
+    ):
+        Promise<void>
+    {
+        if (is_game_over) {
+            this.props.event_grid.Send_Event({
+                name_affix: GAME_STOP,
+                name_suffixes: [
+                ],
+                data: {
+                } as Game_Stop_Data,
+                is_atomic: true,
+            });
+        } else {
+            const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
+            this.props.event_grid.Send_Event({
+                name_affix: PLAYER_START_TURN,
+                name_suffixes: [
+                    current_player_index.toString(),
+                ],
+                data: {
+                    player_index: current_player_index,
+                } as Player_Start_Turn_Data,
+                is_atomic: true,
+            });
+        }
+    }
+
+    componentDidMount():
+        void
+    {
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+                {
+                    event_name: new Event.Name(ON, GAME_START),
+                    event_handler: this.On_Game_Start,
+                },
+                {
+                    event_name: new Event.Name(ON, GAME_STOP),
+                    event_handler: this.On_Game_Stop,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                    event_handler: this.On_Player_Stop_Turn,
+                },
+            ],
+        );
+
+        this.props.event_grid.Send_Event({
+            name_affix: GAME_START,
+            name_suffixes: [
+            ],
+            data: {
+            } as Game_Start_Data,
             is_atomic: true,
         });
     }
@@ -219,13 +310,26 @@ class Board extends React.Component<Board_Props>
 
     async On_Player_Place_Stake(
         {
+            player_index,
             cell_index,
         }: Player_Place_Stake_Data,
     ):
         Promise<void>
     {
-        this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        const is_game_over = this.Model().Place_Current_Player_Selected_Stake(cell_index);
         this.forceUpdate();
+
+        this.props.event_grid.Send_Event({
+            name_affix: PLAYER_STOP_TURN,
+            name_suffixes: [
+                player_index.toString(),
+            ],
+            data: {
+                player_index,
+                is_game_over,
+            } as Player_Stop_Turn_Data,
+            is_atomic: true,
+        });
     }
 
     componentDidMount():
@@ -565,13 +669,17 @@ class Player extends React.Component<Player_Props>
     ):
         Promise<void>
     {
+        this.forceUpdate();
+
         if (this.Model().Is_Computer()) {
-            console.log("I am a computer");
+            const computer_player: Model.Computer_Player = this.Model() as Model.Computer_Player;
+            const {
+                selection_indices,
+                cell_index,
+            } = computer_player.Select_Stake_And_Cell();
 
-            for (const stake of this.Stakes()) {
-                await Wait(768);
-
-                const stake_index: Model.Stake_Index = stake.Index();
+            for (const selection_index of selection_indices) {
+                await Wait(AI_SELECTION_WAIT_MILLISECONDS);
 
                 this.props.event_grid.Send_Event({
                     name_affix: PLAYER_SELECT_STAKE,
@@ -580,11 +688,25 @@ class Player extends React.Component<Player_Props>
                     ],
                     data: {
                         player_index,
-                        stake_index,
+                        stake_index: selection_index,
                     } as Player_Select_Stake_Data,
                     is_atomic: true,
                 });
             }
+
+            await Wait(AI_SELECTION_WAIT_MILLISECONDS);
+
+            this.props.event_grid.Send_Event({
+                name_affix: PLAYER_PLACE_STAKE,
+                name_suffixes: [
+                    player_index.toString(),
+                ],
+                data: {
+                    player_index,
+                    cell_index,
+                } as Player_Place_Stake_Data,
+                is_atomic: true,
+            });
         }
     }
 
