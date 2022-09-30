@@ -35,6 +35,16 @@ type Arena_Props = {
     model: Model.Arena,
 }
 
+async function Wait(milliseconds: number):
+    Promise<void>
+{
+    return new Promise(function (resolve, reject):
+        void
+    {
+        setTimeout(resolve, milliseconds);
+    });
+}
+
 export class Arena extends React.Component<Arena_Props>
 {
     #board: Board | null;
@@ -298,6 +308,12 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         return this.props.model;
     }
 
+    Index():
+        Model.Cell_Index
+    {
+        return this.props.index;
+    }
+
     Board():
         Board
     {
@@ -418,6 +434,12 @@ class Board_Stake extends React.Component<Board_Stake_Props>
         return this.props.model;
     }
 
+    Index():
+        Model.Stake_Index
+    {
+        return this.props.index;
+    }
+
     Board():
         Board
     {
@@ -487,6 +509,12 @@ class Player extends React.Component<Player_Props>
         return this.props.model;
     }
 
+    Index():
+        Model.Player_Index
+    {
+        return this.props.index;
+    }
+
     Arena():
         Arena
     {
@@ -532,12 +560,31 @@ class Player extends React.Component<Player_Props>
 
     async On_This_Player_Start_Turn(
         {
+            player_index,
         }: Player_Start_Turn_Data,
     ):
         Promise<void>
     {
         if (this.Model().Is_Computer()) {
             console.log("I am a computer");
+
+            for (const stake of this.Stakes()) {
+                await Wait(768);
+
+                const stake_index: Model.Stake_Index = stake.Index();
+
+                this.props.event_grid.Send_Event({
+                    name_affix: PLAYER_SELECT_STAKE,
+                    name_suffixes: [
+                        player_index.toString(),
+                    ],
+                    data: {
+                        player_index,
+                        stake_index,
+                    } as Player_Select_Stake_Data,
+                    is_atomic: true,
+                });
+            }
         }
     }
 
@@ -658,6 +705,12 @@ class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
         return this.props.model;
     }
 
+    Index():
+        Model.Player_Index
+    {
+        return this.props.index;
+    }
+
     Player():
         Player
     {
@@ -711,6 +764,12 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         Model.Stake
     {
         return this.props.model;
+    }
+
+    Index():
+        Model.Stake_Index
+    {
+        return this.props.index;
     }
 
     Player():

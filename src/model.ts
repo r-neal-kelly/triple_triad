@@ -807,14 +807,15 @@ export class Arena
     }
 
     Next_Turn():
-        void // might want to return end of game signal
+        boolean
     {
         // we need to do something when the turns are up. keep track of max_turns maybe, which should be easily calc'd.
-        // this should update and other game state
         this.#turn_queue_index += 1;
         if (this.#turn_queue_index === this.#turn_queue.length) {
             this.#turn_queue_index = 0;
         }
+
+        return false; // this should return true if the game is over
     }
 };
 
