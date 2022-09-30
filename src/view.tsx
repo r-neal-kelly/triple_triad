@@ -9,20 +9,26 @@ const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
 const AFTER: Event.Name_Prefix = Event.AFTER;
 
+const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
 const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
 const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
+
+interface Player_Start_Turn_Data
+{
+    player_index: Model.Player_Index,
+}
 
 interface Player_Select_Stake_Data
 {
     player_index: Model.Player_Index,
     stake_index: Model.Stake_Index,
-};
+}
 
 interface Player_Place_Stake_Data
 {
     player_index: Model.Player_Index,
     cell_index: Model.Cell_Index,
-};
+}
 
 type Arena_Props = {
     event_grid: Event.Grid,
@@ -94,6 +100,18 @@ export class Arena extends React.Component<Arena_Props>
             [
             ],
         );
+
+        const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
+        this.props.event_grid.Send_Event({
+            name_affix: PLAYER_START_TURN,
+            name_suffixes: [
+                current_player_index.toString(),
+            ],
+            data: {
+                player_index: current_player_index,
+            } as Player_Start_Turn_Data,
+            is_atomic: true,
+        });
     }
 
     componentWillUnmount():
@@ -512,6 +530,17 @@ class Player extends React.Component<Player_Props>
         return stakes;
     }
 
+    async On_This_Player_Start_Turn(
+        {
+        }: Player_Start_Turn_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Model().Is_Computer()) {
+            console.log("I am a computer");
+        }
+    }
+
     async On_This_Player_Select_Stake(
         {
             stake_index,
@@ -548,6 +577,10 @@ class Player extends React.Component<Player_Props>
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
+                {
+                    event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                    event_handler: this.On_This_Player_Start_Turn,
+                },
                 {
                     event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
                     event_handler: this.On_This_Player_Select_Stake,
