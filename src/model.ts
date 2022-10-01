@@ -40,11 +40,14 @@ type Element_Name =
 type Shuffle_Count =
     Count;
 
-type Player_Count =
+export type Player_Count =
     Count;
 
 export type Player_Index =
     Index;
+
+export type Cell_Count =
+    Count;
 
 export type Cell_Index =
     Index;
@@ -55,14 +58,17 @@ export type Stake_Count =
 export type Stake_Index =
     Index;
 
+export type Claim_Count =
+    Count;
+
+export type Claim_Index =
+    Index;
+
 /* Packs and their components as provided and represented by parsed JSON. */
 type Pack_JSON = {
     name: Pack_Name;
-    tiers: Tiers_JSON;
+    tiers: Array<Tier_JSON>;
 }
-
-type Tiers_JSON =
-    Array<Tier_JSON>;
 
 type Tier_JSON =
     Array<Card_JSON>;
@@ -92,17 +98,27 @@ export class Packs
         this.#pack_count = packs_json.length;
         this.#packs = {};
 
-        packs_json.forEach((pack_json: Pack_JSON) =>
+        packs_json.forEach(function (
+            this: Packs,
+            pack_json: Pack_JSON,
+        ):
+            void
         {
             if (this.#packs[pack_json.name] != null) {
                 throw new Error(`Pack with the name "${pack_json.name}" already exists.`);
             } else {
+                Object.freeze(pack_json);
+                Object.freeze(pack_json.tiers);
+
                 this.#packs[pack_json.name] = new Pack({
                     packs: this,
                     pack_json,
                 });
             }
-        });
+        }, this);
+
+        Object.freeze(this);
+        Object.freeze(this.#packs);
     }
 
     Pack_Count():
@@ -156,14 +172,24 @@ class Pack
         } else {
             this.#packs = packs;
             this.#name = pack_json.name;
-            this.#tiers = pack_json.tiers.map((tier_json: Tier_JSON, tier_index: Tier_Index) =>
+            this.#tiers = pack_json.tiers.map(function (
+                this: Pack,
+                tier_json: Tier_JSON,
+                tier_index: Tier_Index,
+            ):
+                Tier
             {
+                Object.freeze(tier_json);
+
                 return new Tier({
                     pack: this,
                     tier_index,
                     tier_json,
                 });
-            });
+            }, this);
+
+            Object.freeze(this);
+            Object.freeze(this.#tiers);
         }
     }
 
@@ -224,14 +250,24 @@ class Tier
         } else {
             this.#pack = pack;
             this.#index = tier_index;
-            this.#cards = tier_json.map((card_json: Card_JSON, card_index: Card_Index) =>
+            this.#cards = tier_json.map(function (
+                this: Tier,
+                card_json: Card_JSON,
+                card_index: Card_Index,
+            ):
+                Card
             {
+                Object.freeze(card_json);
+
                 return new Card({
                     tier: this,
                     card_index,
                     card_json,
                 });
-            });
+            }, this);
+
+            Object.freeze(this);
+            Object.freeze(this.#cards);
         }
     }
 
@@ -290,6 +326,8 @@ class Card
         this.#tier = tier;
         this.#index = card_index;
         this.#card_json = card_json;
+
+        Object.freeze(this);
     }
 
     Pack():
@@ -384,6 +422,8 @@ export class Color
             this.#green = green;
             this.#blue = blue;
             this.#alpha = alpha;
+
+            Object.freeze(this);
         }
     }
 
@@ -624,6 +664,8 @@ export class Shuffle
             this.#pack = pack;
             this.#min_tier_index = min_tier_index;
             this.#max_tier_index = max_tier_index;
+
+            Object.freeze(this);
         }
     }
 
@@ -698,6 +740,7 @@ export class Arena
     #rules: Rules;
     #board: Board;
     #players: Array<Player>;
+    #turn_count: Count;
     #turn_queue: Array<Player>; // does this need to be separate from players? if we need to keep track of humans players, we can store separate
     #turn_queue_index: Index;
     #is_input_enabled: boolean;
@@ -738,6 +781,7 @@ export class Arena
                 }
             }
 
+            this.#turn_count = rules.Cell_Count();
             this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
             this.#turn_queue_index = 0;
 
@@ -815,19 +859,30 @@ export class Arena
         return !this.Is_On_Human_Turn();
     }
 
-    Next_Turn():
-        boolean
+    Turn_Count():
+        Count
     {
-        if (this.Board().Cell_Count() !== this.Board().Stake_Count()) {
+        return this.#turn_count;
+    }
+
+    Next_Turn():
+        void
+    {
+        if (this.Is_Game_Over()) {
+            throw new Error(`No more turns, the game is over.`);
+        } else {
+            this.#turn_count -= 1;
             this.#turn_queue_index += 1;
             if (this.#turn_queue_index === this.#turn_queue.length) {
                 this.#turn_queue_index = 0;
             }
-
-            return false;
-        } else {
-            return true;
         }
+    }
+
+    Is_Game_Over():
+        boolean
+    {
+        return this.#turn_count === 0;
     }
 };
 
@@ -836,7 +891,7 @@ export class Rules
 {
     #row_count: Count;
     #column_count: Count;
-    #cell_count: Count;
+    #cell_count: Cell_Count;
     #player_count: Player_Count;
     #selection_card_count: Card_Count;
 
@@ -864,26 +919,19 @@ export class Rules
         } else {
             this.#row_count = row_count;
             this.#column_count = column_count;
-            this.#cell_count = 0;
+            this.#cell_count = this.#row_count * this.#column_count;
             this.#player_count = player_count;
-            this.#selection_card_count = 0;
+            this.#selection_card_count = Math.ceil(this.#cell_count / this.#player_count);
 
             this.#open = open;
             this.#random = random;
 
-            this.#Update_Counts();
+            Object.freeze(this);
 
             if (this.Player_Count() > this.Cell_Count()) {
                 throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
             }
         }
-    }
-
-    #Update_Counts():
-        void
-    {
-        this.#cell_count = this.#row_count * this.#column_count;
-        this.#selection_card_count = Math.ceil(this.#cell_count / this.#player_count);
     }
 
     Clone():
@@ -910,7 +958,7 @@ export class Rules
     }
 
     Cell_Count():
-        Count
+        Cell_Count
     {
         return this.#cell_count;
     }
@@ -951,19 +999,6 @@ export class Rules
             random: this.#random,
         });
     }
-
-    Deserialize(save_data: Rules_Save_Data)
-    {
-        // for this type we could just remake the object instead of deserialize, but that pattern may not hold?
-        this.#row_count = save_data.row_count;
-        this.#column_count = save_data.column_count;
-        this.#player_count = save_data.player_count;
-
-        this.#open = save_data.open;
-        this.#random = save_data.random;
-
-        this.#Update_Counts();
-    }
 }
 
 type Rules_Save_Data = {
@@ -975,7 +1010,7 @@ type Rules_Save_Data = {
     random: boolean,
 }
 
-/* Contains a list of individuals cards drawn from a collection and their color, with possible repeats. */
+/* Contains a list of individual cards drawn from a collection and their color, with possible repeats. */
 export class Selection
 {
     #collection: Collection;
@@ -1002,6 +1037,9 @@ export class Selection
             this.#color = color;
             this.#cards = Array.from(cards);
             this.#is_of_human = is_of_human;
+
+            Object.freeze(this);
+            Object.freeze(this.#cards);
         }
     }
 
@@ -1090,8 +1128,8 @@ export class Board
 {
     #arena: Arena;
 
-    #stake_count: Stake_Count;
-    #cells: Array<Stake | null>;
+    #claim_count: Claim_Count;
+    #cells: Array<Claim | null>;
 
     constructor({
         arena,
@@ -1101,7 +1139,7 @@ export class Board
     {
         this.#arena = arena;
 
-        this.#stake_count = 0;
+        this.#claim_count = 0;
         this.#cells = Array(this.Cell_Count()).fill(null);
     }
 
@@ -1130,19 +1168,25 @@ export class Board
     }
 
     Cell_Count():
-        Count
+        Cell_Count
     {
         return this.Rules().Cell_Count();
     }
 
-    Stake_Count():
-        Stake_Count
+    Cells():
+        Array<Claim | null>
     {
-        return this.#stake_count;
+        return Array.from(this.#cells);
     }
 
-    Stake(cell_index: Cell_Index):
-        Stake | null
+    Claim_Count():
+        Claim_Count
+    {
+        return this.#claim_count;
+    }
+
+    Claim(cell_index: Cell_Index):
+        Claim | null
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             return this.#cells[cell_index];
@@ -1151,27 +1195,22 @@ export class Board
         }
     }
 
-    Cells():
-        Array<Stake | null>
-    {
-        return Array.from(this.#cells);
-    }
-
     Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
-        boolean
+        void
     {
         if (this.#cells[cell_index] != null) {
-            throw new Error(`Stake already exists in cell_index ${cell_index}.`);
+            throw new Error(`Claim already exists in cell_index ${cell_index}.`);
         } else {
             const current_player: Player = this.Current_Player();
             const selected_stake: Stake = current_player.Remove_Selected_Stake();
 
-            this.#cells[cell_index] = selected_stake;
-            this.#stake_count += 1;
+            this.#cells[cell_index] = new Claim({
+                player: current_player,
+                stake: selected_stake,
+            });
+            this.#claim_count += 1;
 
             this.#Evaluate_Cell(cell_index);
-
-            return this.Arena().Next_Turn();
         }
     }
 
@@ -1211,7 +1250,40 @@ export class Board
     Is_Cell_Selectable(cell_index: Cell_Index):
         boolean
     {
-        return this.Current_Player().Has_Selected_Stake() && this.Stake(cell_index) == null;
+        return this.Current_Player().Has_Selected_Stake() && this.Claim(cell_index) == null;
+    }
+}
+
+/* Represents a player that's making a claim on a stake. */
+export class Claim
+{
+    #player: Player;
+    #stake: Stake;
+
+    constructor({
+        player,
+        stake,
+    }: {
+        player: Player,
+        stake: Stake,
+    })
+    {
+        this.#player = player;
+        this.#stake = stake;
+
+        Object.freeze(this);
+    }
+
+    Player():
+        Player
+    {
+        return this.#player;
+    }
+
+    Stake():
+        Stake
+    {
+        return this.#stake;
     }
 }
 
@@ -1242,7 +1314,7 @@ export class Player
 
         for (let idx = 0, end = selection.Card_Count(); idx < end; idx += 1) {
             this.#stakes.push(new Stake({
-                claimant: this,
+                origin: this,
                 card: selection.Card(idx),
             }));
         }
@@ -1386,13 +1458,13 @@ export class Human_Player extends Player
 
 export class Computer_Player extends Player
 {
-    Select_Stake_And_Cell():
+    Choose_Stake_And_Cell():
         {
             selection_indices: Array<Stake_Index>,
             cell_index: Cell_Index,
         }
     {
-        const cells: Array<Stake | null> = this.Board().Cells();
+        const cells: Array<Claim | null> = this.Board().Cells();
         const empty_cells: Array<Cell_Index> = [];
         for (let idx = 0, end = cells.length; idx < end; idx += 1) {
             if (cells[idx] == null) {
@@ -1409,7 +1481,6 @@ export class Computer_Player extends Player
         // stakes in their favor are heavily weighted, otherwise it can go with more subtle algorithms such as leaving a
         // vulnerable card. we might do a series of steps by predicting which card the next player will put on the board and
         // going from there, but we'll avoid doing that for now because it's extremely non-trivial.
-        // doing things this way means that we need to make the Stake type static and unchangleable and move claimant status to the board.
         const stake_index: Stake_Index = Math.floor(Math.random() * this.Stake_Count());
         const cell_index: Cell_Index = empty_cells[Math.floor(Math.random() * empty_cells.length)];
 
@@ -1433,46 +1504,48 @@ export class Computer_Player extends Player
     }
 }
 
-/* Contains a card either on a player or on the board, and its current claimant. */
+/* Contains a card either on a player or on the board, and its origin. */
 export class Stake
 {
-    #claimant: Player;
+    #origin: Player;
     #card: Card;
 
     constructor({
-        claimant,
+        origin,
         card,
     }: {
-        claimant: Player,
+        origin: Player,
         card: Card,
     })
     {
-        this.#claimant = claimant;
+        this.#origin = origin;
         this.#card = card;
+
+        Object.freeze(this);
     }
 
     Arena():
         Arena
     {
-        return this.Claimant().Arena();
+        return this.Origin().Arena();
     }
 
     Board():
         Board
     {
-        return this.Claimant().Arena().Board();
+        return this.Origin().Arena().Board();
     }
 
-    Claimant():
+    Origin():
         Player
     {
-        return this.#claimant;
+        return this.#origin;
     }
 
     Is_Of_Human():
         boolean
     {
-        return this.Claimant().Is_Human();
+        return this.Origin().Is_Human();
     }
 
     Is_Of_Computer():
@@ -1490,13 +1563,13 @@ export class Stake
     Color():
         Color
     {
-        return this.Claimant().Color();
+        return this.Origin().Color();
     }
 
     Is_On_Player():
         boolean
     {
-        return this.Claimant().Has_Stake(this);
+        return this.Origin().Has_Stake(this);
     }
 
     Is_On_Board():
@@ -1508,12 +1581,12 @@ export class Stake
     Is_Selected():
         boolean
     {
-        return this.Claimant().Selected_Stake() === this;
+        return this.Origin().Selected_Stake() === this;
     }
 
     Is_Selectable():
         boolean
     {
-        return !this.Is_Selected() && this.Is_On_Player() && this.Claimant().Is_On_Turn();
+        return !this.Is_Selected() && this.Is_On_Player() && this.Origin().Is_On_Turn();
     }
 }

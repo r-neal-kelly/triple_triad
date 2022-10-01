@@ -271,7 +271,7 @@ type Board_Props = {
 
 class Board extends React.Component<Board_Props>
 {
-    #cells: Array<Board_Cell | Board_Stake | null>;
+    #cells: Array<Board_Cell | Board_Claim | null>;
 
     constructor(props: Board_Props)
     {
@@ -292,8 +292,8 @@ class Board extends React.Component<Board_Props>
         return this.props.parent;
     }
 
-    Cell_Or_Stake(cell_index: Model.Cell_Index):
-        Board_Cell | Board_Stake
+    Cell_Or_Claim(cell_index: Model.Cell_Index):
+        Board_Cell | Board_Claim
     {
         if (cell_index < 0 || cell_index >= this.#cells.length) {
             throw new Error(`'cell_index' of '${cell_index}' is invalid.`);
@@ -303,7 +303,7 @@ class Board extends React.Component<Board_Props>
             if (this.#cells[cell_index] instanceof Board_Cell) {
                 return this.#cells[cell_index] as Board_Cell;
             } else {
-                return this.#cells[cell_index] as Board_Stake;
+                return this.#cells[cell_index] as Board_Claim;
             }
         }
     }
@@ -316,7 +316,8 @@ class Board extends React.Component<Board_Props>
     ):
         Promise<void>
     {
-        const is_game_over = this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        this.Model().Arena().Next_Turn();
         this.forceUpdate();
 
         this.props.event_grid.Send_Event({
@@ -326,7 +327,7 @@ class Board extends React.Component<Board_Props>
             ],
             data: {
                 player_index,
-                is_game_over,
+                is_game_over: this.Model().Arena().Is_Game_Over(),
             } as Player_Stop_Turn_Data,
             is_atomic: true,
         });
@@ -366,8 +367,8 @@ class Board extends React.Component<Board_Props>
                 {
                     Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
                     {
-                        const stake: Model.Stake | null = this.Model().Stake(cell_index);
-                        if (stake == null) {
+                        const claim: Model.Claim | null = this.Model().Claim(cell_index);
+                        if (claim == null) {
                             return (
                                 <Board_Cell
                                     key={cell_index}
@@ -380,13 +381,13 @@ class Board extends React.Component<Board_Props>
                             );
                         } else {
                             return (
-                                <Board_Stake
+                                <Board_Claim
                                     key={cell_index}
                                     parent={this}
                                     ref={ref => this.#cells[cell_index] = ref}
                                     event_grid={this.props.event_grid}
-                                    model={stake}
-                                    index={cell_index}
+                                    model={claim}
+                                    index={cell_index as Model.Claim_Index}
                                 />
                             );
                         }
@@ -523,23 +524,23 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     }
 }
 
-type Board_Stake_Props = {
+type Board_Claim_Props = {
     parent: Board,
     event_grid: Event.Grid,
-    model: Model.Stake,
-    index: Model.Stake_Index,
+    model: Model.Claim,
+    index: Model.Claim_Index,
 }
 
-class Board_Stake extends React.Component<Board_Stake_Props>
+class Board_Claim extends React.Component<Board_Claim_Props>
 {
     Model():
-        Model.Stake
+        Model.Claim
     {
         return this.props.model;
     }
 
     Index():
-        Model.Stake_Index
+        Model.Claim_Index
     {
         return this.props.index;
     }
@@ -570,17 +571,17 @@ class Board_Stake extends React.Component<Board_Stake_Props>
     render():
         JSX.Element
     {
-        const color: Model.Color = this.Model().Color();
+        const color: Model.Color = this.Model().Stake().Color();
 
         return (
             <div
-                className="Board_Stake"
+                className="Board_Claim"
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                 }}
             >
                 <div>
-                    {this.Model().Card().Name()}
+                    {this.Model().Stake().Card().Name()}
                 </div>
             </div>
         );
@@ -676,8 +677,10 @@ class Player extends React.Component<Player_Props>
             const {
                 selection_indices,
                 cell_index,
-            } = computer_player.Select_Stake_And_Cell();
+            } = computer_player.Choose_Stake_And_Cell();
 
+            // we may need to while away at this until the computer chooses its stake and cell,
+            // that way there is no visual hiccup if the computer takes a bit of time
             for (const selection_index of selection_indices) {
                 await Wait(AI_SELECTION_WAIT_MILLISECONDS);
 
@@ -910,7 +913,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
             arena.Disable_Input();
 
             if (this.Model().Is_On_Player()) {
-                const player: Model.Player = this.Model().Claimant();
+                const player: Model.Player = this.Model().Origin();
                 if (player.Is_On_Turn()) {
                     const player_index: Model.Player_Index = player.Index();
                     const stake_index: Model.Stake_Index = this.props.index;

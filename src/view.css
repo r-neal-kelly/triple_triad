@@ -95,7 +95,7 @@ body,
 }
 
 .Board_Cell,
-.Board_Stake,
+.Board_Claim,
 .Player_Stake,
 .Player_Selected_Stake {
     display: flex;
@@ -116,7 +116,7 @@ body,
 }
 
 .Board_Cell,
-.Board_Stake {
+.Board_Claim {
     margin: 10px;
 }
 
