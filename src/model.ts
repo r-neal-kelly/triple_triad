@@ -1211,6 +1211,67 @@ export class Board
         return claims;
     }
 
+    Left_Of(cell_index: Cell_Index):
+        Claim | Wall | null
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index % row_count > 0) {
+                return this.Claim(cell_index - 1);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Top_Of(cell_index: Cell_Index):
+        Claim | Wall | null
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index >= row_count) {
+                return this.Claim(cell_index - row_count);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Right_Of(cell_index: Cell_Index):
+        Claim | Wall | null
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index % row_count < row_count - 1) {
+                return this.Claim(cell_index + 1);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Bottom_Of(cell_index: Cell_Index):
+        Claim | Wall | null
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            const cell_count = this.Cell_Count();
+            if (cell_index < cell_count - row_count) {
+                return this.Claim(cell_index + row_count);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
     Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
         void
     {
@@ -1221,7 +1282,7 @@ export class Board
             const selected_stake: Stake = current_player.Remove_Selected_Stake();
 
             this.#cells[cell_index] = new Claim({
-                player: current_player,
+                claimant: current_player,
                 stake: selected_stake,
             });
 
@@ -1272,33 +1333,41 @@ export class Board
 /* Represents a player that's making a claim on a stake. */
 export class Claim
 {
-    #player: Player;
+    #claimant: Player;
     #stake: Stake;
 
     constructor({
-        player,
+        claimant,
         stake,
     }: {
-        player: Player,
+        claimant: Player,
         stake: Stake,
     })
     {
-        this.#player = player;
+        this.#claimant = claimant;
         this.#stake = stake;
 
         Object.freeze(this);
     }
 
-    Player():
+    Claimant():
         Player
     {
-        return this.#player;
+        return this.#claimant;
     }
 
     Stake():
         Stake
     {
         return this.#stake;
+    }
+}
+
+/* Represents a border, or the wall on the board, which can be relevant according to the rules. */
+export class Wall
+{
+    constructor()
+    {
     }
 }
 
