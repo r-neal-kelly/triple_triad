@@ -1123,12 +1123,10 @@ export class Random_Selection extends Selection
     }
 }
 
-/* Contains stakes actively in play. */
+/* Contains claims actively in play. */
 export class Board
 {
     #arena: Arena;
-
-    #claim_count: Claim_Count;
     #cells: Array<Claim | null>;
 
     constructor({
@@ -1138,8 +1136,6 @@ export class Board
     })
     {
         this.#arena = arena;
-
-        this.#claim_count = 0;
         this.#cells = Array(this.Cell_Count()).fill(null);
     }
 
@@ -1182,7 +1178,14 @@ export class Board
     Claim_Count():
         Claim_Count
     {
-        return this.#claim_count;
+        let claim_count: Claim_Count = 0;
+        for (const claim of this.#cells) {
+            if (claim != null) {
+                claim_count += 1;
+            }
+        }
+
+        return claim_count;
     }
 
     Claim(cell_index: Cell_Index):
@@ -1193,6 +1196,19 @@ export class Board
         } else {
             throw new Error(`Invalid cell_index.`);
         }
+    }
+
+    Claims():
+        Array<Claim>
+    {
+        const claims: Array<Claim> = [];
+        for (const claim of this.#cells) {
+            if (claim != null) {
+                claims.push(claim);
+            }
+        }
+
+        return claims;
     }
 
     Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
@@ -1208,7 +1224,6 @@ export class Board
                 player: current_player,
                 stake: selected_stake,
             });
-            this.#claim_count += 1;
 
             this.#Evaluate_Cell(cell_index);
         }
