@@ -46,23 +46,26 @@ export type Player_Count =
 export type Player_Index =
     Index;
 
-export type Cell_Count =
-    Count;
-
-export type Cell_Index =
-    Index;
-
 export type Stake_Count =
     Count;
 
 export type Stake_Index =
     Index;
 
-export type Claim_Count =
+export type Row_Count =
     Count;
 
-export type Claim_Index =
+export type Column_Count =
+    Count;
+
+export type Cell_Count =
+    Count;
+
+export type Cell_Index =
     Index;
+
+export type Turn_Count =
+    Count;
 
 /* Packs and their components as provided and represented by parsed JSON. */
 type Pack_JSON = {
@@ -159,13 +162,15 @@ class Pack
     #name: Pack_Name;
     #tiers: Array<Tier>;
 
-    constructor({
-        packs,
-        pack_json,
-    }: {
-        packs: Packs,
-        pack_json: Pack_JSON,
-    })
+    constructor(
+        {
+            packs,
+            pack_json,
+        }: {
+            packs: Packs,
+            pack_json: Pack_JSON,
+        }
+    )
     {
         if (pack_json.tiers.length < 1) {
             throw new Error(`The pack ${pack_json.name} must have at least one tier.`);
@@ -235,15 +240,17 @@ class Tier
     #index: Tier_Index;
     #cards: Array<Card>;
 
-    constructor({
-        pack,
-        tier_index,
-        tier_json,
-    }: {
-        pack: Pack,
-        tier_index: Tier_Index,
-        tier_json: Tier_JSON,
-    })
+    constructor(
+        {
+            pack,
+            tier_index,
+            tier_json,
+        }: {
+            pack: Pack,
+            tier_index: Tier_Index,
+            tier_json: Tier_JSON,
+        }
+    )
     {
         if ((tier_json.length as Card_Count) < 1) {
             throw new Error(`Each tier must have at least one card.`);
@@ -313,15 +320,17 @@ class Card
     #index: Card_Index;
     #card_json: Card_JSON;
 
-    constructor({
-        tier,
-        card_index,
-        card_json,
-    }: {
-        tier: Tier,
-        card_index: Card_Index,
-        card_json: Card_JSON,
-    })
+    constructor(
+        {
+            tier,
+            card_index,
+            card_json,
+        }: {
+            tier: Tier,
+            card_index: Card_Index,
+            card_json: Card_JSON,
+        }
+    )
     {
         this.#tier = tier;
         this.#index = card_index;
@@ -391,67 +400,6 @@ class Card
     }
 }
 
-/* Contains RGBA values for a color. */
-export class Color
-{
-    #red: number;
-    #green: number;
-    #blue: number;
-    #alpha: number;
-
-    constructor({
-        red = 0,
-        green = 0,
-        blue = 0,
-        alpha = 1.0,
-    }: {
-        red?: number,
-        green?: number,
-        blue?: number,
-        alpha?: number,
-    })
-    {
-        if (red < 0 || red > 255 ||
-            green < 0 || green > 255 ||
-            blue < 0 || blue > 255) {
-            throw new Error(`Color must be from 0 to 255.`);
-        } else if (alpha < 0.0 || alpha > 1.0) {
-            throw new Error(`Alpha must be from 0.0 to 1.0`);
-        } else {
-            this.#red = red;
-            this.#green = green;
-            this.#blue = blue;
-            this.#alpha = alpha;
-
-            Object.freeze(this);
-        }
-    }
-
-    Red():
-        number
-    {
-        return this.#red;
-    }
-
-    Green():
-        number
-    {
-        return this.#green;
-    }
-
-    Blue():
-        number
-    {
-        return this.#blue;
-    }
-
-    Alpha():
-        number
-    {
-        return this.#alpha;
-    }
-}
-
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 export class Collection
 {
@@ -460,11 +408,13 @@ export class Collection
     #shuffles: { [index: Pack_Name]: Shuffle };
     #pack_card_and_counts: { [index: Pack_Name]: Array<Card_And_Count> }; // may want to keep each pack sorted
 
-    constructor({
-        default_shuffle,
-    }: {
-        default_shuffle: Shuffle,
-    })
+    constructor(
+        {
+            default_shuffle,
+        }: {
+            default_shuffle: Shuffle,
+        }
+    )
     {
         this.#default_shuffle = default_shuffle;
         this.#shuffle_count = 0;
@@ -536,15 +486,17 @@ export class Collection
 
     }
 
-    Random_Cards({
-        card_count,
-        allow_repeats = true,
-        allow_multiple_packs = false,
-    }: {
-        card_count: Card_Count,
-        allow_repeats: boolean,
-        allow_multiple_packs: boolean,
-    }):
+    Random_Cards(
+        {
+            card_count,
+            allow_repeats = true,
+            allow_multiple_packs = false,
+        }: {
+            card_count: Card_Count,
+            allow_repeats: boolean,
+            allow_multiple_packs: boolean,
+        }
+    ):
         Array<Card>
     {
         // we need to be able to select random cards from the card_and_counts too, but for now we'll keep it easy
@@ -572,73 +524,6 @@ export class Collection
     }
 }
 
-/* Contains a particular card and a count thereof. */
-class Card_And_Count
-{
-    #card: Card;
-    #count: Card_Count;
-
-    constructor({
-        card,
-        count,
-    }: {
-        card: Card,
-        count: Card_Count,
-    })
-    {
-        if (count >= 0) {
-            this.#card = card;
-            this.#count = count;
-        } else {
-            throw new Error(`count must be greater than or equal to 0.`);
-        }
-    }
-
-    Card():
-        Card
-    {
-        return this.#card;
-    }
-
-    Count():
-        Card_Count
-    {
-        return this.#count;
-    }
-
-    Add(card_count: Card_Count):
-        void
-    {
-        if (this.#count + card_count < this.#count) {
-            throw new Error(`Cannot add ${card_count} to the count.`);
-        } else {
-            this.#count += card_count;
-        }
-    }
-
-    Subtract(card_count: Card_Count):
-        void
-    {
-        if (this.#count - card_count > this.#count) {
-            throw new Error(`Cannot subtract ${card_count} from the count.`);
-        } else {
-            this.#count -= card_count;
-        }
-    }
-
-    Increment():
-        void
-    {
-        this.Add(1);
-    }
-
-    Decrement():
-        void
-    {
-        this.Subtract(1);
-    }
-}
-
 /* Provides a fine-tuned way to randomly generate a list of cards from an individual pack. */
 export class Shuffle
 {
@@ -646,15 +531,17 @@ export class Shuffle
     #min_tier_index: Tier_Index;
     #max_tier_index: Tier_Index;
 
-    constructor({
-        pack,
-        min_tier_index,
-        max_tier_index,
-    }: {
-        pack: Pack,
-        min_tier_index: Tier_Index,
-        max_tier_index: Tier_Index,
-    })
+    constructor(
+        {
+            pack,
+            min_tier_index,
+            max_tier_index,
+        }: {
+            pack: Pack,
+            min_tier_index: Tier_Index,
+            max_tier_index: Tier_Index,
+        }
+    )
     {
         if (min_tier_index > max_tier_index) {
             throw new Error(`The min_tier_index cannot be greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
@@ -734,280 +621,73 @@ export class Shuffle
     }
 }
 
-/* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
-export class Arena
+/* Contains a particular card and a count thereof. */
+class Card_And_Count
 {
-    #rules: Rules;
-    #board: Board;
-    #players: Array<Player>;
-    #turn_count: Count;
-    #turn_queue: Array<Player>; // does this need to be separate from players? if we need to keep track of humans players, we can store separate
-    #turn_queue_index: Index;
-    #is_input_enabled: boolean;
+    #card: Card;
+    #count: Card_Count;
 
-    constructor({
-        rules,
-        selections,
-    }: {
-        rules: Rules,
-        selections: Array<Selection>
-    })
+    constructor(
+        {
+            card,
+            count,
+        }: {
+            card: Card,
+            count: Card_Count,
+        }
+    )
     {
-        this.#rules = rules;
-
-        this.#board = new Board({
-            arena: this,
-        });
-
-        const player_count: Player_Count = rules.Player_Count();
-        if (selections.length !== player_count) {
-            throw new Error(`Must have a selection for each player, no more and no less.`);
+        if (count >= 0) {
+            this.#card = card;
+            this.#count = count;
         } else {
-            this.#players = [];
-            for (let idx = 0, end = player_count; idx < end; idx += 1) {
-                const selection: Selection = selections[idx];
-                if (selection.Is_Of_Human()) {
-                    this.#players.push(new Human_Player({
-                        arena: this,
-                        index: idx,
-                        selection: selections[idx],
-                    }));
-                } else {
-                    this.#players.push(new Computer_Player({
-                        arena: this,
-                        index: idx,
-                        selection: selections[idx],
-                    }));
-                }
-            }
-
-            this.#turn_count = rules.Cell_Count();
-            this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
-            this.#turn_queue_index = 0;
-
-            this.#is_input_enabled = true;
+            throw new Error(`count must be greater than or equal to 0.`);
         }
     }
 
-    Rules():
-        Rules
+    Card():
+        Card
     {
-        return this.#rules;
+        return this.#card;
     }
 
-    Board():
-        Board
-    {
-        return this.#board;
-    }
-
-    Player_Count():
-        Player_Count
-    {
-        return this.#players.length;
-    }
-
-    Player(player_index: Player_Index):
-        Player
-    {
-        if (player_index >= 0 && player_index < this.Player_Count()) {
-            return this.#players[player_index];
-        } else {
-            throw new Error("Invalid player_index.");
-        }
-    }
-
-    Current_Player():
-        Player
-    {
-        return this.#turn_queue[this.#turn_queue_index];
-    }
-
-    Current_Player_Index():
-        Player_Index
-    {
-        return this.Current_Player().Index();
-    }
-
-    Is_Input_Enabled():
-        boolean
-    {
-        return this.#is_input_enabled;
-    }
-
-    Enable_Input():
-        void
-    {
-        this.#is_input_enabled = true;
-    }
-
-    Disable_Input():
-        void
-    {
-        this.#is_input_enabled = false;
-    }
-
-    Is_On_Human_Turn():
-        boolean
-    {
-        return this.Current_Player().Is_Human();
-    }
-
-    Is_On_Computer_Turn():
-        boolean
-    {
-        return !this.Is_On_Human_Turn();
-    }
-
-    Turn_Count():
-        Count
-    {
-        return this.#turn_count;
-    }
-
-    Next_Turn():
-        void
-    {
-        if (this.Is_Game_Over()) {
-            throw new Error(`No more turns, the game is over.`);
-        } else {
-            this.#turn_count -= 1;
-            this.#turn_queue_index += 1;
-            if (this.#turn_queue_index === this.#turn_queue.length) {
-                this.#turn_queue_index = 0;
-            }
-        }
-    }
-
-    Is_Game_Over():
-        boolean
-    {
-        return this.#turn_count === 0;
-    }
-};
-
-/* A selection of rules which an arena must abide by. */
-export class Rules
-{
-    #row_count: Count;
-    #column_count: Count;
-    #cell_count: Cell_Count;
-    #player_count: Player_Count;
-    #selection_card_count: Card_Count;
-
-    #open: boolean;
-    #random: boolean;
-
-    constructor({
-        row_count = 3,
-        column_count = 3,
-        player_count = 2,
-
-        open = true,
-        random = false,
-    }: {
-        row_count?: Count,
-        column_count?: Count,
-        player_count?: Player_Count,
-
-        open?: boolean,
-        random?: boolean,
-    })
-    {
-        if (player_count < 2) {
-            throw new Error(`Must have a player_count of at least 2.`);
-        } else {
-            this.#row_count = row_count;
-            this.#column_count = column_count;
-            this.#cell_count = this.#row_count * this.#column_count;
-            this.#player_count = player_count;
-            this.#selection_card_count = Math.ceil(this.#cell_count / this.#player_count);
-
-            this.#open = open;
-            this.#random = random;
-
-            Object.freeze(this);
-
-            if (this.Player_Count() > this.Cell_Count()) {
-                throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
-            }
-        }
-    }
-
-    Clone():
-        Rules
-    {
-        const copy: Rules = Object.assign(
-            Object.create(Object.getPrototypeOf(this)),
-            this
-        );
-
-        return copy;
-    }
-
-    Row_Count():
-        Count
-    {
-        return this.#row_count;
-    }
-
-    Column_Count():
-        Count
-    {
-        return this.#column_count;
-    }
-
-    Cell_Count():
-        Cell_Count
-    {
-        return this.#cell_count;
-    }
-
-    Player_Count():
-        Player_Count
-    {
-        return this.#player_count;
-    }
-
-    Selection_Card_Count():
+    Count():
         Card_Count
     {
-        return this.#selection_card_count;
+        return this.#count;
     }
 
-    Open():
-        boolean
+    Add(card_count: Card_Count):
+        void
     {
-        return this.#open;
+        if (this.#count + card_count < this.#count) {
+            throw new Error(`Cannot add ${card_count} to the count.`);
+        } else {
+            this.#count += card_count;
+        }
     }
 
-    Random():
-        boolean
+    Subtract(card_count: Card_Count):
+        void
     {
-        return this.#random;
+        if (this.#count - card_count > this.#count) {
+            throw new Error(`Cannot subtract ${card_count} from the count.`);
+        } else {
+            this.#count -= card_count;
+        }
     }
 
-    Serialize():
-        Rules_Save_Data
+    Increment():
+        void
     {
-        return ({
-            row_count: this.#row_count,
-            column_count: this.#column_count,
-            player_count: this.#player_count,
-
-            open: this.#open,
-            random: this.#random,
-        });
+        this.Add(1);
     }
-}
 
-type Rules_Save_Data = {
-    row_count: Count,
-    column_count: Count,
-    player_count: Player_Count,
-
-    open: boolean,
-    random: boolean,
+    Decrement():
+        void
+    {
+        this.Subtract(1);
+    }
 }
 
 /* Contains a list of individual cards drawn from a collection and their color, with possible repeats. */
@@ -1018,17 +698,19 @@ export class Selection
     #cards: Array<Card>;
     #is_of_human: boolean;
 
-    constructor({
-        collection,
-        color,
-        cards,
-        is_of_human,
-    }: {
-        collection: Collection,
-        color: Color,
-        cards: Array<Card>,
-        is_of_human: boolean,
-    })
+    constructor(
+        {
+            collection,
+            color,
+            cards,
+            is_of_human,
+        }: {
+            collection: Collection,
+            color: Color,
+            cards: Array<Card>,
+            is_of_human: boolean,
+        }
+    )
     {
         if (cards.length < 1) {
             throw new Error(`Must have a least one card in the selection.`);
@@ -1091,23 +773,25 @@ export type Manual_Selection =
 /* Utilizes random generation of cards to create a selection. */
 export class Random_Selection extends Selection
 {
-    constructor({
-        collection,
-        color,
-        is_of_human,
+    constructor(
+        {
+            collection,
+            color,
+            is_of_human,
 
-        card_count,
-        allow_repeats = true,
-        allow_multiple_packs = false,
-    }: {
-        collection: Collection,
-        color: Color,
-        is_of_human: boolean,
+            card_count,
+            allow_repeats = true,
+            allow_multiple_packs = false,
+        }: {
+            collection: Collection,
+            color: Color,
+            is_of_human: boolean,
 
-        card_count: Card_Count,
-        allow_repeats?: boolean,
-        allow_multiple_packs?: boolean,
-    })
+            card_count: Card_Count,
+            allow_repeats?: boolean,
+            allow_multiple_packs?: boolean,
+        }
+    )
     {
         if (card_count < 1) {
             throw new Error(`'card_count' must be greater than 0 for a selection.`);
@@ -1118,197 +802,182 @@ export class Random_Selection extends Selection
                 allow_multiple_packs,
             });
 
-            super({ collection, color, cards, is_of_human });
+            super({
+                collection,
+                color,
+                cards,
+                is_of_human,
+            });
         }
     }
 }
 
-/* Contains claims actively in play. */
-export class Board
+/* Contains RGBA values for a color. */
+export class Color
 {
-    #arena: Arena;
-    #cells: Array<Claim | null>;
+    #red: number;
+    #green: number;
+    #blue: number;
+    #alpha: number;
 
-    constructor({
-        arena,
-    }: {
-        arena: Arena,
-    })
+    constructor(
+        {
+            red = 0,
+            green = 0,
+            blue = 0,
+            alpha = 1.0,
+        }: {
+            red?: number,
+            green?: number,
+            blue?: number,
+            alpha?: number,
+        }
+    )
     {
-        this.#arena = arena;
-        this.#cells = Array(this.Cell_Count()).fill(null);
+        if (red < 0 || red > 255 ||
+            green < 0 || green > 255 ||
+            blue < 0 || blue > 255) {
+            throw new Error(`Color must be from 0 to 255.`);
+        } else if (alpha < 0.0 || alpha > 1.0) {
+            throw new Error(`Alpha must be from 0.0 to 1.0`);
+        } else {
+            this.#red = red;
+            this.#green = green;
+            this.#blue = blue;
+            this.#alpha = alpha;
+
+            Object.freeze(this);
+        }
     }
 
-    Arena():
-        Arena
+    Red():
+        number
     {
-        return this.#arena;
+        return this.#red;
+    }
+
+    Green():
+        number
+    {
+        return this.#green;
+    }
+
+    Blue():
+        number
+    {
+        return this.#blue;
+    }
+
+    Alpha():
+        number
+    {
+        return this.#alpha;
+    }
+}
+
+/* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
+export class Arena
+{
+    #rules: Rules;
+    #players: Array<Player>;
+    #board: Board;
+
+    #turn_count: Turn_Count;
+    #turn_queue: Array<Player>; // does this need to be separate from players? if we need to keep track of humans players, we can store separate
+    #turn_queue_index: Index;
+
+    #is_input_enabled: boolean;
+
+    constructor(
+        {
+            rules,
+            selections,
+        }: {
+            rules: Rules,
+            selections: Array<Selection>
+        }
+    )
+    {
+        const player_count: Player_Count = rules.Player_Count();
+        if (selections.length !== player_count) {
+            throw new Error(`Must have a selection for each player, no more and no less.`);
+        } else {
+            this.#rules = rules;
+
+            this.#players = [];
+            for (let idx = 0, end = player_count; idx < end; idx += 1) {
+                const selection: Selection = selections[idx];
+                if (selection.Is_Of_Human()) {
+                    this.#players.push(new Human_Player({
+                        arena: this,
+                        index: idx,
+                        selection: selections[idx],
+                    }));
+                } else {
+                    this.#players.push(new Computer_Player({
+                        arena: this,
+                        index: idx,
+                        selection: selections[idx],
+                    }));
+                }
+            }
+
+            this.#board = new Board({
+                arena: this,
+            });
+
+            this.#turn_count = rules.Cell_Count();
+            this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
+            this.#turn_queue_index = 0;
+
+            this.#is_input_enabled = true;
+        }
     }
 
     Rules():
         Rules
     {
-        return this.Arena().Rules();
+        return this.#rules;
     }
 
-    Row_Count():
-        Count
+    Player_Count():
+        Player_Count
     {
-        return this.Rules().Row_Count();
+        return this.#players.length;
     }
 
-    Column_Count():
-        Count
-    {
-        return this.Rules().Column_Count();
-    }
-
-    Cell_Count():
-        Cell_Count
-    {
-        return this.Rules().Cell_Count();
-    }
-
-    Cells():
-        Array<Claim | null>
-    {
-        return Array.from(this.#cells);
-    }
-
-    Claim_Count():
-        Claim_Count
-    {
-        let claim_count: Claim_Count = 0;
-        for (const claim of this.#cells) {
-            if (claim != null) {
-                claim_count += 1;
-            }
-        }
-
-        return claim_count;
-    }
-
-    Claim(cell_index: Cell_Index):
-        Claim | null
-    {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
-            return this.#cells[cell_index];
-        } else {
-            throw new Error(`Invalid cell_index.`);
-        }
-    }
-
-    Claims():
-        Array<Claim>
-    {
-        const claims: Array<Claim> = [];
-        for (const claim of this.#cells) {
-            if (claim != null) {
-                claims.push(claim);
-            }
-        }
-
-        return claims;
-    }
-
-    Left_Of(cell_index: Cell_Index):
-        Claim | Wall | null
-    {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index % row_count > 0) {
-                return this.Claim(cell_index - 1);
-            } else {
-                return new Wall();
-            }
-        } else {
-            throw new Error(`Invalid cell_index.`);
-        }
-    }
-
-    Top_Of(cell_index: Cell_Index):
-        Claim | Wall | null
-    {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index >= row_count) {
-                return this.Claim(cell_index - row_count);
-            } else {
-                return new Wall();
-            }
-        } else {
-            throw new Error(`Invalid cell_index.`);
-        }
-    }
-
-    Right_Of(cell_index: Cell_Index):
-        Claim | Wall | null
-    {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index % row_count < row_count - 1) {
-                return this.Claim(cell_index + 1);
-            } else {
-                return new Wall();
-            }
-        } else {
-            throw new Error(`Invalid cell_index.`);
-        }
-    }
-
-    Bottom_Of(cell_index: Cell_Index):
-        Claim | Wall | null
-    {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            const cell_count = this.Cell_Count();
-            if (cell_index < cell_count - row_count) {
-                return this.Claim(cell_index + row_count);
-            } else {
-                return new Wall();
-            }
-        } else {
-            throw new Error(`Invalid cell_index.`);
-        }
-    }
-
-    Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
-        void
-    {
-        if (this.#cells[cell_index] != null) {
-            throw new Error(`Claim already exists in cell_index ${cell_index}.`);
-        } else {
-            const current_player: Player = this.Current_Player();
-            const selected_stake: Stake = current_player.Remove_Selected_Stake();
-
-            this.#cells[cell_index] = new Claim({
-                claimant: current_player,
-                stake: selected_stake,
-            });
-
-            this.#Evaluate_Cell(cell_index);
-        }
-    }
-
-    #Evaluate_Cell(cell_index: Cell_Index):
-        void
-    {
-        // this should update adjacents cards by evaluating the rules,
-        // as if a card was just placed in this position.
-        // however, it will be used recursively for cards that have already
-        // been placed to detect if a combo should occur.
-    }
-
-    Current_Player():
+    Player(player_index: Player_Index):
         Player
     {
-        return this.Arena().Current_Player();
+        if (player_index >= 0 && player_index < this.Player_Count()) {
+            return this.#players[player_index];
+        } else {
+            throw new Error("Invalid player_index.");
+        }
     }
 
     Current_Player_Index():
         Player_Index
     {
-        return this.Arena().Current_Player_Index();
+        return this.Current_Player().Index();
+    }
+
+    Current_Player():
+        Player
+    {
+        return this.#turn_queue[this.#turn_queue_index];
+    }
+
+    Board():
+        Board
+    {
+        return this.#board;
+    }
+
+    Turn_Count():
+        Turn_Count
+    {
+        return this.#turn_count;
     }
 
     Is_On_Human_Turn():
@@ -1323,52 +992,169 @@ export class Board
         return !this.Is_On_Human_Turn();
     }
 
-    Is_Cell_Selectable(cell_index: Cell_Index):
+    Next_Turn():
+        void
+    {
+        if (this.Is_Game_Over()) {
+            throw new Error(`No more turns, the game is over.`);
+        } else {
+            this.#turn_count -= 1;
+            this.#turn_queue_index += 1;
+            if (this.#turn_queue_index === this.#turn_queue.length) {
+                this.#turn_queue_index = 0;
+            }
+        }
+    }
+
+    Is_Input_Enabled():
         boolean
     {
-        return this.Current_Player().Has_Selected_Stake() && this.Claim(cell_index) == null;
+        return this.#is_input_enabled;
+    }
+
+    Enable_Input():
+        void
+    {
+        this.#is_input_enabled = true;
+    }
+
+    Disable_Input():
+        void
+    {
+        this.#is_input_enabled = false;
+    }
+
+    Is_Game_Over():
+        boolean
+    {
+        return this.#turn_count === 0;
+    }
+};
+
+/* A selection of rules which an arena must abide by. */
+export class Rules
+{
+    #row_count: Row_Count;
+    #column_count: Column_Count;
+    #cell_count: Cell_Count;
+    #player_count: Player_Count;
+    #selection_card_count: Card_Count;
+
+    #open: boolean;
+    #random: boolean;
+
+    constructor(
+        {
+            row_count = 3,
+            column_count = 3,
+            player_count = 2,
+
+            open = true,
+            random = false,
+        }: {
+            row_count?: Row_Count,
+            column_count?: Column_Count,
+            player_count?: Player_Count,
+
+            open?: boolean,
+            random?: boolean,
+        }
+    )
+    {
+        if (player_count < 2) {
+            throw new Error(`Must have a player_count of at least 2.`);
+        } else {
+            this.#row_count = row_count;
+            this.#column_count = column_count;
+            this.#cell_count = this.#row_count * this.#column_count;
+            this.#player_count = player_count;
+            this.#selection_card_count = Math.ceil(this.#cell_count / this.#player_count);
+
+            this.#open = open;
+            this.#random = random;
+
+            Object.freeze(this);
+
+            if (this.Player_Count() > this.Cell_Count()) {
+                throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
+            }
+        }
+    }
+
+    Clone():
+        Rules
+    {
+        const copy: Rules = Object.assign(
+            Object.create(Object.getPrototypeOf(this)),
+            this
+        );
+
+        return copy;
+    }
+
+    Row_Count():
+        Row_Count
+    {
+        return this.#row_count;
+    }
+
+    Column_Count():
+        Column_Count
+    {
+        return this.#column_count;
+    }
+
+    Cell_Count():
+        Cell_Count
+    {
+        return this.#cell_count;
+    }
+
+    Player_Count():
+        Player_Count
+    {
+        return this.#player_count;
+    }
+
+    Selection_Card_Count():
+        Card_Count
+    {
+        return this.#selection_card_count;
+    }
+
+    Open():
+        boolean
+    {
+        return this.#open;
+    }
+
+    Random():
+        boolean
+    {
+        return this.#random;
+    }
+
+    Serialize():
+        Rules_Save_Data
+    {
+        return ({
+            row_count: this.#row_count,
+            column_count: this.#column_count,
+            player_count: this.#player_count,
+
+            open: this.#open,
+            random: this.#random,
+        });
     }
 }
 
-/* Represents a player that's making a claim on a stake. */
-export class Claim
-{
-    #claimant: Player;
-    #stake: Stake;
+type Rules_Save_Data = {
+    row_count: Row_Count,
+    column_count: Column_Count,
+    player_count: Player_Count,
 
-    constructor({
-        claimant,
-        stake,
-    }: {
-        claimant: Player,
-        stake: Stake,
-    })
-    {
-        this.#claimant = claimant;
-        this.#stake = stake;
-
-        Object.freeze(this);
-    }
-
-    Claimant():
-        Player
-    {
-        return this.#claimant;
-    }
-
-    Stake():
-        Stake
-    {
-        return this.#stake;
-    }
-}
-
-/* Represents a border, or the wall on the board, which can be relevant according to the rules. */
-export class Wall
-{
-    constructor()
-    {
-    }
+    open: boolean,
+    random: boolean,
 }
 
 /* Contains stakes selected for a player. */
@@ -1377,22 +1163,26 @@ export class Player
     #arena: Arena;
     #index: Player_Index;
     #selection: Selection;
+
     #stakes: Array<Stake>;
     #selected_stake_index: Stake_Index | null;
 
-    constructor({
-        arena,
-        index,
-        selection,
-    }: {
-        arena: Arena,
-        index: Player_Index,
-        selection: Selection,
-    })
+    constructor(
+        {
+            arena,
+            index,
+            selection,
+        }: {
+            arena: Arena,
+            index: Player_Index,
+            selection: Selection,
+        }
+    )
     {
         this.#arena = arena;
         this.#index = index;
         this.#selection = selection;
+
         this.#stakes = [];
         this.#selected_stake_index = null;
 
@@ -1548,10 +1338,10 @@ export class Computer_Player extends Player
             cell_index: Cell_Index,
         }
     {
-        const cells: Array<Claim | null> = this.Board().Cells();
+        const cells: Array<Cell> = this.Board().Cells();
         const empty_cells: Array<Cell_Index> = [];
         for (let idx = 0, end = cells.length; idx < end; idx += 1) {
-            if (cells[idx] == null) {
+            if (cells[idx].Is_Empty()) {
                 empty_cells.push(idx);
             }
         }
@@ -1594,13 +1384,15 @@ export class Stake
     #origin: Player;
     #card: Card;
 
-    constructor({
-        origin,
-        card,
-    }: {
-        origin: Player,
-        card: Card,
-    })
+    constructor(
+        {
+            origin,
+            card,
+        }: {
+            origin: Player,
+            card: Card,
+        }
+    )
     {
         this.#origin = origin;
         this.#card = card;
@@ -1673,4 +1465,295 @@ export class Stake
     {
         return !this.Is_Selected() && this.Is_On_Player() && this.Origin().Is_On_Turn();
     }
+}
+
+/* Contains claims actively in play. */
+export class Board
+{
+    #arena: Arena;
+    #cells: Array<Cell>;
+
+    constructor(
+        {
+            arena,
+        }: {
+            arena: Arena,
+        }
+    )
+    {
+        this.#arena = arena;
+        this.#cells = [];
+
+        for (let idx = 0, end = this.Cell_Count(); idx < end; idx += 1) {
+            this.#cells.push(new Cell(
+                {
+                    board: this,
+                    index: idx,
+                },
+            ));
+        }
+    }
+
+    Arena():
+        Arena
+    {
+        return this.#arena;
+    }
+
+    Rules():
+        Rules
+    {
+        return this.Arena().Rules();
+    }
+
+    Row_Count():
+        Row_Count
+    {
+        return this.Rules().Row_Count();
+    }
+
+    Column_Count():
+        Column_Count
+    {
+        return this.Rules().Column_Count();
+    }
+
+    Cell_Count():
+        Cell_Count
+    {
+        return this.Rules().Cell_Count();
+    }
+
+    Cell(cell_index: Cell_Index):
+        Cell
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            return this.#cells[cell_index];
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Cells():
+        Array<Cell>
+    {
+        return Array.from(this.#cells);
+    }
+
+    Left_Of(cell_index: Cell_Index):
+        Cell | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index % row_count > 0) {
+                return this.Cell(cell_index - 1);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Top_Of(cell_index: Cell_Index):
+        Cell | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index >= row_count) {
+                return this.Cell(cell_index - row_count);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Right_Of(cell_index: Cell_Index):
+        Cell | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index % row_count < row_count - 1) {
+                return this.Cell(cell_index + 1);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Bottom_Of(cell_index: Cell_Index):
+        Cell | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            const cell_count = this.Cell_Count();
+            if (cell_index < cell_count - row_count) {
+                return this.Cell(cell_index + row_count);
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
+        void
+    {
+        if (this.#cells[cell_index].Is_Occupied()) {
+            throw new Error(`Claim already exists in cell_index ${cell_index}.`);
+        } else {
+            const current_player: Player = this.Current_Player();
+            const selected_stake: Stake = current_player.Remove_Selected_Stake();
+
+            this.#cells[cell_index] = new Cell(
+                {
+                    board: this,
+                    index: cell_index,
+                    occupant: {
+                        stake: selected_stake,
+                        claimant: current_player,
+                    },
+                },
+            );
+
+            this.#Evaluate_Cell(cell_index);
+        }
+    }
+
+    #Evaluate_Cell(cell_index: Cell_Index):
+        void
+    {
+        // this should update adjacents cards by evaluating the rules,
+        // as if a card was just placed in this position.
+        // however, it will be used recursively for cards that have already
+        // been placed to detect if a combo should occur.
+    }
+
+    Current_Player():
+        Player
+    {
+        return this.Arena().Current_Player();
+    }
+
+    Current_Player_Index():
+        Player_Index
+    {
+        return this.Arena().Current_Player_Index();
+    }
+
+    Is_On_Human_Turn():
+        boolean
+    {
+        return this.Current_Player().Is_Human();
+    }
+
+    Is_On_Computer_Turn():
+        boolean
+    {
+        return !this.Is_On_Human_Turn();
+    }
+
+    Is_Cell_Selectable(cell_index: Cell_Index):
+        boolean
+    {
+        return this.Current_Player().Has_Selected_Stake() && this.Cell(cell_index).Is_Empty();
+    }
+}
+
+/* Represents an empty cell or a player that's making a claim on a stake. */
+export class Cell
+{
+    #board: Board;
+    #index: Cell_Index;
+    #stake: Stake | null;
+    #claimant: Player | null;
+
+    constructor(
+        {
+            board,
+            index,
+            occupant,
+        }: {
+            board: Board,
+            index: Cell_Index,
+            occupant?: {
+                stake: Stake,
+                claimant: Player,
+            }
+        },
+    )
+    {
+        this.#board = board;
+        this.#index = index;
+
+        if (occupant != null) {
+            this.#stake = occupant.stake;
+            this.#claimant = occupant.claimant;
+        } else {
+            this.#stake = null;
+            this.#claimant = null;
+        }
+
+        Object.freeze(this);
+    }
+
+    Arena():
+        Arena
+    {
+        return this.Board().Arena();
+    }
+
+    Board():
+        Board
+    {
+        return this.#board;
+    }
+
+    Index():
+        Cell_Index
+    {
+        return this.#index;
+    }
+
+    Is_Empty():
+        boolean
+    {
+        return this.#stake == null;
+    }
+
+    Is_Occupied():
+        boolean
+    {
+        return !this.Is_Empty();
+    }
+
+    Stake():
+        Stake
+    {
+        if (this.#stake == null) {
+            throw new Error(`This cell is not occupied.`);
+        } else {
+            return this.#stake;
+        }
+    }
+
+    Claimant():
+        Player
+    {
+        if (this.#claimant == null) {
+            throw new Error(`This cell is not occupied.`);
+        } else {
+            return this.#claimant;
+        }
+    }
+}
+
+/* Represents a border on the board, which can be relevant according to the rules. */
+export class Wall
+{
 }

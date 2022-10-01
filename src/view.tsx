@@ -68,31 +68,21 @@ async function Wait(milliseconds: number):
 
 export class Arena extends React.Component<Arena_Props>
 {
-    #board: Board | null;
     #players: Array<Player | null>;
+    #board: Board | null;
 
     constructor(props: Arena_Props)
     {
         super(props);
 
-        this.#board = null;
         this.#players = new Array(this.Model().Player_Count()).fill(null);
+        this.#board = null;
     }
 
     Model():
         Model.Arena
     {
         return this.props.model;
-    }
-
-    Board():
-        Board
-    {
-        if (!this.#board) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#board as Board;
-        }
     }
 
     Player(player_index: Model.Player_Index):
@@ -120,6 +110,16 @@ export class Arena extends React.Component<Arena_Props>
         }
 
         return players;
+    }
+
+    Board():
+        Board
+    {
+        if (!this.#board) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#board as Board;
+        }
     }
 
     async On_Game_Start(
@@ -169,6 +169,8 @@ export class Arena extends React.Component<Arena_Props>
                 is_atomic: true,
             });
         } else {
+            this.Model().Next_Turn();
+
             const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
             this.props.event_grid.Send_Event({
                 name_affix: PLAYER_START_TURN,
@@ -258,331 +260,6 @@ export class Arena extends React.Component<Arena_Props>
                         );
                     })
                 }
-            </div>
-        );
-    }
-}
-
-type Board_Props = {
-    parent: Arena,
-    event_grid: Event.Grid,
-    model: Model.Board,
-}
-
-class Board extends React.Component<Board_Props>
-{
-    #cells: Array<Board_Cell | Board_Claim | null>;
-
-    constructor(props: Board_Props)
-    {
-        super(props);
-
-        this.#cells = new Array(this.Model().Cell_Count()).fill(null);
-    }
-
-    Model():
-        Model.Board
-    {
-        return this.props.model;
-    }
-
-    Arena():
-        Arena
-    {
-        return this.props.parent;
-    }
-
-    Cell_Or_Claim(cell_index: Model.Cell_Index):
-        Board_Cell | Board_Claim
-    {
-        if (cell_index < 0 || cell_index >= this.#cells.length) {
-            throw new Error(`'cell_index' of '${cell_index}' is invalid.`);
-        } else if (!this.#cells[cell_index]) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            if (this.#cells[cell_index] instanceof Board_Cell) {
-                return this.#cells[cell_index] as Board_Cell;
-            } else {
-                return this.#cells[cell_index] as Board_Claim;
-            }
-        }
-    }
-
-    async On_Player_Place_Stake(
-        {
-            player_index,
-            cell_index,
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        this.Model().Place_Current_Player_Selected_Stake(cell_index);
-        this.Model().Arena().Next_Turn();
-        this.forceUpdate();
-
-        this.props.event_grid.Send_Event({
-            name_affix: PLAYER_STOP_TURN,
-            name_suffixes: [
-                player_index.toString(),
-            ],
-            data: {
-                player_index,
-                is_game_over: this.Model().Arena().Is_Game_Over(),
-            } as Player_Stop_Turn_Data,
-            is_atomic: true,
-        });
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
-                    event_handler: this.On_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
-    {
-        return (
-            <div
-                className="Board"
-                style={{
-                    grid: "auto /" + Array(this.Model().Column_Count()).fill(" auto").join(""),
-                }}
-            >
-                {
-                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
-                    {
-                        const claim: Model.Claim | null = this.Model().Claim(cell_index);
-                        if (claim == null) {
-                            return (
-                                <Board_Cell
-                                    key={cell_index}
-                                    parent={this}
-                                    ref={ref => this.#cells[cell_index] = ref}
-                                    event_grid={this.props.event_grid}
-                                    model={this.Model()}
-                                    index={cell_index}
-                                />
-                            );
-                        } else {
-                            return (
-                                <Board_Claim
-                                    key={cell_index}
-                                    parent={this}
-                                    ref={ref => this.#cells[cell_index] = ref}
-                                    event_grid={this.props.event_grid}
-                                    model={claim}
-                                    index={cell_index as Model.Claim_Index}
-                                />
-                            );
-                        }
-                    })
-                }
-            </div>
-        );
-    }
-}
-
-type Board_Cell_Props = {
-    parent: Board,
-    event_grid: Event.Grid,
-    model: Model.Board,
-    index: Model.Cell_Index,
-}
-
-class Board_Cell extends React.Component<Board_Cell_Props>
-{
-    Model():
-        Model.Board
-    {
-        return this.props.model;
-    }
-
-    Index():
-        Model.Cell_Index
-    {
-        return this.props.index;
-    }
-
-    Board():
-        Board
-    {
-        return this.props.parent;
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        event.stopPropagation();
-
-        const arena: Model.Arena = this.Model().Arena();
-        if (arena.Is_Input_Enabled()) {
-            arena.Disable_Input();
-
-            if (this.Model().Is_Cell_Selectable(this.props.index)) {
-                const player_index: Model.Player_Index = this.Model().Current_Player_Index();
-                const cell_index: Model.Cell_Index = this.props.index;
-
-                this.props.event_grid.Send_Event({
-                    name_affix: PLAYER_PLACE_STAKE,
-                    name_suffixes: [
-                        player_index.toString(),
-                    ],
-                    data: {
-                        player_index,
-                        cell_index,
-                    } as Player_Place_Stake_Data,
-                    is_atomic: true,
-                });
-            }
-
-            arena.Enable_Input();
-        }
-    }
-
-    async After_Player_Select_Stake(
-        {
-        }: Player_Select_Stake_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Model().Is_Cell_Selectable(this.props.index)) {
-            // we only need to update the cursor for empty cells
-            this.forceUpdate();
-        }
-    }
-
-    async After_Player_Place_Stake(
-        {
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        // we update all cells because they could all potentially change after one stake being placed
-        this.forceUpdate();
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
-                    event_handler: this.After_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE),
-                    event_handler: this.After_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
-    {
-        const is_on_human_turn: boolean = this.Model().Is_On_Human_Turn();
-        const is_selectable: boolean = this.Model().Is_Cell_Selectable(this.props.index);
-
-        return (
-            <div
-                className="Board_Cell"
-                style={{
-                    cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
-                }}
-                onClick={event => this.On_Click.bind(this)(event)}
-            >
-                <div>
-                    {this.props.index}
-                </div>
-            </div>
-        );
-    }
-}
-
-type Board_Claim_Props = {
-    parent: Board,
-    event_grid: Event.Grid,
-    model: Model.Claim,
-    index: Model.Claim_Index,
-}
-
-class Board_Claim extends React.Component<Board_Claim_Props>
-{
-    Model():
-        Model.Claim
-    {
-        return this.props.model;
-    }
-
-    Index():
-        Model.Claim_Index
-    {
-        return this.props.index;
-    }
-
-    Board():
-        Board
-    {
-        return this.props.parent;
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
-    {
-        const color: Model.Color = this.Model().Stake().Color();
-
-        return (
-            <div
-                className="Board_Claim"
-                style={{
-                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                }}
-            >
-                <div>
-                    {this.Model().Stake().Card().Name()}
-                </div>
             </div>
         );
     }
@@ -982,5 +659,264 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                 {this.Model().Card().Name()}
             </div>
         );
+    }
+}
+
+type Board_Props = {
+    parent: Arena,
+    event_grid: Event.Grid,
+    model: Model.Board,
+}
+
+class Board extends React.Component<Board_Props>
+{
+    #cells: Array<Board_Cell | null>;
+
+    constructor(props: Board_Props)
+    {
+        super(props);
+
+        this.#cells = new Array(this.Model().Cell_Count()).fill(null);
+    }
+
+    Model():
+        Model.Board
+    {
+        return this.props.model;
+    }
+
+    Arena():
+        Arena
+    {
+        return this.props.parent;
+    }
+
+    Cell(cell_index: Model.Cell_Index):
+        Board_Cell
+    {
+        if (cell_index < 0 || cell_index >= this.#cells.length) {
+            throw new Error(`'cell_index' of '${cell_index}' is invalid.`);
+        } else if (!this.#cells[cell_index]) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#cells[cell_index] as Board_Cell;
+        }
+    }
+
+    async On_Player_Place_Stake(
+        {
+            player_index,
+            cell_index,
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        this.forceUpdate();
+
+        this.props.event_grid.Send_Event({
+            name_affix: PLAYER_STOP_TURN,
+            name_suffixes: [
+                player_index.toString(),
+            ],
+            data: {
+                player_index,
+                is_game_over: this.Model().Arena().Is_Game_Over(),
+            } as Player_Stop_Turn_Data,
+            is_atomic: true,
+        });
+    }
+
+    componentDidMount():
+        void
+    {
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
+                    event_handler: this.On_Player_Place_Stake,
+                },
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.props.event_grid.Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        return (
+            <div
+                className="Board"
+                style={{
+                    grid: "auto /" + Array(this.Model().Column_Count()).fill(" auto").join(""),
+                }}
+            >
+                {
+                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
+                    {
+                        return (
+                            <Board_Cell
+                                key={cell_index}
+                                parent={this}
+                                ref={ref => this.#cells[cell_index] = ref}
+                                event_grid={this.props.event_grid}
+                                model={this.Model().Cell(cell_index)}
+                                index={cell_index}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
+    }
+}
+
+type Board_Cell_Props = {
+    parent: Board,
+    event_grid: Event.Grid,
+    model: Model.Cell,
+    index: Model.Cell_Index,
+}
+
+class Board_Cell extends React.Component<Board_Cell_Props>
+{
+    Model():
+        Model.Cell
+    {
+        return this.props.model;
+    }
+
+    Index():
+        Model.Cell_Index
+    {
+        return this.props.index;
+    }
+
+    Board():
+        Board
+    {
+        return this.props.parent;
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        event.stopPropagation();
+
+        const arena: Model.Arena = this.Model().Arena();
+        if (arena.Is_Input_Enabled()) {
+            arena.Disable_Input();
+
+            if (this.Model().Board().Is_Cell_Selectable(this.props.index)) {
+                const player_index: Model.Player_Index = this.Model().Board().Current_Player_Index();
+                const cell_index: Model.Cell_Index = this.props.index;
+
+                this.props.event_grid.Send_Event({
+                    name_affix: PLAYER_PLACE_STAKE,
+                    name_suffixes: [
+                        player_index.toString(),
+                    ],
+                    data: {
+                        player_index,
+                        cell_index,
+                    } as Player_Place_Stake_Data,
+                    is_atomic: true,
+                });
+            }
+
+            arena.Enable_Input();
+        }
+    }
+
+    async After_Player_Select_Stake(
+        {
+        }: Player_Select_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Model().Board().Is_Cell_Selectable(this.props.index)) {
+            // we only need to update the cursor for empty cells
+            this.forceUpdate();
+        }
+    }
+
+    async After_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        // we update all cells because they could all potentially change after one stake being placed
+        this.forceUpdate();
+    }
+
+    componentDidMount():
+        void
+    {
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+                {
+                    event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
+                    event_handler: this.After_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE),
+                    event_handler: this.After_Player_Place_Stake,
+                },
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.props.event_grid.Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        if (this.Model().Is_Empty()) {
+            const is_on_human_turn: boolean = this.Model().Board().Is_On_Human_Turn();
+            const is_selectable: boolean = this.Model().Board().Is_Cell_Selectable(this.props.index);
+
+            return (
+                <div
+                    className="Board_Empty_Cell"
+                    style={{
+                        cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
+                    }}
+                    onClick={event => this.On_Click.bind(this)(event)}
+                >
+                    <div>
+                        {this.props.index}
+                    </div>
+                </div>
+            );
+        } else {
+            const color: Model.Color = this.Model().Stake().Color();
+
+            return (
+                <div
+                    className="Board_Occupied_Cell"
+                    style={{
+                        backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                    }}
+                >
+                    <div>
+                        {this.Model().Stake().Card().Name()}
+                    </div>
+                </div>
+            );
+        }
     }
 }
