@@ -1950,7 +1950,7 @@ export class Board
                     (card: Card) => Card_Number,
                 ]
             >) {
-                if (cell instanceof Cell && cell.Is_Occupied()) {
+                if (cell instanceof Cell && cell.Is_Occupied() && cell.Claimant() !== center_player) {
                     const card: Card = cell.Stake().Card();
                     if (center_card_value === cell_card_value(card)) {
                         if (sames[center_card_value] == null) {
@@ -2066,7 +2066,7 @@ export class Board
                     (card: Card) => Card_Number,
                 ]
             >) {
-                if (cell instanceof Cell && cell.Is_Occupied()) {
+                if (cell instanceof Cell && cell.Is_Occupied() && cell.Claimant() !== center_player) {
                     const card: Card = cell.Stake().Card();
                     const sum = center_card_value + cell_card_value(card);
                     if (sums[sum] == null) {
@@ -2138,25 +2138,25 @@ export class Board
             }
         }
 
-        if (left_cell instanceof Cell && left_cell.Is_Occupied()) {
+        if (left_cell instanceof Cell && left_cell.Is_Occupied() && left_cell.Claimant() !== center_player) {
             const left_card: Card = left_cell.Stake().Card();
             if (center_card.Left() > left_card.Right()) {
                 left_claimed = true;
             }
         }
-        if (top_cell instanceof Cell && top_cell.Is_Occupied()) {
+        if (top_cell instanceof Cell && top_cell.Is_Occupied() && top_cell.Claimant() !== center_player) {
             const top_card: Card = top_cell.Stake().Card();
             if (center_card.Top() > top_card.Bottom()) {
                 top_claimed = true;
             }
         }
-        if (right_cell instanceof Cell && right_cell.Is_Occupied()) {
+        if (right_cell instanceof Cell && right_cell.Is_Occupied() && right_cell.Claimant() !== center_player) {
             const right_card: Card = right_cell.Stake().Card();
             if (center_card.Right() > right_card.Left()) {
                 right_claimed = true;
             }
         }
-        if (bottom_cell instanceof Cell && bottom_cell.Is_Occupied()) {
+        if (bottom_cell instanceof Cell && bottom_cell.Is_Occupied() && bottom_cell.Claimant() !== center_player) {
             const bottom_card: Card = bottom_cell.Stake().Card();
             if (center_card.Bottom() > bottom_card.Top()) {
                 bottom_claimed = true;

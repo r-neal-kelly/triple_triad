@@ -642,6 +642,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                 }
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                    backgroundImage: `url("${this.Model().Card().Image()}")`,
                     cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`,
                     zIndex: `${this.props.index}`,
                     top: `calc((0px - var(--card_height)) / 3 * ${this.props.index})`,
@@ -905,6 +906,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                     className="Board_Occupied_Cell"
                     style={{
                         backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                        backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
                     }}
                 >
                     <div>
