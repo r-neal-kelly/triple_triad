@@ -1080,6 +1080,10 @@ export class Rules
     #selection_card_count: Card_Count;
 
     #open: boolean;
+    #same: boolean;
+    #plus: boolean;
+    #wall: boolean;
+    #combo: boolean;
     #random: boolean;
 
     constructor(
@@ -1089,6 +1093,10 @@ export class Rules
             player_count = 2,
 
             open = true,
+            same = true,
+            plus = true,
+            wall = true,
+            combo = true,
             random = false,
         }: {
             row_count?: Row_Count,
@@ -1096,6 +1104,10 @@ export class Rules
             player_count?: Player_Count,
 
             open?: boolean,
+            same?: boolean,
+            plus?: boolean,
+            wall?: boolean,
+            combo?: boolean,
             random?: boolean,
         }
     )
@@ -1110,6 +1122,10 @@ export class Rules
             this.#selection_card_count = Math.ceil(this.#cell_count / this.#player_count);
 
             this.#open = open;
+            this.#same = same;
+            this.#plus = plus;
+            this.#wall = wall;
+            this.#combo = combo;
             this.#random = random;
 
             Object.freeze(this);
@@ -1154,6 +1170,30 @@ export class Rules
         boolean
     {
         return this.#open;
+    }
+
+    Same():
+        boolean
+    {
+        return this.#same;
+    }
+
+    Plus():
+        boolean
+    {
+        return this.#plus;
+    }
+
+    Wall():
+        boolean
+    {
+        return this.#wall;
+    }
+
+    Combo():
+        boolean
+    {
+        return this.#combo;
     }
 
     Random():
@@ -1509,7 +1549,7 @@ export class Board
         this.#arena = arena;
         this.#cells = [];
         if (cells != null) {
-            if (cells.length != this.Cell_Count()) {
+            if (cells.length !== this.Cell_Count()) {
                 throw new Error(`'cells' must have a length of ${this.Cell_Count()}.`);
             } else {
                 for (let idx = 0, end = cells.length; idx < end; idx += 1) {
@@ -1643,6 +1683,67 @@ export class Board
         }
     }
 
+    Left_Index_Of(cell_index: Cell_Index):
+        Cell_Index | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index % row_count > 0) {
+                return cell_index - 1;
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Top_Index_Of(cell_index: Cell_Index):
+        Cell_Index | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index >= row_count) {
+                return cell_index - row_count;
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Right_Index_Of(cell_index: Cell_Index):
+        Cell_Index | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            if (cell_index % row_count < row_count - 1) {
+                return cell_index + 1;
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
+    Bottom_Index_Of(cell_index: Cell_Index):
+        Cell_Index | Wall
+    {
+        if (cell_index >= 0 && cell_index < this.#cells.length) {
+            const row_count = this.Row_Count();
+            const cell_count = this.Cell_Count();
+            if (cell_index < cell_count - row_count) {
+                return cell_index + row_count;
+            } else {
+                return new Wall();
+            }
+        } else {
+            throw new Error(`Invalid cell_index.`);
+        }
+    }
+
     Defense_Of(stake: Stake, in_cell_index: Cell_Index):
         Defense
     {
@@ -1714,7 +1815,7 @@ export class Board
     {
         let claim_count: Claim_Count = 0;
         for (const cell of this.#cells) {
-            if (cell.Is_Occupied() && cell.Claimant() == player) {
+            if (cell.Is_Occupied() && cell.Claimant() === player) {
                 claim_count += 1;
             }
         }
@@ -1773,6 +1874,347 @@ export class Board
         // as if a card was just placed in this position.
         // however, it will be used recursively for cards that have already
         // been placed to detect if a combo should occur.
+
+        const center_index: Cell_Index = cell_index;
+        const center_cell: Cell = this.Cell(center_index);
+        const center_card: Card = center_cell.Stake().Card();
+        const center_player: Player = center_cell.Claimant();
+
+        const left_index: Cell_Index | Wall = this.Left_Index_Of(cell_index);
+        const left_cell: Cell | Wall = left_index instanceof Wall ?
+            left_index :
+            this.Cell(left_index);
+        let left_claimed: boolean = false;
+        let left_combos: boolean = false;
+
+        const top_index: Cell_Index | Wall = this.Top_Index_Of(cell_index);
+        const top_cell: Cell | Wall = top_index instanceof Wall ?
+            top_index :
+            this.Cell(top_index);
+        let top_claimed: boolean = false;
+        let top_combos: boolean = false;
+
+        const right_index: Cell_Index | Wall = this.Right_Index_Of(cell_index);
+        const right_cell: Cell | Wall = right_index instanceof Wall ?
+            right_index :
+            this.Cell(right_index);
+        let right_claimed: boolean = false;
+        let right_combos: boolean = false;
+
+        const bottom_index: Cell_Index | Wall = this.Bottom_Index_Of(cell_index);
+        const bottom_cell: Cell | Wall = bottom_index instanceof Wall ?
+            bottom_index :
+            this.Cell(bottom_index);
+        let bottom_claimed: boolean = false;
+        let bottom_combos: boolean = false;
+
+        if (this.Rules().Same()) {
+            type Same = {
+                count: Count,
+                indices: Array<Cell_Index>,
+            };
+            const sames: { [index: number]: Same } = {};
+
+            // first we get all instances of where same can occur, to cache
+            // what cards can be claimed, and if the rule has enough counts, including wall
+            for (const [cell, index, center_card_value, cell_card_value] of [
+                [
+                    left_cell,
+                    left_index,
+                    center_card.Left(),
+                    (card: Card) => card.Right(),
+                ],
+                [
+                    top_cell,
+                    top_index,
+                    center_card.Top(),
+                    (card: Card) => card.Bottom(),
+                ],
+                [
+                    right_cell,
+                    right_index,
+                    center_card.Right(),
+                    (card: Card) => card.Left(),
+                ],
+                [
+                    bottom_cell,
+                    bottom_index,
+                    center_card.Bottom(),
+                    (card: Card) => card.Top(),
+                ],
+            ] as Array<
+                [
+                    Cell | Wall,
+                    Cell_Index | Wall,
+                    Card_Number,
+                    (card: Card) => Card_Number,
+                ]
+            >) {
+                if (cell instanceof Cell && cell.Is_Occupied()) {
+                    const card: Card = cell.Stake().Card();
+                    if (center_card_value === cell_card_value(card)) {
+                        if (sames[center_card_value] == null) {
+                            sames[center_card_value] = {
+                                count: 1,
+                                indices: [index as Cell_Index],
+                            };
+                        } else {
+                            sames[center_card_value].count += 1;
+                            sames[center_card_value].indices.push(index as Cell_Index);
+                        }
+                    }
+                } else if (cell instanceof Wall && this.Rules().Wall()) {
+                    if (center_card_value === 10) {
+                        if (sames[center_card_value] == null) {
+                            sames[center_card_value] = {
+                                count: 1,
+                                indices: [],
+                            };
+                        } else {
+                            sames[center_card_value].count += 1;
+                        }
+                    }
+                }
+            }
+
+            // then we filter out any sames that do not occur more than once, which breaks the rule,
+            // and we sort from the greatest number of cards that can be claimed to the least
+            const sames_array = Object.values(sames).filter(function (
+                same: Same,
+            ):
+                boolean
+            {
+                return same.count >= 2;
+            }).sort(function (
+                a: Same,
+                b: Same,
+            ):
+                number
+            {
+                return b.indices.length - a.indices.length;
+            });
+
+            if (sames_array.length > 0) {
+                // we get the first however many sames that equate so that we can randomly select from them
+                let biggest_same_count = 0;
+                for (let idx = 0, end = sames_array.length; idx < end; idx += 1) {
+                    if (sames_array[idx].indices.length === sames_array[0].indices.length) {
+                        biggest_same_count += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                const cell_indices: Array<Cell_Index> = sames_array[Math.floor(Math.random() * biggest_same_count)].indices;
+                for (const cell_index of cell_indices) {
+                    if (cell_index === left_index as Cell_Index) {
+                        left_claimed = true;
+                        left_combos = true;
+                    } else if (cell_index === top_index as Cell_Index) {
+                        top_claimed = true;
+                        top_combos = true;
+                    } else if (cell_index === right_index as Cell_Index) {
+                        right_claimed = true;
+                        right_combos = true;
+                    } else if (cell_index === bottom_index as Cell_Index) {
+                        bottom_claimed = true;
+                        bottom_combos = true;
+                    }
+                }
+            }
+        }
+
+        if (this.Rules().Plus()) {
+            type Sum = {
+                count: Count,
+                indices: Array<Cell_Index>,
+            };
+            const sums: { [index: number]: Sum } = {};
+
+            // first we get all instances of where plus can occur, to cache
+            // what cards can be claimed, and if the rule has enough counts, including wall
+            for (const [cell, index, center_card_value, cell_card_value] of [
+                [
+                    left_cell,
+                    left_index,
+                    center_card.Left(),
+                    (card: Card) => card.Right(),
+                ],
+                [
+                    top_cell,
+                    top_index,
+                    center_card.Top(),
+                    (card: Card) => card.Bottom(),
+                ],
+                [
+                    right_cell,
+                    right_index,
+                    center_card.Right(),
+                    (card: Card) => card.Left(),
+                ],
+                [
+                    bottom_cell,
+                    bottom_index,
+                    center_card.Bottom(),
+                    (card: Card) => card.Top(),
+                ],
+            ] as Array<
+                [
+                    Cell | Wall,
+                    Cell_Index | Wall,
+                    Card_Number,
+                    (card: Card) => Card_Number,
+                ]
+            >) {
+                if (cell instanceof Cell && cell.Is_Occupied()) {
+                    const card: Card = cell.Stake().Card();
+                    const sum = center_card_value + cell_card_value(card);
+                    if (sums[sum] == null) {
+                        sums[sum] = {
+                            count: 1,
+                            indices: [index as Cell_Index],
+                        };
+                    } else {
+                        sums[sum].count += 1;
+                        sums[sum].indices.push(index as Cell_Index);
+                    }
+                } else if (cell instanceof Wall && this.Rules().Wall()) {
+                    const sum = center_card_value + 10;
+                    if (sums[sum] == null) {
+                        sums[sum] = {
+                            count: 1,
+                            indices: [],
+                        };
+                    } else {
+                        sums[sum].count += 1;
+                    }
+                }
+            }
+
+            // then we filter out any sums that do not occur more than once, which breaks the rule,
+            // and we sort from the greatest number of cards that can be claimed to the least
+            const sums_array = Object.values(sums).filter(function (
+                sum: Sum,
+            ):
+                boolean
+            {
+                return sum.count >= 2;
+            }).sort(function (
+                a: Sum,
+                b: Sum,
+            ):
+                number
+            {
+                return b.indices.length - a.indices.length;
+            });
+
+            if (sums_array.length > 0) {
+                // we get the first however many sums that equate so that we can randomly select from them
+                let biggest_sum_count = 0;
+                for (let idx = 0, end = sums_array.length; idx < end; idx += 1) {
+                    if (sums_array[idx].indices.length === sums_array[0].indices.length) {
+                        biggest_sum_count += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                const cell_indices: Array<Cell_Index> = sums_array[Math.floor(Math.random() * biggest_sum_count)].indices;
+                for (const cell_index of cell_indices) {
+                    if (cell_index === left_index as Cell_Index) {
+                        left_claimed = true;
+                        left_combos = true;
+                    } else if (cell_index === top_index as Cell_Index) {
+                        top_claimed = true;
+                        top_combos = true;
+                    } else if (cell_index === right_index as Cell_Index) {
+                        right_claimed = true;
+                        right_combos = true;
+                    } else if (cell_index === bottom_index as Cell_Index) {
+                        bottom_claimed = true;
+                        bottom_combos = true;
+                    }
+                }
+            }
+        }
+
+        if (left_cell instanceof Cell && left_cell.Is_Occupied()) {
+            const left_card: Card = left_cell.Stake().Card();
+            if (center_card.Left() > left_card.Right()) {
+                left_claimed = true;
+            }
+        }
+        if (top_cell instanceof Cell && top_cell.Is_Occupied()) {
+            const top_card: Card = top_cell.Stake().Card();
+            if (center_card.Top() > top_card.Bottom()) {
+                top_claimed = true;
+            }
+        }
+        if (right_cell instanceof Cell && right_cell.Is_Occupied()) {
+            const right_card: Card = right_cell.Stake().Card();
+            if (center_card.Right() > right_card.Left()) {
+                right_claimed = true;
+            }
+        }
+        if (bottom_cell instanceof Cell && bottom_cell.Is_Occupied()) {
+            const bottom_card: Card = bottom_cell.Stake().Card();
+            if (center_card.Bottom() > bottom_card.Top()) {
+                bottom_claimed = true;
+            }
+        }
+
+        if (left_claimed) {
+            this.#cells[left_index as Cell_Index] = new Cell(
+                {
+                    stake: (left_cell as Cell).Stake(),
+                    claimant: center_player,
+                },
+            );
+        }
+        if (top_claimed) {
+            this.#cells[top_index as Cell_Index] = new Cell(
+                {
+                    stake: (top_cell as Cell).Stake(),
+                    claimant: center_player,
+                },
+            );
+        }
+        if (right_claimed) {
+            this.#cells[right_index as Cell_Index] = new Cell(
+                {
+                    stake: (right_cell as Cell).Stake(),
+                    claimant: center_player,
+                },
+            );
+        }
+        if (bottom_claimed) {
+            this.#cells[bottom_index as Cell_Index] = new Cell(
+                {
+                    stake: (bottom_cell as Cell).Stake(),
+                    claimant: center_player,
+                },
+            );
+        }
+
+        if (this.Rules().Combo()) {
+            const cell_indices_to_combo: Array<Cell_Index> = [];
+            if (left_combos) {
+                cell_indices_to_combo.push(left_index as Cell_Index);
+            }
+            if (top_combos) {
+                cell_indices_to_combo.push(top_index as Cell_Index);
+            }
+            if (right_combos) {
+                cell_indices_to_combo.push(right_index as Cell_Index);
+            }
+            if (bottom_combos) {
+                cell_indices_to_combo.push(bottom_index as Cell_Index);
+            }
+
+            for (const cell_index_to_combo of cell_indices_to_combo) {
+                await this.#Evaluate_Cell(cell_index_to_combo);
+            }
+        }
     }
 
     async Choose_Stake_And_Cell(computer_player: Computer_Player):
@@ -2203,6 +2645,12 @@ export class Cell
         } else {
             return this.#claimant;
         }
+    }
+
+    Color():
+        Color
+    {
+        return this.Claimant().Color();
     }
 }
 

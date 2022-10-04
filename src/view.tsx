@@ -898,7 +898,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 </div>
             );
         } else {
-            const color: Model.Color = this.Model().Stake().Color();
+            const color: Model.Color = this.Model().Color();
 
             return (
                 <div

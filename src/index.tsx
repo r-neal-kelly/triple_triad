@@ -31,6 +31,10 @@ class Main extends React.Component<Main_Props>
             player_count: 2,
 
             open: true,
+            same: true,
+            plus: true,
+            wall: true,
+            combo: true,
             random: true, // temp until we build up serialization more
         });
 
