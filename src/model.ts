@@ -7,6 +7,15 @@ type Count =
 type Index =
     number;
 
+type Delta =
+    number;
+
+type Min =
+    number;
+
+type Max =
+    number;
+
 type URL =
     string;
 
@@ -66,6 +75,24 @@ export type Cell_Index =
 
 export type Turn_Count =
     Count;
+
+export type Claim_Count =
+    Count;
+
+export type Claim_Delta =
+    Delta;
+
+export type Defense =
+    number;
+
+export type Defense_Count =
+    number;
+
+function Random_Boolean():
+    boolean
+{
+    return Math.random() < 0.5;
+}
 
 /* Packs and their components as provided and represented by parsed JSON. */
 type Pack_JSON = {
@@ -965,7 +992,11 @@ export class Arena
     Current_Player():
         Player
     {
-        return this.#turn_queue[this.#turn_queue_index];
+        if (this.Is_Game_Over()) {
+            throw new Error(`This arena has no current player because the game is over.`);
+        } else {
+            return this.#turn_queue[this.#turn_queue_index];
+        }
     }
 
     Board():
@@ -983,13 +1014,21 @@ export class Arena
     Is_On_Human_Turn():
         boolean
     {
-        return this.Current_Player().Is_Human();
+        if (this.Is_Game_Over()) {
+            return false;
+        } else {
+            return this.Current_Player().Is_Human();
+        }
     }
 
     Is_On_Computer_Turn():
         boolean
     {
-        return !this.Is_On_Human_Turn();
+        if (this.Is_Game_Over()) {
+            return false;
+        } else {
+            return !this.Is_On_Human_Turn();
+        }
     }
 
     Next_Turn():
@@ -1079,17 +1118,6 @@ export class Rules
                 throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
             }
         }
-    }
-
-    Clone():
-        Rules
-    {
-        const copy: Rules = Object.assign(
-            Object.create(Object.getPrototypeOf(this)),
-            this
-        );
-
-        return copy;
     }
 
     Row_Count():
@@ -1258,6 +1286,12 @@ export class Player
         }
     }
 
+    Stakes():
+        Array<Stake>
+    {
+        return Array.from(this.#stakes);
+    }
+
     Has_Stake(stake: Stake):
         boolean
     {
@@ -1322,7 +1356,11 @@ export class Player
     Is_On_Turn():
         boolean
     {
-        return this.Arena().Current_Player() === this;
+        if (this.Arena().Is_Game_Over()) {
+            return false;
+        } else {
+            return this.Arena().Current_Player() === this;
+        }
     }
 }
 
@@ -1332,31 +1370,16 @@ export class Human_Player extends Player
 
 export class Computer_Player extends Player
 {
-    Choose_Stake_And_Cell():
-        {
+    async Choose_Stake_And_Cell():
+        Promise<{
             selection_indices: Array<Stake_Index>,
             cell_index: Cell_Index,
-        }
+        }>
     {
-        const cells: Array<Cell> = this.Board().Cells();
-        const empty_cells: Array<Cell_Index> = [];
-        for (let idx = 0, end = cells.length; idx < end; idx += 1) {
-            if (cells[idx].Is_Empty()) {
-                empty_cells.push(idx);
-            }
-        }
-
-        // these will need to be chosen based on observing the rules and cards around empty cells on the board.
-        // currently we just do it randomly.
-        // essentially, we'll put a non-state-changing array of board-frames, each as if a stake was placed in a free-cell.
-        // and we do that for all stakes. so if there's 8 free cells we would end up with 8 cell * 5 stakes worth of frames.
-        // that will use the board's rule evaluation so we don't have to repeat it here.
-        // then we can use another layer of ai here to determine which frame it likes the best. things like there being more
-        // stakes in their favor are heavily weighted, otherwise it can go with more subtle algorithms such as leaving a
-        // vulnerable card. we might do a series of steps by predicting which card the next player will put on the board and
-        // going from there, but we'll avoid doing that for now because it's extremely non-trivial.
-        const stake_index: Stake_Index = Math.floor(Math.random() * this.Stake_Count());
-        const cell_index: Cell_Index = empty_cells[Math.floor(Math.random() * empty_cells.length)];
+        const {
+            stake_index,
+            cell_index,
+        } = await this.Board().Choose_Stake_And_Cell(this);
 
         // used to give the impression that the ai is choosing a stake. smoothly lands on the stake it selects.
         // we can add other impression algorithms heres and choose them randomly
@@ -1476,22 +1499,41 @@ export class Board
     constructor(
         {
             arena,
+            cells,
         }: {
             arena: Arena,
-        }
+            cells?: Array<Cell>,
+        },
     )
     {
         this.#arena = arena;
         this.#cells = [];
-
-        for (let idx = 0, end = this.Cell_Count(); idx < end; idx += 1) {
-            this.#cells.push(new Cell(
-                {
-                    board: this,
-                    index: idx,
-                },
-            ));
+        if (cells != null) {
+            if (cells.length != this.Cell_Count()) {
+                throw new Error(`'cells' must have a length of ${this.Cell_Count()}.`);
+            } else {
+                for (let idx = 0, end = cells.length; idx < end; idx += 1) {
+                    this.#cells.push(cells[idx].Clone());
+                }
+            }
+        } else {
+            for (let idx = 0, end = this.Cell_Count(); idx < end; idx += 1) {
+                this.#cells.push(new Cell());
+            }
         }
+
+        Object.freeze(this);
+    }
+
+    Clone():
+        Board
+    {
+        return new Board(
+            {
+                arena: this.#arena,
+                cells: this.#cells,
+            },
+        );
     }
 
     Arena():
@@ -1601,37 +1643,460 @@ export class Board
         }
     }
 
-    Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
-        void
+    Defense_Of(stake: Stake, in_cell_index: Cell_Index):
+        Defense
     {
-        if (this.#cells[cell_index].Is_Occupied()) {
-            throw new Error(`Claim already exists in cell_index ${cell_index}.`);
+        const card: Card = stake.Card();
+
+        let min_defense: Min = Number.MAX_VALUE;
+        let max_defense: Max = 0;
+        let defense_count: Count = 0;
+        let defense_sum: number = 0;
+
+        for (const { cell_or_wall, card_value } of [
+            {
+                cell_or_wall: this.Left_Of(in_cell_index),
+                card_value: card.Left(),
+            },
+            {
+                cell_or_wall: this.Top_Of(in_cell_index),
+                card_value: card.Top(),
+            },
+            {
+                cell_or_wall: this.Right_Of(in_cell_index),
+                card_value: card.Right(),
+            },
+            {
+                cell_or_wall: this.Bottom_Of(in_cell_index),
+                card_value: card.Bottom(),
+            },
+        ]) {
+            if (cell_or_wall instanceof Cell && (cell_or_wall as Cell).Is_Empty()) {
+                if (card_value < min_defense) {
+                    min_defense = card_value;
+                }
+                if (card_value > max_defense) {
+                    max_defense = card_value;
+                }
+                defense_count += 1;
+                defense_sum += card_value;
+            }
+        }
+
+        const defense = defense_count > 0 ?
+            (defense_sum - (max_defense - min_defense)) / defense_count :
+            Number.MAX_VALUE;
+
+        return defense;
+    }
+
+    Defense_Count_Of(cell_index: Cell_Index):
+        Defense_Count
+    {
+        let defense_count: Count = 0;
+
+        for (const cell_or_wall of [
+            this.Left_Of(cell_index),
+            this.Top_Of(cell_index),
+            this.Right_Of(cell_index),
+            this.Bottom_Of(cell_index),
+        ]) {
+            if (cell_or_wall instanceof Cell && (cell_or_wall as Cell).Is_Empty()) {
+                defense_count += 1;
+            }
+        }
+
+        return defense_count;
+    }
+
+    Claim_Count(player: Player):
+        Claim_Count
+    {
+        let claim_count: Claim_Count = 0;
+        for (const cell of this.#cells) {
+            if (cell.Is_Occupied() && cell.Claimant() == player) {
+                claim_count += 1;
+            }
+        }
+
+        return claim_count;
+    }
+
+    async Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
+        Promise<void>
+    {
+        if (this.Arena().Is_Game_Over()) {
+            throw new Error(`Cannot place any more stakes, as the game is over.`);
         } else {
-            const current_player: Player = this.Current_Player();
-            const selected_stake: Stake = current_player.Remove_Selected_Stake();
+            if (this.Cell(cell_index).Is_Occupied()) {
+                throw new Error(`Claim already exists in cell_index ${cell_index}.`);
+            } else {
+                const current_player: Player = this.Current_Player();
+                const selected_stake: Stake = current_player.Remove_Selected_Stake();
 
-            this.#cells[cell_index] = new Cell(
-                {
-                    board: this,
-                    index: cell_index,
-                    occupant: {
-                        stake: selected_stake,
-                        claimant: current_player,
-                    },
-                },
-            );
-
-            this.#Evaluate_Cell(cell_index);
+                await this.#Place_Stake(selected_stake, cell_index);
+            }
         }
     }
 
-    #Evaluate_Cell(cell_index: Cell_Index):
-        void
+    async Place_Stake(stake: Stake, cell_index: Cell_Index):
+        Promise<void>
+    {
+        if (this.Arena().Is_Game_Over()) {
+            throw new Error(`Cannot place any more stakes, as the game is over.`);
+        } else {
+            if (this.Cell(cell_index).Is_Occupied()) {
+                throw new Error(`Claim already exists in cell_index ${cell_index}.`);
+            } else {
+                await this.#Place_Stake(stake, cell_index);
+            }
+        }
+    }
+
+    async #Place_Stake(stake: Stake, cell_index: Cell_Index):
+        Promise<void>
+    {
+        this.#cells[cell_index] = new Cell(
+            {
+                stake: stake,
+                claimant: stake.Origin(),
+            },
+        );
+
+        await this.#Evaluate_Cell(cell_index);
+    }
+
+    async #Evaluate_Cell(cell_index: Cell_Index):
+        Promise<void>
     {
         // this should update adjacents cards by evaluating the rules,
         // as if a card was just placed in this position.
         // however, it will be used recursively for cards that have already
         // been placed to detect if a combo should occur.
+    }
+
+    async Choose_Stake_And_Cell(computer_player: Computer_Player):
+        Promise<{
+            stake_index: Stake_Index,
+            cell_index: Cell_Index,
+        }>
+    {
+        // if the 'open' rule is in play, we can actually let this part look at all the other player's cards
+        // to help choose which stake a computer_player will play. however, we're avoiding that altogether
+        // for now for the sake of simplicity.
+
+        class Choices
+        {
+            #placements: { [index: Claim_Delta]: Placements };
+
+            constructor()
+            {
+                this.#placements = {};
+            }
+
+            Add(
+                claim_delta: Claim_Delta,
+                stake_index: Stake_Index,
+                cell_index: Cell_Index,
+            ):
+                void
+            {
+                if (this.#placements[claim_delta] == null) {
+                    this.#placements[claim_delta] = new Placements();
+                }
+
+                this.#placements[claim_delta].Push(stake_index, cell_index);
+            }
+
+            Claim_Deltas():
+                Array<Claim_Delta>
+            {
+                return Object.keys(this.#placements).map(function (value: string):
+                    Claim_Delta
+                {
+                    return parseInt(value) as Claim_Delta;
+                }).sort(function (a: Claim_Delta, b: Claim_Delta):
+                    number
+                {
+                    return a - b;
+                });
+            }
+
+            Min_Claim_Delta():
+                Claim_Delta
+            {
+                const claim_deltas = this.Claim_Deltas();
+                if (claim_deltas.length < 1) {
+                    throw new Error(`Has no claim_deltas.`);
+                } else {
+                    return Math.min(...claim_deltas);
+                }
+            }
+
+            Max_Claim_Delta():
+                Claim_Delta
+            {
+                const claim_deltas = this.Claim_Deltas();
+                if (claim_deltas.length < 1) {
+                    throw new Error(`Has no claim_deltas.`);
+                } else {
+                    return Math.max(...claim_deltas);
+                }
+            }
+
+            Placements(claim_delta: Claim_Delta):
+                Placements
+            {
+                if (this.#placements[claim_delta] == null) {
+                    throw new Error(`Has no placements with a 'claim_delta' of ${claim_delta}.`);
+                } else {
+                    return this.#placements[claim_delta];
+                }
+            }
+
+            Min_Claim_Placements():
+                Placements
+            {
+                return this.#placements[this.Min_Claim_Delta()];
+            }
+
+            Max_Claim_Placements():
+                Placements
+            {
+                return this.#placements[this.Max_Claim_Delta()];
+            }
+        }
+
+        class Placements
+        {
+            #stake_indices: Array<Stake_Index>;
+            #cell_indices: Array<Cell_Index>;
+
+            constructor()
+            {
+                this.#stake_indices = [];
+                this.#cell_indices = [];
+            }
+
+            Push(
+                stake_index: Stake_Index,
+                cell_index: Cell_Index,
+            ):
+                void
+            {
+                this.#stake_indices.push(stake_index);
+                this.#cell_indices.push(cell_index);
+            }
+
+            Count():
+                Count
+            {
+                return this.#stake_indices.length;
+            }
+
+            Random():
+                {
+                    stake_index: Stake_Index,
+                    cell_index: Cell_Index,
+                }
+            {
+                const index: Index = Math.floor(Math.random() * this.#stake_indices.length);
+
+                return (
+                    {
+                        stake_index: this.#stake_indices[index],
+                        cell_index: this.#cell_indices[index],
+                    }
+                );
+            }
+
+            Filter_By_Best_Defense(board: Board, player: Player):
+                Placements
+            {
+                let results = new Placements();
+
+                let best_defense: number = 0;
+                for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
+                    const stake_index: Stake_Index = this.#stake_indices[idx];
+                    const cell_index: Cell_Index = this.#cell_indices[idx];
+
+                    const defense = board.Defense_Of(player.Stake(stake_index), cell_index);
+                    if (defense > best_defense) {
+                        best_defense = defense;
+                        results = new Placements();
+                        results.Push(stake_index, cell_index);
+                    } else if (defense === best_defense) {
+                        results.Push(stake_index, cell_index);
+                    }
+                }
+
+                return results;
+            }
+
+            Filter_By_Worst_Defense(board: Board, player: Player):
+                Placements
+            {
+                let results = new Placements();
+
+                let worst_defense: number = Number.MAX_VALUE;
+                for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
+                    const stake_index: Stake_Index = this.#stake_indices[idx];
+                    const cell_index: Cell_Index = this.#cell_indices[idx];
+
+                    const defense = board.Defense_Of(player.Stake(stake_index), cell_index);
+                    if (defense < worst_defense) {
+                        worst_defense = defense;
+                        results = new Placements();
+                        results.Push(stake_index, cell_index);
+                    } else if (defense === worst_defense) {
+                        results.Push(stake_index, cell_index);
+                    }
+                }
+
+                return results;
+            }
+
+            Filter_By_Biggest_Defense(board: Board):
+                Placements
+            {
+                let results = new Placements();
+
+                let biggest_defense: number = -1;
+                for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
+                    const stake_index: Stake_Index = this.#stake_indices[idx];
+                    const cell_index: Cell_Index = this.#cell_indices[idx];
+
+                    const defense_count = board.Defense_Count_Of(cell_index);
+                    if (defense_count > biggest_defense) {
+                        biggest_defense = defense_count;
+                        results = new Placements();
+                        results.Push(stake_index, cell_index);
+                    } else if (defense_count === biggest_defense) {
+                        results.Push(stake_index, cell_index);
+                    }
+                }
+
+                return results;
+            }
+
+            Filter_By_Smallest_Defense(board: Board):
+                Placements
+            {
+                let results = new Placements();
+
+                let smallest_defense: number = Number.MAX_VALUE;
+                for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
+                    const stake_index: Stake_Index = this.#stake_indices[idx];
+                    const cell_index: Cell_Index = this.#cell_indices[idx];
+
+                    const defense_count = board.Defense_Count_Of(cell_index);
+                    if (defense_count < smallest_defense) {
+                        smallest_defense = defense_count;
+                        results = new Placements();
+                        results.Push(stake_index, cell_index);
+                    } else if (defense_count === smallest_defense) {
+                        results.Push(stake_index, cell_index);
+                    }
+                }
+
+                return results;
+            }
+
+            Filter_By_Most_Value(player: Player):
+                Placements
+            {
+                let results = new Placements();
+
+                let most_value = 0;
+                for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
+                    const stake_index: Stake_Index = this.#stake_indices[idx];
+                    const cell_index: Cell_Index = this.#cell_indices[idx];
+                    const card: Card = player.Stake(stake_index).Card();
+
+                    const value_sum = card.Left() + card.Top() + card.Right() + card.Bottom();
+                    if (value_sum > most_value) {
+                        most_value = value_sum;
+                        results = new Placements();
+                        results.Push(stake_index, cell_index);
+                    } else if (value_sum === most_value) {
+                        results.Push(stake_index, cell_index);
+                    }
+                }
+
+                return results;
+            }
+
+            Filter_By_Least_Value(player: Player):
+                Placements
+            {
+                let results = new Placements();
+
+                let least_value = Number.MAX_VALUE;
+                for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
+                    const stake_index: Stake_Index = this.#stake_indices[idx];
+                    const cell_index: Cell_Index = this.#cell_indices[idx];
+                    const card: Card = player.Stake(stake_index).Card();
+
+                    const value_sum = card.Left() + card.Top() + card.Right() + card.Bottom();
+                    if (value_sum < least_value) {
+                        least_value = value_sum;
+                        results = new Placements();
+                        results.Push(stake_index, cell_index);
+                    } else if (value_sum === least_value) {
+                        results.Push(stake_index, cell_index);
+                    }
+                }
+
+                return results;
+            }
+        };
+
+        // we need to figure out what stakes in which cells have the greatest increase in claims.
+        // then we can determine if this computer_player will want to play offensively or defensively.
+        const current_claim_count: Claim_Count = this.Claim_Count(computer_player);
+        const choices: Choices = new Choices();
+        for (const [cell_index, cell] of this.#cells.entries()) {
+            if (cell.Is_Empty()) {
+                for (const [stake_index, stake] of computer_player.Stakes().entries()) {
+                    const new_board = this.Clone();
+                    await new_board.Place_Stake(stake, cell_index);
+
+                    const claim_delta = new_board.Claim_Count(computer_player) - current_claim_count;
+                    choices.Add(claim_delta, stake_index, cell_index);
+                }
+            }
+        }
+
+        const max_claim_delta = choices.Max_Claim_Delta();
+        if (max_claim_delta > 1) {
+            // offensive mode
+            // claim as many cards on the board as possible with the least valuable card
+            const max_claim_placements = choices.Max_Claim_Placements();
+            const best_defense_placements = max_claim_placements.Filter_By_Best_Defense(this, computer_player);
+            const least_value_placements = best_defense_placements.Filter_By_Least_Value(computer_player);
+
+            return least_value_placements.Random();
+        } else {
+            // defensive mode
+            const min_claim_placements = choices.Min_Claim_Placements();
+            const biggest_defense_placements = min_claim_placements.Filter_By_Biggest_Defense(this);
+            if (Random_Boolean() && this.Defense_Count_Of(biggest_defense_placements.Random().cell_index) >= 2) {
+                // bait mode
+                // place the least valuable yet easily re-claimable card on the board
+                const worst_defense_placements = biggest_defense_placements.Filter_By_Worst_Defense(this, computer_player);
+                const least_value_placements = worst_defense_placements.Filter_By_Least_Value(computer_player);
+
+                return least_value_placements.Random();
+            } else {
+                // turtle mode
+                // place the most defensible yet least valuable card on the board
+                const smallest_defense_placements = min_claim_placements.Filter_By_Smallest_Defense(this);
+                const best_defense_placements = smallest_defense_placements.Filter_By_Best_Defense(this, computer_player);
+                const least_value_placements = best_defense_placements.Filter_By_Least_Value(computer_player);
+
+                return least_value_placements.Random();
+            }
+        }
     }
 
     Current_Player():
@@ -1649,48 +2114,39 @@ export class Board
     Is_On_Human_Turn():
         boolean
     {
-        return this.Current_Player().Is_Human();
+        return this.Arena().Is_On_Human_Turn();
     }
 
     Is_On_Computer_Turn():
         boolean
     {
-        return !this.Is_On_Human_Turn();
+        return this.Arena().Is_On_Computer_Turn();
     }
 
     Is_Cell_Selectable(cell_index: Cell_Index):
         boolean
     {
-        return this.Current_Player().Has_Selected_Stake() && this.Cell(cell_index).Is_Empty();
+        if (this.Arena().Is_Game_Over()) {
+            return false;
+        } else {
+            return this.Current_Player().Has_Selected_Stake() && this.Cell(cell_index).Is_Empty();
+        }
     }
 }
 
 /* Represents an empty cell or a player that's making a claim on a stake. */
 export class Cell
 {
-    #board: Board;
-    #index: Cell_Index;
     #stake: Stake | null;
     #claimant: Player | null;
 
     constructor(
-        {
-            board,
-            index,
-            occupant,
-        }: {
-            board: Board,
-            index: Cell_Index,
-            occupant?: {
-                stake: Stake,
-                claimant: Player,
-            }
+        occupant?: {
+            stake: Stake,
+            claimant: Player,
         },
     )
     {
-        this.#board = board;
-        this.#index = index;
-
         if (occupant != null) {
             this.#stake = occupant.stake;
             this.#claimant = occupant.claimant;
@@ -1702,22 +2158,19 @@ export class Cell
         Object.freeze(this);
     }
 
-    Arena():
-        Arena
+    Clone():
+        Cell
     {
-        return this.Board().Arena();
-    }
-
-    Board():
-        Board
-    {
-        return this.#board;
-    }
-
-    Index():
-        Cell_Index
-    {
-        return this.#index;
+        if (this.Is_Occupied()) {
+            return new Cell(
+                {
+                    stake: this.#stake as Stake,
+                    claimant: this.#claimant as Player,
+                },
+            );
+        } else {
+            return new Cell();
+        }
     }
 
     Is_Empty():

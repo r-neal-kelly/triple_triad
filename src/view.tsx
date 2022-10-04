@@ -36,7 +36,6 @@ interface Player_Start_Turn_Data
 interface Player_Stop_Turn_Data
 {
     player_index: Model.Player_Index,
-    is_game_over: boolean,
 }
 
 interface Player_Select_Stake_Data
@@ -154,12 +153,13 @@ export class Arena extends React.Component<Arena_Props>
 
     async On_Player_Stop_Turn(
         {
-            is_game_over,
         }: Player_Stop_Turn_Data,
     ):
         Promise<void>
     {
-        if (is_game_over) {
+        this.Model().Next_Turn();
+
+        if (this.Model().Is_Game_Over()) {
             this.props.event_grid.Send_Event({
                 name_affix: GAME_STOP,
                 name_suffixes: [
@@ -169,8 +169,6 @@ export class Arena extends React.Component<Arena_Props>
                 is_atomic: true,
             });
         } else {
-            this.Model().Next_Turn();
-
             const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
             this.props.event_grid.Send_Event({
                 name_affix: PLAYER_START_TURN,
@@ -354,13 +352,11 @@ class Player extends React.Component<Player_Props>
             const {
                 selection_indices,
                 cell_index,
-            } = computer_player.Choose_Stake_And_Cell();
+            } = await computer_player.Choose_Stake_And_Cell();
 
             // we may need to while away at this until the computer chooses its stake and cell,
             // that way there is no visual hiccup if the computer takes a bit of time
             for (const selection_index of selection_indices) {
-                await Wait(AI_SELECTION_WAIT_MILLISECONDS);
-
                 this.props.event_grid.Send_Event({
                     name_affix: PLAYER_SELECT_STAKE,
                     name_suffixes: [
@@ -372,9 +368,9 @@ class Player extends React.Component<Player_Props>
                     } as Player_Select_Stake_Data,
                     is_atomic: true,
                 });
-            }
 
-            await Wait(AI_SELECTION_WAIT_MILLISECONDS);
+                await Wait(AI_SELECTION_WAIT_MILLISECONDS);
+            }
 
             this.props.event_grid.Send_Event({
                 name_affix: PLAYER_PLACE_STAKE,
@@ -711,7 +707,7 @@ class Board extends React.Component<Board_Props>
     ):
         Promise<void>
     {
-        this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        await this.Model().Place_Current_Player_Selected_Stake(cell_index);
         this.forceUpdate();
 
         this.props.event_grid.Send_Event({
@@ -721,7 +717,6 @@ class Board extends React.Component<Board_Props>
             ],
             data: {
                 player_index,
-                is_game_over: this.Model().Arena().Is_Game_Over(),
             } as Player_Stop_Turn_Data,
             is_atomic: true,
         });
@@ -810,12 +805,12 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     {
         event.stopPropagation();
 
-        const arena: Model.Arena = this.Model().Arena();
+        const arena: Model.Arena = this.Board().Model().Arena();
         if (arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
-            if (this.Model().Board().Is_Cell_Selectable(this.props.index)) {
-                const player_index: Model.Player_Index = this.Model().Board().Current_Player_Index();
+            if (this.Board().Model().Is_Cell_Selectable(this.props.index)) {
+                const player_index: Model.Player_Index = this.Board().Model().Current_Player_Index();
                 const cell_index: Model.Cell_Index = this.props.index;
 
                 this.props.event_grid.Send_Event({
@@ -841,7 +836,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     ):
         Promise<void>
     {
-        if (this.Model().Board().Is_Cell_Selectable(this.props.index)) {
+        if (this.Board().Model().Is_Cell_Selectable(this.props.index)) {
             // we only need to update the cursor for empty cells
             this.forceUpdate();
         }
@@ -886,8 +881,8 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         JSX.Element
     {
         if (this.Model().Is_Empty()) {
-            const is_on_human_turn: boolean = this.Model().Board().Is_On_Human_Turn();
-            const is_selectable: boolean = this.Model().Board().Is_Cell_Selectable(this.props.index);
+            const is_on_human_turn: boolean = this.Board().Model().Is_On_Human_Turn();
+            const is_selectable: boolean = this.Board().Model().Is_Cell_Selectable(this.props.index);
 
             return (
                 <div
