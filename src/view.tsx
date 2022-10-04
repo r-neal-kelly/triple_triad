@@ -464,7 +464,9 @@ class Player extends React.Component<Player_Props>
                 <div
                     className="Hand"
                     style={{
-                        height: `calc(var(--card_height) / 3 * 2 * ${stake_count})`,
+                        height: stake_count > 0 ?
+                            `calc(var(--card_height) / 3 * 2 * ${stake_count - 1} + var(--card_height))` :
+                            `0`,
                     }}
                 >
                     {

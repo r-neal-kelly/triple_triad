@@ -26,9 +26,9 @@ class Main extends React.Component<Main_Props>
 
         // to be serialized
         this.#rules = new Model.Rules({
-            row_count: 3,
-            column_count: 3,
-            player_count: 2,
+            row_count: 5,
+            column_count: 5,
+            player_count: 3,
 
             open: true,
             same: true,
@@ -50,7 +50,7 @@ class Main extends React.Component<Main_Props>
         this.#arena = new Model.Arena({
             rules: this.#rules,
             selections: [
-                new Model.Random_Selection({
+                /*new Model.Random_Selection({
                     collection: this.#collection,
                     color: new Model.Color({
                         red: 0,
@@ -58,6 +58,22 @@ class Main extends React.Component<Main_Props>
                         blue: 255,
                     }),
                     is_of_human: true,
+                    card_count: this.#rules.Selection_Card_Count(),
+                }),*/
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: this.#packs.Random_Pack(),
+                            min_tier_index: 9,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: new Model.Color({
+                        red: 0,
+                        green: 0,
+                        blue: 255,
+                    }),
+                    is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Random_Selection({
@@ -71,6 +87,22 @@ class Main extends React.Component<Main_Props>
                     color: new Model.Color({
                         red: 255,
                         green: 0,
+                        blue: 0,
+                    }),
+                    is_of_human: false,
+                    card_count: this.#rules.Selection_Card_Count(),
+                }),
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: this.#packs.Random_Pack(),
+                            min_tier_index: 9,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: new Model.Color({
+                        red: 255,
+                        green: 255,
                         blue: 0,
                     }),
                     is_of_human: false,
