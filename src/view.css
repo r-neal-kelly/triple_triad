@@ -3,7 +3,7 @@
 }
 
 :root {
-    --card_height: 150px;
+    --card_height: 125px;
     --card_width: 100px;
 }
 
@@ -21,7 +21,6 @@ body,
 .View {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 
     width: 100%;
     height: 100%;
@@ -45,7 +44,6 @@ body,
     flex-direction: row;
     justify-content: center;
 
-    height: 85%;
     width: 100%;
     margin: 0;
     padding: 0;
@@ -53,7 +51,6 @@ body,
 
 .Board {
     display: grid;
-    align-content: space-between;
 
     margin: 0;
     padding: 10px;
