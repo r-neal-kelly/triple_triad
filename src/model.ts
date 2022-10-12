@@ -1,4 +1,5 @@
-import final_fantasy_8_pack_json from "./pack/final_fantasy_8.json"
+import final_fantasy_8_pack_json from "./packs/final_fantasy_8.json"
+import cats_pack_json from "./packs/cats.json"
 
 /* Various aliases to assist reading comprehension. */
 type Count =
@@ -89,8 +90,7 @@ export type Defense_Count =
     number;
 
 function Random_Boolean():
-    boolean
-{
+    boolean {
     return Math.random() < 0.5;
 }
 
@@ -114,15 +114,14 @@ type Card_JSON = {
 }
 
 /* Contains all available packs. */
-export class Packs
-{
+export class Packs {
     #pack_count: Pack_Count;
     #packs: { [index: Pack_Name]: Pack };
 
-    constructor()
-    {
+    constructor() {
         const packs_json: Array<Pack_JSON> = [
             final_fantasy_8_pack_json,
+            cats_pack_json,
         ];
 
         this.#pack_count = packs_json.length;
@@ -132,8 +131,7 @@ export class Packs
             this: Packs,
             pack_json: Pack_JSON,
         ):
-            void
-        {
+            void {
             if (this.#packs[pack_json.name] != null) {
                 throw new Error(`Pack with the name "${pack_json.name}" already exists.`);
             } else {
@@ -152,14 +150,12 @@ export class Packs
     }
 
     Pack_Count():
-        Pack_Count
-    {
+        Pack_Count {
         return this.#pack_count;
     }
 
     Pack(pack_name: Pack_Name):
-        Pack
-    {
+        Pack {
         const pack = this.#packs[pack_name];
 
         if (pack == null) {
@@ -170,21 +166,18 @@ export class Packs
     }
 
     Random_Pack():
-        Pack
-    {
+        Pack {
         return this.As_Array()[Math.floor(Math.random() * this.Pack_Count())];
     }
 
     As_Array():
-        Array<Pack>
-    {
+        Array<Pack> {
         return Object.values(this.#packs); // probably want to sort by pack_name
     }
 }
 
 /* Contains all the tiers and each of their collectible cards. */
-class Pack
-{
+class Pack {
     #packs: Packs;
     #name: Pack_Name;
     #tiers: Array<Tier>;
@@ -197,8 +190,7 @@ class Pack
             packs: Packs,
             pack_json: Pack_JSON,
         }
-    )
-    {
+    ) {
         if (pack_json.tiers.length < 1) {
             throw new Error(`The pack ${pack_json.name} must have at least one tier.`);
         } else {
@@ -209,8 +201,7 @@ class Pack
                 tier_json: Tier_JSON,
                 tier_index: Tier_Index,
             ):
-                Tier
-            {
+                Tier {
                 Object.freeze(tier_json);
 
                 return new Tier({
@@ -226,26 +217,22 @@ class Pack
     }
 
     Packs():
-        Packs
-    {
+        Packs {
         return this.#packs;
     }
 
     Name():
-        Pack_Name
-    {
+        Pack_Name {
         return this.#name;
     }
 
     Tier_Count():
-        Tier_Count
-    {
+        Tier_Count {
         return this.#tiers.length;
     }
 
     Tier(tier_index: Tier_Index):
-        Tier
-    {
+        Tier {
         if (tier_index >= 0 && tier_index < this.Tier_Count()) {
             return this.#tiers[tier_index];
         } else {
@@ -254,15 +241,13 @@ class Pack
     }
 
     Tiers():
-        Array<Tier>
-    {
+        Array<Tier> {
         return Array.from(this.#tiers);
     }
 }
 
 /* Contains all the collectible cards in a single tier of a pack. */
-class Tier
-{
+class Tier {
     #pack: Pack;
     #index: Tier_Index;
     #cards: Array<Card>;
@@ -277,8 +262,7 @@ class Tier
             tier_index: Tier_Index,
             tier_json: Tier_JSON,
         }
-    )
-    {
+    ) {
         if ((tier_json.length as Card_Count) < 1) {
             throw new Error(`Each tier must have at least one card.`);
         } else {
@@ -289,8 +273,7 @@ class Tier
                 card_json: Card_JSON,
                 card_index: Card_Index,
             ):
-                Card
-            {
+                Card {
                 Object.freeze(card_json);
 
                 return new Card({
@@ -306,26 +289,22 @@ class Tier
     }
 
     Pack():
-        Pack
-    {
+        Pack {
         return this.#pack;
     }
 
     Index():
-        Tier_Index
-    {
+        Tier_Index {
         return this.#index;
     }
 
     Card_Count():
-        Card_Count
-    {
+        Card_Count {
         return this.#cards.length;
     }
 
     Card(card_index: Card_Index):
-        Card
-    {
+        Card {
         if (card_index >= 0 && card_index < this.Card_Count()) {
             return this.#cards[card_index];
         } else {
@@ -334,15 +313,13 @@ class Tier
     }
 
     Cards():
-        Array<Card>
-    {
+        Array<Card> {
         return Array.from(this.#cards);
     }
 }
 
 /* Contains the data for each individual card in a pack. */
-class Card
-{
+class Card {
     #tier: Tier;
     #index: Card_Index;
     #card_json: Card_JSON;
@@ -357,8 +334,7 @@ class Card
             card_index: Card_Index,
             card_json: Card_JSON,
         }
-    )
-    {
+    ) {
         this.#tier = tier;
         this.#index = card_index;
         this.#card_json = card_json;
@@ -367,69 +343,58 @@ class Card
     }
 
     Pack():
-        Pack
-    {
+        Pack {
         return this.#tier.Pack();
     }
 
     Tier():
-        Tier
-    {
+        Tier {
         return this.#tier;
     }
 
     Index():
-        Card_Index
-    {
+        Card_Index {
         return this.#index;
     }
 
     Name():
-        Card_Name
-    {
+        Card_Name {
         return this.#card_json.name;
     }
 
     Image():
-        URL
-    {
+        URL {
         return this.#card_json.image;
     }
 
     Element():
-        Element_Name
-    {
+        Element_Name {
         return this.#card_json.element;
     }
 
     Left():
-        Card_Number
-    {
+        Card_Number {
         return this.#card_json.left;
     }
 
     Top():
-        Card_Number
-    {
+        Card_Number {
         return this.#card_json.top;
     }
 
     Right():
-        Card_Number
-    {
+        Card_Number {
         return this.#card_json.right;
     }
 
     Bottom():
-        Card_Number
-    {
+        Card_Number {
         return this.#card_json.bottom;
     }
 }
 
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
-export class Collection
-{
+export class Collection {
     #default_shuffle: Shuffle;
     #shuffle_count: Shuffle_Count;
     #shuffles: { [index: Pack_Name]: Shuffle };
@@ -441,8 +406,7 @@ export class Collection
         }: {
             default_shuffle: Shuffle,
         }
-    )
-    {
+    ) {
         this.#default_shuffle = default_shuffle;
         this.#shuffle_count = 0;
         this.#shuffles = {};
@@ -452,32 +416,27 @@ export class Collection
     }
 
     Shuffle_Count():
-        Shuffle_Count
-    {
+        Shuffle_Count {
         return this.#shuffle_count;
     }
 
     Shuffle(pack_name: Pack_Name):
-        Shuffle
-    {
+        Shuffle {
         return this.#shuffles[pack_name];
     }
 
     Default_Shuffle():
-        Shuffle
-    {
+        Shuffle {
         return this.#default_shuffle;
     }
 
     Random_Shuffle():
-        Shuffle
-    {
+        Shuffle {
         return Object.values(this.#shuffles)[Math.floor(Math.random() * this.Shuffle_Count())];
     }
 
     Add_Shuffle(shuffle: Shuffle):
-        void
-    {
+        void {
         if (this.#shuffles[shuffle.Pack().Name()]) {
             throw new Error(`This collection already has a shuffle for the "${shuffle.Pack().Name()}" pack.`);
         } else {
@@ -487,8 +446,7 @@ export class Collection
     }
 
     Remove_Shuffle(pack_name: Pack_Name):
-        void
-    {
+        void {
         if (this.#shuffles[pack_name]) {
             this.#shuffle_count -= 1;
             delete this.#shuffles[pack_name];
@@ -499,8 +457,7 @@ export class Collection
         card: Card,
         card_count: Card_Count,
     ):
-        void
-    {
+        void {
 
     }
 
@@ -508,8 +465,7 @@ export class Collection
         card: Card,
         card_count: Card_Count,
     ):
-        void
-    {
+        void {
 
     }
 
@@ -524,8 +480,7 @@ export class Collection
             allow_multiple_packs: boolean,
         }
     ):
-        Array<Card>
-    {
+        Array<Card> {
         // we need to be able to select random cards from the card_and_counts too, but for now we'll keep it easy
         // we also need to add the functionality to use multiple packs, but one thing at a time here
 
@@ -537,23 +492,20 @@ export class Collection
     }
 
     Serialize():
-        object
-    {
+        object {
         // if we serialize by indices into a pack but the pack is changed, there's no way to know the difference.
         // we could serialize with card names, but that may be overkill here.
         return {};
     }
 
     Deserialize(save_data: object):
-        void
-    {
+        void {
 
     }
 }
 
 /* Provides a fine-tuned way to randomly generate a list of cards from an individual pack. */
-export class Shuffle
-{
+export class Shuffle {
     #pack: Pack;
     #min_tier_index: Tier_Index;
     #max_tier_index: Tier_Index;
@@ -568,8 +520,7 @@ export class Shuffle
             min_tier_index: Tier_Index,
             max_tier_index: Tier_Index,
         }
-    )
-    {
+    ) {
         if (min_tier_index > max_tier_index) {
             throw new Error(`The min_tier_index cannot be greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
         } else if (max_tier_index >= pack.Tier_Count()) {
@@ -584,26 +535,22 @@ export class Shuffle
     }
 
     Pack():
-        Pack
-    {
+        Pack {
         return this.#pack;
     }
 
     Min_Tier_Index():
-        Tier_Index
-    {
+        Tier_Index {
         return this.#min_tier_index;
     }
 
     Max_Tier_Index():
-        Tier_Index
-    {
+        Tier_Index {
         return this.#max_tier_index;
     }
 
     Cards(card_count: Card_Count):
-        Array<Card>
-    {
+        Array<Card> {
         // It's guaranteed that at least one card exists in every tier, and that every pack has at least one tier.
 
         const min_tier_index: Tier_Index = this.Min_Tier_Index();
@@ -621,8 +568,7 @@ export class Shuffle
     }
 
     Unique_Cards(card_count: Card_Count):
-        Array<Card>
-    {
+        Array<Card> {
         const pack: Pack = this.Pack();
         const min_tier_index: Tier_Index = this.Min_Tier_Index();
         const max_tier_index: Tier_Index = this.Max_Tier_Index();
@@ -649,8 +595,7 @@ export class Shuffle
 }
 
 /* Contains a particular card and a count thereof. */
-class Card_And_Count
-{
+class Card_And_Count {
     #card: Card;
     #count: Card_Count;
 
@@ -662,8 +607,7 @@ class Card_And_Count
             card: Card,
             count: Card_Count,
         }
-    )
-    {
+    ) {
         if (count >= 0) {
             this.#card = card;
             this.#count = count;
@@ -673,20 +617,17 @@ class Card_And_Count
     }
 
     Card():
-        Card
-    {
+        Card {
         return this.#card;
     }
 
     Count():
-        Card_Count
-    {
+        Card_Count {
         return this.#count;
     }
 
     Add(card_count: Card_Count):
-        void
-    {
+        void {
         if (this.#count + card_count < this.#count) {
             throw new Error(`Cannot add ${card_count} to the count.`);
         } else {
@@ -695,8 +636,7 @@ class Card_And_Count
     }
 
     Subtract(card_count: Card_Count):
-        void
-    {
+        void {
         if (this.#count - card_count > this.#count) {
             throw new Error(`Cannot subtract ${card_count} from the count.`);
         } else {
@@ -705,21 +645,18 @@ class Card_And_Count
     }
 
     Increment():
-        void
-    {
+        void {
         this.Add(1);
     }
 
     Decrement():
-        void
-    {
+        void {
         this.Subtract(1);
     }
 }
 
 /* Contains a list of individual cards drawn from a collection and their color, with possible repeats. */
-export class Selection
-{
+export class Selection {
     #collection: Collection;
     #color: Color;
     #cards: Array<Card>;
@@ -737,8 +674,7 @@ export class Selection
             cards: Array<Card>,
             is_of_human: boolean,
         }
-    )
-    {
+    ) {
         if (cards.length < 1) {
             throw new Error(`Must have a least one card in the selection.`);
         } else {
@@ -753,38 +689,32 @@ export class Selection
     }
 
     Collection():
-        Collection
-    {
+        Collection {
         return this.#collection;
     }
 
     Color():
-        Color
-    {
+        Color {
         return this.#color;
     }
 
     Is_Of_Human():
-        boolean
-    {
+        boolean {
         return this.#is_of_human;
     }
 
     Is_Of_Computer():
-        boolean
-    {
+        boolean {
         return !this.Is_Of_Human();
     }
 
     Card_Count():
-        Card_Count
-    {
+        Card_Count {
         return this.#cards.length;
     }
 
     Card(card_index: Card_Index):
-        Card
-    {
+        Card {
         if (card_index >= 0 && card_index < this.Card_Count()) {
             return this.#cards[card_index];
         } else {
@@ -798,8 +728,7 @@ export type Manual_Selection =
     Selection;
 
 /* Utilizes random generation of cards to create a selection. */
-export class Random_Selection extends Selection
-{
+export class Random_Selection extends Selection {
     constructor(
         {
             collection,
@@ -818,8 +747,7 @@ export class Random_Selection extends Selection
             allow_repeats?: boolean,
             allow_multiple_packs?: boolean,
         }
-    )
-    {
+    ) {
         if (card_count < 1) {
             throw new Error(`'card_count' must be greater than 0 for a selection.`);
         } else {
@@ -840,8 +768,7 @@ export class Random_Selection extends Selection
 }
 
 /* Contains RGBA values for a color. */
-export class Color
-{
+export class Color {
     #red: number;
     #green: number;
     #blue: number;
@@ -859,8 +786,7 @@ export class Color
             blue?: number,
             alpha?: number,
         }
-    )
-    {
+    ) {
         if (red < 0 || red > 255 ||
             green < 0 || green > 255 ||
             blue < 0 || blue > 255) {
@@ -878,33 +804,28 @@ export class Color
     }
 
     Red():
-        number
-    {
+        number {
         return this.#red;
     }
 
     Green():
-        number
-    {
+        number {
         return this.#green;
     }
 
     Blue():
-        number
-    {
+        number {
         return this.#blue;
     }
 
     Alpha():
-        number
-    {
+        number {
         return this.#alpha;
     }
 }
 
 /* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
-export class Arena
-{
+export class Arena {
     #rules: Rules;
     #players: Array<Player>;
     #board: Board;
@@ -923,8 +844,7 @@ export class Arena
             rules: Rules,
             selections: Array<Selection>
         }
-    )
-    {
+    ) {
         const player_count: Player_Count = rules.Player_Count();
         if (selections.length !== player_count) {
             throw new Error(`Must have a selection for each player, no more and no less.`);
@@ -962,20 +882,17 @@ export class Arena
     }
 
     Rules():
-        Rules
-    {
+        Rules {
         return this.#rules;
     }
 
     Player_Count():
-        Player_Count
-    {
+        Player_Count {
         return this.#players.length;
     }
 
     Player(player_index: Player_Index):
-        Player
-    {
+        Player {
         if (player_index >= 0 && player_index < this.Player_Count()) {
             return this.#players[player_index];
         } else {
@@ -984,14 +901,12 @@ export class Arena
     }
 
     Current_Player_Index():
-        Player_Index
-    {
+        Player_Index {
         return this.Current_Player().Index();
     }
 
     Current_Player():
-        Player
-    {
+        Player {
         if (this.Is_Game_Over()) {
             throw new Error(`This arena has no current player because the game is over.`);
         } else {
@@ -1000,20 +915,17 @@ export class Arena
     }
 
     Board():
-        Board
-    {
+        Board {
         return this.#board;
     }
 
     Turn_Count():
-        Turn_Count
-    {
+        Turn_Count {
         return this.#turn_count;
     }
 
     Is_On_Human_Turn():
-        boolean
-    {
+        boolean {
         if (this.Is_Game_Over()) {
             return false;
         } else {
@@ -1022,8 +934,7 @@ export class Arena
     }
 
     Is_On_Computer_Turn():
-        boolean
-    {
+        boolean {
         if (this.Is_Game_Over()) {
             return false;
         } else {
@@ -1032,8 +943,7 @@ export class Arena
     }
 
     Next_Turn():
-        void
-    {
+        void {
         if (this.Is_Game_Over()) {
             throw new Error(`No more turns, the game is over.`);
         } else {
@@ -1046,33 +956,28 @@ export class Arena
     }
 
     Is_Input_Enabled():
-        boolean
-    {
+        boolean {
         return this.#is_input_enabled;
     }
 
     Enable_Input():
-        void
-    {
+        void {
         this.#is_input_enabled = true;
     }
 
     Disable_Input():
-        void
-    {
+        void {
         this.#is_input_enabled = false;
     }
 
     Is_Game_Over():
-        boolean
-    {
+        boolean {
         return this.#turn_count === 0;
     }
 };
 
 /* A selection of rules which an arena must abide by. */
-export class Rules
-{
+export class Rules {
     #row_count: Row_Count;
     #column_count: Column_Count;
     #cell_count: Cell_Count;
@@ -1110,8 +1015,7 @@ export class Rules
             combo?: boolean,
             random?: boolean,
         }
-    )
-    {
+    ) {
         if (player_count < 2) {
             throw new Error(`Must have a player_count of at least 2.`);
         } else {
@@ -1137,74 +1041,62 @@ export class Rules
     }
 
     Row_Count():
-        Row_Count
-    {
+        Row_Count {
         return this.#row_count;
     }
 
     Column_Count():
-        Column_Count
-    {
+        Column_Count {
         return this.#column_count;
     }
 
     Cell_Count():
-        Cell_Count
-    {
+        Cell_Count {
         return this.#cell_count;
     }
 
     Player_Count():
-        Player_Count
-    {
+        Player_Count {
         return this.#player_count;
     }
 
     Selection_Card_Count():
-        Card_Count
-    {
+        Card_Count {
         return this.#selection_card_count;
     }
 
     Open():
-        boolean
-    {
+        boolean {
         return this.#open;
     }
 
     Same():
-        boolean
-    {
+        boolean {
         return this.#same;
     }
 
     Plus():
-        boolean
-    {
+        boolean {
         return this.#plus;
     }
 
     Wall():
-        boolean
-    {
+        boolean {
         return this.#wall;
     }
 
     Combo():
-        boolean
-    {
+        boolean {
         return this.#combo;
     }
 
     Random():
-        boolean
-    {
+        boolean {
         return this.#random;
     }
 
     Serialize():
-        Rules_Save_Data
-    {
+        Rules_Save_Data {
         return ({
             row_count: this.#row_count,
             column_count: this.#column_count,
@@ -1226,8 +1118,7 @@ type Rules_Save_Data = {
 }
 
 /* Contains stakes selected for a player. */
-export class Player
-{
+export class Player {
     #arena: Arena;
     #index: Player_Index;
     #selection: Selection;
@@ -1245,8 +1136,7 @@ export class Player
             index: Player_Index,
             selection: Selection,
         }
-    )
-    {
+    ) {
         this.#arena = arena;
         this.#index = index;
         this.#selection = selection;
@@ -1263,62 +1153,52 @@ export class Player
     }
 
     Arena():
-        Arena
-    {
+        Arena {
         return this.#arena;
     }
 
     Rules():
-        Rules
-    {
+        Rules {
         return this.Arena().Rules();
     }
 
     Board():
-        Board
-    {
+        Board {
         return this.Arena().Board();
     }
 
     Index():
-        Player_Index
-    {
+        Player_Index {
         return this.#index;
     }
 
     Selection():
-        Selection
-    {
+        Selection {
         return this.#selection;
     }
 
     Color():
-        Color
-    {
+        Color {
         return this.Selection().Color();
     }
 
     Is_Human():
-        boolean
-    {
+        boolean {
         return this.Selection().Is_Of_Human();
     }
 
     Is_Computer():
-        boolean
-    {
+        boolean {
         return !this.Is_Human();
     }
 
     Stake_Count():
-        Stake_Count
-    {
+        Stake_Count {
         return this.#stakes.length;
     }
 
     Stake(stake_index: Stake_Index):
-        Stake
-    {
+        Stake {
         if (stake_index >= 0 && stake_index < this.Stake_Count()) {
             return this.#stakes[stake_index];
         } else {
@@ -1327,20 +1207,17 @@ export class Player
     }
 
     Stakes():
-        Array<Stake>
-    {
+        Array<Stake> {
         return Array.from(this.#stakes);
     }
 
     Has_Stake(stake: Stake):
-        boolean
-    {
+        boolean {
         return this.#stakes.includes(stake);
     }
 
     Select_Stake(stake_index: Stake_Index | null):
-        void
-    {
+        void {
         if (stake_index == null) {
             this.#selected_stake_index = null;
         } else if (stake_index >= 0 && stake_index < this.Stake_Count()) {
@@ -1351,14 +1228,12 @@ export class Player
     }
 
     Selected_Stake_Index():
-        Stake_Index | null
-    {
+        Stake_Index | null {
         return this.#selected_stake_index;
     }
 
     Selected_Stake():
-        Stake | null
-    {
+        Stake | null {
         if (this.#selected_stake_index != null) {
             return this.Stake(this.#selected_stake_index);
         } else {
@@ -1367,14 +1242,12 @@ export class Player
     }
 
     Has_Selected_Stake():
-        boolean
-    {
+        boolean {
         return this.Selected_Stake() != null;
     }
 
     Remove_Selected_Stake():
-        Stake
-    {
+        Stake {
         if (this.#selected_stake_index != null) {
             const selected_stake: Stake = this.#stakes[this.#selected_stake_index];
 
@@ -1394,8 +1267,7 @@ export class Player
     }
 
     Is_On_Turn():
-        boolean
-    {
+        boolean {
         if (this.Arena().Is_Game_Over()) {
             return false;
         } else {
@@ -1404,18 +1276,15 @@ export class Player
     }
 }
 
-export class Human_Player extends Player
-{
+export class Human_Player extends Player {
 }
 
-export class Computer_Player extends Player
-{
+export class Computer_Player extends Player {
     async Choose_Stake_And_Cell():
         Promise<{
             selection_indices: Array<Stake_Index>,
             cell_index: Cell_Index,
-        }>
-    {
+        }> {
         const {
             stake_index,
             cell_index,
@@ -1442,8 +1311,7 @@ export class Computer_Player extends Player
 }
 
 /* Contains a card either on a player or on the board, and its origin. */
-export class Stake
-{
+export class Stake {
     #origin: Player;
     #card: Card;
 
@@ -1455,8 +1323,7 @@ export class Stake
             origin: Player,
             card: Card,
         }
-    )
-    {
+    ) {
         this.#origin = origin;
         this.#card = card;
 
@@ -1464,75 +1331,63 @@ export class Stake
     }
 
     Arena():
-        Arena
-    {
+        Arena {
         return this.Origin().Arena();
     }
 
     Board():
-        Board
-    {
+        Board {
         return this.Origin().Arena().Board();
     }
 
     Origin():
-        Player
-    {
+        Player {
         return this.#origin;
     }
 
     Is_Of_Human():
-        boolean
-    {
+        boolean {
         return this.Origin().Is_Human();
     }
 
     Is_Of_Computer():
-        boolean
-    {
+        boolean {
         return !this.Is_Of_Human();
     }
 
     Card():
-        Card
-    {
+        Card {
         return this.#card;
     }
 
     Color():
-        Color
-    {
+        Color {
         return this.Origin().Color();
     }
 
     Is_On_Player():
-        boolean
-    {
+        boolean {
         return this.Origin().Has_Stake(this);
     }
 
     Is_On_Board():
-        boolean
-    {
+        boolean {
         return !this.Is_On_Player();
     }
 
     Is_Selected():
-        boolean
-    {
+        boolean {
         return this.Origin().Selected_Stake() === this;
     }
 
     Is_Selectable():
-        boolean
-    {
+        boolean {
         return !this.Is_Selected() && this.Is_On_Player() && this.Origin().Is_On_Turn();
     }
 }
 
 /* Contains claims actively in play. */
-export class Board
-{
+export class Board {
     #arena: Arena;
     #cells: Array<Cell>;
 
@@ -1544,8 +1399,7 @@ export class Board
             arena: Arena,
             cells?: Array<Cell>,
         },
-    )
-    {
+    ) {
         this.#arena = arena;
         this.#cells = [];
         if (cells != null) {
@@ -1566,8 +1420,7 @@ export class Board
     }
 
     Clone():
-        Board
-    {
+        Board {
         return new Board(
             {
                 arena: this.#arena,
@@ -1577,38 +1430,32 @@ export class Board
     }
 
     Arena():
-        Arena
-    {
+        Arena {
         return this.#arena;
     }
 
     Rules():
-        Rules
-    {
+        Rules {
         return this.Arena().Rules();
     }
 
     Row_Count():
-        Row_Count
-    {
+        Row_Count {
         return this.Rules().Row_Count();
     }
 
     Column_Count():
-        Column_Count
-    {
+        Column_Count {
         return this.Rules().Column_Count();
     }
 
     Cell_Count():
-        Cell_Count
-    {
+        Cell_Count {
         return this.Rules().Cell_Count();
     }
 
     Cell(cell_index: Cell_Index):
-        Cell
-    {
+        Cell {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             return this.#cells[cell_index];
         } else {
@@ -1617,14 +1464,12 @@ export class Board
     }
 
     Cells():
-        Array<Cell>
-    {
+        Array<Cell> {
         return Array.from(this.#cells);
     }
 
     Left_Of(cell_index: Cell_Index):
-        Cell | Wall
-    {
+        Cell | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             if (cell_index % row_count > 0) {
@@ -1638,8 +1483,7 @@ export class Board
     }
 
     Top_Of(cell_index: Cell_Index):
-        Cell | Wall
-    {
+        Cell | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             if (cell_index >= row_count) {
@@ -1653,8 +1497,7 @@ export class Board
     }
 
     Right_Of(cell_index: Cell_Index):
-        Cell | Wall
-    {
+        Cell | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             if (cell_index % row_count < row_count - 1) {
@@ -1668,8 +1511,7 @@ export class Board
     }
 
     Bottom_Of(cell_index: Cell_Index):
-        Cell | Wall
-    {
+        Cell | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             const cell_count = this.Cell_Count();
@@ -1684,8 +1526,7 @@ export class Board
     }
 
     Left_Index_Of(cell_index: Cell_Index):
-        Cell_Index | Wall
-    {
+        Cell_Index | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             if (cell_index % row_count > 0) {
@@ -1699,8 +1540,7 @@ export class Board
     }
 
     Top_Index_Of(cell_index: Cell_Index):
-        Cell_Index | Wall
-    {
+        Cell_Index | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             if (cell_index >= row_count) {
@@ -1714,8 +1554,7 @@ export class Board
     }
 
     Right_Index_Of(cell_index: Cell_Index):
-        Cell_Index | Wall
-    {
+        Cell_Index | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             if (cell_index % row_count < row_count - 1) {
@@ -1729,8 +1568,7 @@ export class Board
     }
 
     Bottom_Index_Of(cell_index: Cell_Index):
-        Cell_Index | Wall
-    {
+        Cell_Index | Wall {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
             const row_count = this.Row_Count();
             const cell_count = this.Cell_Count();
@@ -1745,8 +1583,7 @@ export class Board
     }
 
     Defense_Of(stake: Stake, in_cell_index: Cell_Index):
-        Defense
-    {
+        Defense {
         const card: Card = stake.Card();
 
         let min_defense: Min = Number.MAX_VALUE;
@@ -1792,8 +1629,7 @@ export class Board
     }
 
     Defense_Count_Of(cell_index: Cell_Index):
-        Defense_Count
-    {
+        Defense_Count {
         let defense_count: Count = 0;
 
         for (const cell_or_wall of [
@@ -1811,8 +1647,7 @@ export class Board
     }
 
     Claim_Count(player: Player):
-        Claim_Count
-    {
+        Claim_Count {
         let claim_count: Claim_Count = 0;
         for (const cell of this.#cells) {
             if (cell.Is_Occupied() && cell.Claimant() === player) {
@@ -1824,8 +1659,7 @@ export class Board
     }
 
     async Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
-        Promise<void>
-    {
+        Promise<void> {
         if (this.Arena().Is_Game_Over()) {
             throw new Error(`Cannot place any more stakes, as the game is over.`);
         } else {
@@ -1841,8 +1675,7 @@ export class Board
     }
 
     async Place_Stake(stake: Stake, cell_index: Cell_Index):
-        Promise<void>
-    {
+        Promise<void> {
         if (this.Arena().Is_Game_Over()) {
             throw new Error(`Cannot place any more stakes, as the game is over.`);
         } else {
@@ -1855,8 +1688,7 @@ export class Board
     }
 
     async #Place_Stake(stake: Stake, cell_index: Cell_Index):
-        Promise<void>
-    {
+        Promise<void> {
         this.#cells[cell_index] = new Cell(
             {
                 stake: stake,
@@ -1868,8 +1700,7 @@ export class Board
     }
 
     async #Evaluate_Cell(cell_index: Cell_Index):
-        Promise<void>
-    {
+        Promise<void> {
         // this should update adjacents cards by evaluating the rules,
         // as if a card was just placed in this position.
         // however, it will be used recursively for cards that have already
@@ -1982,15 +1813,13 @@ export class Board
             const sames_array = Object.values(sames).filter(function (
                 same: Same,
             ):
-                boolean
-            {
+                boolean {
                 return same.count >= 2;
             }).sort(function (
                 a: Same,
                 b: Same,
             ):
-                number
-            {
+                number {
                 return b.indices.length - a.indices.length;
             });
 
@@ -2096,15 +1925,13 @@ export class Board
             const sums_array = Object.values(sums).filter(function (
                 sum: Sum,
             ):
-                boolean
-            {
+                boolean {
                 return sum.count >= 2;
             }).sort(function (
                 a: Sum,
                 b: Sum,
             ):
-                number
-            {
+                number {
                 return b.indices.length - a.indices.length;
             });
 
@@ -2221,18 +2048,15 @@ export class Board
         Promise<{
             stake_index: Stake_Index,
             cell_index: Cell_Index,
-        }>
-    {
+        }> {
         // if the 'open' rule is in play, we can actually let this part look at all the other player's cards
         // to help choose which stake a computer_player will play. however, we're avoiding that altogether
         // for now for the sake of simplicity.
 
-        class Choices
-        {
+        class Choices {
             #placements: { [index: Claim_Delta]: Placements };
 
-            constructor()
-            {
+            constructor() {
                 this.#placements = {};
             }
 
@@ -2241,8 +2065,7 @@ export class Board
                 stake_index: Stake_Index,
                 cell_index: Cell_Index,
             ):
-                void
-            {
+                void {
                 if (this.#placements[claim_delta] == null) {
                     this.#placements[claim_delta] = new Placements();
                 }
@@ -2251,22 +2074,18 @@ export class Board
             }
 
             Claim_Deltas():
-                Array<Claim_Delta>
-            {
+                Array<Claim_Delta> {
                 return Object.keys(this.#placements).map(function (value: string):
-                    Claim_Delta
-                {
+                    Claim_Delta {
                     return parseInt(value) as Claim_Delta;
                 }).sort(function (a: Claim_Delta, b: Claim_Delta):
-                    number
-                {
+                    number {
                     return a - b;
                 });
             }
 
             Min_Claim_Delta():
-                Claim_Delta
-            {
+                Claim_Delta {
                 const claim_deltas = this.Claim_Deltas();
                 if (claim_deltas.length < 1) {
                     throw new Error(`Has no claim_deltas.`);
@@ -2276,8 +2095,7 @@ export class Board
             }
 
             Max_Claim_Delta():
-                Claim_Delta
-            {
+                Claim_Delta {
                 const claim_deltas = this.Claim_Deltas();
                 if (claim_deltas.length < 1) {
                     throw new Error(`Has no claim_deltas.`);
@@ -2287,8 +2105,7 @@ export class Board
             }
 
             Placements(claim_delta: Claim_Delta):
-                Placements
-            {
+                Placements {
                 if (this.#placements[claim_delta] == null) {
                     throw new Error(`Has no placements with a 'claim_delta' of ${claim_delta}.`);
                 } else {
@@ -2297,25 +2114,21 @@ export class Board
             }
 
             Min_Claim_Placements():
-                Placements
-            {
+                Placements {
                 return this.#placements[this.Min_Claim_Delta()];
             }
 
             Max_Claim_Placements():
-                Placements
-            {
+                Placements {
                 return this.#placements[this.Max_Claim_Delta()];
             }
         }
 
-        class Placements
-        {
+        class Placements {
             #stake_indices: Array<Stake_Index>;
             #cell_indices: Array<Cell_Index>;
 
-            constructor()
-            {
+            constructor() {
                 this.#stake_indices = [];
                 this.#cell_indices = [];
             }
@@ -2324,24 +2137,20 @@ export class Board
                 stake_index: Stake_Index,
                 cell_index: Cell_Index,
             ):
-                void
-            {
+                void {
                 this.#stake_indices.push(stake_index);
                 this.#cell_indices.push(cell_index);
             }
 
             Count():
-                Count
-            {
+                Count {
                 return this.#stake_indices.length;
             }
 
-            Random():
-                {
-                    stake_index: Stake_Index,
-                    cell_index: Cell_Index,
-                }
-            {
+            Random(): {
+                stake_index: Stake_Index,
+                cell_index: Cell_Index,
+            } {
                 const index: Index = Math.floor(Math.random() * this.#stake_indices.length);
 
                 return (
@@ -2353,8 +2162,7 @@ export class Board
             }
 
             Filter_By_Best_Defense(board: Board, player: Player):
-                Placements
-            {
+                Placements {
                 let results = new Placements();
 
                 let best_defense: number = 0;
@@ -2376,8 +2184,7 @@ export class Board
             }
 
             Filter_By_Worst_Defense(board: Board, player: Player):
-                Placements
-            {
+                Placements {
                 let results = new Placements();
 
                 let worst_defense: number = Number.MAX_VALUE;
@@ -2399,8 +2206,7 @@ export class Board
             }
 
             Filter_By_Biggest_Defense(board: Board):
-                Placements
-            {
+                Placements {
                 let results = new Placements();
 
                 let biggest_defense: number = -1;
@@ -2422,8 +2228,7 @@ export class Board
             }
 
             Filter_By_Smallest_Defense(board: Board):
-                Placements
-            {
+                Placements {
                 let results = new Placements();
 
                 let smallest_defense: number = Number.MAX_VALUE;
@@ -2445,8 +2250,7 @@ export class Board
             }
 
             Filter_By_Most_Value(player: Player):
-                Placements
-            {
+                Placements {
                 let results = new Placements();
 
                 let most_value = 0;
@@ -2469,8 +2273,7 @@ export class Board
             }
 
             Filter_By_Least_Value(player: Player):
-                Placements
-            {
+                Placements {
                 let results = new Placements();
 
                 let least_value = Number.MAX_VALUE;
@@ -2542,32 +2345,27 @@ export class Board
     }
 
     Current_Player():
-        Player
-    {
+        Player {
         return this.Arena().Current_Player();
     }
 
     Current_Player_Index():
-        Player_Index
-    {
+        Player_Index {
         return this.Arena().Current_Player_Index();
     }
 
     Is_On_Human_Turn():
-        boolean
-    {
+        boolean {
         return this.Arena().Is_On_Human_Turn();
     }
 
     Is_On_Computer_Turn():
-        boolean
-    {
+        boolean {
         return this.Arena().Is_On_Computer_Turn();
     }
 
     Is_Cell_Selectable(cell_index: Cell_Index):
-        boolean
-    {
+        boolean {
         if (this.Arena().Is_Game_Over()) {
             return false;
         } else {
@@ -2577,8 +2375,7 @@ export class Board
 }
 
 /* Represents an empty cell or a player that's making a claim on a stake. */
-export class Cell
-{
+export class Cell {
     #stake: Stake | null;
     #claimant: Player | null;
 
@@ -2587,8 +2384,7 @@ export class Cell
             stake: Stake,
             claimant: Player,
         },
-    )
-    {
+    ) {
         if (occupant != null) {
             this.#stake = occupant.stake;
             this.#claimant = occupant.claimant;
@@ -2601,8 +2397,7 @@ export class Cell
     }
 
     Clone():
-        Cell
-    {
+        Cell {
         if (this.Is_Occupied()) {
             return new Cell(
                 {
@@ -2616,20 +2411,17 @@ export class Cell
     }
 
     Is_Empty():
-        boolean
-    {
+        boolean {
         return this.#stake == null;
     }
 
     Is_Occupied():
-        boolean
-    {
+        boolean {
         return !this.Is_Empty();
     }
 
     Stake():
-        Stake
-    {
+        Stake {
         if (this.#stake == null) {
             throw new Error(`This cell is not occupied.`);
         } else {
@@ -2638,8 +2430,7 @@ export class Cell
     }
 
     Claimant():
-        Player
-    {
+        Player {
         if (this.#claimant == null) {
             throw new Error(`This cell is not occupied.`);
         } else {
@@ -2648,13 +2439,11 @@ export class Cell
     }
 
     Color():
-        Color
-    {
+        Color {
         return this.Claimant().Color();
     }
 }
 
 /* Represents a border on the board, which can be relevant according to the rules. */
-export class Wall
-{
+export class Wall {
 }

@@ -16,8 +16,7 @@ class Main extends React.Component<Main_Props>
     #collection: Model.Collection;
     #arena: Model.Arena;
 
-    constructor(props: Main_Props)
-    {
+    constructor(props: Main_Props) {
         super(props);
 
         this.#event_grid = new Event.Grid();
@@ -26,9 +25,9 @@ class Main extends React.Component<Main_Props>
 
         // to be serialized
         this.#rules = new Model.Rules({
-            row_count: 5,
-            column_count: 5,
-            player_count: 3,
+            row_count: 3,
+            column_count: 3,
+            player_count: 2,
 
             open: true,
             same: true,
@@ -41,9 +40,9 @@ class Main extends React.Component<Main_Props>
         // to be serialized
         this.#collection = new Model.Collection({
             default_shuffle: new Model.Shuffle({
-                pack: this.#packs.Random_Pack(),
-                min_tier_index: 9,
-                max_tier_index: 9,
+                pack: this.#packs.Pack(`Cats`),
+                min_tier_index: 0,
+                max_tier_index: 0,
             }),
         });
 
@@ -63,9 +62,9 @@ class Main extends React.Component<Main_Props>
                 new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
-                            pack: this.#packs.Random_Pack(),
-                            min_tier_index: 9,
-                            max_tier_index: 9,
+                            pack: this.#packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 0,
                         }),
                     }),
                     color: new Model.Color({
@@ -73,15 +72,15 @@ class Main extends React.Component<Main_Props>
                         green: 0,
                         blue: 255,
                     }),
-                    is_of_human: false,
+                    is_of_human: true,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
-                            pack: this.#packs.Random_Pack(),
-                            min_tier_index: 9,
-                            max_tier_index: 9,
+                            pack: this.#packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 0,
                         }),
                     }),
                     color: new Model.Color({
@@ -92,12 +91,12 @@ class Main extends React.Component<Main_Props>
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
-                new Model.Random_Selection({
+                /*new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
-                            pack: this.#packs.Random_Pack(),
-                            min_tier_index: 9,
-                            max_tier_index: 9,
+                            pack: this.#packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 0,
                         }),
                     }),
                     color: new Model.Color({
@@ -107,24 +106,21 @@ class Main extends React.Component<Main_Props>
                     }),
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
-                }),
+                }),*/
             ],
         });
     }
 
     componentDidMount():
-        void
-    {
+        void {
     }
 
     componentWillUnmount():
-        void
-    {
+        void {
     }
 
     render():
-        JSX.Element
-    {
+        JSX.Element {
         return (
             <div className="View" >
                 <h1 className="Title" >
