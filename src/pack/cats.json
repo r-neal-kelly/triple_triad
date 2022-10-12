@@ -1,0 +1,1015 @@
+{
+    "name": "Cats",
+    "tiers": [
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/01_pexels-irina-kraskova-8690651.jpg",
+                "element": "",
+                "left": 5,
+                "top": 1,
+                "right": 4,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/02_pexels-akhmad-sarwani-4123992.jpg",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 1,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/03_pexels-helena-lopes-8076287.jpg",
+                "element": "",
+                "left": 5,
+                "top": 1,
+                "right": 3,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/04_pexels-swapnil-kulkarni-8837453.jpg",
+                "element": "",
+                "left": 2,
+                "top": 6,
+                "right": 1,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/05_pexels-cristyan-bohn-4012470.jpg",
+                "element": "",
+                "left": 5,
+                "top": 2,
+                "right": 3,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/06_pexels-suriyanathan-5732212.jpg",
+                "element": "",
+                "left": 4,
+                "top": 2,
+                "right": 1,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/07_pexels-fox-709481.jpg",
+                "element": "",
+                "left": 1,
+                "top": 1,
+                "right": 5,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/08_pexels-vera-barus-980457.jpg",
+                "element": "",
+                "left": 1,
+                "top": 3,
+                "right": 5,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/09_pexels-lucas-pezeta-3545192.jpg",
+                "element": "",
+                "left": 1,
+                "top": 2,
+                "right": 1,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/10_pexels-vivita-malite-10611243.jpg",
+                "element": "",
+                "left": 3,
+                "top": 4,
+                "right": 2,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_01/11_pexels-talha-riaz-4115417.jpg",
+                "element": "",
+                "left": 6,
+                "top": 2,
+                "right": 1,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 1,
+                "top": 7,
+                "right": 1,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 6,
+                "right": 2,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 5,
+                "right": 3,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 6,
+                "right": 1,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 3,
+                "right": 4,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 5,
+                "right": 3,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 5,
+                "right": 1,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 5,
+                "right": 2,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 4,
+                "right": 4,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 3,
+                "right": 2,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_02/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 2,
+                "bottom": 5
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 6,
+                "right": 6,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 6,
+                "right": 3,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 3,
+                "right": 5,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 7,
+                "right": 5,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 7,
+                "right": 1,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 6,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 5,
+                "right": 6,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 4,
+                "right": 4,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 6,
+                "right": 2,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 3,
+                "right": 6,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_03/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 7,
+                "right": 2,
+                "bottom": 3
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 2,
+                "right": 3,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 6,
+                "right": 5,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 4,
+                "right": 6,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 2,
+                "right": 7,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 1,
+                "right": 6,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 7,
+                "right": 3,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 7,
+                "right": 4,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 3,
+                "right": 7,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 6,
+                "right": 2,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 4,
+                "right": 5,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_04/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 7,
+                "right": 5,
+                "bottom": 4
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 6,
+                "right": 5,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 3,
+                "right": 6,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 7,
+                "right": 6,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 1,
+                "top": 3,
+                "right": 10,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 6,
+                "right": 2,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 5,
+                "right": 5,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 7,
+                "right": 7,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 7,
+                "right": 2,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 5,
+                "right": 3,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 4,
+                "right": 6,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_05/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 6,
+                "right": 6,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 2,
+                "right": 8,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 7,
+                "right": 8,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 4,
+                "right": 8,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 7,
+                "right": 2,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 1,
+                "right": 8,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 8,
+                "right": 2,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 6,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 4,
+                "right": 8,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 1,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 6,
+                "right": 5,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_06/_______.jpg",
+                "element": "",
+                "left": 1,
+                "top": 7,
+                "right": 5,
+                "bottom": 8
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 8,
+                "right": 4,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 8,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 8,
+                "right": 5,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 5,
+                "right": 6,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 8,
+                "right": 6,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 8,
+                "right": 3,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 8,
+                "right": 8,
+                "bottom": 5
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 5,
+                "right": 7,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 6,
+                "right": 8,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 1,
+                "right": 8,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_07/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 7,
+                "right": 7,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 9,
+                "top": 4,
+                "right": 4,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 9,
+                "right": 6,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 3,
+                "right": 7,
+                "bottom": 9
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 9,
+                "right": 3,
+                "bottom": 9
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 9,
+                "right": 4,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 2,
+                "right": 9,
+                "bottom": 9
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 9,
+                "top": 6,
+                "right": 7,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 9,
+                "right": 6,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 8,
+                "right": 9,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 9,
+                "top": 5,
+                "right": 1,
+                "bottom": 9
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_08/_______.jpg",
+                "element": "",
+                "left": 9,
+                "top": 9,
+                "right": 5,
+                "bottom": 2
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 8,
+                "right": 4,
+                "bottom": 10
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 5,
+                "right": 10,
+                "bottom": 8
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 7,
+                "right": 10,
+                "bottom": 1
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 5,
+                "top": 8,
+                "right": 10,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 7,
+                "top": 10,
+                "right": 1,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 7,
+                "right": 4,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 9,
+                "right": 10,
+                "bottom": 4
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 7,
+                "right": 2,
+                "bottom": 7
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 10,
+                "right": 8,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 3,
+                "right": 1,
+                "bottom": 10
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_09/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 4,
+                "right": 4,
+                "bottom": 9
+            }
+        ],
+        [
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 8,
+                "top": 10,
+                "right": 7,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 6,
+                "right": 7,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 9,
+                "top": 5,
+                "right": 10,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 10,
+                "right": 8,
+                "bottom": 6
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 2,
+                "top": 9,
+                "right": 6,
+                "bottom": 10
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 2,
+                "right": 6,
+                "bottom": 9
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 6,
+                "top": 8,
+                "right": 5,
+                "bottom": 10
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 10,
+                "top": 4,
+                "right": 10,
+                "bottom": 2
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 3,
+                "top": 10,
+                "right": 10,
+                "bottom": 3
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 4,
+                "top": 6,
+                "right": 9,
+                "bottom": 10
+            },
+            {
+                "name": "",
+                "image": "/img/packs/cats/tier_10/_______.jpg",
+                "element": "",
+                "left": 9,
+                "top": 10,
+                "right": 4,
+                "bottom": 6
+            }
+        ]
+    ]
+}
