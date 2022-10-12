@@ -63,8 +63,8 @@ class Main extends React.Component<Main_Props>
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 0,
+                            min_tier_index: 1,
+                            max_tier_index: 1,
                         }),
                     }),
                     color: new Model.Color({
@@ -79,8 +79,8 @@ class Main extends React.Component<Main_Props>
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 0,
+                            min_tier_index: 1,
+                            max_tier_index: 1,
                         }),
                     }),
                     color: new Model.Color({
