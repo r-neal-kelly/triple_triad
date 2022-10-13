@@ -16,7 +16,8 @@ class Main extends React.Component<Main_Props>
     #collection: Model.Collection;
     #arena: Model.Arena;
 
-    constructor(props: Main_Props) {
+    constructor(props: Main_Props)
+    {
         super(props);
 
         this.#event_grid = new Event.Grid();
@@ -112,15 +113,18 @@ class Main extends React.Component<Main_Props>
     }
 
     componentDidMount():
-        void {
+        void
+    {
     }
 
     componentWillUnmount():
-        void {
+        void
+    {
     }
 
     render():
-        JSX.Element {
+        JSX.Element
+    {
         return (
             <div className="View" >
                 <h1 className="Title" >
