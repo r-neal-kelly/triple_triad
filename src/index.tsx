@@ -16,8 +16,7 @@ class Main extends React.Component<Main_Props>
     #collection: Model.Collection;
     #arena: Model.Arena;
 
-    constructor(props: Main_Props)
-    {
+    constructor(props: Main_Props) {
         super(props);
 
         this.#event_grid = new Event.Grid();
@@ -65,7 +64,7 @@ class Main extends React.Component<Main_Props>
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
                             min_tier_index: 0,
-                            max_tier_index: 3,
+                            max_tier_index: 5,
                         }),
                     }),
                     color: new Model.Color({
@@ -81,7 +80,7 @@ class Main extends React.Component<Main_Props>
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
                             min_tier_index: 0,
-                            max_tier_index: 3,
+                            max_tier_index: 5,
                         }),
                     }),
                     color: new Model.Color({
@@ -92,39 +91,20 @@ class Main extends React.Component<Main_Props>
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
-                /*new Model.Random_Selection({
-                    collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle({
-                            pack: this.#packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 0,
-                        }),
-                    }),
-                    color: new Model.Color({
-                        red: 255,
-                        green: 255,
-                        blue: 0,
-                    }),
-                    is_of_human: false,
-                    card_count: this.#rules.Selection_Card_Count(),
-                }),*/
             ],
         });
     }
 
     componentDidMount():
-        void
-    {
+        void {
     }
 
     componentWillUnmount():
-        void
-    {
+        void {
     }
 
     render():
-        JSX.Element
-    {
+        JSX.Element {
         return (
             <div className="View" >
                 <h1 className="Title" >
