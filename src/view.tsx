@@ -655,7 +655,6 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                         () => { }
                 }
             >
-                {this.Model().Card().Name()}
             </div>
         );
     }
@@ -912,7 +911,6 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                     }}
                 >
                     <div>
-                        {this.Model().Stake().Card().Name()}
                     </div>
                 </div>
             );

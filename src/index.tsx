@@ -16,7 +16,8 @@ class Main extends React.Component<Main_Props>
     #collection: Model.Collection;
     #arena: Model.Arena;
 
-    constructor(props: Main_Props) {
+    constructor(props: Main_Props)
+    {
         super(props);
 
         this.#event_grid = new Event.Grid();
@@ -49,22 +50,12 @@ class Main extends React.Component<Main_Props>
         this.#arena = new Model.Arena({
             rules: this.#rules,
             selections: [
-                /*new Model.Random_Selection({
-                    collection: this.#collection,
-                    color: new Model.Color({
-                        red: 0,
-                        green: 0,
-                        blue: 255,
-                    }),
-                    is_of_human: true,
-                    card_count: this.#rules.Selection_Card_Count(),
-                }),*/
                 new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
                             min_tier_index: 0,
-                            max_tier_index: 5,
+                            max_tier_index: 6,
                         }),
                     }),
                     color: new Model.Color({
@@ -80,7 +71,7 @@ class Main extends React.Component<Main_Props>
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
                             min_tier_index: 0,
-                            max_tier_index: 5,
+                            max_tier_index: 6,
                         }),
                     }),
                     color: new Model.Color({
@@ -96,15 +87,18 @@ class Main extends React.Component<Main_Props>
     }
 
     componentDidMount():
-        void {
+        void
+    {
     }
 
     componentWillUnmount():
-        void {
+        void
+    {
     }
 
     render():
-        JSX.Element {
+        JSX.Element
+    {
         return (
             <div className="View" >
                 <h1 className="Title" >
