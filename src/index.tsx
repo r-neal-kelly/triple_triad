@@ -59,9 +59,9 @@ class Main extends React.Component<Main_Props>
                         }),
                     }),
                     color: new Model.Color({
-                        red: 127,
-                        green: 127,
-                        blue: 255,
+                        red: 63,
+                        green: 63,
+                        blue: 127,
                         alpha: 0.7,
                     }),
                     is_of_human: true,

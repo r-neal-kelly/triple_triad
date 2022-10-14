@@ -1404,6 +1404,12 @@ export class Player
             return this.Arena().Current_Player() === this;
         }
     }
+
+    Score():
+        number
+    {
+        return this.Stake_Count() + this.Board().Claim_Count(this);
+    }
 }
 
 export class Human_Player extends Player

@@ -272,6 +272,7 @@ type Player_Props = {
 
 class Player extends React.Component<Player_Props>
 {
+    #score: Player_Score | null;
     #turn_icon: Player_Turn_Icon | null;
     #stakes: Array<Player_Stake | null>;
 
@@ -279,6 +280,7 @@ class Player extends React.Component<Player_Props>
     {
         super(props);
 
+        this.#score = null;
         this.#turn_icon = null;
         this.#stakes = new Array(this.Model().Stake_Count()).fill(null);
     }
@@ -308,6 +310,16 @@ class Player extends React.Component<Player_Props>
             throw new Error(`Component has not yet been rendered.`);
         } else {
             return this.#turn_icon as Player_Turn_Icon;
+        }
+    }
+
+    Score():
+        Player_Score
+    {
+        if (!this.#score) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#score as Player_Score;
         }
     }
 
@@ -413,6 +425,14 @@ class Player extends React.Component<Player_Props>
         this.forceUpdate();
     }
 
+    async On_Game_Stop(
+
+    ):
+        Promise<void>
+    {
+        this.Score().forceUpdate();
+    }
+
     componentDidMount():
         void
     {
@@ -434,6 +454,10 @@ class Player extends React.Component<Player_Props>
                     event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE, player_index.toString()),
                     event_handler: this.After_This_Player_Place_Stake,
                 },
+                {
+                    event_name: new Event.Name(ON, GAME_STOP),
+                    event_handler: this.On_Game_Stop,
+                },
             ],
         );
     }
@@ -453,16 +477,28 @@ class Player extends React.Component<Player_Props>
             <div
                 className="Player"
             >
-                <Player_Turn_Icon
-                    key={this.props.index}
-                    parent={this}
-                    ref={ref => this.#turn_icon = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model()}
-                    index={this.props.index}
-                />
                 <div
-                    className="Hand"
+                    className=""
+                >
+                    <Player_Score
+                        key={this.props.index}
+                        parent={this}
+                        ref={ref => this.#score = ref}
+                        event_grid={this.props.event_grid}
+                        model={this.Model()}
+                        index={this.props.index}
+                    />
+                    <Player_Turn_Icon
+                        key={this.props.index}
+                        parent={this}
+                        ref={ref => this.#turn_icon = ref}
+                        event_grid={this.props.event_grid}
+                        model={this.Model()}
+                        index={this.props.index}
+                    />
+                </div>
+                <div
+                    className="Player_Hand"
                     style={{
                         height: stake_count > 0 ?
                             `calc(var(--card_height) / 3 * 2 * ${stake_count - 1} + var(--card_height))` :
@@ -537,17 +573,22 @@ class Player_Turn_Icon extends React.Component<Player_Turn_Icon_Props>
     render():
         JSX.Element
     {
-        return (
-            <div
-                className="Player_Turn_Icon"
-            >
-                {
-                    this.Model().Is_On_Turn() ?
-                        `˅` :
-                        ``
-                }
-            </div>
-        );
+        if (this.Model().Is_On_Turn()) {
+            return (
+                <div
+                    className="Player_Turn_Icon"
+                >
+                    {
+                        `˅`
+                    }
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                </div>
+            );
+        }
     }
 }
 
@@ -655,6 +696,65 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                         () => { }
                 }
             >
+            </div>
+        );
+    }
+}
+
+type Player_Score_Props = {
+    parent: Player,
+    event_grid: Event.Grid,
+    model: Model.Player,
+    index: Model.Player_Index,
+}
+
+class Player_Score extends React.Component<Player_Score_Props>
+{
+    Model():
+        Model.Player
+    {
+        return this.props.model;
+    }
+
+    Index():
+        Model.Player_Index
+    {
+        return this.props.index;
+    }
+
+    Player():
+        Player
+    {
+        return this.props.parent;
+    }
+
+    componentDidMount():
+        void
+    {
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.props.event_grid.Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        return (
+            <div
+                className="Player_Score"
+            >
+                {
+                    this.Model().Score()
+                }
             </div>
         );
     }

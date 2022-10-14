@@ -6,7 +6,7 @@
     --card_width: 20vmin;
     --card_height: 25vmin;
 
-    --header_height: 20px;
+    --bumper_height: 4vmin;
 }
 
 html,
@@ -47,7 +47,7 @@ body,
 
 .Board_Header {
     width: 100%;
-    height: var(--header_height);
+    height: var(--bumper_height);
     margin: 0;
     padding: 0;
 }
@@ -71,9 +71,17 @@ body,
     position: relative;
 }
 
+.Player_Buffer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    width: 100%;
+    height: var(--bumper_height);
+}
+
 .Player_Turn_Icon {
     width: 100%;
-    height: var(--header_height);
+    height: var(--bumper_height);
     margin: 0;
     padding: 0;
 
@@ -81,7 +89,17 @@ body,
     text-align: center;
 }
 
-.Hand {
+.Player_Score {
+    width: 100%;
+    height: var(--bumper_height);
+    margin: 0;
+    padding: 0;
+
+    color: white;
+    text-align: center;
+}
+
+.Player_Hand {
     position: relative;
 
     width: var(--card_width);
