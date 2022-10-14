@@ -54,13 +54,13 @@ class Main extends React.Component<Main_Props>
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
-                            min_tier_index: 9,
+                            min_tier_index: 0,
                             max_tier_index: 9,
                         }),
                     }),
                     color: new Model.Color({
-                        red: 0,
-                        green: 0,
+                        red: 127,
+                        green: 127,
                         blue: 255,
                     }),
                     is_of_human: true,
@@ -70,14 +70,14 @@ class Main extends React.Component<Main_Props>
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
-                            min_tier_index: 9,
+                            min_tier_index: 0,
                             max_tier_index: 9,
                         }),
                     }),
                     color: new Model.Color({
-                        red: 255,
-                        green: 0,
-                        blue: 0,
+                        red: 63,
+                        green: 127,
+                        blue: 63,
                     }),
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
