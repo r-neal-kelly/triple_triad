@@ -751,25 +751,37 @@ class Board extends React.Component<Board_Props>
         return (
             <div
                 className="Board"
-                style={{
-                    grid: "auto /" + Array(this.Model().Column_Count()).fill(" auto").join(""),
-                }}
             >
-                {
-                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
+                <div
+                    className="Board_Header"
+                >
+                </div>
+                <div
+                    className="Board_Grid"
+                    style={{
+                        gridTemplateColumns: `repeat(${this.Model().Column_Count()}, 1fr)`,
+                        gridTemplateRows: `repeat(${this.Model().Row_Count()}, 1fr)`,
+
+                        backgroundImage: `url("img/boards/pexels-fwstudio-172296.jpg")`,
+                        backgroundSize: `100% 100%`,
+                    }}
+                >
                     {
-                        return (
-                            <Board_Cell
-                                key={cell_index}
-                                parent={this}
-                                ref={ref => this.#cells[cell_index] = ref}
-                                event_grid={this.props.event_grid}
-                                model={this.Model().Cell(cell_index)}
-                                index={cell_index}
-                            />
-                        );
-                    })
-                }
+                        Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
+                        {
+                            return (
+                                <Board_Cell
+                                    key={cell_index}
+                                    parent={this}
+                                    ref={ref => this.#cells[cell_index] = ref}
+                                    event_grid={this.props.event_grid}
+                                    model={this.Model().Cell(cell_index)}
+                                    index={cell_index}
+                                />
+                            );
+                        })
+                    }
+                </div>
             </div>
         );
     }
@@ -895,7 +907,6 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                     onClick={event => this.On_Click.bind(this)(event)}
                 >
                     <div>
-                        {this.props.index}
                     </div>
                 </div>
             );

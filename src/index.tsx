@@ -62,6 +62,7 @@ class Main extends React.Component<Main_Props>
                         red: 127,
                         green: 127,
                         blue: 255,
+                        alpha: 0.7,
                     }),
                     is_of_human: true,
                     card_count: this.#rules.Selection_Card_Count(),
@@ -78,6 +79,7 @@ class Main extends React.Component<Main_Props>
                         red: 63,
                         green: 127,
                         blue: 63,
+                        alpha: 0.7,
                     }),
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
@@ -100,24 +102,19 @@ class Main extends React.Component<Main_Props>
         JSX.Element
     {
         return (
-            <div className="View" >
-                <h1 className="Title" >
-                    Triple Triad
-                </h1>
-                <View.Arena
-                    event_grid={this.#event_grid}
-                    model={this.#arena}
-                />
-            </div>
+            <View.Arena
+                event_grid={this.#event_grid}
+                model={this.#arena}
+            />
         );
     }
 }
 
-const root_element: HTMLElement | null = document.getElementById("root");
-if (root_element == null) {
-    throw new Error(`'root_element' could not be found in the dom.`);
+const view_element: HTMLElement | null = document.getElementById("view");
+if (view_element == null) {
+    throw new Error(`'view_element' could not be found in the dom.`);
 } else {
-    const root_component: ReactDOM.Root = ReactDOM.createRoot(root_element);
+    const root_component: ReactDOM.Root = ReactDOM.createRoot(view_element);
 
     root_component.render(
         <Main />
