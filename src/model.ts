@@ -1,6 +1,5 @@
 import final_fantasy_8_pack_json from "./packs/final_fantasy_8.json"
 import cats_pack_json from "./packs/cats.json"
-import { CompoundAssignmentOperator } from "typescript";
 
 /* Various aliases to assist reading comprehension. */
 type Count =
@@ -1906,7 +1905,6 @@ export class Board
 
         const turn_results: Turn_Results = new Turn_Results();
         await this.#Evaluate_Cell(cell_index, turn_results, 0);
-        turn_results.Freeze();
 
         return turn_results.Steps();
     }
@@ -2764,6 +2762,10 @@ export class Turn_Results
                 step_hashmap[turn_result.step] = [];
             }
             step_hashmap[turn_result.step].push(turn_result);
+
+            Object.freeze(turn_result.same);
+            Object.freeze(turn_result.plus);
+            Object.freeze(turn_result);
         }
 
         const step_array = Object.keys(step_hashmap).map(key => parseInt(key)).sort();
