@@ -1957,11 +1957,7 @@ export class Board
         let bottom_combos: boolean = false;
 
         if (this.Rules().Same()) {
-            type Same = {
-                count: Count,
-                indices: Array<Cell_Index | Wall>,
-            };
-            const sames: { [index: Card_Number]: Same } = {};
+            const sames: { [index: Card_Number]: Array<Cell_Index | Wall> } = {};
 
             // first we get all instances of where same can occur, to cache
             // what cards can be claimed, and if the rule has enough counts, including wall
@@ -2002,69 +1998,73 @@ export class Board
                     const card: Card = cell.Stake().Card();
                     if (center_card_value === cell_card_value(card)) {
                         if (sames[center_card_value] == null) {
-                            sames[center_card_value] = {
-                                count: 1,
-                                indices: [index as Cell_Index],
-                            };
-                        } else {
-                            sames[center_card_value].count += 1;
-                            sames[center_card_value].indices.push(index as Cell_Index);
+                            sames[center_card_value] = [];
                         }
+                        sames[center_card_value].push(index as Cell_Index);
                     }
                 } else if (cell instanceof Wall && this.Rules().Wall()) {
                     if (center_card_value === 10) {
                         if (sames[center_card_value] == null) {
-                            sames[center_card_value] = {
-                                count: 1,
-                                indices: [index as Wall],
-                            };
-                        } else {
-                            sames[center_card_value].count += 1;
-                            sames[center_card_value].indices.push(index as Wall);
+                            sames[center_card_value] = [];
                         }
+                        sames[center_card_value].push(index as Wall);
                     }
                 }
             }
 
-            for (const same of Object.values(sames)) {
-                if (same.count >= 2) {
-                    for (const index of same.indices) {
-                        if (index === left_index) {
-                            if (index instanceof Wall === false) {
-                                left_claimed = true;
-                                left_combos = true;
-                            }
-                            center_turn_result.same.left = true;
-                        } else if (index === top_index) {
-                            if (index instanceof Wall === false) {
-                                top_claimed = true;
-                                top_combos = true;
-                            }
-                            center_turn_result.same.top = true;
-                        } else if (index === right_index) {
-                            if (index instanceof Wall === false) {
-                                right_claimed = true;
-                                right_combos = true;
-                            }
-                            center_turn_result.same.right = true;
-                        } else if (index === bottom_index) {
-                            if (index instanceof Wall === false) {
-                                bottom_claimed = true;
-                                bottom_combos = true;
-                            }
-                            center_turn_result.same.bottom = true;
+            // we remove any that does not include 2 or more indices, which satisfies the rules.
+            // we also remove any that would result in no additional claims, i.e. if it just matches walls.
+            const same_array: Array<Array<Cell_Index | Wall>> = Object.values(sames).filter(function (
+                same: Array<Cell_Index | Wall>,
+            ):
+                boolean
+            {
+                if (same.length >= 2) {
+                    for (const index of same) {
+                        if (index instanceof Wall === false) {
+                            return true;
                         }
+                    }
+
+                    return false;
+                } else {
+                    return false;
+                }
+            });
+
+            for (const same of same_array) {
+                for (const index of same) {
+                    if (index === left_index) {
+                        if (index instanceof Wall === false) {
+                            left_claimed = true;
+                            left_combos = true;
+                        }
+                        center_turn_result.same.left = true;
+                    } else if (index === top_index) {
+                        if (index instanceof Wall === false) {
+                            top_claimed = true;
+                            top_combos = true;
+                        }
+                        center_turn_result.same.top = true;
+                    } else if (index === right_index) {
+                        if (index instanceof Wall === false) {
+                            right_claimed = true;
+                            right_combos = true;
+                        }
+                        center_turn_result.same.right = true;
+                    } else if (index === bottom_index) {
+                        if (index instanceof Wall === false) {
+                            bottom_claimed = true;
+                            bottom_combos = true;
+                        }
+                        center_turn_result.same.bottom = true;
                     }
                 }
             }
         }
 
         if (this.Rules().Plus()) {
-            type Sum = {
-                count: Count,
-                indices: Array<Cell_Index | Wall>,
-            };
-            const sums: { [index: Card_Number]: Sum } = {};
+            const sums: { [index: Card_Number]: Array<Cell_Index | Wall> } = {};
 
             // first we get all instances of where plus can occur, to cache
             // what cards can be claimed, and if the rule has enough counts, including wall
@@ -2105,56 +2105,64 @@ export class Board
                     const card: Card = cell.Stake().Card();
                     const sum = center_card_value + cell_card_value(card);
                     if (sums[sum] == null) {
-                        sums[sum] = {
-                            count: 1,
-                            indices: [index as Cell_Index],
-                        };
-                    } else {
-                        sums[sum].count += 1;
-                        sums[sum].indices.push(index as Cell_Index);
+                        sums[sum] = [];
                     }
+                    sums[sum].push(index as Cell_Index);
                 } else if (cell instanceof Wall && this.Rules().Wall()) {
                     const sum = center_card_value + 10;
                     if (sums[sum] == null) {
-                        sums[sum] = {
-                            count: 1,
-                            indices: [index as Wall],
-                        };
-                    } else {
-                        sums[sum].count += 1;
-                        sums[sum].indices.push(index as Wall);
+                        sums[sum] = [];
                     }
+                    sums[sum].push(index as Wall);
                 }
             }
 
-            for (const sum of Object.values(sums)) {
-                if (sum.count >= 2) {
-                    for (const index of sum.indices) {
-                        if (index === left_index) {
-                            if (index instanceof Wall === false) {
-                                left_claimed = true;
-                                left_combos = true;
-                            }
-                            center_turn_result.plus.left = true;
-                        } else if (index === top_index) {
-                            if (index instanceof Wall === false) {
-                                top_claimed = true;
-                                top_combos = true;
-                            }
-                            center_turn_result.plus.top = true;
-                        } else if (index === right_index) {
-                            if (index instanceof Wall === false) {
-                                right_claimed = true;
-                                right_combos = true;
-                            }
-                            center_turn_result.plus.right = true;
-                        } else if (index === bottom_index) {
-                            if (index instanceof Wall === false) {
-                                bottom_claimed = true;
-                                bottom_combos = true;
-                            }
-                            center_turn_result.plus.bottom = true;
+            // we remove any that does not include 2 or more indices, which satisfies the rules.
+            // we also remove any that would result in no additional claims, i.e. if it just matches walls.
+            const sum_array: Array<Array<Cell_Index | Wall>> = Object.values(sums).filter(function (
+                sum: Array<Cell_Index | Wall>,
+            ):
+                boolean
+            {
+                if (sum.length >= 2) {
+                    for (const index of sum) {
+                        if (index instanceof Wall === false) {
+                            return true;
                         }
+                    }
+
+                    return false;
+                } else {
+                    return false;
+                }
+            });
+
+            for (const sum of sum_array) {
+                for (const index of sum) {
+                    if (index === left_index) {
+                        if (index instanceof Wall === false) {
+                            left_claimed = true;
+                            left_combos = true;
+                        }
+                        center_turn_result.plus.left = true;
+                    } else if (index === top_index) {
+                        if (index instanceof Wall === false) {
+                            top_claimed = true;
+                            top_combos = true;
+                        }
+                        center_turn_result.plus.top = true;
+                    } else if (index === right_index) {
+                        if (index instanceof Wall === false) {
+                            right_claimed = true;
+                            right_combos = true;
+                        }
+                        center_turn_result.plus.right = true;
+                    } else if (index === bottom_index) {
+                        if (index instanceof Wall === false) {
+                            bottom_claimed = true;
+                            bottom_combos = true;
+                        }
+                        center_turn_result.plus.bottom = true;
                     }
                 }
             }
@@ -2195,6 +2203,7 @@ export class Board
 
             const left_turn_result: Turn_Result = turn_results.At(left_index as Cell_Index);
             left_turn_result.direction = Direction_e.LEFT;
+            left_turn_result.old_color = (left_cell as Cell).Color();
             left_turn_result.step = step_count + 1;
         }
         if (top_claimed) {
@@ -2207,6 +2216,7 @@ export class Board
 
             const top_turn_result: Turn_Result = turn_results.At(top_index as Cell_Index);
             top_turn_result.direction = Direction_e.TOP;
+            top_turn_result.old_color = (top_cell as Cell).Color();
             top_turn_result.step = step_count + 1;
         }
         if (right_claimed) {
@@ -2219,6 +2229,7 @@ export class Board
 
             const right_turn_result: Turn_Result = turn_results.At(right_index as Cell_Index);
             right_turn_result.direction = Direction_e.RIGHT;
+            right_turn_result.old_color = (right_cell as Cell).Color();
             right_turn_result.step = step_count + 1;
         }
         if (bottom_claimed) {
@@ -2231,6 +2242,7 @@ export class Board
 
             const bottom_turn_result: Turn_Result = turn_results.At(bottom_index as Cell_Index);
             bottom_turn_result.direction = Direction_e.BOTTOM;
+            bottom_turn_result.old_color = (bottom_cell as Cell).Color();
             bottom_turn_result.step = step_count + 1;
         }
 
@@ -2703,7 +2715,7 @@ export class Wall
 {
 }
 
-export class Turn_Results
+class Turn_Results
 {
     #turn_results: { [index: Cell_Index]: Turn_Result };
 
@@ -2731,6 +2743,7 @@ export class Turn_Results
             this.#turn_results[cell_index] = {
                 cell_index: cell_index,
                 direction: Direction_e.NONE,
+                old_color: null,
                 step: 0,
                 same: {
                     left: false,
@@ -2783,6 +2796,7 @@ export type Turn_Result_Steps =
 export type Turn_Result = {
     cell_index: Cell_Index,
     direction: Direction_e,
+    old_color: Color | null,
     step: Step_Count,
     same: {
         left: boolean,

@@ -108,32 +108,23 @@ body,
     padding: 0;
 }
 
-.Board_Empty_Cell,
-.Board_Occupied_Cell,
+.Board_Cell_Empty,
 .Player_Stake,
 .Player_Selected_Stake {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
     height: var(--card_height);
     width: var(--card_width);
     margin: 0;
-    padding: 10px;
+    padding: 0;
 
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 90% 90%;
 
-    text-align: center;
-    color: white;
-
     cursor: default;
 }
 
-.Board_Empty_Cell,
-.Board_Occupied_Cell {
+.Board_Cell_Empty {
     margin: 2px;
 
     border: 2px solid #00000080;
@@ -154,4 +145,157 @@ body,
 
 .Player_Selected_Stake {
     border: 1px solid white;
+}
+
+/* Classes for board cells that have a card. */
+.Board_Cell_Occupied {
+    display: grid;
+    grid-template-columns: 4fr 3fr 4fr 3fr 4fr;
+    grid-template-rows: 4fr 3fr 4fr 3fr 4fr;
+    column-gap: 5%;
+
+    width: var(--card_width);
+    height: var(--card_height);
+    margin: 2px;
+    padding: 0;
+
+    border: 2px solid #00000080;
+
+    cursor: default;
+    text-align: center;
+    color: white;
+}
+
+.Board_Cell_Card {
+    width: 90%;
+    height: 90%;
+    margin: 0;
+    padding: 0;
+
+    grid-column: 1 / span 5;
+    grid-row: 1 / span 5;
+    align-self: center;
+    justify-self: center;
+    z-index: 0;
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+}
+
+.Board_Cell_Center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    grid-column: 2 / span 3;
+    grid-row: 3 / span 1;
+    align-self: center;
+    justify-self: center;
+    z-index: 10;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 30%;
+}
+
+.Board_Cell_Left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    grid-column: 1 / span 1;
+    grid-row: 3 / span 1;
+    align-self: center;
+    justify-self: start;
+    z-index: 10;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 30%;
+}
+
+.Board_Cell_Top {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    grid-column: 3 / span 1;
+    grid-row: 1 / span 1;
+    align-self: start;
+    justify-self: center;
+    z-index: 10;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 30%;
+}
+
+.Board_Cell_Right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    grid-column: 5 / span 1;
+    grid-row: 3 / span 1;
+    align-self: center;
+    justify-self: end;
+    z-index: 10;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 30%;
+}
+
+.Board_Cell_Bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    grid-column: 3 / span 1;
+    grid-row: 5 / span 1;
+    align-self: end;
+    justify-self: center;
+    z-index: 10;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+}
+
+.Background_Position_Left {
+    background-position: left;
+}
+
+.Background_Position_Top {
+    background-position: top;
+}
+
+.Background_Position_Right {
+    background-position: right;
+}
+
+.Background_Position_Bottom {
+    background-position: bottom;
 }

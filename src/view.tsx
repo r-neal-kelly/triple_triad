@@ -1,11 +1,14 @@
 import "./view.css";
 
 import React from "react";
+import ReactDOM from "react-dom";
 
 import * as Event from "./event";
 import * as Model from "./model";
 
 const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
+const TURN_RESULT_WAIT_MILLISECONDS: number = 1000;
+const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
 
 const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
@@ -416,13 +419,22 @@ class Player extends React.Component<Player_Props>
         }
     }
 
-    async After_This_Player_Place_Stake(
+    async On_This_Player_Place_Stake(
         {
         }: Player_Place_Stake_Data,
     ):
         Promise<void>
     {
         this.forceUpdate();
+    }
+
+    async After_This_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        this.Turn_Icon().forceUpdate();
     }
 
     async On_Game_Stop(
@@ -449,6 +461,10 @@ class Player extends React.Component<Player_Props>
                 {
                     event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
                     event_handler: this.On_This_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Place_Stake,
                 },
                 {
                     event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE, player_index.toString()),
@@ -811,9 +827,17 @@ class Board extends React.Component<Board_Props>
     {
         const turn_result_steps: Model.Turn_Result_Steps =
             await this.Model().Place_Current_Player_Selected_Stake(cell_index);
-        console.log(turn_result_steps); // temp
 
-        this.forceUpdate(); // here we can manually update cells with the turn results instead
+        for (const turn_result_step of turn_result_steps) {
+            await Promise.all(turn_result_step.map(function (
+                this: Board,
+                turn_result: Model.Turn_Result,
+            ):
+                Promise<void>
+            {
+                return this.Cell(turn_result.cell_index).Update(turn_result);
+            }, this));
+        }
 
         this.props.event_grid.Send_Event({
             name_affix: PLAYER_STOP_TURN,
@@ -878,7 +902,6 @@ class Board extends React.Component<Board_Props>
                                     parent={this}
                                     ref={ref => this.#cells[cell_index] = ref}
                                     event_grid={this.props.event_grid}
-                                    model={this.Model().Cell(cell_index)}
                                     index={cell_index}
                                 />
                             );
@@ -893,16 +916,30 @@ class Board extends React.Component<Board_Props>
 type Board_Cell_Props = {
     parent: Board,
     event_grid: Event.Grid,
-    model: Model.Cell,
     index: Model.Cell_Index,
 }
 
 class Board_Cell extends React.Component<Board_Cell_Props>
 {
+    #old_color: Model.Color | null;
+    #old_classnames: string | null;
+    #old_styles: any | null;
+    #popups: Array<JSX.Element> | null;
+
+    constructor(props: Board_Cell_Props)
+    {
+        super(props);
+
+        this.#old_color = null;
+        this.#old_classnames = null;
+        this.#old_styles = null;
+        this.#popups = null;
+    }
+
     Model():
         Model.Cell
     {
-        return this.props.model;
+        return this.Board().Model().Cell(this.props.index);
     }
 
     Index():
@@ -915,6 +952,175 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         Board
     {
         return this.props.parent;
+    }
+
+    async Update(turn_result: Model.Turn_Result):
+        Promise<void>
+    {
+        if (turn_result.old_color != null) {
+            const old_color: Model.Color = turn_result.old_color;
+            const new_color: Model.Color = this.Model().Color();
+
+            const old_background_color: string =
+                `rgba(${old_color.Red()}, ${old_color.Green()}, ${old_color.Blue()}, ${old_color.Alpha()})`;
+            const new_background_color: string =
+                `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
+
+            let old_classnames: string = `Board_Cell_Occupied `;
+            let new_classnames: string = `Board_Cell_Occupied `;
+            let linear_gradient_direction: string = ``;
+            let background_size: string = ``;
+            if (turn_result.direction === Model.Direction_e.LEFT) {
+                old_classnames += `Background_Position_Left`;
+                new_classnames += `Background_Position_Right`;
+                linear_gradient_direction = `right`;
+                background_size = `1000% 100%`;
+            } else if (turn_result.direction === Model.Direction_e.TOP) {
+                old_classnames += `Background_Position_Top`;
+                new_classnames += `Background_Position_Bottom`;
+                linear_gradient_direction = `bottom`;
+                background_size = `100% 1000%`;
+            } else if (turn_result.direction === Model.Direction_e.RIGHT) {
+                old_classnames += `Background_Position_Right`;
+                new_classnames += `Background_Position_Left`;
+                linear_gradient_direction = `left`;
+                background_size = `1000% 100%`;
+            } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
+                old_classnames += `Background_Position_Bottom`;
+                new_classnames += `Background_Position_Top`;
+                linear_gradient_direction = `top`;
+                background_size = `100% 1000%`;
+            }
+
+            this.#old_color = old_color;
+            this.#old_classnames = old_classnames;
+            this.#old_styles = {
+                backgroundImage:
+                    `linear-gradient(to ${linear_gradient_direction}, ${old_background_color}, ${new_background_color})`,
+                backgroundSize:
+                    background_size,
+                transition:
+                    `background-position ${TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO}ms ease`,
+            };
+
+            let old_element: Element | Text | null = ReactDOM.findDOMNode(this);
+            if (old_element != null) {
+                (old_element as HTMLElement).className = old_classnames;
+            }
+            this.forceUpdate();
+            let new_element: Element | Text | null = null;
+            while (new_element == null || (new_element as HTMLElement).className !== old_classnames) {
+                await Wait(1);
+                new_element = ReactDOM.findDOMNode(this);
+            }
+            (new_element as HTMLElement).className = new_classnames;
+
+            await Wait(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
+            this.#old_color = null;
+            this.#old_classnames = null;
+            this.#old_styles = null;
+
+            this.forceUpdate();
+            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+        } else {
+            this.forceUpdate();
+            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+        }
+
+        if (turn_result.combo ||
+            turn_result.same.left ||
+            turn_result.same.top ||
+            turn_result.same.right ||
+            turn_result.same.bottom ||
+            turn_result.plus.left ||
+            turn_result.plus.top ||
+            turn_result.plus.right ||
+            turn_result.plus.bottom) {
+            this.#popups = [];
+
+            if (turn_result.combo) {
+                this.#popups.push(
+                    <div
+                        key={`center`}
+                        className={`Board_Cell_Center`}
+                    >
+                        <div>COMBO</div>
+                    </div>
+                );
+            }
+            for (const [class_name, key, has_same, has_plus] of [
+                [
+                    `Board_Cell_Left`,
+                    `left`,
+                    turn_result.same.left,
+                    turn_result.plus.left,
+                ],
+                [
+                    `Board_Cell_Top`,
+                    `top`,
+                    turn_result.same.top,
+                    turn_result.plus.top,
+                ],
+                [
+                    `Board_Cell_Right`,
+                    `right`,
+                    turn_result.same.right,
+                    turn_result.plus.right,
+                ],
+                [
+                    `Board_Cell_Bottom`,
+                    `bottom`,
+                    turn_result.same.bottom,
+                    turn_result.plus.bottom,
+                ],
+            ] as Array<
+                [
+                    string,
+                    string,
+                    boolean,
+                    boolean,
+                ]
+            >) {
+                if (has_same) {
+                    if (has_plus) {
+                        this.#popups.push(
+                            <div
+                                key={key}
+                                className={class_name}
+                            >
+                                <div>=</div>
+                                <div>+</div>
+                            </div>
+                        );
+                    } else {
+                        this.#popups.push(
+                            <div
+                                key={key}
+                                className={class_name}
+                            >
+                                <div>=</div>
+                            </div>
+                        );
+                    }
+                } else if (has_plus) {
+                    this.#popups.push(
+                        <div
+                            key={key}
+                            className={class_name}
+                        >
+                            <div>+</div>
+                        </div>
+                    );
+                }
+            }
+
+            this.forceUpdate();
+            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+            this.#popups = null;
+
+            this.forceUpdate();
+            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+        }
     }
 
     async On_Click(event: React.SyntheticEvent):
@@ -959,16 +1165,6 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         }
     }
 
-    async After_Player_Place_Stake(
-        {
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        // we update all cells because they could all potentially change after one stake being placed
-        this.forceUpdate();
-    }
-
     componentDidMount():
         void
     {
@@ -979,10 +1175,6 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 {
                     event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
                     event_handler: this.After_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE),
-                    event_handler: this.After_Player_Place_Stake,
                 },
             ],
         );
@@ -1003,31 +1195,59 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             return (
                 <div
-                    className="Board_Empty_Cell"
+                    className="Board_Cell_Empty"
                     style={{
                         cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
                     }}
                     onClick={event => this.On_Click.bind(this)(event)}
                 >
-                    <div>
-                    </div>
                 </div>
             );
         } else {
             const color: Model.Color = this.Model().Color();
 
-            return (
-                <div
-                    className="Board_Occupied_Cell"
-                    style={{
-                        backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                        backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
-                    }}
-                >
-                    <div>
+            if (this.#old_color) {
+                if (this.#old_classnames == null || this.#old_styles == null) {
+                    throw new Error(`Need old_classnames and old_styles for old_color.`);
+                }
+
+                return (
+                    <div
+                        className={this.#old_classnames}
+                        style={this.#old_styles}
+                    >
+                        <div
+                            className={`Board_Cell_Card`}
+                            style={{
+                                backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
+                            }}
+                        >
+                        </div>
                     </div>
-                </div>
-            );
+                );
+            } else {
+                return (
+                    <div
+                        className="Board_Cell_Occupied"
+                        style={{
+                            backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                        }}
+                    >
+                        <div
+                            className={`Board_Cell_Card`}
+                            style={{
+                                backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
+                            }}
+                        >
+                        </div>
+                        {
+                            this.#popups ?
+                                this.#popups :
+                                []
+                        }
+                    </div>
+                );
+            }
         }
     }
 }
