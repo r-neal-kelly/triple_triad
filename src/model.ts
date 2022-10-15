@@ -1,5 +1,6 @@
 import final_fantasy_8_pack_json from "./packs/final_fantasy_8.json"
 import cats_pack_json from "./packs/cats.json"
+import { CompoundAssignmentOperator } from "typescript";
 
 /* Various aliases to assist reading comprehension. */
 type Count =
@@ -83,11 +84,42 @@ export type Claim_Count =
 export type Claim_Delta =
     Delta;
 
+export type Same_Count =
+    Count;
+
+export type Plus_Count =
+    Count;
+
+export type Combo_Count =
+    Count;
+
+export type Step_Count =
+    Count;
+
 export type Defense =
     number;
 
 export type Defense_Count =
     number;
+
+export enum Direction_e
+{
+    NONE,
+
+    LEFT,
+    TOP,
+    RIGHT,
+    BOTTOM,
+}
+
+export enum Rule_e
+{
+    NONE,
+
+    SAME,
+    PLUS,
+    COMBO,
+}
 
 function Random_Boolean():
     boolean
@@ -575,7 +607,7 @@ export class Shuffle
         if (min_tier_index > max_tier_index) {
             throw new Error(`The min_tier_index cannot be greater than the max_tier_index: ${min_tier_index} > ${max_tier_index}`);
         } else if (max_tier_index >= pack.Tier_Count()) {
-            throw new Error(`The max_tier_index includes a non-existant tier in the pack "${pack.Name()}"`);
+            throw new Error(`The max_tier_index includes a non-existent tier in the pack "${pack.Name()}"`);
         } else {
             this.#pack = pack;
             this.#min_tier_index = min_tier_index;
@@ -1759,7 +1791,7 @@ export class Board
 
         let min_defense: Min = Number.MAX_VALUE;
         let max_defense: Max = 0;
-        let defense_count: Count = 0;
+        let defense_count: Defense_Count = 0;
         let defense_sum: number = 0;
 
         for (const { cell_or_wall, card_value } of [
@@ -1802,7 +1834,7 @@ export class Board
     Defense_Count_Of(cell_index: Cell_Index):
         Defense_Count
     {
-        let defense_count: Count = 0;
+        let defense_count: Defense_Count = 0;
 
         for (const cell_or_wall of [
             this.Left_Of(cell_index),
@@ -1832,7 +1864,7 @@ export class Board
     }
 
     async Place_Current_Player_Selected_Stake(cell_index: Cell_Index):
-        Promise<void>
+        Promise<Turn_Result_Steps>
     {
         if (this.Arena().Is_Game_Over()) {
             throw new Error(`Cannot place any more stakes, as the game is over.`);
@@ -1843,13 +1875,13 @@ export class Board
                 const current_player: Player = this.Current_Player();
                 const selected_stake: Stake = current_player.Remove_Selected_Stake();
 
-                await this.#Place_Stake(selected_stake, cell_index);
+                return this.#Place_Stake(selected_stake, cell_index);
             }
         }
     }
 
     async Place_Stake(stake: Stake, cell_index: Cell_Index):
-        Promise<void>
+        Promise<Turn_Result_Steps>
     {
         if (this.Arena().Is_Game_Over()) {
             throw new Error(`Cannot place any more stakes, as the game is over.`);
@@ -1857,13 +1889,13 @@ export class Board
             if (this.Cell(cell_index).Is_Occupied()) {
                 throw new Error(`Claim already exists in cell_index ${cell_index}.`);
             } else {
-                await this.#Place_Stake(stake, cell_index);
+                return this.#Place_Stake(stake, cell_index);
             }
         }
     }
 
     async #Place_Stake(stake: Stake, cell_index: Cell_Index):
-        Promise<void>
+        Promise<Turn_Result_Steps>
     {
         this.#cells[cell_index] = new Cell(
             {
@@ -1872,44 +1904,54 @@ export class Board
             },
         );
 
-        await this.#Evaluate_Cell(cell_index);
+        const turn_results: Turn_Results = new Turn_Results();
+        await this.#Evaluate_Cell(cell_index, turn_results, 0);
+        turn_results.Freeze();
+
+        return turn_results.Steps();
     }
 
-    async #Evaluate_Cell(cell_index: Cell_Index):
+    /*
+        This updates adjacent cards by evaluating the rules
+        when a card is placed in a particular cell_index.
+        It recursively calls itself for other cards in cell_indices
+        that have already been placed, but only when a combo occurs.
+    */
+    async #Evaluate_Cell(
+        cell_index: Cell_Index,
+        turn_results: Turn_Results,
+        step_count: Step_Count,
+    ):
         Promise<void>
     {
-        // this should update adjacents cards by evaluating the rules,
-        // as if a card was just placed in this position.
-        // however, it will be used recursively for cards that have already
-        // been placed to detect if a combo should occur.
-
         const center_index: Cell_Index = cell_index;
         const center_cell: Cell = this.Cell(center_index);
         const center_card: Card = center_cell.Stake().Card();
         const center_player: Player = center_cell.Claimant();
+        const center_turn_result: Turn_Result = turn_results.At(center_index);
 
-        const left_index: Cell_Index | Wall = this.Left_Index_Of(cell_index);
+        const left_index: Cell_Index | Wall = this.Left_Index_Of(center_index);
         const left_cell: Cell | Wall = left_index instanceof Wall ?
             left_index :
             this.Cell(left_index);
         let left_claimed: boolean = false;
         let left_combos: boolean = false;
 
-        const top_index: Cell_Index | Wall = this.Top_Index_Of(cell_index);
+        const top_index: Cell_Index | Wall = this.Top_Index_Of(center_index);
         const top_cell: Cell | Wall = top_index instanceof Wall ?
             top_index :
             this.Cell(top_index);
         let top_claimed: boolean = false;
         let top_combos: boolean = false;
 
-        const right_index: Cell_Index | Wall = this.Right_Index_Of(cell_index);
+        const right_index: Cell_Index | Wall = this.Right_Index_Of(center_index);
         const right_cell: Cell | Wall = right_index instanceof Wall ?
             right_index :
             this.Cell(right_index);
         let right_claimed: boolean = false;
         let right_combos: boolean = false;
 
-        const bottom_index: Cell_Index | Wall = this.Bottom_Index_Of(cell_index);
+        const bottom_index: Cell_Index | Wall = this.Bottom_Index_Of(center_index);
         const bottom_cell: Cell | Wall = bottom_index instanceof Wall ?
             bottom_index :
             this.Cell(bottom_index);
@@ -1919,9 +1961,9 @@ export class Board
         if (this.Rules().Same()) {
             type Same = {
                 count: Count,
-                indices: Array<Cell_Index>,
+                indices: Array<Cell_Index | Wall>,
             };
-            const sames: { [index: number]: Same } = {};
+            const sames: { [index: Card_Number]: Same } = {};
 
             // first we get all instances of where same can occur, to cache
             // what cards can be claimed, and if the rule has enough counts, including wall
@@ -1976,57 +2018,44 @@ export class Board
                         if (sames[center_card_value] == null) {
                             sames[center_card_value] = {
                                 count: 1,
-                                indices: [],
+                                indices: [index as Wall],
                             };
                         } else {
                             sames[center_card_value].count += 1;
+                            sames[center_card_value].indices.push(index as Wall);
                         }
                     }
                 }
             }
 
-            // then we filter out any sames that do not occur more than once, which breaks the rule,
-            // and we sort from the greatest number of cards that can be claimed to the least
-            const sames_array = Object.values(sames).filter(function (
-                same: Same,
-            ):
-                boolean
-            {
-                return same.count >= 2;
-            }).sort(function (
-                a: Same,
-                b: Same,
-            ):
-                number
-            {
-                return b.indices.length - a.indices.length;
-            });
-
-            if (sames_array.length > 0) {
-                // we get the first however many sames that equate so that we can randomly select from them
-                let biggest_same_count = 0;
-                for (let idx = 0, end = sames_array.length; idx < end; idx += 1) {
-                    if (sames_array[idx].indices.length === sames_array[0].indices.length) {
-                        biggest_same_count += 1;
-                    } else {
-                        break;
-                    }
-                }
-
-                const cell_indices: Array<Cell_Index> = sames_array[Math.floor(Math.random() * biggest_same_count)].indices;
-                for (const cell_index of cell_indices) {
-                    if (cell_index === left_index as Cell_Index) {
-                        left_claimed = true;
-                        left_combos = true;
-                    } else if (cell_index === top_index as Cell_Index) {
-                        top_claimed = true;
-                        top_combos = true;
-                    } else if (cell_index === right_index as Cell_Index) {
-                        right_claimed = true;
-                        right_combos = true;
-                    } else if (cell_index === bottom_index as Cell_Index) {
-                        bottom_claimed = true;
-                        bottom_combos = true;
+            for (const same of Object.values(sames)) {
+                if (same.count >= 2) {
+                    for (const index of same.indices) {
+                        if (index === left_index) {
+                            if (index instanceof Wall === false) {
+                                left_claimed = true;
+                                left_combos = true;
+                            }
+                            center_turn_result.same.left = true;
+                        } else if (index === top_index) {
+                            if (index instanceof Wall === false) {
+                                top_claimed = true;
+                                top_combos = true;
+                            }
+                            center_turn_result.same.top = true;
+                        } else if (index === right_index) {
+                            if (index instanceof Wall === false) {
+                                right_claimed = true;
+                                right_combos = true;
+                            }
+                            center_turn_result.same.right = true;
+                        } else if (index === bottom_index) {
+                            if (index instanceof Wall === false) {
+                                bottom_claimed = true;
+                                bottom_combos = true;
+                            }
+                            center_turn_result.same.bottom = true;
+                        }
                     }
                 }
             }
@@ -2035,9 +2064,9 @@ export class Board
         if (this.Rules().Plus()) {
             type Sum = {
                 count: Count,
-                indices: Array<Cell_Index>,
+                indices: Array<Cell_Index | Wall>,
             };
-            const sums: { [index: number]: Sum } = {};
+            const sums: { [index: Card_Number]: Sum } = {};
 
             // first we get all instances of where plus can occur, to cache
             // what cards can be claimed, and if the rule has enough counts, including wall
@@ -2091,56 +2120,43 @@ export class Board
                     if (sums[sum] == null) {
                         sums[sum] = {
                             count: 1,
-                            indices: [],
+                            indices: [index as Wall],
                         };
                     } else {
                         sums[sum].count += 1;
+                        sums[sum].indices.push(index as Wall);
                     }
                 }
             }
 
-            // then we filter out any sums that do not occur more than once, which breaks the rule,
-            // and we sort from the greatest number of cards that can be claimed to the least
-            const sums_array = Object.values(sums).filter(function (
-                sum: Sum,
-            ):
-                boolean
-            {
-                return sum.count >= 2;
-            }).sort(function (
-                a: Sum,
-                b: Sum,
-            ):
-                number
-            {
-                return b.indices.length - a.indices.length;
-            });
-
-            if (sums_array.length > 0) {
-                // we get the first however many sums that equate so that we can randomly select from them
-                let biggest_sum_count = 0;
-                for (let idx = 0, end = sums_array.length; idx < end; idx += 1) {
-                    if (sums_array[idx].indices.length === sums_array[0].indices.length) {
-                        biggest_sum_count += 1;
-                    } else {
-                        break;
-                    }
-                }
-
-                const cell_indices: Array<Cell_Index> = sums_array[Math.floor(Math.random() * biggest_sum_count)].indices;
-                for (const cell_index of cell_indices) {
-                    if (cell_index === left_index as Cell_Index) {
-                        left_claimed = true;
-                        left_combos = true;
-                    } else if (cell_index === top_index as Cell_Index) {
-                        top_claimed = true;
-                        top_combos = true;
-                    } else if (cell_index === right_index as Cell_Index) {
-                        right_claimed = true;
-                        right_combos = true;
-                    } else if (cell_index === bottom_index as Cell_Index) {
-                        bottom_claimed = true;
-                        bottom_combos = true;
+            for (const sum of Object.values(sums)) {
+                if (sum.count >= 2) {
+                    for (const index of sum.indices) {
+                        if (index === left_index) {
+                            if (index instanceof Wall === false) {
+                                left_claimed = true;
+                                left_combos = true;
+                            }
+                            center_turn_result.plus.left = true;
+                        } else if (index === top_index) {
+                            if (index instanceof Wall === false) {
+                                top_claimed = true;
+                                top_combos = true;
+                            }
+                            center_turn_result.plus.top = true;
+                        } else if (index === right_index) {
+                            if (index instanceof Wall === false) {
+                                right_claimed = true;
+                                right_combos = true;
+                            }
+                            center_turn_result.plus.right = true;
+                        } else if (index === bottom_index) {
+                            if (index instanceof Wall === false) {
+                                bottom_claimed = true;
+                                bottom_combos = true;
+                            }
+                            center_turn_result.plus.bottom = true;
+                        }
                     }
                 }
             }
@@ -2178,6 +2194,10 @@ export class Board
                     claimant: center_player,
                 },
             );
+
+            const left_turn_result: Turn_Result = turn_results.At(left_index as Cell_Index);
+            left_turn_result.direction = Direction_e.LEFT;
+            left_turn_result.step = step_count + 1;
         }
         if (top_claimed) {
             this.#cells[top_index as Cell_Index] = new Cell(
@@ -2186,6 +2206,10 @@ export class Board
                     claimant: center_player,
                 },
             );
+
+            const top_turn_result: Turn_Result = turn_results.At(top_index as Cell_Index);
+            top_turn_result.direction = Direction_e.TOP;
+            top_turn_result.step = step_count + 1;
         }
         if (right_claimed) {
             this.#cells[right_index as Cell_Index] = new Cell(
@@ -2194,6 +2218,10 @@ export class Board
                     claimant: center_player,
                 },
             );
+
+            const right_turn_result: Turn_Result = turn_results.At(right_index as Cell_Index);
+            right_turn_result.direction = Direction_e.RIGHT;
+            right_turn_result.step = step_count + 1;
         }
         if (bottom_claimed) {
             this.#cells[bottom_index as Cell_Index] = new Cell(
@@ -2202,9 +2230,19 @@ export class Board
                     claimant: center_player,
                 },
             );
+
+            const bottom_turn_result: Turn_Result = turn_results.At(bottom_index as Cell_Index);
+            bottom_turn_result.direction = Direction_e.BOTTOM;
+            bottom_turn_result.step = step_count + 1;
         }
 
         if (this.Rules().Combo()) {
+            if (center_turn_result.step > 0) {
+                if (left_claimed || top_claimed || right_claimed || bottom_claimed) {
+                    center_turn_result.combo = true;
+                }
+            }
+
             const cell_indices_to_combo: Array<Cell_Index> = [];
             if (left_combos) {
                 cell_indices_to_combo.push(left_index as Cell_Index);
@@ -2220,7 +2258,7 @@ export class Board
             }
 
             for (const cell_index_to_combo of cell_indices_to_combo) {
-                await this.#Evaluate_Cell(cell_index_to_combo);
+                await this.#Evaluate_Cell(cell_index_to_combo, turn_results, step_count + 1);
             }
         }
     }
@@ -2665,4 +2703,96 @@ export class Cell
 /* Represents a border on the board, which can be relevant according to the rules. */
 export class Wall
 {
+}
+
+export class Turn_Results
+{
+    #turn_results: { [index: Cell_Index]: Turn_Result };
+
+    constructor()
+    {
+        this.#turn_results = {};
+
+        Object.freeze(this);
+    }
+
+    Freeze():
+        void
+    {
+        for (const turn_result of Object.values(this.#turn_results)) {
+            Object.freeze(turn_result.same);
+            Object.freeze(turn_result.plus);
+            Object.freeze(turn_result);
+        }
+    }
+
+    At(cell_index: Cell_Index):
+        Turn_Result
+    {
+        if (this.#turn_results[cell_index] == null) {
+            this.#turn_results[cell_index] = {
+                cell_index: cell_index,
+                direction: Direction_e.NONE,
+                step: 0,
+                same: {
+                    left: false,
+                    top: false,
+                    right: false,
+                    bottom: false,
+                },
+                plus: {
+                    left: false,
+                    top: false,
+                    right: false,
+                    bottom: false,
+                },
+                combo: false,
+            };
+        }
+
+        return this.#turn_results[cell_index];
+    }
+
+    Steps():
+        Turn_Result_Steps
+    {
+        const results: Turn_Result_Steps = [];
+
+        const step_hashmap: { [index: Step_Count]: Array<Turn_Result> } = {};
+        for (const turn_result of Object.values(this.#turn_results)) {
+            if (step_hashmap[turn_result.step] == null) {
+                step_hashmap[turn_result.step] = [];
+            }
+            step_hashmap[turn_result.step].push(turn_result);
+        }
+
+        const step_array = Object.keys(step_hashmap).map(key => parseInt(key)).sort();
+        for (const step of step_array) {
+            results.push(step_hashmap[step]);
+        }
+
+        return results;
+    }
+}
+
+export type Turn_Result_Steps =
+    Array<Array<Turn_Result>>;
+
+export type Turn_Result = {
+    cell_index: Cell_Index,
+    direction: Direction_e,
+    step: Step_Count,
+    same: {
+        left: boolean,
+        top: boolean,
+        right: boolean,
+        bottom: boolean,
+    },
+    plus: {
+        left: boolean,
+        top: boolean,
+        right: boolean,
+        bottom: boolean,
+    },
+    combo: boolean,
 }

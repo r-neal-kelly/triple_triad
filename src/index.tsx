@@ -38,7 +38,7 @@ class Main extends React.Component<Main_Props>
             random: true, // temp until we build up serialization more
         });
 
-        // to be serialized
+        // to be serialized for human players
         this.#collection = new Model.Collection({
             default_shuffle: new Model.Shuffle({
                 pack: this.#packs.Pack(`Cats`),
@@ -64,7 +64,7 @@ class Main extends React.Component<Main_Props>
                         blue: 127,
                         alpha: 0.7,
                     }),
-                    is_of_human: true,
+                    is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Random_Selection({

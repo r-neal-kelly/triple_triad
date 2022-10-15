@@ -146,7 +146,7 @@ export class Arena extends React.Component<Arena_Props>
     ):
         Promise<void>
     {
-        console.log("game over");
+        console.log("game over"); // temp
 
         // we would display the winner at this point.
     }
@@ -481,7 +481,7 @@ class Player extends React.Component<Player_Props>
                     className=""
                 >
                     <Player_Score
-                        key={this.props.index}
+                        key={`player_score_${this.props.index}`}
                         parent={this}
                         ref={ref => this.#score = ref}
                         event_grid={this.props.event_grid}
@@ -489,7 +489,7 @@ class Player extends React.Component<Player_Props>
                         index={this.props.index}
                     />
                     <Player_Turn_Icon
-                        key={this.props.index}
+                        key={`player_turn_icon_${this.props.index}`}
                         parent={this}
                         ref={ref => this.#turn_icon = ref}
                         event_grid={this.props.event_grid}
@@ -510,7 +510,7 @@ class Player extends React.Component<Player_Props>
                         {
                             return (
                                 <Player_Stake
-                                    key={stake_index}
+                                    key={`player_stake_${stake_index}`}
                                     parent={this}
                                     ref={ref => this.#stakes[stake_index] = ref}
                                     event_grid={this.props.event_grid}
@@ -809,8 +809,11 @@ class Board extends React.Component<Board_Props>
     ):
         Promise<void>
     {
-        await this.Model().Place_Current_Player_Selected_Stake(cell_index);
-        this.forceUpdate();
+        const turn_result_steps: Model.Turn_Result_Steps =
+            await this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        console.log(turn_result_steps); // temp
+
+        this.forceUpdate(); // here we can manually update cells with the turn results instead
 
         this.props.event_grid.Send_Event({
             name_affix: PLAYER_STOP_TURN,

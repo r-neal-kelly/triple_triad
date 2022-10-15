@@ -155,3 +155,7 @@ body,
 .Player_Selected_Stake {
     border: 1px solid white;
 }
+
+.Turn_Results {
+    color: white;
+}
