@@ -7,8 +7,8 @@ import * as Event from "./event";
 import * as Model from "./model";
 
 const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
-const TURN_RESULT_WAIT_MILLISECONDS: number = 1000;
-const TURN_RESULT_TRANSITION_RATIO: number = 1 / 3;
+const TURN_RESULT_WAIT_MILLISECONDS: number = 667;
+const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
 
 const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
@@ -1126,9 +1126,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
             this.forceUpdate();
             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
             this.#popups = null;
-
             this.forceUpdate();
-            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
         }
     }
 
