@@ -426,7 +426,7 @@ class Card
     Image():
         URL
     {
-        return this.#card_json.image;
+        return "." + this.#card_json.image;
     }
 
     Element():

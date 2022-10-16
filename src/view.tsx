@@ -921,6 +921,7 @@ type Board_Cell_Props = {
 
 class Board_Cell extends React.Component<Board_Cell_Props>
 {
+    #element: HTMLElement | null;
     #animation_stylesheet: HTMLStyleElement | null;
     #popups: Array<JSX.Element> | null;
 
@@ -928,6 +929,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     {
         super(props);
 
+        this.#element = null;
         this.#animation_stylesheet = null;
         this.#popups = null;
     }
@@ -942,6 +944,16 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         Model.Cell_Index
     {
         return this.props.index;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
     }
 
     Board():
@@ -1006,30 +1018,26 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                     0
                 );
 
-                const element: HTMLElement = ReactDOM.findDOMNode(this) as HTMLElement;
-                if (element == null) {
-                    throw new Error(`This component does not have an element.`);
-                } else {
-                    element.style.backgroundColor =
-                        `transparent`;
-                    element.style.backgroundImage =
-                        `linear-gradient(to ${new_background_position}, ${old_background_color}, ${new_background_color})`;
-                    element.style.backgroundSize =
-                        background_size;
-                    element.style.animation =
-                        `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
-                    await Wait(animation_duration);
-                    element.style.backgroundColor =
-                        new_background_color;
-                    element.style.backgroundImage =
-                        ``;
-                    element.style.backgroundSize =
-                        `100% 100%`;
-                    element.style.animation =
-                        ``;
+                const element: HTMLElement = this.Element();
+                element.style.backgroundColor =
+                    `transparent`;
+                element.style.backgroundImage =
+                    `linear-gradient(to ${new_background_position}, ${old_background_color}, ${new_background_color})`;
+                element.style.backgroundSize =
+                    background_size;
+                element.style.animation =
+                    `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
+                await Wait(animation_duration);
+                element.style.backgroundColor =
+                    new_background_color;
+                element.style.backgroundImage =
+                    ``;
+                element.style.backgroundSize =
+                    `100% 100%`;
+                element.style.animation =
+                    ``;
 
-                    await Wait(TURN_RESULT_WAIT_MILLISECONDS);
-                }
+                await Wait(TURN_RESULT_WAIT_MILLISECONDS);
             }
         } else {
             this.forceUpdate();
@@ -1136,14 +1144,14 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         event.stopPropagation();
 
         const arena: Model.Arena = this.Board().Model().Arena();
-        if (arena.Is_Input_Enabled()) {
+        if (arena.Is_On_Human_Turn() && arena.Is_Input_Enabled()) {
             arena.Disable_Input();
 
             if (this.Board().Model().Is_Cell_Selectable(this.props.index)) {
                 const player_index: Model.Player_Index = this.Board().Model().Current_Player_Index();
                 const cell_index: Model.Cell_Index = this.props.index;
 
-                this.props.event_grid.Send_Event({
+                await this.props.event_grid.Send_Event({
                     name_affix: PLAYER_PLACE_STAKE,
                     name_suffixes: [
                         player_index.toString(),
@@ -1172,6 +1180,18 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         }
     }
 
+    async Before_Player_Place_Stake(
+        {
+        }: Player_Select_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Model().Is_Empty()) {
+            // we only need to update the cursor for empty cells
+            this.Element().style.cursor = `default`;
+        }
+    }
+
     componentDidMount():
         void
     {
@@ -1182,6 +1202,10 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 {
                     event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
                     event_handler: this.After_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE),
+                    event_handler: this.Before_Player_Place_Stake,
                 },
             ],
         );
@@ -1202,6 +1226,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             return (
                 <div
+                    ref={ref => this.#element = ref}
                     className="Board_Cell_Empty"
                     style={{
                         cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
@@ -1215,6 +1240,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             return (
                 <div
+                    ref={ref => this.#element = ref}
                     className="Board_Cell_Occupied"
                     style={{
                         backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
