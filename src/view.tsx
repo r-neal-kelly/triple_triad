@@ -1,7 +1,6 @@
 import "./view.css";
 
 import React from "react";
-import ReactDOM from "react-dom";
 
 import * as Event from "./event";
 import * as Model from "./model";
