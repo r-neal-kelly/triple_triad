@@ -283,19 +283,3 @@ body,
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 50%;
 }
-
-.Background_Position_Left {
-    background-position: left;
-}
-
-.Background_Position_Top {
-    background-position: top;
-}
-
-.Background_Position_Right {
-    background-position: right;
-}
-
-.Background_Position_Bottom {
-    background-position: bottom;
-}

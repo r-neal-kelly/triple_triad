@@ -8,7 +8,7 @@ import * as Model from "./model";
 
 const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_WAIT_MILLISECONDS: number = 1000;
-const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
+const TURN_RESULT_TRANSITION_RATIO: number = 1 / 3;
 
 const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
@@ -921,18 +921,14 @@ type Board_Cell_Props = {
 
 class Board_Cell extends React.Component<Board_Cell_Props>
 {
-    #old_color: Model.Color | null;
-    #old_classnames: string | null;
-    #old_styles: any | null;
+    #animation_stylesheet: HTMLStyleElement | null;
     #popups: Array<JSX.Element> | null;
 
     constructor(props: Board_Cell_Props)
     {
         super(props);
 
-        this.#old_color = null;
-        this.#old_classnames = null;
-        this.#old_styles = null;
+        this.#animation_stylesheet = null;
         this.#popups = null;
     }
 
@@ -960,68 +956,81 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         if (turn_result.old_color != null) {
             const old_color: Model.Color = turn_result.old_color;
             const new_color: Model.Color = this.Model().Color();
-
             const old_background_color: string =
                 `rgba(${old_color.Red()}, ${old_color.Green()}, ${old_color.Blue()}, ${old_color.Alpha()})`;
             const new_background_color: string =
                 `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
 
-            let old_classnames: string = `Board_Cell_Occupied `;
-            let new_classnames: string = `Board_Cell_Occupied `;
-            let linear_gradient_direction: string = ``;
             let background_size: string = ``;
+            let old_background_position: string = ``;
+            let new_background_position: string = ``;
             if (turn_result.direction === Model.Direction_e.LEFT) {
-                old_classnames += `Background_Position_Left`;
-                new_classnames += `Background_Position_Right`;
-                linear_gradient_direction = `right`;
                 background_size = `1000% 100%`;
+                old_background_position = `left`;
+                new_background_position = `right`;
             } else if (turn_result.direction === Model.Direction_e.TOP) {
-                old_classnames += `Background_Position_Top`;
-                new_classnames += `Background_Position_Bottom`;
-                linear_gradient_direction = `bottom`;
                 background_size = `100% 1000%`;
+                old_background_position = `top`;
+                new_background_position = `bottom`;
             } else if (turn_result.direction === Model.Direction_e.RIGHT) {
-                old_classnames += `Background_Position_Right`;
-                new_classnames += `Background_Position_Left`;
-                linear_gradient_direction = `left`;
                 background_size = `1000% 100%`;
+                old_background_position = `right`;
+                new_background_position = `left`;
             } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
-                old_classnames += `Background_Position_Bottom`;
-                new_classnames += `Background_Position_Top`;
-                linear_gradient_direction = `top`;
                 background_size = `100% 1000%`;
+                old_background_position = `bottom`;
+                new_background_position = `top`;
             }
 
-            this.#old_color = old_color;
-            this.#old_classnames = old_classnames;
-            this.#old_styles = {
-                backgroundImage:
-                    `linear-gradient(to ${linear_gradient_direction}, ${old_background_color}, ${new_background_color})`,
-                backgroundSize:
-                    background_size,
-                transition:
-                    `background-position ${TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO}ms ease`,
-            };
-
-            let old_element: Element | Text | null = ReactDOM.findDOMNode(this);
-            if (old_element != null) {
-                (old_element as HTMLElement).className = old_classnames;
+            const animation_name: string = `cell_${(Math.ceil(Date.now() + Math.random())).toString()}`;
+            const animation_duration: number = Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
+            const animation_delay: string = `0ms`;
+            if (this.#animation_stylesheet != null &&
+                this.#animation_stylesheet.parentNode != null) {
+                this.#animation_stylesheet.parentNode.removeChild(this.#animation_stylesheet);
             }
-            this.forceUpdate();
-            let new_element: Element | Text | null = null;
-            while (new_element == null || (new_element as HTMLElement).className !== old_classnames) {
-                await Wait(1);
-                new_element = ReactDOM.findDOMNode(this);
+            this.#animation_stylesheet = document.createElement(`style`);
+            document.head.appendChild(this.#animation_stylesheet);
+            if (this.#animation_stylesheet.sheet == null) {
+                throw new Error(`animation_stylesheet is missing sheet property.`);
+            } else {
+                this.#animation_stylesheet.sheet.insertRule(
+                    `@keyframes ${animation_name} {
+                        from {
+                            background-position: ${old_background_position};
+                        }
+                        to {
+                            background-position: ${new_background_position};
+                        }
+                    }`,
+                    0
+                );
+
+                const element: HTMLElement = ReactDOM.findDOMNode(this) as HTMLElement;
+                if (element == null) {
+                    throw new Error(`This component does not have an element.`);
+                } else {
+                    element.style.backgroundColor =
+                        `transparent`;
+                    element.style.backgroundImage =
+                        `linear-gradient(to ${new_background_position}, ${old_background_color}, ${new_background_color})`;
+                    element.style.backgroundSize =
+                        background_size;
+                    element.style.animation =
+                        `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
+                    await Wait(animation_duration);
+                    element.style.backgroundColor =
+                        new_background_color;
+                    element.style.backgroundImage =
+                        ``;
+                    element.style.backgroundSize =
+                        `100% 100%`;
+                    element.style.animation =
+                        ``;
+
+                    await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+                }
             }
-            (new_element as HTMLElement).className = new_classnames;
-
-            await Wait(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
-            this.#old_color = null;
-            this.#old_classnames = null;
-            this.#old_styles = null;
-
-            this.forceUpdate();
-            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
         } else {
             this.forceUpdate();
             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
@@ -1206,48 +1215,27 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         } else {
             const color: Model.Color = this.Model().Color();
 
-            if (this.#old_color) {
-                if (this.#old_classnames == null || this.#old_styles == null) {
-                    throw new Error(`Need old_classnames and old_styles for old_color.`);
-                }
-
-                return (
+            return (
+                <div
+                    className="Board_Cell_Occupied"
+                    style={{
+                        backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                    }}
+                >
                     <div
-                        className={this.#old_classnames}
-                        style={this.#old_styles}
-                    >
-                        <div
-                            className={`Board_Cell_Card`}
-                            style={{
-                                backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
-                            }}
-                        >
-                        </div>
-                    </div>
-                );
-            } else {
-                return (
-                    <div
-                        className="Board_Cell_Occupied"
+                        className={`Board_Cell_Card`}
                         style={{
-                            backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                            backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
                         }}
                     >
-                        <div
-                            className={`Board_Cell_Card`}
-                            style={{
-                                backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
-                            }}
-                        >
-                        </div>
-                        {
-                            this.#popups ?
-                                this.#popups :
-                                []
-                        }
                     </div>
-                );
-            }
+                    {
+                        this.#popups ?
+                            this.#popups :
+                            []
+                    }
+                </div>
+            );
         }
     }
 }
