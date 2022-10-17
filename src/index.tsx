@@ -21,7 +21,6 @@ class Main extends React.Component<Main_Props>
         super(props);
 
         this.#event_grid = new Event.Grid();
-
         this.#packs = new Model.Packs();
 
         // to be serialized

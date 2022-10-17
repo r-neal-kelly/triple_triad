@@ -72,12 +72,20 @@ export class Arena extends React.Component<Arena_Props>
     #players: Array<Player | null>;
     #board: Board | null;
 
+    #animation_stylesheet: HTMLStyleElement | null;
+    #animation_name_prefix: string;
+    #animation_names: Set<string>;
+
     constructor(props: Arena_Props)
     {
         super(props);
 
         this.#players = new Array(this.Model().Player_Count()).fill(null);
         this.#board = null;
+
+        this.#animation_stylesheet = null;
+        this.#animation_name_prefix = ``;
+        this.#animation_names = new Set();
     }
 
     Model():
@@ -121,6 +129,92 @@ export class Arena extends React.Component<Arena_Props>
         } else {
             return this.#board as Board;
         }
+    }
+
+    Create_Animations():
+        void
+    {
+        this.#animation_stylesheet = document.createElement(`style`);
+        document.head.appendChild(this.#animation_stylesheet);
+
+        this.#animation_name_prefix = `_${(Math.ceil(Date.now() + Math.random())).toString()}`;
+
+        if (this.#animation_stylesheet.sheet == null ||
+            this.#animation_stylesheet.parentNode == null) {
+            throw new Error(`Could not successfully create an animation_stylesheet.`);
+        } else {
+            for (const [name_affix, from, to] of [
+                [
+                    `left_to_right`,
+                    `left`,
+                    `right`,
+                ],
+                [
+                    `top_to_bottom`,
+                    `top`,
+                    `bottom`,
+                ],
+                [
+                    `right_to_left`,
+                    `right`,
+                    `left`,
+                ],
+                [
+                    `bottom_to_top`,
+                    `bottom`,
+                    `top`,
+                ],
+            ] as Array<[
+                string,
+                string,
+                string,
+            ]>) {
+                const animation_name: string = this.#Animation_Name(name_affix);
+                this.#animation_names.add(animation_name);
+
+                this.#animation_stylesheet.sheet.insertRule(
+                    `@keyframes ${animation_name} {
+                        from {
+                            background-position: ${from};
+                        }
+                        to {
+                            background-position: ${to};
+                        }
+                    }`,
+                    0
+                );
+            }
+        }
+    }
+
+    Destroy_Animations():
+        void
+    {
+        if (this.#animation_stylesheet != null &&
+            this.#animation_stylesheet.parentNode != null) {
+            this.#animation_stylesheet.parentNode.removeChild(this.#animation_stylesheet);
+        }
+
+        this.#animation_names = new Set();
+        this.#animation_name_prefix = ``;
+        this.#animation_stylesheet = null;
+    }
+
+    Animation_Name(name_affix: string):
+        string
+    {
+        const animation_name: string = this.#Animation_Name(name_affix);
+        if (!this.#animation_names.has(animation_name)) {
+            throw new Error(`Animation does not exist with the name_affix of ${name_affix}.`);
+        } else {
+            return animation_name;
+        }
+    }
+
+    #Animation_Name(name_affix: string):
+        string
+    {
+        return `${this.#animation_name_prefix}_${name_affix}`;
     }
 
     async On_Game_Start(
@@ -188,6 +282,8 @@ export class Arena extends React.Component<Arena_Props>
     componentDidMount():
         void
     {
+        this.Create_Animations();
+
         this.props.event_grid.Add(this);
         this.props.event_grid.Add_Many_Listeners(
             this,
@@ -221,6 +317,8 @@ export class Arena extends React.Component<Arena_Props>
         void
     {
         this.props.event_grid.Remove(this);
+
+        this.Destroy_Animations();
     }
 
     render():
@@ -921,7 +1019,6 @@ type Board_Cell_Props = {
 class Board_Cell extends React.Component<Board_Cell_Props>
 {
     #element: HTMLElement | null;
-    #animation_stylesheet: HTMLStyleElement | null;
     #popups: Array<JSX.Element> | null;
 
     constructor(props: Board_Cell_Props)
@@ -929,7 +1026,6 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         super(props);
 
         this.#element = null;
-        this.#animation_stylesheet = null;
         this.#popups = null;
     }
 
@@ -953,6 +1049,12 @@ class Board_Cell extends React.Component<Board_Cell_Props>
         } else {
             return this.#element as HTMLElement;
         }
+    }
+
+    Arena():
+        Arena
+    {
+        return this.Board().Arena();
     }
 
     Board():
@@ -993,51 +1095,34 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 new_background_position = `top`;
             }
 
-            const animation_name: string = `cell_${(Math.ceil(Date.now() + Math.random())).toString()}`;
-            const animation_duration: number = Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
-            const animation_delay: string = `0ms`;
-            if (this.#animation_stylesheet != null &&
-                this.#animation_stylesheet.parentNode != null) {
-                this.#animation_stylesheet.parentNode.removeChild(this.#animation_stylesheet);
-            }
-            this.#animation_stylesheet = document.createElement(`style`);
-            document.head.appendChild(this.#animation_stylesheet);
-            if (this.#animation_stylesheet.sheet == null) {
-                throw new Error(`animation_stylesheet is missing sheet property.`);
-            } else {
-                this.#animation_stylesheet.sheet.insertRule(
-                    `@keyframes ${animation_name} {
-                        from {
-                            background-position: ${old_background_position};
-                        }
-                        to {
-                            background-position: ${new_background_position};
-                        }
-                    }`,
-                    0
-                );
+            const animation_name: string =
+                this.Arena().Animation_Name(`${old_background_position}_to_${new_background_position}`);
+            const animation_duration: number =
+                Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
+            const animation_delay: string =
+                `0ms`;
+            const element: HTMLElement = this.Element();
+            element.style.backgroundColor =
+                `transparent`;
+            element.style.backgroundImage =
+                `linear-gradient(to ${new_background_position}, ${old_background_color}, ${new_background_color})`;
+            element.style.backgroundSize =
+                background_size;
+            element.style.animation =
+                `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
 
-                const element: HTMLElement = this.Element();
-                element.style.backgroundColor =
-                    `transparent`;
-                element.style.backgroundImage =
-                    `linear-gradient(to ${new_background_position}, ${old_background_color}, ${new_background_color})`;
-                element.style.backgroundSize =
-                    background_size;
-                element.style.animation =
-                    `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
-                await Wait(animation_duration);
-                element.style.backgroundColor =
-                    new_background_color;
-                element.style.backgroundImage =
-                    ``;
-                element.style.backgroundSize =
-                    `100% 100%`;
-                element.style.animation =
-                    ``;
+            await Wait(animation_duration);
 
-                await Wait(TURN_RESULT_WAIT_MILLISECONDS);
-            }
+            element.style.backgroundColor =
+                new_background_color;
+            element.style.backgroundImage =
+                ``;
+            element.style.backgroundSize =
+                `100% 100%`;
+            element.style.animation =
+                ``;
+
+            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
         } else {
             this.forceUpdate();
             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
