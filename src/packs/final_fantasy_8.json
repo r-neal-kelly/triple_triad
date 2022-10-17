@@ -4,7 +4,7 @@
         [
             {
                 "name": "Geezard",
-                "image": "/img/packs/final_fantasy_8/Geezard.webp",
+                "image": "./img/packs/final_fantasy_8/Geezard.webp",
                 "element": "",
                 "left": 5,
                 "top": 1,
@@ -13,7 +13,7 @@
             },
             {
                 "name": "Funguar",
-                "image": "/img/packs/final_fantasy_8/Funguar.webp",
+                "image": "./img/packs/final_fantasy_8/Funguar.webp",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -22,7 +22,7 @@
             },
             {
                 "name": "Bite Bug",
-                "image": "/img/packs/final_fantasy_8/Bite_Bug.webp",
+                "image": "./img/packs/final_fantasy_8/Bite_Bug.webp",
                 "element": "",
                 "left": 5,
                 "top": 1,
@@ -31,7 +31,7 @@
             },
             {
                 "name": "Red Bat",
-                "image": "/img/packs/final_fantasy_8/Red_Bat.webp",
+                "image": "./img/packs/final_fantasy_8/Red_Bat.webp",
                 "element": "",
                 "left": 2,
                 "top": 6,
@@ -40,7 +40,7 @@
             },
             {
                 "name": "Blobra",
-                "image": "/img/packs/final_fantasy_8/Blobra.webp",
+                "image": "./img/packs/final_fantasy_8/Blobra.webp",
                 "element": "",
                 "left": 5,
                 "top": 2,
@@ -49,7 +49,7 @@
             },
             {
                 "name": "Gayla",
-                "image": "/img/packs/final_fantasy_8/Gayla.webp",
+                "image": "./img/packs/final_fantasy_8/Gayla.webp",
                 "element": "Lightning",
                 "left": 4,
                 "top": 2,
@@ -58,7 +58,7 @@
             },
             {
                 "name": "Gesper",
-                "image": "/img/packs/final_fantasy_8/Gesper.webp",
+                "image": "./img/packs/final_fantasy_8/Gesper.webp",
                 "element": "",
                 "left": 1,
                 "top": 1,
@@ -67,7 +67,7 @@
             },
             {
                 "name": "Fastitocalon-F",
-                "image": "/img/packs/final_fantasy_8/Fastitocalon_F.webp",
+                "image": "./img/packs/final_fantasy_8/Fastitocalon_F.webp",
                 "element": "Earth",
                 "left": 1,
                 "top": 3,
@@ -76,7 +76,7 @@
             },
             {
                 "name": "Blood Soul",
-                "image": "/img/packs/final_fantasy_8/Blood_Soul.webp",
+                "image": "./img/packs/final_fantasy_8/Blood_Soul.webp",
                 "element": "",
                 "left": 1,
                 "top": 2,
@@ -85,7 +85,7 @@
             },
             {
                 "name": "Caterchipillar",
-                "image": "/img/packs/final_fantasy_8/Caterchipillar.webp",
+                "image": "./img/packs/final_fantasy_8/Caterchipillar.webp",
                 "element": "",
                 "left": 3,
                 "top": 4,
@@ -94,7 +94,7 @@
             },
             {
                 "name": "Cockatrice",
-                "image": "/img/packs/final_fantasy_8/Cockatrice.webp",
+                "image": "./img/packs/final_fantasy_8/Cockatrice.webp",
                 "element": "Lightning",
                 "left": 6,
                 "top": 2,
@@ -105,7 +105,7 @@
         [
             {
                 "name": "Grat",
-                "image": "/img/packs/final_fantasy_8/Grat.webp",
+                "image": "./img/packs/final_fantasy_8/Grat.webp",
                 "element": "",
                 "left": 1,
                 "top": 7,
@@ -114,7 +114,7 @@
             },
             {
                 "name": "Buel",
-                "image": "/img/packs/final_fantasy_8/Buel.webp",
+                "image": "./img/packs/final_fantasy_8/Buel.webp",
                 "element": "",
                 "left": 3,
                 "top": 6,
@@ -123,7 +123,7 @@
             },
             {
                 "name": "Mesmerize",
-                "image": "/img/packs/final_fantasy_8/Mesmerize.webp",
+                "image": "./img/packs/final_fantasy_8/Mesmerize.webp",
                 "element": "",
                 "left": 4,
                 "top": 5,
@@ -132,7 +132,7 @@
             },
             {
                 "name": "Glacial Eye",
-                "image": "/img/packs/final_fantasy_8/Glacial_Eye.webp",
+                "image": "./img/packs/final_fantasy_8/Glacial_Eye.webp",
                 "element": "Ice",
                 "left": 3,
                 "top": 6,
@@ -141,7 +141,7 @@
             },
             {
                 "name": "Belhelmel",
-                "image": "/img/packs/final_fantasy_8/Belhelmel.webp",
+                "image": "./img/packs/final_fantasy_8/Belhelmel.webp",
                 "element": "",
                 "left": 3,
                 "top": 3,
@@ -150,7 +150,7 @@
             },
             {
                 "name": "Thrustaevis",
-                "image": "/img/packs/final_fantasy_8/Thrustaevis.webp",
+                "image": "./img/packs/final_fantasy_8/Thrustaevis.webp",
                 "element": "Wind",
                 "left": 5,
                 "top": 5,
@@ -159,7 +159,7 @@
             },
             {
                 "name": "Anacondaur",
-                "image": "/img/packs/final_fantasy_8/Anacondaur.webp",
+                "image": "./img/packs/final_fantasy_8/Anacondaur.webp",
                 "element": "Poison",
                 "left": 5,
                 "top": 5,
@@ -168,7 +168,7 @@
             },
             {
                 "name": "Creeps",
-                "image": "/img/packs/final_fantasy_8/Creeps.webp",
+                "image": "./img/packs/final_fantasy_8/Creeps.webp",
                 "element": "Lightning",
                 "left": 2,
                 "top": 5,
@@ -177,7 +177,7 @@
             },
             {
                 "name": "Grendel",
-                "image": "/img/packs/final_fantasy_8/Grendel.webp",
+                "image": "./img/packs/final_fantasy_8/Grendel.webp",
                 "element": "Lightning",
                 "left": 2,
                 "top": 4,
@@ -186,7 +186,7 @@
             },
             {
                 "name": "Jelleye",
-                "image": "/img/packs/final_fantasy_8/Jelleye.webp",
+                "image": "./img/packs/final_fantasy_8/Jelleye.webp",
                 "element": "",
                 "left": 7,
                 "top": 3,
@@ -195,7 +195,7 @@
             },
             {
                 "name": "Grand Mantis",
-                "image": "/img/packs/final_fantasy_8/Grand_Mantis.webp",
+                "image": "./img/packs/final_fantasy_8/Grand_Mantis.webp",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -206,7 +206,7 @@
         [
             {
                 "name": "Forbidden",
-                "image": "/img/packs/final_fantasy_8/Forbidden.webp",
+                "image": "./img/packs/final_fantasy_8/Forbidden.webp",
                 "element": "",
                 "left": 2,
                 "top": 6,
@@ -215,7 +215,7 @@
             },
             {
                 "name": "Armadodo",
-                "image": "/img/packs/final_fantasy_8/Armadodo.webp",
+                "image": "./img/packs/final_fantasy_8/Armadodo.webp",
                 "element": "Earth",
                 "left": 6,
                 "top": 6,
@@ -224,7 +224,7 @@
             },
             {
                 "name": "Tri-Face",
-                "image": "/img/packs/final_fantasy_8/Tri_Face.webp",
+                "image": "./img/packs/final_fantasy_8/Tri_Face.webp",
                 "element": "Poison",
                 "left": 5,
                 "top": 3,
@@ -233,7 +233,7 @@
             },
             {
                 "name": "Fastitocalon",
-                "image": "/img/packs/final_fantasy_8/Fastitocalon.webp",
+                "image": "./img/packs/final_fantasy_8/Fastitocalon.webp",
                 "element": "Earth",
                 "left": 3,
                 "top": 7,
@@ -242,7 +242,7 @@
             },
             {
                 "name": "Snow Lion",
-                "image": "/img/packs/final_fantasy_8/Snow_Lion.webp",
+                "image": "./img/packs/final_fantasy_8/Snow_Lion.webp",
                 "element": "Ice",
                 "left": 3,
                 "top": 7,
@@ -251,7 +251,7 @@
             },
             {
                 "name": "Ochu",
-                "image": "/img/packs/final_fantasy_8/Ochu.webp",
+                "image": "./img/packs/final_fantasy_8/Ochu.webp",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -260,7 +260,7 @@
             },
             {
                 "name": "SAM08G",
-                "image": "/img/packs/final_fantasy_8/SAM08G.webp",
+                "image": "./img/packs/final_fantasy_8/SAM08G.webp",
                 "element": "Fire",
                 "left": 4,
                 "top": 5,
@@ -269,7 +269,7 @@
             },
             {
                 "name": "Death Claw",
-                "image": "/img/packs/final_fantasy_8/Death_Claw.webp",
+                "image": "./img/packs/final_fantasy_8/Death_Claw.webp",
                 "element": "Fire",
                 "left": 2,
                 "top": 4,
@@ -278,7 +278,7 @@
             },
             {
                 "name": "Cactuar",
-                "image": "/img/packs/final_fantasy_8/Cactuar.webp",
+                "image": "./img/packs/final_fantasy_8/Cactuar.webp",
                 "element": "",
                 "left": 3,
                 "top": 6,
@@ -287,7 +287,7 @@
             },
             {
                 "name": "Tonberry",
-                "image": "/img/packs/final_fantasy_8/Tonberry.webp",
+                "image": "./img/packs/final_fantasy_8/Tonberry.webp",
                 "element": "",
                 "left": 4,
                 "top": 3,
@@ -296,7 +296,7 @@
             },
             {
                 "name": "Abyss Worm",
-                "image": "/img/packs/final_fantasy_8/Abyss_Worm.webp",
+                "image": "./img/packs/final_fantasy_8/Abyss_Worm.webp",
                 "element": "Earth",
                 "left": 5,
                 "top": 7,
@@ -307,7 +307,7 @@
         [
             {
                 "name": "Turtapod",
-                "image": "/img/packs/final_fantasy_8/Turtapod.webp",
+                "image": "./img/packs/final_fantasy_8/Turtapod.webp",
                 "element": "",
                 "left": 7,
                 "top": 2,
@@ -316,7 +316,7 @@
             },
             {
                 "name": "Vysage",
-                "image": "/img/packs/final_fantasy_8/Vysage.webp",
+                "image": "./img/packs/final_fantasy_8/Vysage.webp",
                 "element": "",
                 "left": 5,
                 "top": 6,
@@ -325,7 +325,7 @@
             },
             {
                 "name": "T-Rexaur",
-                "image": "/img/packs/final_fantasy_8/T_Rexaur.webp",
+                "image": "./img/packs/final_fantasy_8/T_Rexaur.webp",
                 "element": "",
                 "left": 7,
                 "top": 4,
@@ -334,7 +334,7 @@
             },
             {
                 "name": "Bomb",
-                "image": "/img/packs/final_fantasy_8/Bomb.webp",
+                "image": "./img/packs/final_fantasy_8/Bomb.webp",
                 "element": "Fire",
                 "left": 3,
                 "top": 2,
@@ -343,7 +343,7 @@
             },
             {
                 "name": "Blitz",
-                "image": "/img/packs/final_fantasy_8/Blitz.webp",
+                "image": "./img/packs/final_fantasy_8/Blitz.webp",
                 "element": "Lightning",
                 "left": 7,
                 "top": 1,
@@ -352,7 +352,7 @@
             },
             {
                 "name": "Wendigo",
-                "image": "/img/packs/final_fantasy_8/Wendigo.webp",
+                "image": "./img/packs/final_fantasy_8/Wendigo.webp",
                 "element": "",
                 "left": 6,
                 "top": 7,
@@ -361,7 +361,7 @@
             },
             {
                 "name": "Torama",
-                "image": "/img/packs/final_fantasy_8/Torama.webp",
+                "image": "./img/packs/final_fantasy_8/Torama.webp",
                 "element": "",
                 "left": 4,
                 "top": 7,
@@ -370,7 +370,7 @@
             },
             {
                 "name": "Imp",
-                "image": "/img/packs/final_fantasy_8/Imp.webp",
+                "image": "./img/packs/final_fantasy_8/Imp.webp",
                 "element": "",
                 "left": 6,
                 "top": 3,
@@ -379,7 +379,7 @@
             },
             {
                 "name": "Blue Dragon",
-                "image": "/img/packs/final_fantasy_8/Blue_Dragon.webp",
+                "image": "./img/packs/final_fantasy_8/Blue_Dragon.webp",
                 "element": "Poison",
                 "left": 3,
                 "top": 6,
@@ -388,7 +388,7 @@
             },
             {
                 "name": "Adamantoise",
-                "image": "/img/packs/final_fantasy_8/Adamantoise.webp",
+                "image": "./img/packs/final_fantasy_8/Adamantoise.webp",
                 "element": "Earth",
                 "left": 6,
                 "top": 4,
@@ -397,7 +397,7 @@
             },
             {
                 "name": "Hexadragon",
-                "image": "/img/packs/final_fantasy_8/Hexadragon.webp",
+                "image": "./img/packs/final_fantasy_8/Hexadragon.webp",
                 "element": "Fire",
                 "left": 3,
                 "top": 7,
@@ -408,7 +408,7 @@
         [
             {
                 "name": "Iron Giant",
-                "image": "/img/packs/final_fantasy_8/Iron_Giant.webp",
+                "image": "./img/packs/final_fantasy_8/Iron_Giant.webp",
                 "element": "",
                 "left": 5,
                 "top": 6,
@@ -417,7 +417,7 @@
             },
             {
                 "name": "Behemoth",
-                "image": "/img/packs/final_fantasy_8/Behemoth.webp",
+                "image": "./img/packs/final_fantasy_8/Behemoth.webp",
                 "element": "",
                 "left": 7,
                 "top": 3,
@@ -426,7 +426,7 @@
             },
             {
                 "name": "Chimera",
-                "image": "/img/packs/final_fantasy_8/Chimera.webp",
+                "image": "./img/packs/final_fantasy_8/Chimera.webp",
                 "element": "Water",
                 "left": 3,
                 "top": 7,
@@ -435,7 +435,7 @@
             },
             {
                 "name": "PuPu",
-                "image": "/img/packs/final_fantasy_8/PuPu.webp",
+                "image": "./img/packs/final_fantasy_8/PuPu.webp",
                 "element": "",
                 "left": 1,
                 "top": 3,
@@ -444,7 +444,7 @@
             },
             {
                 "name": "Elastoid",
-                "image": "/img/packs/final_fantasy_8/Elastoid.webp",
+                "image": "./img/packs/final_fantasy_8/Elastoid.webp",
                 "element": "",
                 "left": 7,
                 "top": 6,
@@ -453,7 +453,7 @@
             },
             {
                 "name": "GIM47N",
-                "image": "/img/packs/final_fantasy_8/GIM47N.webp",
+                "image": "./img/packs/final_fantasy_8/GIM47N.webp",
                 "element": "",
                 "left": 4,
                 "top": 5,
@@ -462,7 +462,7 @@
             },
             {
                 "name": "Malboro",
-                "image": "/img/packs/final_fantasy_8/Malboro.webp",
+                "image": "./img/packs/final_fantasy_8/Malboro.webp",
                 "element": "Poison",
                 "left": 2,
                 "top": 7,
@@ -471,7 +471,7 @@
             },
             {
                 "name": "Ruby Dragon",
-                "image": "/img/packs/final_fantasy_8/Ruby_Dragon.webp",
+                "image": "./img/packs/final_fantasy_8/Ruby_Dragon.webp",
                 "element": "Fire",
                 "left": 4,
                 "top": 7,
@@ -480,7 +480,7 @@
             },
             {
                 "name": "Elnoyle",
-                "image": "/img/packs/final_fantasy_8/Elnoyle.webp",
+                "image": "./img/packs/final_fantasy_8/Elnoyle.webp",
                 "element": "",
                 "left": 6,
                 "top": 5,
@@ -489,7 +489,7 @@
             },
             {
                 "name": "Tonberry King",
-                "image": "/img/packs/final_fantasy_8/Tonberry_King.webp",
+                "image": "./img/packs/final_fantasy_8/Tonberry_King.webp",
                 "element": "",
                 "left": 4,
                 "top": 4,
@@ -498,7 +498,7 @@
             },
             {
                 "name": "Wedge, Biggs",
-                "image": "/img/packs/final_fantasy_8/Wedge_Biggs.webp",
+                "image": "./img/packs/final_fantasy_8/Wedge_Biggs.webp",
                 "element": "",
                 "left": 7,
                 "top": 6,
@@ -509,7 +509,7 @@
         [
             {
                 "name": "Fujin, Raijin",
-                "image": "/img/packs/final_fantasy_8/Fujin_Raijin.webp",
+                "image": "./img/packs/final_fantasy_8/Fujin_Raijin.webp",
                 "element": "",
                 "left": 4,
                 "top": 2,
@@ -518,7 +518,7 @@
             },
             {
                 "name": "Elvoret",
-                "image": "/img/packs/final_fantasy_8/Elvoret.webp",
+                "image": "./img/packs/final_fantasy_8/Elvoret.webp",
                 "element": "Wind",
                 "left": 4,
                 "top": 7,
@@ -527,7 +527,7 @@
             },
             {
                 "name": "X-ATM092",
-                "image": "/img/packs/final_fantasy_8/X_ATM092.webp",
+                "image": "./img/packs/final_fantasy_8/X_ATM092.webp",
                 "element": "",
                 "left": 3,
                 "top": 4,
@@ -536,7 +536,7 @@
             },
             {
                 "name": "Granaldo",
-                "image": "/img/packs/final_fantasy_8/Granaldo.webp",
+                "image": "./img/packs/final_fantasy_8/Granaldo.webp",
                 "element": "",
                 "left": 5,
                 "top": 7,
@@ -545,7 +545,7 @@
             },
             {
                 "name": "Gerogero",
-                "image": "/img/packs/final_fantasy_8/Gerogero.webp",
+                "image": "./img/packs/final_fantasy_8/Gerogero.webp",
                 "element": "Poison",
                 "left": 3,
                 "top": 1,
@@ -554,7 +554,7 @@
             },
             {
                 "name": "Iguion",
-                "image": "/img/packs/final_fantasy_8/Iguion.webp",
+                "image": "./img/packs/final_fantasy_8/Iguion.webp",
                 "element": "",
                 "left": 2,
                 "top": 8,
@@ -563,7 +563,7 @@
             },
             {
                 "name": "Abadon",
-                "image": "/img/packs/final_fantasy_8/Abadon.webp",
+                "image": "./img/packs/final_fantasy_8/Abadon.webp",
                 "element": "",
                 "left": 5,
                 "top": 6,
@@ -572,7 +572,7 @@
             },
             {
                 "name": "Trauma",
-                "image": "/img/packs/final_fantasy_8/Trauma.webp",
+                "image": "./img/packs/final_fantasy_8/Trauma.webp",
                 "element": "",
                 "left": 6,
                 "top": 4,
@@ -581,7 +581,7 @@
             },
             {
                 "name": "Oilboyle",
-                "image": "/img/packs/final_fantasy_8/Oilboyle.webp",
+                "image": "./img/packs/final_fantasy_8/Oilboyle.webp",
                 "element": "",
                 "left": 8,
                 "top": 1,
@@ -590,7 +590,7 @@
             },
             {
                 "name": "Shumi Tribe",
-                "image": "/img/packs/final_fantasy_8/Shumi_Tribe.webp",
+                "image": "./img/packs/final_fantasy_8/Shumi_Tribe.webp",
                 "element": "",
                 "left": 4,
                 "top": 6,
@@ -599,7 +599,7 @@
             },
             {
                 "name": "Krysta",
-                "image": "/img/packs/final_fantasy_8/Krysta.webp",
+                "image": "./img/packs/final_fantasy_8/Krysta.webp",
                 "element": "",
                 "left": 1,
                 "top": 7,
@@ -610,7 +610,7 @@
         [
             {
                 "name": "Propagator",
-                "image": "/img/packs/final_fantasy_8/Propagator.webp",
+                "image": "./img/packs/final_fantasy_8/Propagator.webp",
                 "element": "",
                 "left": 8,
                 "top": 8,
@@ -619,7 +619,7 @@
             },
             {
                 "name": "Jumbo Cactuar",
-                "image": "/img/packs/final_fantasy_8/Jumbo_Cactuar.webp",
+                "image": "./img/packs/final_fantasy_8/Jumbo_Cactuar.webp",
                 "element": "",
                 "left": 4,
                 "top": 8,
@@ -628,7 +628,7 @@
             },
             {
                 "name": "Tri-Point",
-                "image": "/img/packs/final_fantasy_8/Tri_Point.webp",
+                "image": "./img/packs/final_fantasy_8/Tri_Point.webp",
                 "element": "Lightning",
                 "left": 8,
                 "top": 8,
@@ -637,7 +637,7 @@
             },
             {
                 "name": "Gargantua",
-                "image": "/img/packs/final_fantasy_8/Gargantua.webp",
+                "image": "./img/packs/final_fantasy_8/Gargantua.webp",
                 "element": "",
                 "left": 8,
                 "top": 5,
@@ -646,7 +646,7 @@
             },
             {
                 "name": "Mobile Type 8",
-                "image": "/img/packs/final_fantasy_8/Mobile_Type_8.webp",
+                "image": "./img/packs/final_fantasy_8/Mobile_Type_8.webp",
                 "element": "",
                 "left": 3,
                 "top": 8,
@@ -655,7 +655,7 @@
             },
             {
                 "name": "Sphinxara",
-                "image": "/img/packs/final_fantasy_8/Sphinxara.webp",
+                "image": "./img/packs/final_fantasy_8/Sphinxara.webp",
                 "element": "",
                 "left": 8,
                 "top": 8,
@@ -664,7 +664,7 @@
             },
             {
                 "name": "Tiamat",
-                "image": "/img/packs/final_fantasy_8/Tiamat.webp",
+                "image": "./img/packs/final_fantasy_8/Tiamat.webp",
                 "element": "",
                 "left": 4,
                 "top": 8,
@@ -673,7 +673,7 @@
             },
             {
                 "name": "BGH251F2",
-                "image": "/img/packs/final_fantasy_8/BGH251F2.webp",
+                "image": "./img/packs/final_fantasy_8/BGH251F2.webp",
                 "element": "",
                 "left": 5,
                 "top": 5,
@@ -682,7 +682,7 @@
             },
             {
                 "name": "Red Giant",
-                "image": "/img/packs/final_fantasy_8/Red_Giant.webp",
+                "image": "./img/packs/final_fantasy_8/Red_Giant.webp",
                 "element": "",
                 "left": 7,
                 "top": 6,
@@ -691,7 +691,7 @@
             },
             {
                 "name": "Catoblepas",
-                "image": "/img/packs/final_fantasy_8/Catoblepas.webp",
+                "image": "./img/packs/final_fantasy_8/Catoblepas.webp",
                 "element": "",
                 "left": 7,
                 "top": 1,
@@ -700,7 +700,7 @@
             },
             {
                 "name": "Ultima Weapon",
-                "image": "/img/packs/final_fantasy_8/Ultima_Weapon.webp",
+                "image": "./img/packs/final_fantasy_8/Ultima_Weapon.webp",
                 "element": "",
                 "left": 8,
                 "top": 7,
@@ -711,7 +711,7 @@
         [
             {
                 "name": "Chubby Chocobo",
-                "image": "/img/packs/final_fantasy_8/Chubby_Chocobo.webp",
+                "image": "./img/packs/final_fantasy_8/Chubby_Chocobo.webp",
                 "element": "",
                 "left": 9,
                 "top": 4,
@@ -720,7 +720,7 @@
             },
             {
                 "name": "Angelo",
-                "image": "/img/packs/final_fantasy_8/Angelo.webp",
+                "image": "./img/packs/final_fantasy_8/Angelo.webp",
                 "element": "",
                 "left": 3,
                 "top": 9,
@@ -729,7 +729,7 @@
             },
             {
                 "name": "Gilgamesh",
-                "image": "/img/packs/final_fantasy_8/Gilgamesh.webp",
+                "image": "./img/packs/final_fantasy_8/Gilgamesh.webp",
                 "element": "",
                 "left": 6,
                 "top": 3,
@@ -738,7 +738,7 @@
             },
             {
                 "name": "MiniMog",
-                "image": "/img/packs/final_fantasy_8/MiniMog.webp",
+                "image": "./img/packs/final_fantasy_8/MiniMog.webp",
                 "element": "",
                 "left": 2,
                 "top": 9,
@@ -747,7 +747,7 @@
             },
             {
                 "name": "Chicobo",
-                "image": "/img/packs/final_fantasy_8/Chicobo.webp",
+                "image": "./img/packs/final_fantasy_8/Chicobo.webp",
                 "element": "",
                 "left": 4,
                 "top": 9,
@@ -756,7 +756,7 @@
             },
             {
                 "name": "Quezacotl",
-                "image": "/img/packs/final_fantasy_8/Quezacotl.webp",
+                "image": "./img/packs/final_fantasy_8/Quezacotl.webp",
                 "element": "Lightning",
                 "left": 4,
                 "top": 2,
@@ -765,7 +765,7 @@
             },
             {
                 "name": "Shiva",
-                "image": "/img/packs/final_fantasy_8/Shiva.webp",
+                "image": "./img/packs/final_fantasy_8/Shiva.webp",
                 "element": "Ice",
                 "left": 9,
                 "top": 6,
@@ -774,7 +774,7 @@
             },
             {
                 "name": "Ifrit",
-                "image": "/img/packs/final_fantasy_8/Ifrit.webp",
+                "image": "./img/packs/final_fantasy_8/Ifrit.webp",
                 "element": "Fire",
                 "left": 8,
                 "top": 9,
@@ -783,7 +783,7 @@
             },
             {
                 "name": "Siren",
-                "image": "/img/packs/final_fantasy_8/Siren.webp",
+                "image": "./img/packs/final_fantasy_8/Siren.webp",
                 "element": "",
                 "left": 2,
                 "top": 8,
@@ -792,7 +792,7 @@
             },
             {
                 "name": "Sacred",
-                "image": "/img/packs/final_fantasy_8/Sacred.webp",
+                "image": "./img/packs/final_fantasy_8/Sacred.webp",
                 "element": "Earth",
                 "left": 9,
                 "top": 5,
@@ -801,7 +801,7 @@
             },
             {
                 "name": "Minotaur",
-                "image": "/img/packs/final_fantasy_8/Minotaur.webp",
+                "image": "./img/packs/final_fantasy_8/Minotaur.webp",
                 "element": "Earth",
                 "left": 9,
                 "top": 9,
@@ -812,7 +812,7 @@
         [
             {
                 "name": "Carbuncle",
-                "image": "/img/packs/final_fantasy_8/Carbuncle.webp",
+                "image": "./img/packs/final_fantasy_8/Carbuncle.webp",
                 "element": "",
                 "left": 4,
                 "top": 8,
@@ -821,7 +821,7 @@
             },
             {
                 "name": "Diablos",
-                "image": "/img/packs/final_fantasy_8/Diablos.webp",
+                "image": "./img/packs/final_fantasy_8/Diablos.webp",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -830,7 +830,7 @@
             },
             {
                 "name": "Leviathan",
-                "image": "/img/packs/final_fantasy_8/Leviathan.webp",
+                "image": "./img/packs/final_fantasy_8/Leviathan.webp",
                 "element": "Water",
                 "left": 7,
                 "top": 7,
@@ -839,7 +839,7 @@
             },
             {
                 "name": "Odin",
-                "image": "/img/packs/final_fantasy_8/Odin.webp",
+                "image": "./img/packs/final_fantasy_8/Odin.webp",
                 "element": "",
                 "left": 5,
                 "top": 8,
@@ -848,7 +848,7 @@
             },
             {
                 "name": "Pandemona",
-                "image": "/img/packs/final_fantasy_8/Pandemona.webp",
+                "image": "./img/packs/final_fantasy_8/Pandemona.webp",
                 "element": "Wind",
                 "left": 7,
                 "top": 10,
@@ -857,7 +857,7 @@
             },
             {
                 "name": "Cerberus",
-                "image": "/img/packs/final_fantasy_8/Cerberus.webp",
+                "image": "./img/packs/final_fantasy_8/Cerberus.webp",
                 "element": "",
                 "left": 10,
                 "top": 7,
@@ -866,7 +866,7 @@
             },
             {
                 "name": "Alexander",
-                "image": "/img/packs/final_fantasy_8/Alexander.webp",
+                "image": "./img/packs/final_fantasy_8/Alexander.webp",
                 "element": "Holy",
                 "left": 2,
                 "top": 9,
@@ -875,7 +875,7 @@
             },
             {
                 "name": "Phoenix",
-                "image": "/img/packs/final_fantasy_8/Phoenix.webp",
+                "image": "./img/packs/final_fantasy_8/Phoenix.webp",
                 "element": "Fire",
                 "left": 10,
                 "top": 7,
@@ -884,7 +884,7 @@
             },
             {
                 "name": "Bahamut",
-                "image": "/img/packs/final_fantasy_8/Bahamut.webp",
+                "image": "./img/packs/final_fantasy_8/Bahamut.webp",
                 "element": "",
                 "left": 6,
                 "top": 10,
@@ -893,7 +893,7 @@
             },
             {
                 "name": "Doomtrain",
-                "image": "/img/packs/final_fantasy_8/Doomtrain.webp",
+                "image": "./img/packs/final_fantasy_8/Doomtrain.webp",
                 "element": "Poison",
                 "left": 10,
                 "top": 3,
@@ -902,7 +902,7 @@
             },
             {
                 "name": "Eden",
-                "image": "/img/packs/final_fantasy_8/Eden.webp",
+                "image": "./img/packs/final_fantasy_8/Eden.webp",
                 "element": "",
                 "left": 10,
                 "top": 4,
@@ -913,7 +913,7 @@
         [
             {
                 "name": "Ward",
-                "image": "/img/packs/final_fantasy_8/Ward.webp",
+                "image": "./img/packs/final_fantasy_8/Ward.webp",
                 "element": "",
                 "left": 8,
                 "top": 10,
@@ -922,7 +922,7 @@
             },
             {
                 "name": "Kiros",
-                "image": "/img/packs/final_fantasy_8/Kiros.webp",
+                "image": "./img/packs/final_fantasy_8/Kiros.webp",
                 "element": "",
                 "left": 10,
                 "top": 6,
@@ -931,7 +931,7 @@
             },
             {
                 "name": "Laguna",
-                "image": "/img/packs/final_fantasy_8/Laguna.webp",
+                "image": "./img/packs/final_fantasy_8/Laguna.webp",
                 "element": "",
                 "left": 9,
                 "top": 5,
@@ -940,7 +940,7 @@
             },
             {
                 "name": "Selphie",
-                "image": "/img/packs/final_fantasy_8/Selphie.webp",
+                "image": "./img/packs/final_fantasy_8/Selphie.webp",
                 "element": "",
                 "left": 4,
                 "top": 10,
@@ -949,7 +949,7 @@
             },
             {
                 "name": "Quistis",
-                "image": "/img/packs/final_fantasy_8/Quistis.webp",
+                "image": "./img/packs/final_fantasy_8/Quistis.webp",
                 "element": "",
                 "left": 2,
                 "top": 9,
@@ -958,7 +958,7 @@
             },
             {
                 "name": "Irvine",
-                "image": "/img/packs/final_fantasy_8/Irvine.webp",
+                "image": "./img/packs/final_fantasy_8/Irvine.webp",
                 "element": "",
                 "left": 10,
                 "top": 2,
@@ -967,7 +967,7 @@
             },
             {
                 "name": "Zell",
-                "image": "/img/packs/final_fantasy_8/Zell.webp",
+                "image": "./img/packs/final_fantasy_8/Zell.webp",
                 "element": "",
                 "left": 6,
                 "top": 8,
@@ -976,7 +976,7 @@
             },
             {
                 "name": "Rinoa",
-                "image": "/img/packs/final_fantasy_8/Rinoa.webp",
+                "image": "./img/packs/final_fantasy_8/Rinoa.webp",
                 "element": "",
                 "left": 10,
                 "top": 4,
@@ -985,7 +985,7 @@
             },
             {
                 "name": "Edea",
-                "image": "/img/packs/final_fantasy_8/Edea.webp",
+                "image": "./img/packs/final_fantasy_8/Edea.webp",
                 "element": "",
                 "left": 3,
                 "top": 10,
@@ -994,7 +994,7 @@
             },
             {
                 "name": "Seifer",
-                "image": "/img/packs/final_fantasy_8/Seifer.webp",
+                "image": "./img/packs/final_fantasy_8/Seifer.webp",
                 "element": "",
                 "left": 4,
                 "top": 6,
@@ -1003,7 +1003,7 @@
             },
             {
                 "name": "Squall",
-                "image": "/img/packs/final_fantasy_8/Squall.webp",
+                "image": "./img/packs/final_fantasy_8/Squall.webp",
                 "element": "",
                 "left": 9,
                 "top": 10,

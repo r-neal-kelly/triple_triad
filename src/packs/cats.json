@@ -4,7 +4,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/01_pexels-irina-kraskova-8690651.jpg",
+                "image": "./img/packs/cats/tier_01/01_pexels-irina-kraskova-8690651.jpg",
                 "element": "",
                 "left": 5,
                 "top": 1,
@@ -13,7 +13,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/02_pexels-akhmad-sarwani-4123992.jpg",
+                "image": "./img/packs/cats/tier_01/02_pexels-akhmad-sarwani-4123992.jpg",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -22,7 +22,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/03_pexels-helena-lopes-8076287.jpg",
+                "image": "./img/packs/cats/tier_01/03_pexels-helena-lopes-8076287.jpg",
                 "element": "",
                 "left": 5,
                 "top": 1,
@@ -31,7 +31,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/04_pexels-swapnil-kulkarni-8837453.jpg",
+                "image": "./img/packs/cats/tier_01/04_pexels-swapnil-kulkarni-8837453.jpg",
                 "element": "",
                 "left": 2,
                 "top": 6,
@@ -40,7 +40,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/05_pexels-cristyan-bohn-4012470.jpg",
+                "image": "./img/packs/cats/tier_01/05_pexels-cristyan-bohn-4012470.jpg",
                 "element": "",
                 "left": 5,
                 "top": 2,
@@ -49,7 +49,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/06_pexels-suriyanathan-5732212.jpg",
+                "image": "./img/packs/cats/tier_01/06_pexels-suriyanathan-5732212.jpg",
                 "element": "",
                 "left": 4,
                 "top": 2,
@@ -58,7 +58,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/07_pexels-fox-709481.jpg",
+                "image": "./img/packs/cats/tier_01/07_pexels-fox-709481.jpg",
                 "element": "",
                 "left": 1,
                 "top": 1,
@@ -67,7 +67,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/08_pexels-vera-barus-980457.jpg",
+                "image": "./img/packs/cats/tier_01/08_pexels-vera-barus-980457.jpg",
                 "element": "",
                 "left": 1,
                 "top": 3,
@@ -76,7 +76,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/09_pexels-lucas-pezeta-3545192.jpg",
+                "image": "./img/packs/cats/tier_01/09_pexels-lucas-pezeta-3545192.jpg",
                 "element": "",
                 "left": 1,
                 "top": 2,
@@ -85,7 +85,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/10_pexels-vivita-malite-10611243.jpg",
+                "image": "./img/packs/cats/tier_01/10_pexels-vivita-malite-10611243.jpg",
                 "element": "",
                 "left": 3,
                 "top": 4,
@@ -94,7 +94,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_01/11_pexels-talha-riaz-4115417.jpg",
+                "image": "./img/packs/cats/tier_01/11_pexels-talha-riaz-4115417.jpg",
                 "element": "",
                 "left": 6,
                 "top": 2,
@@ -105,7 +105,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/01_pexels-ahnaf-piash-5800273.jpg",
+                "image": "./img/packs/cats/tier_02/01_pexels-ahnaf-piash-5800273.jpg",
                 "element": "",
                 "left": 1,
                 "top": 7,
@@ -114,7 +114,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/02_pexels-min-an-1438503.jpg",
+                "image": "./img/packs/cats/tier_02/02_pexels-min-an-1438503.jpg",
                 "element": "",
                 "left": 3,
                 "top": 6,
@@ -123,7 +123,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/03_pexels-ralitsa-racheva-7552771.jpg",
+                "image": "./img/packs/cats/tier_02/03_pexels-ralitsa-racheva-7552771.jpg",
                 "element": "",
                 "left": 4,
                 "top": 5,
@@ -132,7 +132,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/04_pexels-mustafa-ezz-979503.jpg",
+                "image": "./img/packs/cats/tier_02/04_pexels-mustafa-ezz-979503.jpg",
                 "element": "",
                 "left": 3,
                 "top": 6,
@@ -141,7 +141,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/05_pexels-fred-1646198.jpg",
+                "image": "./img/packs/cats/tier_02/05_pexels-fred-1646198.jpg",
                 "element": "",
                 "left": 3,
                 "top": 3,
@@ -150,7 +150,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/06_pexels-skitterphoto-1154625.jpg",
+                "image": "./img/packs/cats/tier_02/06_pexels-skitterphoto-1154625.jpg",
                 "element": "",
                 "left": 5,
                 "top": 5,
@@ -159,7 +159,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/07_pexels-chrissy-121920.jpg",
+                "image": "./img/packs/cats/tier_02/07_pexels-chrissy-121920.jpg",
                 "element": "",
                 "left": 5,
                 "top": 5,
@@ -168,7 +168,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/08_pexels-meryem-13028520.jpg",
+                "image": "./img/packs/cats/tier_02/08_pexels-meryem-13028520.jpg",
                 "element": "",
                 "left": 2,
                 "top": 5,
@@ -177,7 +177,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/09_pexels-александар-цветановић-1560424.jpg",
+                "image": "./img/packs/cats/tier_02/09_pexels-александар-цветановић-1560424.jpg",
                 "element": "",
                 "left": 2,
                 "top": 4,
@@ -186,7 +186,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/10_pexels-roman-odintsov-5836038.jpg",
+                "image": "./img/packs/cats/tier_02/10_pexels-roman-odintsov-5836038.jpg",
                 "element": "",
                 "left": 7,
                 "top": 3,
@@ -195,7 +195,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_02/11_pexels-té-de-gatos-3752130.jpg",
+                "image": "./img/packs/cats/tier_02/11_pexels-té-de-gatos-3752130.jpg",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -206,7 +206,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/01_pexels-shutterspeed-9149247.jpg",
+                "image": "./img/packs/cats/tier_03/01_pexels-shutterspeed-9149247.jpg",
                 "element": "",
                 "left": 2,
                 "top": 6,
@@ -215,7 +215,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/02_pexels-fox-1038915.jpg",
+                "image": "./img/packs/cats/tier_03/02_pexels-fox-1038915.jpg",
                 "element": "",
                 "left": 6,
                 "top": 6,
@@ -224,7 +224,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/03_pexels-cottonbro-6853286.jpg",
+                "image": "./img/packs/cats/tier_03/03_pexels-cottonbro-6853286.jpg",
                 "element": "",
                 "left": 5,
                 "top": 3,
@@ -233,7 +233,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/04_pexels-dương-nhân-3448443.jpg",
+                "image": "./img/packs/cats/tier_03/04_pexels-dương-nhân-3448443.jpg",
                 "element": "",
                 "left": 3,
                 "top": 7,
@@ -242,7 +242,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/05_pexels-cats-coming-2216715.jpg",
+                "image": "./img/packs/cats/tier_03/05_pexels-cats-coming-2216715.jpg",
                 "element": "",
                 "left": 3,
                 "top": 7,
@@ -251,7 +251,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/06_pexels-chester-ong-5425209.jpg",
+                "image": "./img/packs/cats/tier_03/06_pexels-chester-ong-5425209.jpg",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -260,7 +260,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/07_pexels-henda-watani-320014.jpg",
+                "image": "./img/packs/cats/tier_03/07_pexels-henda-watani-320014.jpg",
                 "element": "",
                 "left": 4,
                 "top": 5,
@@ -269,7 +269,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/08_pexels-pixabay-57416.jpg",
+                "image": "./img/packs/cats/tier_03/08_pexels-pixabay-57416.jpg",
                 "element": "",
                 "left": 2,
                 "top": 4,
@@ -278,7 +278,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/09_pexels-pixabay-416160.jpg",
+                "image": "./img/packs/cats/tier_03/09_pexels-pixabay-416160.jpg",
                 "element": "",
                 "left": 3,
                 "top": 6,
@@ -287,7 +287,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/10_pexels-prontiwa-siriwong-na-ayutthaya-4723829.jpg",
+                "image": "./img/packs/cats/tier_03/10_pexels-prontiwa-siriwong-na-ayutthaya-4723829.jpg",
                 "element": "",
                 "left": 4,
                 "top": 3,
@@ -296,7 +296,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_03/11_pexels-natalie-dmay-12197075.jpg",
+                "image": "./img/packs/cats/tier_03/11_pexels-natalie-dmay-12197075.jpg",
                 "element": "",
                 "left": 5,
                 "top": 7,
@@ -307,7 +307,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/01_pexels-alice-castro-1870300.jpg",
+                "image": "./img/packs/cats/tier_04/01_pexels-alice-castro-1870300.jpg",
                 "element": "",
                 "left": 7,
                 "top": 2,
@@ -316,7 +316,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/02_pexels-engin-akyurt-9709427.jpg",
+                "image": "./img/packs/cats/tier_04/02_pexels-engin-akyurt-9709427.jpg",
                 "element": "",
                 "left": 5,
                 "top": 6,
@@ -325,7 +325,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/03_pexels-halil-i̇brahim-çeti̇n-2064110.jpg",
+                "image": "./img/packs/cats/tier_04/03_pexels-halil-i̇brahim-çeti̇n-2064110.jpg",
                 "element": "",
                 "left": 7,
                 "top": 4,
@@ -334,7 +334,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/04_pexels-halil-i̇brahim-çeti̇n-1754886.jpg",
+                "image": "./img/packs/cats/tier_04/04_pexels-halil-i̇brahim-çeti̇n-1754886.jpg",
                 "element": "",
                 "left": 3,
                 "top": 2,
@@ -343,7 +343,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/05_pexels-parv-choudhary-9277476.jpg",
+                "image": "./img/packs/cats/tier_04/05_pexels-parv-choudhary-9277476.jpg",
                 "element": "",
                 "left": 7,
                 "top": 1,
@@ -352,7 +352,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/06_pexels-matteo-petralli-1828875.jpg",
+                "image": "./img/packs/cats/tier_04/06_pexels-matteo-petralli-1828875.jpg",
                 "element": "",
                 "left": 6,
                 "top": 7,
@@ -361,7 +361,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/07_pexels-kiril-georgiev-11900612.jpg",
+                "image": "./img/packs/cats/tier_04/07_pexels-kiril-georgiev-11900612.jpg",
                 "element": "",
                 "left": 4,
                 "top": 7,
@@ -370,7 +370,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/08_pexels-dids-1476254.jpg",
+                "image": "./img/packs/cats/tier_04/08_pexels-dids-1476254.jpg",
                 "element": "",
                 "left": 6,
                 "top": 3,
@@ -379,7 +379,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/09_pexels-peng-louis-1643468.jpg",
+                "image": "./img/packs/cats/tier_04/09_pexels-peng-louis-1643468.jpg",
                 "element": "",
                 "left": 3,
                 "top": 6,
@@ -388,7 +388,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/10_pexels-kanashi-9541890.jpg",
+                "image": "./img/packs/cats/tier_04/10_pexels-kanashi-9541890.jpg",
                 "element": "",
                 "left": 6,
                 "top": 4,
@@ -397,7 +397,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_04/11_pexels-tarun-patel-753037.jpg",
+                "image": "./img/packs/cats/tier_04/11_pexels-tarun-patel-753037.jpg",
                 "element": "",
                 "left": 3,
                 "top": 7,
@@ -408,7 +408,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/01_pexels-anna-taylor-2278093.jpg",
+                "image": "./img/packs/cats/tier_05/01_pexels-anna-taylor-2278093.jpg",
                 "element": "",
                 "left": 5,
                 "top": 6,
@@ -417,7 +417,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/02_pexels-jb-jorge-barreto-2932688.jpg",
+                "image": "./img/packs/cats/tier_05/02_pexels-jb-jorge-barreto-2932688.jpg",
                 "element": "",
                 "left": 7,
                 "top": 3,
@@ -426,7 +426,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/03_pexels-adhitya-andanu-1561849.jpg",
+                "image": "./img/packs/cats/tier_05/03_pexels-adhitya-andanu-1561849.jpg",
                 "element": "",
                 "left": 3,
                 "top": 7,
@@ -435,7 +435,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/04_pexels-jimme-deknatel-2518134.jpg",
+                "image": "./img/packs/cats/tier_05/04_pexels-jimme-deknatel-2518134.jpg",
                 "element": "",
                 "left": 1,
                 "top": 3,
@@ -444,7 +444,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/05_pexels-marek-kupiec-3974516.jpg",
+                "image": "./img/packs/cats/tier_05/05_pexels-marek-kupiec-3974516.jpg",
                 "element": "",
                 "left": 7,
                 "top": 6,
@@ -453,7 +453,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/06_pexels-hiang-kanjinna-1629066.jpg",
+                "image": "./img/packs/cats/tier_05/06_pexels-hiang-kanjinna-1629066.jpg",
                 "element": "",
                 "left": 4,
                 "top": 5,
@@ -462,7 +462,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/07_pexels-david-bartus-1510543.jpg",
+                "image": "./img/packs/cats/tier_05/07_pexels-david-bartus-1510543.jpg",
                 "element": "",
                 "left": 2,
                 "top": 7,
@@ -471,7 +471,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/08_pexels-maverick-f-10819606.jpg",
+                "image": "./img/packs/cats/tier_05/08_pexels-maverick-f-10819606.jpg",
                 "element": "",
                 "left": 4,
                 "top": 7,
@@ -480,7 +480,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/09_pexels-thlil-2416872.jpg",
+                "image": "./img/packs/cats/tier_05/09_pexels-thlil-2416872.jpg",
                 "element": "",
                 "left": 6,
                 "top": 5,
@@ -489,7 +489,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/10_pexels-creative-free-stock-1049887.jpg",
+                "image": "./img/packs/cats/tier_05/10_pexels-creative-free-stock-1049887.jpg",
                 "element": "",
                 "left": 4,
                 "top": 4,
@@ -498,7 +498,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_05/11_pexels-kelvin-valerio-617278.jpg",
+                "image": "./img/packs/cats/tier_05/11_pexels-kelvin-valerio-617278.jpg",
                 "element": "",
                 "left": 7,
                 "top": 6,
@@ -509,7 +509,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/01_pexels-valeria-boltneva-1262943.jpg",
+                "image": "./img/packs/cats/tier_06/01_pexels-valeria-boltneva-1262943.jpg",
                 "element": "",
                 "left": 4,
                 "top": 2,
@@ -518,7 +518,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/02_pexels-two-dreamers-2307445.jpg",
+                "image": "./img/packs/cats/tier_06/02_pexels-two-dreamers-2307445.jpg",
                 "element": "",
                 "left": 4,
                 "top": 7,
@@ -527,7 +527,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/03_pexels-mwabonje-1074603.jpg",
+                "image": "./img/packs/cats/tier_06/03_pexels-mwabonje-1074603.jpg",
                 "element": "",
                 "left": 3,
                 "top": 4,
@@ -536,7 +536,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/04_pexels-altaf-shah-6140187.jpg",
+                "image": "./img/packs/cats/tier_06/04_pexels-altaf-shah-6140187.jpg",
                 "element": "",
                 "left": 5,
                 "top": 7,
@@ -545,7 +545,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/05_pexels-peng-louis-1381112.jpg",
+                "image": "./img/packs/cats/tier_06/05_pexels-peng-louis-1381112.jpg",
                 "element": "",
                 "left": 3,
                 "top": 1,
@@ -554,7 +554,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/06_pexels-nikhil-manan-7420410.jpg",
+                "image": "./img/packs/cats/tier_06/06_pexels-nikhil-manan-7420410.jpg",
                 "element": "",
                 "left": 2,
                 "top": 8,
@@ -563,7 +563,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/07_pexels-jim-fawns-756808.jpg",
+                "image": "./img/packs/cats/tier_06/07_pexels-jim-fawns-756808.jpg",
                 "element": "",
                 "left": 5,
                 "top": 6,
@@ -572,7 +572,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/08_pexels-pixabay-160839.jpg",
+                "image": "./img/packs/cats/tier_06/08_pexels-pixabay-160839.jpg",
                 "element": "",
                 "left": 6,
                 "top": 4,
@@ -581,7 +581,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/09_pexels-valeria-fernández-1369525.jpg",
+                "image": "./img/packs/cats/tier_06/09_pexels-valeria-fernández-1369525.jpg",
                 "element": "",
                 "left": 8,
                 "top": 1,
@@ -590,7 +590,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/10_pexels-nattaphat-phau-9955865.jpg",
+                "image": "./img/packs/cats/tier_06/10_pexels-nattaphat-phau-9955865.jpg",
                 "element": "",
                 "left": 4,
                 "top": 6,
@@ -599,7 +599,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_06/11_pexels-pixabay-289381.jpg",
+                "image": "./img/packs/cats/tier_06/11_pexels-pixabay-289381.jpg",
                 "element": "",
                 "left": 1,
                 "top": 7,
@@ -610,7 +610,7 @@
         [
             {
                 "name": "Curious Lion Cub",
-                "image": "/img/packs/cats/tier_07/01_pexels-pixabay-40835.jpg",
+                "image": "./img/packs/cats/tier_07/01_pexels-pixabay-40835.jpg",
                 "element": "",
                 "left": 8,
                 "top": 8,
@@ -619,7 +619,7 @@
             },
             {
                 "name": "Double Trouble Cheetahs",
-                "image": "/img/packs/cats/tier_07/02_pexels-pixabay-162318.jpg",
+                "image": "./img/packs/cats/tier_07/02_pexels-pixabay-162318.jpg",
                 "element": "",
                 "left": 4,
                 "top": 8,
@@ -628,7 +628,7 @@
             },
             {
                 "name": "Walking Lion Cub",
-                "image": "/img/packs/cats/tier_07/03_pexels-pixabay-162342_1.jpg",
+                "image": "./img/packs/cats/tier_07/03_pexels-pixabay-162342_1.jpg",
                 "element": "",
                 "left": 8,
                 "top": 8,
@@ -637,7 +637,7 @@
             },
             {
                 "name": "Graceful Lion Cub",
-                "image": "/img/packs/cats/tier_07/04_pexels-frans-van-heerden-624033.jpg",
+                "image": "./img/packs/cats/tier_07/04_pexels-frans-van-heerden-624033.jpg",
                 "element": "",
                 "left": 8,
                 "top": 5,
@@ -646,7 +646,7 @@
             },
             {
                 "name": "Flying Lynx",
-                "image": "/img/packs/cats/tier_07/05_pexels-catherine-harding-wiltshire-7557329.jpg",
+                "image": "./img/packs/cats/tier_07/05_pexels-catherine-harding-wiltshire-7557329.jpg",
                 "element": "",
                 "left": 3,
                 "top": 8,
@@ -655,7 +655,7 @@
             },
             {
                 "name": "Peaceful Lynx",
-                "image": "/img/packs/cats/tier_07/06_pexels-david-selbert-7449044.jpg",
+                "image": "./img/packs/cats/tier_07/06_pexels-david-selbert-7449044.jpg",
                 "element": "",
                 "left": 8,
                 "top": 8,
@@ -664,7 +664,7 @@
             },
             {
                 "name": "Bored Cheetah",
-                "image": "/img/packs/cats/tier_07/07_pexels-gemma-mostyn-3366125.jpg",
+                "image": "./img/packs/cats/tier_07/07_pexels-gemma-mostyn-3366125.jpg",
                 "element": "",
                 "left": 4,
                 "top": 8,
@@ -673,7 +673,7 @@
             },
             {
                 "name": "Lethargic Leopard",
-                "image": "/img/packs/cats/tier_07/08_pexels-daniel-jøshua-3891092.jpg",
+                "image": "./img/packs/cats/tier_07/08_pexels-daniel-jøshua-3891092.jpg",
                 "element": "",
                 "left": 5,
                 "top": 5,
@@ -682,7 +682,7 @@
             },
             {
                 "name": "Lazy Lion",
-                "image": "/img/packs/cats/tier_07/09_pexels-pixabay-162206.jpg",
+                "image": "./img/packs/cats/tier_07/09_pexels-pixabay-162206.jpg",
                 "element": "",
                 "left": 7,
                 "top": 6,
@@ -691,7 +691,7 @@
             },
             {
                 "name": "Cozy Cougar",
-                "image": "/img/packs/cats/tier_07/10_pexels-lucas-pezeta-3927606.jpg",
+                "image": "./img/packs/cats/tier_07/10_pexels-lucas-pezeta-3927606.jpg",
                 "element": "",
                 "left": 7,
                 "top": 1,
@@ -700,7 +700,7 @@
             },
             {
                 "name": "Yawning Tiger",
-                "image": "/img/packs/cats/tier_07/11_pexels-kendra-coupland-2642250.jpg",
+                "image": "./img/packs/cats/tier_07/11_pexels-kendra-coupland-2642250.jpg",
                 "element": "",
                 "left": 8,
                 "top": 7,
@@ -711,7 +711,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/01_pexels-david-selbert-6468240.jpg",
+                "image": "./img/packs/cats/tier_08/01_pexels-david-selbert-6468240.jpg",
                 "element": "",
                 "left": 9,
                 "top": 4,
@@ -720,7 +720,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/02_pexels-michael-m-2274018.jpg",
+                "image": "./img/packs/cats/tier_08/02_pexels-michael-m-2274018.jpg",
                 "element": "",
                 "left": 3,
                 "top": 9,
@@ -729,7 +729,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/03_pexels-harvey-sapir-1109907.jpg",
+                "image": "./img/packs/cats/tier_08/03_pexels-harvey-sapir-1109907.jpg",
                 "element": "",
                 "left": 6,
                 "top": 3,
@@ -738,7 +738,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/04_pexels-richard-verbeek-572861.jpg",
+                "image": "./img/packs/cats/tier_08/04_pexels-richard-verbeek-572861.jpg",
                 "element": "",
                 "left": 2,
                 "top": 9,
@@ -747,7 +747,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/05_pexels-pixabay-39281.jpg",
+                "image": "./img/packs/cats/tier_08/05_pexels-pixabay-39281.jpg",
                 "element": "",
                 "left": 4,
                 "top": 9,
@@ -756,7 +756,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/06_pexels-andrew-patrick-8708813.jpg",
+                "image": "./img/packs/cats/tier_08/06_pexels-andrew-patrick-8708813.jpg",
                 "element": "",
                 "left": 4,
                 "top": 2,
@@ -765,7 +765,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/07_pexels-flickr-148715.jpg",
+                "image": "./img/packs/cats/tier_08/07_pexels-flickr-148715.jpg",
                 "element": "",
                 "left": 9,
                 "top": 6,
@@ -774,7 +774,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/08_pexels-trace-hudson-2544554.jpg",
+                "image": "./img/packs/cats/tier_08/08_pexels-trace-hudson-2544554.jpg",
                 "element": "",
                 "left": 8,
                 "top": 9,
@@ -783,7 +783,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/09_pexels-pixabay-33154.jpg",
+                "image": "./img/packs/cats/tier_08/09_pexels-pixabay-33154.jpg",
                 "element": "",
                 "left": 2,
                 "top": 8,
@@ -792,7 +792,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/10_pexels-pixabay-162203.jpg",
+                "image": "./img/packs/cats/tier_08/10_pexels-pixabay-162203.jpg",
                 "element": "",
                 "left": 9,
                 "top": 5,
@@ -801,7 +801,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_08/11_pexels-jose-almeida-2649842.jpg",
+                "image": "./img/packs/cats/tier_08/11_pexels-jose-almeida-2649842.jpg",
                 "element": "",
                 "left": 9,
                 "top": 9,
@@ -812,7 +812,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/01_pexels-pixabay-53001.jpg",
+                "image": "./img/packs/cats/tier_09/01_pexels-pixabay-53001.jpg",
                 "element": "",
                 "left": 4,
                 "top": 8,
@@ -821,7 +821,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/02_pexels-lena-heckendorn-5366107.jpg",
+                "image": "./img/packs/cats/tier_09/02_pexels-lena-heckendorn-5366107.jpg",
                 "element": "",
                 "left": 3,
                 "top": 5,
@@ -830,7 +830,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/03_pexels-magda-ehlers-1320602.jpg",
+                "image": "./img/packs/cats/tier_09/03_pexels-magda-ehlers-1320602.jpg",
                 "element": "",
                 "left": 7,
                 "top": 7,
@@ -839,7 +839,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/04_pexels-harvey-sapir-1109898.jpg",
+                "image": "./img/packs/cats/tier_09/04_pexels-harvey-sapir-1109898.jpg",
                 "element": "",
                 "left": 5,
                 "top": 8,
@@ -848,7 +848,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/05_pexels-fatih-turan-9139254.jpg",
+                "image": "./img/packs/cats/tier_09/05_pexels-fatih-turan-9139254.jpg",
                 "element": "",
                 "left": 7,
                 "top": 10,
@@ -857,7 +857,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/06_pexels-nicky-pe-7598287.jpg",
+                "image": "./img/packs/cats/tier_09/06_pexels-nicky-pe-7598287.jpg",
                 "element": "",
                 "left": 10,
                 "top": 7,
@@ -866,7 +866,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/07_pexels-david-selbert-6468079.jpg",
+                "image": "./img/packs/cats/tier_09/07_pexels-david-selbert-6468079.jpg",
                 "element": "",
                 "left": 2,
                 "top": 9,
@@ -875,7 +875,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/08_pexels-antony-trivet-6057031.jpg",
+                "image": "./img/packs/cats/tier_09/08_pexels-antony-trivet-6057031.jpg",
                 "element": "",
                 "left": 10,
                 "top": 7,
@@ -884,7 +884,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/09_pexels-jamshed-ahmad-1316297.jpg",
+                "image": "./img/packs/cats/tier_09/09_pexels-jamshed-ahmad-1316297.jpg",
                 "element": "",
                 "left": 6,
                 "top": 10,
@@ -893,7 +893,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/10_pexels-amiya-nanda-774544.jpg",
+                "image": "./img/packs/cats/tier_09/10_pexels-amiya-nanda-774544.jpg",
                 "element": "",
                 "left": 10,
                 "top": 3,
@@ -902,7 +902,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_09/11_pexels-pixabay-247502.jpg",
+                "image": "./img/packs/cats/tier_09/11_pexels-pixabay-247502.jpg",
                 "element": "",
                 "left": 10,
                 "top": 4,
@@ -913,7 +913,7 @@
         [
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/01_pexels-bobby-vd-merwe-984468.jpg",
+                "image": "./img/packs/cats/tier_10/01_pexels-bobby-vd-merwe-984468.jpg",
                 "element": "",
                 "left": 8,
                 "top": 10,
@@ -922,7 +922,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/02_pexels-frans-van-heerden-624041.jpg",
+                "image": "./img/packs/cats/tier_10/02_pexels-frans-van-heerden-624041.jpg",
                 "element": "",
                 "left": 10,
                 "top": 6,
@@ -931,7 +931,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/03_pexels-pixabay-46790.jpg",
+                "image": "./img/packs/cats/tier_10/03_pexels-pixabay-46790.jpg",
                 "element": "",
                 "left": 9,
                 "top": 5,
@@ -940,7 +940,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/04_pexels-pixabay-46251.jpg",
+                "image": "./img/packs/cats/tier_10/04_pexels-pixabay-46251.jpg",
                 "element": "",
                 "left": 4,
                 "top": 10,
@@ -949,7 +949,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/05_pexels-pixabay-36843.jpg",
+                "image": "./img/packs/cats/tier_10/05_pexels-pixabay-36843.jpg",
                 "element": "",
                 "left": 2,
                 "top": 9,
@@ -958,7 +958,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/06_pexels-jiří-mikoláš-6272539.jpg",
+                "image": "./img/packs/cats/tier_10/06_pexels-jiří-mikoláš-6272539.jpg",
                 "element": "",
                 "left": 10,
                 "top": 2,
@@ -967,7 +967,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/07_pexels-gabriele-brancati-7170711.jpg",
+                "image": "./img/packs/cats/tier_10/07_pexels-gabriele-brancati-7170711.jpg",
                 "element": "",
                 "left": 6,
                 "top": 8,
@@ -976,7 +976,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/08_pexels-piet-bakker-88234.jpg",
+                "image": "./img/packs/cats/tier_10/08_pexels-piet-bakker-88234.jpg",
                 "element": "",
                 "left": 10,
                 "top": 4,
@@ -985,7 +985,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/09_pexels-yigithan-bal-773000.jpg",
+                "image": "./img/packs/cats/tier_10/09_pexels-yigithan-bal-773000.jpg",
                 "element": "",
                 "left": 3,
                 "top": 10,
@@ -994,7 +994,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/10_pexels-sukh-winder-5611636.jpg",
+                "image": "./img/packs/cats/tier_10/10_pexels-sukh-winder-5611636.jpg",
                 "element": "",
                 "left": 4,
                 "top": 6,
@@ -1003,7 +1003,7 @@
             },
             {
                 "name": "",
-                "image": "/img/packs/cats/tier_10/11_pexels-public-domain-pictures-41315.jpg",
+                "image": "./img/packs/cats/tier_10/11_pexels-public-domain-pictures-41315.jpg",
                 "element": "",
                 "left": 9,
                 "top": 10,
