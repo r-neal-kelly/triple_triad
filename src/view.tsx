@@ -999,6 +999,7 @@ class Player_Hand extends React.Component<Player_Hand_Props>
         Promise<void>
     {
         await this.Stake(stake_index).Twinkle_Border(500);
+        await Wait(100);
     }
 
     async On_This_Player_Place_Stake(

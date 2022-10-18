@@ -987,7 +987,7 @@ export class Arena
                         index: idx,
                         name: player_name !== `` ?
                             player_name :
-                            `Player ${human_count}`,
+                            `P ${human_count}`,
                         selection: selections[idx],
                     }));
                 } else {
@@ -997,7 +997,7 @@ export class Arena
                         index: idx,
                         name: player_name !== `` ?
                             player_name :
-                            `Computer ${computer_count}`,
+                            `CPU ${computer_count}`,
                         selection: selections[idx],
                     }));
                 }
@@ -1516,7 +1516,7 @@ export class Computer_Player extends Player
         const stake_count = this.Stake_Count();
         const selection_indices: Array<Stake_Index> = [stake_index];
         let selection_index: Stake_Index = stake_index;
-        let selection_step_count: Count = Math.ceil(Math.random() * Math.min(stake_count, 8)) - 1;
+        let selection_step_count: Count = Math.ceil(Math.random() * Math.min(stake_count * 1.5, 8)) - 1;
         while (selection_step_count > 0) {
             selection_step_count -= 1;
             if (Random_Boolean()) {
