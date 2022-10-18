@@ -3,11 +3,14 @@
 }
 
 :root {
-    --bumper_height: 8vh;
+    --max_width: 100vw;
+    --max_height: 100vh;
 
-    --board_grid_height: 92vh;
-    --board_grid_padding: 2vh;
-    --board_grid_gap: 0.5vh;
+    --bumper_height: 8vmin;
+
+    --board_grid_height: 92vmin;
+    --board_grid_padding: 2vmin;
+    --board_grid_gap: 0.5vmin;
     --board_grid_column_count: 1;
     --board_grid_row_count: 1;
 
@@ -22,10 +25,12 @@
 
 html,
 body {
-    width: 100vw;
-    height: 100vh;
+    width: var(--max_width);
+    height: var(--max_height);
     margin: 0;
     padding: 0;
+
+    overflow-x: hidden;
 }
 
 .View {
@@ -69,6 +74,11 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
 }
 
 .Board_Bumper {

@@ -24,33 +24,28 @@ const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
 
 // might want to turn these into full classes so that the sender has to fill out the info properly.
 // that would mean changing how the event types add the event instance to the data
-interface Game_Start_Data
-{
+type Game_Start_Data = {
 }
 
-interface Game_Stop_Data
-{
+type Game_Stop_Data = {
 }
 
-interface Player_Start_Turn_Data
-{
+type Player_Start_Turn_Data = {
     player_index: Model.Player_Index,
 }
 
-interface Player_Stop_Turn_Data
-{
+type Player_Stop_Turn_Data = {
     player_index: Model.Player_Index,
 }
 
-interface Player_Select_Stake_Data
-{
+type Player_Select_Stake_Data = {
     player_index: Model.Player_Index,
     stake_index: Model.Stake_Index,
 }
 
-interface Player_Place_Stake_Data
-{
+type Player_Place_Stake_Data = {
     player_index: Model.Player_Index,
+    stake_index: Model.Stake_Index,
     cell_index: Model.Cell_Index,
 }
 
@@ -173,7 +168,6 @@ export class Arena extends React.Component<Arena_Props>
             ]>) {
                 const animation_name: string = this.#Animation_Name(name_affix);
                 this.#animation_names.add(animation_name);
-
                 this.#animation_stylesheet.sheet.insertRule(
                     `@keyframes ${animation_name} {
                         from {
@@ -181,6 +175,31 @@ export class Arena extends React.Component<Arena_Props>
                         }
                         to {
                             background-position: ${to};
+                        }
+                    }`,
+                    0
+                );
+            }
+
+            {
+                const animation_name: string = this.#Animation_Name(`twinkle_border`);
+                this.#animation_names.add(animation_name);
+                this.#animation_stylesheet.sheet.insertRule(
+                    `@keyframes ${animation_name} {
+                        0% {
+                            border-color: white;
+                        }
+                        25% {
+                            border-color: black;
+                        }
+                        50% {
+                            border-color: white;
+                        }
+                        75% {
+                            border-color: black;
+                        }
+                        100% {
+                            border-color: white;
                         }
                     }`,
                     0
@@ -516,8 +535,6 @@ class Player extends React.Component<Player_Props>
                 await Wait(AI_SELECTION_WAIT_MILLISECONDS);
             }
 
-            await Wait(AI_SELECTION_WAIT_MILLISECONDS / 2);
-
             this.props.event_grid.Send_Event({
                 name_affix: PLAYER_PLACE_STAKE,
                 name_suffixes: [
@@ -525,6 +542,7 @@ class Player extends React.Component<Player_Props>
                 ],
                 data: {
                     player_index,
+                    stake_index: selection_indices[selection_indices.length - 1],
                     cell_index,
                 } as Player_Place_Stake_Data,
                 is_atomic: true,
@@ -593,9 +611,6 @@ class Player extends React.Component<Player_Props>
     render():
         JSX.Element
     {
-        const stake_count: Model.Stake_Count = this.Model().Stake_Count();
-        const color: Model.Color = this.Model().Color();
-
         return (
             <div
                 ref={ref => this.#element = ref}
@@ -976,6 +991,16 @@ class Player_Hand extends React.Component<Player_Hand_Props>
         return stakes;
     }
 
+    async Before_This_Player_Place_Stake(
+        {
+            stake_index,
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        await this.Stake(stake_index).Twinkle_Border(500);
+    }
+
     async On_This_Player_Place_Stake(
         {
         }: Player_Place_Stake_Data,
@@ -994,6 +1019,10 @@ class Player_Hand extends React.Component<Player_Hand_Props>
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
+                {
+                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.Before_This_Player_Place_Stake,
+                },
                 {
                     event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
                     event_handler: this.On_This_Player_Place_Stake,
@@ -1078,10 +1107,36 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         }
     }
 
+    Arena():
+        Arena
+    {
+        return this.Player_Hand().Player().Arena();
+    }
+
     Player_Hand():
         Player_Hand
     {
         return this.props.parent;
+    }
+
+    async Twinkle_Border(for_milliseconds: number):
+        Promise<void>
+    {
+        const element: HTMLElement = this.Element();
+
+        element.style.animationName = this.Arena().Animation_Name(`twinkle_border`);
+        element.style.animationDuration = `${for_milliseconds}ms`;
+        element.style.animationTimingFunction = `ease-in-out`;
+        element.style.animationIterationCount = `1`;
+        element.style.animationDirection = `normal`;
+
+        await Wait(for_milliseconds);
+
+        element.style.animationName = '';
+        element.style.animationDuration = '';
+        element.style.animationTimingFunction = '';
+        element.style.animationIterationCount = '';
+        element.style.animationDirection = '';
     }
 
     async On_Click(event: React.SyntheticEvent):
@@ -1539,6 +1594,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             if (this.Board().Model().Is_Cell_Selectable(this.props.index)) {
                 const player_index: Model.Player_Index = this.Board().Model().Current_Player_Index();
+                const stake_index: Model.Stake_Index = this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake_Index;
                 const cell_index: Model.Cell_Index = this.props.index;
 
                 await this.props.event_grid.Send_Event({
@@ -1548,6 +1604,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                     ],
                     data: {
                         player_index,
+                        stake_index,
                         cell_index,
                     } as Player_Place_Stake_Data,
                     is_atomic: true,
