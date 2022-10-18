@@ -6,6 +6,7 @@ import * as Event from "./event";
 import * as Model from "./model";
 
 const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
+const PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER: number = 0.7;
 const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
@@ -418,7 +419,7 @@ class Player extends React.Component<Player_Props>
 {
     #element: HTMLElement | null;
     #bumper: Player_Bumper | null;
-    #stakes: Array<Player_Stake | null>;
+    #hand: Player_Hand | null;
 
     constructor(props: Player_Props)
     {
@@ -426,7 +427,7 @@ class Player extends React.Component<Player_Props>
 
         this.#element = null;
         this.#bumper = null;
-        this.#stakes = new Array(this.Model().Stake_Count()).fill(null);
+        this.#hand = null;
     }
 
     Model():
@@ -467,31 +468,14 @@ class Player extends React.Component<Player_Props>
         }
     }
 
-    Stake(stake_index: Model.Stake_Index):
-        Player_Stake
+    Hand():
+        Player_Hand
     {
-        if (stake_index < 0 || stake_index >= this.#stakes.length) {
-            throw new Error(`'stake_index' of '${stake_index}' is invalid.`);
-        } else if (!this.#stakes[stake_index]) {
+        if (!this.#hand) {
             throw new Error(`Component has not yet been rendered.`);
         } else {
-            return this.#stakes[stake_index] as Player_Stake;
+            return this.#hand as Player_Hand;
         }
-    }
-
-    Stakes():
-        Array<Player_Stake>
-    {
-        const stakes: Array<Player_Stake> = [];
-        for (const stake of this.#stakes) {
-            if (!stake) {
-                throw new Error(`Component has not yet been rendered.`);
-            } else {
-                stakes.push(stake);
-            }
-        }
-
-        return stakes;
     }
 
     async On_This_Player_Start_Turn(
@@ -505,7 +489,7 @@ class Player extends React.Component<Player_Props>
 
         const color: Model.Color = this.Model().Color();
         this.Element().style.backgroundColor =
-            `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha() / 4})`;
+            `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER})`;
 
         if (this.Model().Is_Computer()) {
             const computer_player: Model.Computer_Player = this.Model() as Model.Computer_Player;
@@ -558,10 +542,10 @@ class Player extends React.Component<Player_Props>
         const previous_selected_stake_index: Model.Stake_Index | null = this.Model().Selected_Stake_Index();
         if (previous_selected_stake_index !== stake_index) {
             this.Model().Select_Stake(stake_index);
-            this.Stake(stake_index).forceUpdate();
+            this.Hand().Stake(stake_index).forceUpdate();
 
             if (previous_selected_stake_index != null) {
-                this.Stake(previous_selected_stake_index).forceUpdate();
+                this.Hand().Stake(previous_selected_stake_index).forceUpdate();
             }
         }
     }
@@ -572,8 +556,6 @@ class Player extends React.Component<Player_Props>
     ):
         Promise<void>
     {
-        this.forceUpdate();
-
         this.Element().style.backgroundColor = `transparent`;
     }
 
@@ -627,25 +609,14 @@ class Player extends React.Component<Player_Props>
                     model={this.Model()}
                     index={this.props.index}
                 />
-                <div
-                    className="Player_Hand"
-                >
-                    {
-                        Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
-                        {
-                            return (
-                                <Player_Stake
-                                    key={`player_stake_${stake_index}`}
-                                    parent={this}
-                                    ref={ref => this.#stakes[stake_index] = ref}
-                                    event_grid={this.props.event_grid}
-                                    model={this.Model().Stake(stake_index)}
-                                    index={stake_index}
-                                />
-                            );
-                        })
-                    }
-                </div>
+                <Player_Hand
+                    key={`player_hand_${this.props.index}`}
+                    parent={this}
+                    ref={ref => this.#hand = ref}
+                    event_grid={this.props.event_grid}
+                    model={this.Model()}
+                    index={this.props.index}
+                />
             </div>
         );
     }
@@ -729,17 +700,8 @@ class Player_Bumper extends React.Component<Player_Bumper_Props>
     {
         const color: Model.Color = this.Model().Color();
         this.Element().style.backgroundColor =
-            `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha() / 2})`;
+            `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER})`;
 
-        this.Score().forceUpdate();
-    }
-
-    async On_This_Player_Stop_Turn(
-        {
-        }: Player_Stop_Turn_Data,
-    ):
-        Promise<void>
-    {
         this.Score().forceUpdate();
     }
 
@@ -764,10 +726,6 @@ class Player_Bumper extends React.Component<Player_Bumper_Props>
                 {
                     event_name: new Event.Name(ON, GAME_STOP),
                     event_handler: this.On_Game_Stop,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_STOP_TURN, player_index.toString()),
-                    event_handler: this.On_This_Player_Stop_Turn,
                 },
                 {
                     event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE, player_index.toString()),
@@ -864,7 +822,7 @@ class Player_Name extends React.Component<Player_Name_Props>
                 className="Player_Name"
             >
                 {
-                    `${this.Model().Name()}`
+                    this.Model().Name()
                 }
             </div>
         );
@@ -898,6 +856,15 @@ class Player_Score extends React.Component<Player_Score_Props>
         return this.props.parent;
     }
 
+    async On_Player_Stop_Turn(
+        {
+        }: Player_Stop_Turn_Data,
+    ):
+        Promise<void>
+    {
+        this.forceUpdate();
+    }
+
     componentDidMount():
         void
     {
@@ -905,6 +872,10 @@ class Player_Score extends React.Component<Player_Score_Props>
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
+                {
+                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                    event_handler: this.On_Player_Stop_Turn,
+                },
             ],
         );
     }
@@ -930,8 +901,145 @@ class Player_Score extends React.Component<Player_Score_Props>
     }
 }
 
-type Player_Stake_Props = {
+type Player_Hand_Props = {
     parent: Player,
+    event_grid: Event.Grid,
+    model: Model.Player,
+    index: Model.Player_Index,
+}
+
+class Player_Hand extends React.Component<Player_Hand_Props>
+{
+    #element: HTMLElement | null;
+    #stakes: Array<Player_Stake | null>;
+
+    constructor(props: Player_Hand_Props)
+    {
+        super(props);
+
+        this.#element = null;
+        this.#stakes = new Array(this.Model().Stake_Count()).fill(null);
+    }
+
+    Model():
+        Model.Player
+    {
+        return this.props.model;
+    }
+
+    Index():
+        Model.Player_Index
+    {
+        return this.props.index;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
+    }
+
+    Player():
+        Player
+    {
+        return this.props.parent;
+    }
+
+    Stake(stake_index: Model.Stake_Index):
+        Player_Stake
+    {
+        if (stake_index < 0 || stake_index >= this.#stakes.length) {
+            throw new Error(`'stake_index' of '${stake_index}' is invalid.`);
+        } else if (!this.#stakes[stake_index]) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#stakes[stake_index] as Player_Stake;
+        }
+    }
+
+    Stakes():
+        Array<Player_Stake>
+    {
+        const stakes: Array<Player_Stake> = [];
+        for (const stake of this.#stakes) {
+            if (!stake) {
+                throw new Error(`Component has not yet been rendered.`);
+            } else {
+                stakes.push(stake);
+            }
+        }
+
+        return stakes;
+    }
+
+    async On_This_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        this.forceUpdate();
+    }
+
+    componentDidMount():
+        void
+    {
+        const player_index: Model.Player_Index = this.Index();
+
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Place_Stake,
+                },
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.props.event_grid.Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        const stake_count: Model.Stake_Count = this.Model().Stake_Count();
+
+        return (
+            <div
+                ref={ref => this.#element = ref}
+                className="Player_Hand"
+            >
+                {
+                    Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
+                    {
+                        return (
+                            <Player_Stake
+                                key={`player_stake_${stake_index}`}
+                                parent={this}
+                                ref={ref => this.#stakes[stake_index] = ref}
+                                event_grid={this.props.event_grid}
+                                model={this.Model().Stake(stake_index)}
+                                index={stake_index}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
+    }
+}
+
+type Player_Stake_Props = {
+    parent: Player_Hand,
     event_grid: Event.Grid,
     model: Model.Stake,
     index: Model.Stake_Index,
@@ -939,6 +1047,15 @@ type Player_Stake_Props = {
 
 class Player_Stake extends React.Component<Player_Stake_Props>
 {
+    #element: HTMLElement | null;
+
+    constructor(props: Player_Stake_Props)
+    {
+        super(props);
+
+        this.#element = null;
+    }
+
     Model():
         Model.Stake
     {
@@ -951,8 +1068,18 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         return this.props.index;
     }
 
-    Player():
-        Player
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
+    }
+
+    Player_Hand():
+        Player_Hand
     {
         return this.props.parent;
     }
@@ -1016,6 +1143,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
 
         return (
             <div
+                ref={ref => this.#element = ref}
                 className={
                     this.Model().Is_Selected() ?
                         `Player_Selected_Stake` :
@@ -1159,6 +1287,7 @@ class Board extends React.Component<Board_Props>
             <div
                 ref={ref => this.#element = ref}
                 className="Board"
+                style={styles}
             >
                 <div
                     className="Board_Bumper"
@@ -1166,7 +1295,6 @@ class Board extends React.Component<Board_Props>
                 </div>
                 <div
                     className="Board_Grid"
-                    style={styles}
                 >
                     {
                         Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
