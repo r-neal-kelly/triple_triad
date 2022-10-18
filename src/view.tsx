@@ -338,19 +338,32 @@ export class Arena extends React.Component<Arena_Props>
             styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
         }
 
+        const player_count: number = this.Model().Player_Count();
+        const left_player_count: number = Math.floor(player_count / 2);
+        const right_player_count: number = player_count - left_player_count;
+
         return (
             <div
                 className="Arena"
                 style={styles}
             >
-                <Player
-                    key={`player_${0}`}
-                    parent={this}
-                    ref={ref => this.#players[0] = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model().Player(0)}
-                    index={0}
-                />
+                {
+                    Array(left_player_count).fill(null).map((_, index: Model.Player_Index) =>
+                    {
+                        const player_index: Model.Player_Index = index + 0;
+
+                        return (
+                            <Player
+                                key={`player_${player_index}`}
+                                parent={this}
+                                ref={ref => this.#players[player_index] = ref}
+                                event_grid={this.props.event_grid}
+                                model={this.Model().Player(player_index)}
+                                index={player_index}
+                            />
+                        );
+                    })
+                }
                 <Board
                     key={`board`}
                     parent={this}
@@ -359,9 +372,9 @@ export class Arena extends React.Component<Arena_Props>
                     model={this.Model().Board()}
                 />
                 {
-                    Array(this.Model().Player_Count() - 1).fill(null).map((_, index: Model.Player_Index) =>
+                    Array(right_player_count).fill(null).map((_, index: Model.Player_Index) =>
                     {
-                        const player_index: Model.Player_Index = index + 1;
+                        const player_index: Model.Player_Index = index + left_player_count;
 
                         return (
                             <Player

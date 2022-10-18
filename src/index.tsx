@@ -27,7 +27,7 @@ class Main extends React.Component<Main_Props>
         this.#rules = new Model.Rules({
             row_count: 5,
             column_count: 6,
-            player_count: 2,
+            player_count: 4,
 
             open: true,
             same: true,
@@ -65,7 +65,7 @@ class Main extends React.Component<Main_Props>
                         blue: 127,
                         alpha: 0.7,
                     }),
-                    is_of_human: true,
+                    is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Random_Selection({
@@ -80,6 +80,40 @@ class Main extends React.Component<Main_Props>
                         red: 63,
                         green: 127,
                         blue: 63,
+                        alpha: 0.7,
+                    }),
+                    is_of_human: false,
+                    card_count: this.#rules.Selection_Card_Count(),
+                }),
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: this.#packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: new Model.Color({
+                        red: 127,
+                        green: 63,
+                        blue: 63,
+                        alpha: 0.7,
+                    }),
+                    is_of_human: false,
+                    card_count: this.#rules.Selection_Card_Count(),
+                }),
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: this.#packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: new Model.Color({
+                        red: 127,
+                        green: 127,
+                        blue: 0,
                         alpha: 0.7,
                     }),
                     is_of_human: false,
