@@ -463,6 +463,7 @@ class Card
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 export class Collection
 {
+    #owner_name: string;
     #default_shuffle: Shuffle;
     #shuffle_count: Shuffle_Count;
     #shuffles: { [index: Pack_Name]: Shuffle };
@@ -470,18 +471,27 @@ export class Collection
 
     constructor(
         {
+            owner_name = ``,
             default_shuffle,
         }: {
+            owner_name?: string,
             default_shuffle: Shuffle,
         }
     )
     {
+        this.#owner_name = owner_name;
         this.#default_shuffle = default_shuffle;
         this.#shuffle_count = 0;
         this.#shuffles = {};
         this.#pack_card_and_counts = {};
 
         this.Add_Shuffle(default_shuffle);
+    }
+
+    Owner_Name():
+        string
+    {
+        return this.#owner_name;
     }
 
     Shuffle_Count():
@@ -964,19 +974,30 @@ export class Arena
         } else {
             this.#rules = rules;
 
+            let human_count: Count = 0;
+            let computer_count: Count = 0;
             this.#players = [];
             for (let idx = 0, end = player_count; idx < end; idx += 1) {
                 const selection: Selection = selections[idx];
+                let player_name: string = selection.Collection().Owner_Name();
                 if (selection.Is_Of_Human()) {
+                    human_count += 1;
                     this.#players.push(new Human_Player({
                         arena: this,
                         index: idx,
+                        name: player_name !== `` ?
+                            player_name :
+                            `Player ${human_count}`,
                         selection: selections[idx],
                     }));
                 } else {
+                    computer_count += 1;
                     this.#players.push(new Computer_Player({
                         arena: this,
                         index: idx,
+                        name: player_name !== `` ?
+                            player_name :
+                            `Computer ${computer_count}`,
                         selection: selections[idx],
                     }));
                 }
@@ -1283,6 +1304,7 @@ export class Player
 {
     #arena: Arena;
     #index: Player_Index;
+    #name: string;
     #selection: Selection;
 
     #stakes: Array<Stake>;
@@ -1292,16 +1314,19 @@ export class Player
         {
             arena,
             index,
+            name,
             selection,
         }: {
             arena: Arena,
             index: Player_Index,
+            name: string,
             selection: Selection,
         }
     )
     {
         this.#arena = arena;
         this.#index = index;
+        this.#name = name;
         this.#selection = selection;
 
         this.#stakes = [];
@@ -1337,6 +1362,12 @@ export class Player
         Player_Index
     {
         return this.#index;
+    }
+
+    Name():
+        string
+    {
+        return this.#name;
     }
 
     Selection():

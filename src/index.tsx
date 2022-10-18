@@ -25,8 +25,8 @@ class Main extends React.Component<Main_Props>
 
         // to be serialized
         this.#rules = new Model.Rules({
-            row_count: 5,
-            column_count: 6,
+            row_count: 3,
+            column_count: 3,
             player_count: 4,
 
             open: true,

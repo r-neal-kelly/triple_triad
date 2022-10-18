@@ -14,6 +14,9 @@
     --card_height: calc((var(--board_grid_height) - (var(--board_grid_padding) * 2) - (var(--board_grid_gap) * (var(--board_grid_row_count) - 1))) / var(--board_grid_row_count));
     --card_width: calc(var(--card_height) * 4 / 5);
 
+    --player_width: calc(var(--card_width) * 1.07);
+    --player_grid_padding: calc((var(--player_width) - var(--card_width)) / 2);
+    --player_grid_gap: 0;
     --player_hand_height: var(--board_grid_height);
 }
 
@@ -241,24 +244,50 @@ body {
     border-radius: 50%;
 }
 
+.Player_Grid {
+    display: grid;
+    grid-template-rows: auto;
+    grid-gap: var(--player_grid_gap) var(--player_grid_gap);
+
+    height: 100%;
+    margin: 0;
+    padding: 0 var(--player_grid_padding);
+}
+
 .Player {
     display: flex;
     flex-direction: column;
+    align-items: center;
 
+    width: var(--player_width);
     height: 100%;
     margin: 0;
     padding: 0;
 
     position: relative;
+
+    background-color: transparent;
 }
 
 .Player_Bumper {
     display: grid;
-    grid-template-columns: 50% 50%;
-    grid-template-rows: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
 
-    width: 100%;
+    width: var(--card_width);
     height: var(--bumper_height);
+    margin: 0;
+    padding: 0;
+}
+
+.Player_Name {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    color: white;
+    text-align: center;
 }
 
 .Player_Score {
@@ -271,20 +300,10 @@ body {
     text-align: center;
 }
 
-.Player_Turn_Icon {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-
-    color: white;
-    text-align: center;
-}
-
 .Player_Hand {
     position: relative;
 
-    min-width: var(--card_width);
+    width: var(--card_width);
     height: var(--player_hand_height);
     overflow-x: hidden;
     overflow-y: auto;
