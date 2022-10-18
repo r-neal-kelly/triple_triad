@@ -173,15 +173,6 @@ export class Arena extends React.Component<Arena_Props>
                         0% {
                             background-position: ${from};
                         }
-                        55% {
-                            border-color: black;
-                        }
-                        70% {
-                            border-color: white;
-                        }
-                        85% {
-                            border-color: black;
-                        }
                         100% {
                             background-position: ${to};
                         }
@@ -209,6 +200,25 @@ export class Arena extends React.Component<Arena_Props>
                         }
                         100% {
                             border-color: white;
+                        }
+                    }`,
+                    0
+                );
+            }
+
+            {
+                const animation_name: string = this.#Animation_Name(`twinkle_border_once`);
+                this.#animation_names.add(animation_name);
+                this.#animation_stylesheet.sheet.insertRule(
+                    `@keyframes ${animation_name} {
+                        0% {
+                            border-color: black;
+                        }
+                        50% {
+                            border-color: white;
+                        }
+                        100% {
+                            border-color: black;
                         }
                     }`,
                     0
@@ -1492,6 +1502,22 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 `100% 100%`;
             element.style.animation =
                 ``;
+
+            await Wait(200);
+
+            element.style.animationName = this.Arena().Animation_Name(`twinkle_border_once`);
+            element.style.animationDuration = `${300}ms`;
+            element.style.animationTimingFunction = `ease-in-out`;
+            element.style.animationIterationCount = `1`;
+            element.style.animationDirection = `normal`;
+
+            await Wait(300);
+
+            element.style.animationName = '';
+            element.style.animationDuration = '';
+            element.style.animationTimingFunction = '';
+            element.style.animationIterationCount = '';
+            element.style.animationDirection = '';
 
             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
         } else {

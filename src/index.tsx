@@ -27,7 +27,7 @@ class Main extends React.Component<Main_Props>
         this.#rules = new Model.Rules({
             row_count: 3,
             column_count: 3,
-            player_count: 4,
+            player_count: 2,
 
             open: true,
             same: true,
@@ -65,7 +65,7 @@ class Main extends React.Component<Main_Props>
                         blue: 127,
                         alpha: 0.7,
                     }),
-                    is_of_human: false,
+                    is_of_human: true,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Random_Selection({
@@ -85,7 +85,7 @@ class Main extends React.Component<Main_Props>
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
-                new Model.Random_Selection({
+                /*new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
                             pack: this.#packs.Pack(`Cats`),
@@ -118,7 +118,7 @@ class Main extends React.Component<Main_Props>
                     }),
                     is_of_human: false,
                     card_count: this.#rules.Selection_Card_Count(),
-                }),
+                }),*/
             ],
         });
     }
