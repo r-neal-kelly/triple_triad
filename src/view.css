@@ -3,20 +3,34 @@
 }
 
 :root {
-    --card_width: 20vmin;
-    --card_height: 25vmin;
+    --bumper_height: 8vh;
 
-    --bumper_height: 4vmin;
+    --board_grid_height: 92vh;
+    --board_grid_padding: 2vh;
+    --board_grid_gap: 0.5vh;
+    --board_grid_column_count: 1;
+    --board_grid_row_count: 1;
+
+    --card_height: calc((var(--board_grid_height) - (var(--board_grid_padding) * 2) - (var(--board_grid_gap) * (var(--board_grid_row_count) - 1))) / var(--board_grid_row_count));
+    --card_width: calc(var(--card_height) * 4 / 5);
+
+    --player_hand_height: var(--board_grid_height);
 }
 
 html,
-body,
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
 .View {
     display: flex;
     flex-direction: column;
 
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
 
@@ -29,9 +43,14 @@ body,
     justify-content: center;
 
     width: 100%;
-    height: fit-content;
+    height: 100%;
     margin: 0;
     padding: 0;
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
 
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -40,114 +59,52 @@ body,
 }
 
 .Board {
-    height: fit-content;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: var(--bumper_height) var(--board_grid_height);
+
+    height: 100%;
     margin: 0;
     padding: 0;
 }
 
-.Board_Header {
+.Board_Bumper {
     width: 100%;
-    height: var(--bumper_height);
+    height: 100%;
     margin: 0;
     padding: 0;
 }
 
 .Board_Grid {
     display: grid;
-
-    height: fit-content;
-    margin: 0;
-    padding: 10px;
-}
-
-.Player {
-    display: flex;
-    flex-direction: column;
-
-    height: fit-content;
-    margin: 0;
-    padding: 0;
-
-    position: relative;
-}
-
-.Player_Buffer {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--board_grid_column_count), 1fr);
+    grid-template-rows: repeat(var(--board_grid_row_count), 1fr);
+    grid-gap: var(--board_grid_gap) var(--board_grid_gap);
 
     width: 100%;
-    height: var(--bumper_height);
-}
-
-.Player_Turn_Icon {
-    width: 100%;
-    height: var(--bumper_height);
+    height: 100%;
     margin: 0;
-    padding: 0;
-
-    color: white;
-    text-align: center;
-}
-
-.Player_Score {
-    width: 100%;
-    height: var(--bumper_height);
-    margin: 0;
-    padding: 0;
-
-    color: white;
-    text-align: center;
-}
-
-.Player_Hand {
-    position: relative;
-
-    width: var(--card_width);
-    height: fit-content;
-    margin: 0;
-    padding: 0;
-}
-
-.Board_Cell_Empty,
-.Player_Stake,
-.Player_Selected_Stake {
-    height: var(--card_height);
-    width: var(--card_width);
-    margin: 0;
-    padding: 0;
+    padding: var(--board_grid_padding);
 
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 90% 90%;
-
-    cursor: default;
+    background-size: 100% 100%;
 }
 
 .Board_Cell_Empty {
-    margin: 2px;
+    width: var(--card_width);
+    height: var(--card_height);
+    margin: 0;
+    padding: 0;
 
     border: 2px solid #00000080;
+
+    cursor: default;
+    text-align: center;
+    color: white;
 }
 
-.Player_Stake,
-.Player_Selected_Stake {
-    position: relative;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.Player_Stake {
-    border: 1px solid black;
-}
-
-.Player_Selected_Stake {
-    border: 1px solid white;
-}
-
-/* Classes for board cells that have a card. */
 .Board_Cell_Occupied {
     display: grid;
     grid-template-columns: 4fr 3fr 4fr 3fr 4fr;
@@ -156,7 +113,7 @@ body,
 
     width: var(--card_width);
     height: var(--card_height);
-    margin: 2px;
+    margin: 0;
     padding: 0;
 
     border: 2px solid #00000080;
@@ -282,4 +239,91 @@ body,
 
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 50%;
+}
+
+.Player {
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    position: relative;
+}
+
+.Player_Bumper {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-template-rows: auto;
+
+    width: 100%;
+    height: var(--bumper_height);
+}
+
+.Player_Score {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    color: white;
+    text-align: center;
+}
+
+.Player_Turn_Icon {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    color: white;
+    text-align: center;
+}
+
+.Player_Hand {
+    position: relative;
+
+    min-width: var(--card_width);
+    height: var(--player_hand_height);
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.Player_Hand::-webkit-scrollbar {
+    display: none;
+}
+
+.Player_Stake,
+.Player_Selected_Stake {
+    height: var(--card_height);
+    width: var(--card_width);
+    margin: 0;
+    padding: 0;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90% 90%;
+
+    cursor: default;
+}
+
+.Player_Stake {
+    border: 1px solid black;
+}
+
+.Player_Selected_Stake {
+    border: 1px solid white;
 }

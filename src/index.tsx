@@ -25,8 +25,8 @@ class Main extends React.Component<Main_Props>
 
         // to be serialized
         this.#rules = new Model.Rules({
-            row_count: 3,
-            column_count: 3,
+            row_count: 5,
+            column_count: 6,
             player_count: 2,
 
             open: true,
@@ -35,6 +35,8 @@ class Main extends React.Component<Main_Props>
             wall: true,
             combo: true,
             random: true, // temp until we build up serialization more
+
+            is_small_board: true,
         });
 
         // to be serialized for human players
@@ -102,6 +104,7 @@ class Main extends React.Component<Main_Props>
     {
         return (
             <View.Arena
+                key={`arena`}
                 event_grid={this.#event_grid}
                 model={this.#arena}
             />

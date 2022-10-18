@@ -5,6 +5,7 @@ import React from "react";
 import * as Event from "./event";
 import * as Model from "./model";
 
+const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
 const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
@@ -131,7 +132,7 @@ export class Arena extends React.Component<Arena_Props>
         }
     }
 
-    Create_Animations():
+    #Create_Animations():
         void
     {
         this.#animation_stylesheet = document.createElement(`style`);
@@ -187,7 +188,7 @@ export class Arena extends React.Component<Arena_Props>
         }
     }
 
-    Destroy_Animations():
+    #Destroy_Animations():
         void
     {
         if (this.#animation_stylesheet != null &&
@@ -200,6 +201,12 @@ export class Arena extends React.Component<Arena_Props>
         this.#animation_stylesheet = null;
     }
 
+    #Animation_Name(name_affix: string):
+        string
+    {
+        return `${this.#animation_name_prefix}_${name_affix}`;
+    }
+
     Animation_Name(name_affix: string):
         string
     {
@@ -209,12 +216,6 @@ export class Arena extends React.Component<Arena_Props>
         } else {
             return animation_name;
         }
-    }
-
-    #Animation_Name(name_affix: string):
-        string
-    {
-        return `${this.#animation_name_prefix}_${name_affix}`;
     }
 
     async On_Game_Start(
@@ -282,35 +283,43 @@ export class Arena extends React.Component<Arena_Props>
     componentDidMount():
         void
     {
-        this.Create_Animations();
+        const root_element = document.querySelector(`:root`) as HTMLElement;
+        if (root_element == null) {
+            throw new Error(`Could not find root_element.`);
+        } else {
+            root_element.style.setProperty(`--board_grid_column_count`, `${this.Model().Rules().Column_Count()}`);
+            root_element.style.setProperty(`--board_grid_row_count`, `${this.Model().Rules().Row_Count()}`);
 
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, GAME_START),
-                    event_handler: this.On_Game_Start,
-                },
-                {
-                    event_name: new Event.Name(ON, GAME_STOP),
-                    event_handler: this.On_Game_Stop,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
-                    event_handler: this.On_Player_Stop_Turn,
-                },
-            ],
-        );
+            this.#Create_Animations();
 
-        this.props.event_grid.Send_Event({
-            name_affix: GAME_START,
-            name_suffixes: [
-            ],
-            data: {
-            } as Game_Start_Data,
-            is_atomic: true,
-        });
+            this.props.event_grid.Add(this);
+            this.props.event_grid.Add_Many_Listeners(
+                this,
+                [
+                    {
+                        event_name: new Event.Name(ON, GAME_START),
+                        event_handler: this.On_Game_Start,
+                    },
+                    {
+                        event_name: new Event.Name(ON, GAME_STOP),
+                        event_handler: this.On_Game_Stop,
+                    },
+                    {
+                        event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                        event_handler: this.On_Player_Stop_Turn,
+                    },
+                ],
+            );
+
+            this.props.event_grid.Send_Event({
+                name_affix: GAME_START,
+                name_suffixes: [
+                ],
+                data: {
+                } as Game_Start_Data,
+                is_atomic: true,
+            });
+        }
     }
 
     componentWillUnmount():
@@ -318,14 +327,22 @@ export class Arena extends React.Component<Arena_Props>
     {
         this.props.event_grid.Remove(this);
 
-        this.Destroy_Animations();
+        this.#Destroy_Animations();
     }
 
     render():
         JSX.Element
     {
+        const styles: any = {};
+        if (this.Model().Rules().Is_Large_Board()) {
+            styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
+        }
+
         return (
-            <div className="Arena">
+            <div
+                className="Arena"
+                style={styles}
+            >
                 <Player
                     key={`player_${0}`}
                     parent={this}
@@ -591,7 +608,7 @@ class Player extends React.Component<Player_Props>
                 className="Player"
             >
                 <div
-                    className=""
+                    className="Player_Bumper"
                 >
                     <Player_Score
                         key={`player_score_${this.props.index}`}
@@ -613,9 +630,11 @@ class Player extends React.Component<Player_Props>
                 <div
                     className="Player_Hand"
                     style={{
+                        /*
                         height: stake_count > 0 ?
-                            `calc(var(--card_height) / 3 * 2 * ${stake_count - 1} + var(--card_height))` :
+                            `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${stake_count - 1} + var(--card_height))` :
                             `0`,
+                        */
                     }}
                 >
                     {
@@ -801,7 +820,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                     backgroundImage: `url("${this.Model().Card().Image()}")`,
                     cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`,
                     zIndex: `${this.props.index}`,
-                    top: `calc((0px - var(--card_height)) / 3 * ${this.props.index})`,
+                    top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.props.index})`,
                 }}
                 onClick={
                     is_of_human && is_selectable ?
@@ -881,12 +900,14 @@ type Board_Props = {
 
 class Board extends React.Component<Board_Props>
 {
+    #element: HTMLElement | null;
     #cells: Array<Board_Cell | null>;
 
     constructor(props: Board_Props)
     {
         super(props);
 
+        this.#element = null;
         this.#cells = new Array(this.Model().Cell_Count()).fill(null);
     }
 
@@ -894,6 +915,16 @@ class Board extends React.Component<Board_Props>
         Model.Board
     {
         return this.props.model;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
     }
 
     Arena():
@@ -972,23 +1003,23 @@ class Board extends React.Component<Board_Props>
     render():
         JSX.Element
     {
+        const styles: any = {};
+        if (this.Model().Rules().Is_Small_Board()) {
+            styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
+        }
+
         return (
             <div
+                ref={ref => this.#element = ref}
                 className="Board"
             >
                 <div
-                    className="Board_Header"
+                    className="Board_Bumper"
                 >
                 </div>
                 <div
                     className="Board_Grid"
-                    style={{
-                        gridTemplateColumns: `repeat(${this.Model().Column_Count()}, 1fr)`,
-                        gridTemplateRows: `repeat(${this.Model().Row_Count()}, 1fr)`,
-
-                        backgroundImage: `url("img/boards/pexels-fwstudio-172296.jpg")`,
-                        backgroundSize: `100% 100%`,
-                    }}
+                    style={styles}
                 >
                     {
                         Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>

@@ -1119,6 +1119,8 @@ export class Rules
     #combo: boolean;
     #random: boolean;
 
+    #is_small_board: boolean;
+
     constructor(
         {
             row_count = 3,
@@ -1131,6 +1133,8 @@ export class Rules
             wall = true,
             combo = true,
             random = false,
+
+            is_small_board = true,
         }: {
             row_count?: Row_Count,
             column_count?: Column_Count,
@@ -1142,6 +1146,8 @@ export class Rules
             wall?: boolean,
             combo?: boolean,
             random?: boolean,
+
+            is_small_board?: boolean,
         }
     )
     {
@@ -1160,6 +1166,8 @@ export class Rules
             this.#wall = wall;
             this.#combo = combo;
             this.#random = random;
+
+            this.#is_small_board = is_small_board;
 
             Object.freeze(this);
 
@@ -1233,6 +1241,18 @@ export class Rules
         boolean
     {
         return this.#random;
+    }
+
+    Is_Small_Board():
+        boolean
+    {
+        return this.#is_small_board;
+    }
+
+    Is_Large_Board():
+        boolean
+    {
+        return !this.#is_small_board;
     }
 
     Serialize():
@@ -1462,19 +1482,30 @@ export class Computer_Player extends Player
 
         // used to give the impression that the ai is choosing a stake. smoothly lands on the stake it selects.
         // we can add other impression algorithms heres and choose them randomly
-        const selection_indices: Array<Stake_Index> = [];
-        for (let idx = 0, end = this.Stake_Count(); idx < end; idx += 1) {
-            selection_indices.push(idx);
-        }
-        if (selection_indices[selection_indices.length - 1] !== stake_index) {
-            for (let idx = this.Stake_Count() - 1, end = stake_index; idx > end;) {
-                idx -= 1;
-                selection_indices.push(idx);
+        const stake_count = this.Stake_Count();
+        const selection_indices: Array<Stake_Index> = [stake_index];
+        let selection_index: Stake_Index = stake_index;
+        let selection_step_count: Count = Math.ceil(Math.random() * Math.min(stake_count, 8)) - 1;
+        while (selection_step_count > 0) {
+            selection_step_count -= 1;
+            if (Random_Boolean()) {
+                if (selection_index > 0) {
+                    selection_index -= 1;
+                } else {
+                    selection_index = stake_count - 1;
+                }
+            } else {
+                if (selection_index < stake_count - 1) {
+                    selection_index += 1;
+                } else {
+                    selection_index = 0;
+                }
             }
+            selection_indices.push(selection_index);
         }
 
         return ({
-            selection_indices,
+            selection_indices: selection_indices.reverse(),
             cell_index,
         });
     }
@@ -1665,8 +1696,8 @@ export class Board
         Cell | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index % row_count > 0) {
+            const column_count = this.Column_Count();
+            if (cell_index % column_count !== 0) {
                 return this.Cell(cell_index - 1);
             } else {
                 return new Wall();
@@ -1680,9 +1711,9 @@ export class Board
         Cell | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index >= row_count) {
-                return this.Cell(cell_index - row_count);
+            const column_count = this.Column_Count();
+            if (cell_index >= column_count) {
+                return this.Cell(cell_index - column_count);
             } else {
                 return new Wall();
             }
@@ -1695,8 +1726,8 @@ export class Board
         Cell | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index % row_count < row_count - 1) {
+            const column_count = this.Column_Count();
+            if (cell_index % column_count !== column_count - 1) {
                 return this.Cell(cell_index + 1);
             } else {
                 return new Wall();
@@ -1710,10 +1741,10 @@ export class Board
         Cell | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
+            const column_count = this.Column_Count();
             const cell_count = this.Cell_Count();
-            if (cell_index < cell_count - row_count) {
-                return this.Cell(cell_index + row_count);
+            if (cell_index < cell_count - column_count) {
+                return this.Cell(cell_index + column_count);
             } else {
                 return new Wall();
             }
@@ -1726,8 +1757,8 @@ export class Board
         Cell_Index | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index % row_count > 0) {
+            const column_count = this.Column_Count();
+            if (cell_index % column_count !== 0) {
                 return cell_index - 1;
             } else {
                 return new Wall();
@@ -1741,9 +1772,9 @@ export class Board
         Cell_Index | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index >= row_count) {
-                return cell_index - row_count;
+            const column_count = this.Column_Count();
+            if (cell_index >= column_count) {
+                return cell_index - column_count;
             } else {
                 return new Wall();
             }
@@ -1756,8 +1787,8 @@ export class Board
         Cell_Index | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
-            if (cell_index % row_count < row_count - 1) {
+            const column_count = this.Column_Count();
+            if (cell_index % column_count !== column_count - 1) {
                 return cell_index + 1;
             } else {
                 return new Wall();
@@ -1771,10 +1802,10 @@ export class Board
         Cell_Index | Wall
     {
         if (cell_index >= 0 && cell_index < this.#cells.length) {
-            const row_count = this.Row_Count();
+            const column_count = this.Column_Count();
             const cell_count = this.Cell_Count();
-            if (cell_index < cell_count - row_count) {
-                return cell_index + row_count;
+            if (cell_index < cell_count - column_count) {
+                return cell_index + column_count;
             } else {
                 return new Wall();
             }
