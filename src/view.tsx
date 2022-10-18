@@ -1507,7 +1507,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             element.style.animationName = this.Arena().Animation_Name(`twinkle_border_once`);
             element.style.animationDuration = `${300}ms`;
-            element.style.animationTimingFunction = `ease-in-out`;
+            element.style.animationTimingFunction = `ease-in`;
             element.style.animationIterationCount = `1`;
             element.style.animationDirection = `normal`;
 
