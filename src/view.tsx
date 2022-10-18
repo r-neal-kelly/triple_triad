@@ -170,10 +170,19 @@ export class Arena extends React.Component<Arena_Props>
                 this.#animation_names.add(animation_name);
                 this.#animation_stylesheet.sheet.insertRule(
                     `@keyframes ${animation_name} {
-                        from {
+                        0% {
                             background-position: ${from};
                         }
-                        to {
+                        55% {
+                            border-color: black;
+                        }
+                        70% {
+                            border-color: white;
+                        }
+                        85% {
+                            border-color: black;
+                        }
+                        100% {
                             background-position: ${to};
                         }
                     }`,

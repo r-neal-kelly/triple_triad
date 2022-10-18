@@ -1726,7 +1726,7 @@ export class Board
     Left_Of(cell_index: Cell_Index):
         Cell | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             if (cell_index % column_count !== 0) {
                 return this.Cell(cell_index - 1);
@@ -1741,7 +1741,7 @@ export class Board
     Top_Of(cell_index: Cell_Index):
         Cell | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             if (cell_index >= column_count) {
                 return this.Cell(cell_index - column_count);
@@ -1756,7 +1756,7 @@ export class Board
     Right_Of(cell_index: Cell_Index):
         Cell | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             if (cell_index % column_count !== column_count - 1) {
                 return this.Cell(cell_index + 1);
@@ -1771,7 +1771,7 @@ export class Board
     Bottom_Of(cell_index: Cell_Index):
         Cell | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             const cell_count = this.Cell_Count();
             if (cell_index < cell_count - column_count) {
@@ -1787,7 +1787,7 @@ export class Board
     Left_Index_Of(cell_index: Cell_Index):
         Cell_Index | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             if (cell_index % column_count !== 0) {
                 return cell_index - 1;
@@ -1802,7 +1802,7 @@ export class Board
     Top_Index_Of(cell_index: Cell_Index):
         Cell_Index | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             if (cell_index >= column_count) {
                 return cell_index - column_count;
@@ -1817,7 +1817,7 @@ export class Board
     Right_Index_Of(cell_index: Cell_Index):
         Cell_Index | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             if (cell_index % column_count !== column_count - 1) {
                 return cell_index + 1;
@@ -1832,7 +1832,7 @@ export class Board
     Bottom_Index_Of(cell_index: Cell_Index):
         Cell_Index | Wall
     {
-        if (cell_index >= 0 && cell_index < this.#cells.length) {
+        if (cell_index != null && cell_index >= 0 && cell_index < this.#cells.length) {
             const column_count = this.Column_Count();
             const cell_count = this.Cell_Count();
             if (cell_index < cell_count - column_count) {
