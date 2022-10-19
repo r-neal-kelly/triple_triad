@@ -68,6 +68,7 @@ export class Arena extends React.Component<Arena_Props>
 {
     #players: Array<Player | null>;
     #board: Board | null;
+    #results: Results | null;
 
     #animation_stylesheet: HTMLStyleElement | null;
     #animation_name_prefix: string;
@@ -79,6 +80,7 @@ export class Arena extends React.Component<Arena_Props>
 
         this.#players = new Array(this.Model().Player_Count()).fill(null);
         this.#board = null;
+        this.#results = null;
 
         this.#animation_stylesheet = null;
         this.#animation_name_prefix = ``;
@@ -125,6 +127,16 @@ export class Arena extends React.Component<Arena_Props>
             throw new Error(`Component has not yet been rendered.`);
         } else {
             return this.#board as Board;
+        }
+    }
+
+    Results():
+        Results
+    {
+        if (!this.#results) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#results as Results;
         }
     }
 
@@ -282,9 +294,7 @@ export class Arena extends React.Component<Arena_Props>
     ):
         Promise<void>
     {
-        console.log("game over"); // temp
-
-        // we would display the winner at this point.
+        this.Results().forceUpdate();
     }
 
     async On_Player_Stop_Turn(
@@ -441,6 +451,13 @@ export class Arena extends React.Component<Arena_Props>
                         })
                     }
                 </div>
+                <Results
+                    key={`results`}
+                    parent={this}
+                    ref={ref => this.#results = ref}
+                    event_grid={this.props.event_grid}
+                    model={this.Model()}
+                />
             </div>
         );
     }
@@ -1799,5 +1816,64 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 </div>
             );
         }
+    }
+}
+
+type Results_Props = {
+    parent: Arena,
+    event_grid: Event.Grid,
+    model: Model.Arena,
+}
+
+class Results extends React.Component<Results_Props>
+{
+    Model():
+        Model.Arena
+    {
+        return this.props.model;
+    }
+
+    Arena():
+        Arena
+    {
+        return this.props.parent;
+    }
+
+    componentDidMount():
+        void
+    {
+        this.props.event_grid.Add(this);
+        this.props.event_grid.Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.props.event_grid.Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        const styles: any = {};
+        if (this.Model().Is_Game_Over()) {
+            styles.visibility = `visible`;
+            styles.zIndex = `${this.Model().Rules().Selection_Card_Count()}`;
+        } else {
+            styles.visibility = `hidden`;
+        }
+
+        return (
+            <div
+                className={`Results`}
+                style={styles}
+            >
+                GAME OVER MAN, GAME OVER
+            </div>
+        );
     }
 }
