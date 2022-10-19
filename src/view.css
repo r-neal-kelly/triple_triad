@@ -21,6 +21,10 @@
     --player_grid_gap: 0;
     --player_hand_height: var(--board_grid_height);
     --player_stake_border_size: 0.15vmin;
+
+    --results_banner_height: 40vmin;
+    --results_banner_border_size: 0.6vmin;
+    --results_message_font_size: 6vmin;
 }
 
 * {
@@ -282,8 +286,6 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
 
     background-size: 90% 90%;
 
@@ -297,15 +299,70 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
 
     background-size: 90% 90%;
 
     border: var(--player_stake_border_size) solid white;
 }
 
+@keyframes Results_Fade_In {
+    0% {
+        opacity: 0%;
+    }
+
+    100% {
+        opacity: 100%;
+    }
+}
+
+@keyframes Results_Banner_Move_In {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 0;
+    }
+}
+
 .Results {
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    background-color: rgba(0, 0, 0, 0.5);
+
+    animation-name: Results_Fade_In;
+    animation-duration: 2000ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+}
+
+.Results_Banner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: var(--results_banner_height);
+
+    position: absolute;
+    left: 0;
+    top: calc(50% - (var(--results_banner_height) / 2) + (var(--bumper_height) / 2));
+
+    border: var(--results_banner_border_size) solid #00000080;
+
+    animation-name: Results_Banner_Move_In;
+    animation-duration: 2000ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+}
+
+.Results_Winner {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -313,12 +370,27 @@ body {
 
     width: 100%;
     height: 100%;
+}
 
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
+.Results_Winner_Message {
+    font-size: var(--results_message_font_size);
+}
 
-    background-color: rgba(0, 0, 0, 0.5);
+.Results_Draws {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+}
+
+.Results_Draws_Message {
+    font-size: var(--results_message_font_size);
+}
+
+.Results_Losers {
+    width: 100%;
+    height: 100%;
 }

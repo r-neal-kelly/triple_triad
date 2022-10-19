@@ -65,7 +65,7 @@ class Main extends React.Component<Main_Props>
                         blue: 127,
                         alpha: 0.7,
                     }),
-                    is_of_human: false,
+                    is_of_human: true,
                     card_count: this.#rules.Selection_Card_Count(),
                 }),
                 new Model.Random_Selection({
@@ -111,8 +111,8 @@ class Main extends React.Component<Main_Props>
                         }),
                     }),
                     color: new Model.Color({
-                        red: 127,
-                        green: 127,
+                        red: 128,
+                        green: 117,
                         blue: 0,
                         alpha: 0.7,
                     }),

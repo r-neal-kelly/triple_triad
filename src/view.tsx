@@ -1818,10 +1818,31 @@ type Results_Props = {
 
 class Results extends React.Component<Results_Props>
 {
+    #element: HTMLElement | null;
+    #scores: Model.Scores | null;
+
+    constructor(props: Results_Props)
+    {
+        super(props);
+
+        this.#element = null;
+        this.#scores = null;
+    }
+
     Model():
         Model.Arena
     {
         return this.props.model;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
     }
 
     Arena():
@@ -1846,9 +1867,13 @@ class Results extends React.Component<Results_Props>
     ):
         Promise<void>
     {
-        console.log(scores); // temp
-
+        this.#scores = scores;
         this.forceUpdate();
+        while (this.#scores) {
+            await Wait(1);
+        }
+
+        const element: HTMLElement = this.Element();
     }
 
     componentDidMount():
@@ -1879,19 +1904,87 @@ class Results extends React.Component<Results_Props>
     render():
         JSX.Element | null
     {
-        if (this.Model().Is_Game_Over()) {
-            const styles: any = {};
-            styles.visibility = `visible`;
-            styles.zIndex = `${this.Model().Rules().Selection_Card_Count()}`;
+        if (this.#scores != null) {
+            const scores: Model.Scores = this.#scores;
+            this.#scores = null;
 
-            return (
-                <div
-                    className={`Results`}
-                    style={styles}
-                >
-                    GAME OVER MAN, GAME OVER
-                </div>
-            );
+            if (scores.Has_Winner()) {
+                const winner: Model.Player_And_Score = scores.Winner();
+                const color: Model.Color = winner.player.Color();
+
+                return (
+                    <div
+                        ref={ref => this.#element = ref}
+                        className={`Results`}
+                        style={{
+                            zIndex: `${this.Model().Rules().Selection_Card_Count()}`,
+                        }}
+                    >
+                        <div
+                            className={`Results_Banner`}
+                        >
+                            <div
+                                className={`Results_Winner`}
+                                style={{
+                                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                                }}
+                            >
+                                <div
+                                    className={`Results_Winner_Message`}
+                                >
+                                    {`${winner.player.Name()} Wins!`}
+                                    <div>
+                                        {`Refresh the page to play again`}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            } else {
+                const draws: Array<Model.Player_And_Score> = scores.Draws();
+                const color_stop_percent: number = 100 / draws.length;
+                const linear_gradient_colors: string = draws.map(function (
+                    draw: Model.Player_And_Score,
+                    index: Model.Player_Index,
+                ):
+                    string
+                {
+                    const color: Model.Color = draw.player.Color();
+                    const color_stop: string = `${index * color_stop_percent}% ${(index + 1) * color_stop_percent}%`;
+                    return `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()}) ${color_stop}`;
+                }).join(`, `);
+
+                return (
+                    <div
+                        ref={ref => this.#element = ref}
+                        className={`Results`}
+                        style={{
+                            zIndex: `${this.Model().Rules().Selection_Card_Count()}`,
+                        }}
+                    >
+                        <div
+                            className={`Results_Banner`}
+                        >
+                            <div
+                                className={`Results_Draws`}
+                                style={{
+                                    backgroundImage: `linear-gradient(to right, ${linear_gradient_colors})`,
+                                }}
+                            >
+                                <div
+                                    className={`Results_Draws_Message`}
+                                >
+                                    {`Draw`}
+                                    <div>
+                                        {`Refresh the page to play again`}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
         } else {
             return null;
         }
