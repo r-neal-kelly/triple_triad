@@ -1233,10 +1233,12 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     ):
         Promise<void>
     {
-        if (this.Index() === stake_index) {
-            this.Element().style.cursor = `default`;
-        } else {
-            this.Element().style.cursor = `pointer`;
+        if (this.Model().Is_Of_Human()) {
+            if (this.Index() === stake_index) {
+                this.Element().style.cursor = `default`;
+            } else {
+                this.Element().style.cursor = `pointer`;
+            }
         }
     }
 
