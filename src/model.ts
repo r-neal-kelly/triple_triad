@@ -101,6 +101,9 @@ export type Defense =
 export type Defense_Count =
     number;
 
+export type Score =
+    number;
+
 export enum Direction_e
 {
     NONE,
@@ -1012,6 +1015,9 @@ export class Arena
             this.#turn_queue_index = 0;
 
             this.#is_input_enabled = true;
+
+            Object.freeze(this.#players);
+            Object.freeze(this.#turn_queue);
         }
     }
 
@@ -1035,6 +1041,12 @@ export class Arena
         } else {
             throw new Error("Invalid player_index.");
         }
+    }
+
+    Players():
+        Array<Player>
+    {
+        return Array.from(this.#players);
     }
 
     Current_Player_Index():
@@ -1122,7 +1134,199 @@ export class Arena
     {
         return this.#turn_count === 0;
     }
+
+    Scores():
+        Scores
+    {
+        return new Scores(
+            {
+                players: this.#players,
+            }
+        );
+    }
 };
+
+export type Player_And_Score_Count =
+    Count;
+
+export type Player_And_Score_Index =
+    Index;
+
+export type Player_And_Score = {
+    player: Player,
+    score: Score,
+};
+
+export class Scores
+{
+    #top_player_and_scores: Array<Player_And_Score>;
+    #bottom_player_and_scores: Array<Player_And_Score>;
+
+    constructor(
+        {
+            players,
+        }: {
+            players: Array<Player>,
+        }
+    )
+    {
+        const players_and_scores: Array<Player_And_Score> = [];
+        for (const player of players) {
+            const player_and_score = {
+                player: player,
+                score: player.Score(),
+            };
+            players_and_scores.push(player_and_score);
+            Object.freeze(player_and_score);
+        }
+
+        let highest_score = Number.MIN_VALUE;
+        let highest_scoring_players: Array<Player> = [];
+        for (const { player, score } of players_and_scores) {
+            if (score > highest_score) {
+                highest_score = score;
+                highest_scoring_players = [player];
+            } else if (score === highest_score) {
+                highest_scoring_players.push(player);
+            }
+        }
+
+        this.#top_player_and_scores = [];
+        this.#bottom_player_and_scores = [];
+        for (const player_and_score of players_and_scores) {
+            if (highest_scoring_players.includes(player_and_score.player)) {
+                this.#top_player_and_scores.push(player_and_score);
+            } else {
+                this.#bottom_player_and_scores.push(player_and_score);
+            }
+        }
+
+        this.#bottom_player_and_scores.sort(function (
+            a: Player_And_Score,
+            b: Player_And_Score,
+        ):
+            number
+        {
+            return b.score - a.score;
+        });
+
+        Object.freeze(this.#top_player_and_scores);
+        Object.freeze(this.#bottom_player_and_scores);
+        Object.freeze(this);
+    }
+
+    Top_Count():
+        Player_And_Score_Count
+    {
+        return this.#top_player_and_scores.length;
+    }
+
+    Top(top_index: Player_And_Score_Index):
+        Player_And_Score
+    {
+        if (top_index == null || top_index < 0 || top_index >= this.Top_Count()) {
+            throw new Error(`Invalid top_index: ${top_index}.`);
+        } else {
+            return this.#top_player_and_scores[top_index];
+        }
+    }
+
+    Bottom_Count():
+        Player_And_Score_Count
+    {
+        return this.#bottom_player_and_scores.length;
+    }
+
+    Bottom(bottom_index: Player_And_Score_Index):
+        Player_And_Score
+    {
+        if (bottom_index == null || bottom_index < 0 || bottom_index >= this.Bottom_Count()) {
+            throw new Error(`Invalid bottom_index: ${bottom_index}.`);
+        } else {
+            return this.#bottom_player_and_scores[bottom_index];
+        }
+    }
+
+    Highest_Score():
+        Score
+    {
+        return this.#top_player_and_scores[0].score;
+    }
+
+    Lowest_Score():
+        Score
+    {
+        if (this.Bottom_Count() > 0) {
+            return this.#bottom_player_and_scores[this.Bottom_Count() - 1].score;
+        } else {
+            return this.#top_player_and_scores[0].score;
+        }
+    }
+
+    Has_Winner():
+        boolean
+    {
+        return this.Top_Count() === 1;
+    }
+
+    Has_Losers():
+        boolean
+    {
+        return this.Has_Winner();
+    }
+
+    Has_Draws():
+        boolean
+    {
+        return !this.Has_Winner();
+    }
+
+    Has_Non_Draws():
+        boolean
+    {
+        return this.Has_Draws() && this.Bottom_Count() > 0;
+    }
+
+    Winner():
+        Player_And_Score
+    {
+        if (this.Has_Winner()) {
+            return this.#top_player_and_scores[0];
+        } else {
+            throw new Error(`There is no winner.`);
+        }
+    }
+
+    Losers():
+        Array<Player_And_Score>
+    {
+        if (this.Has_Losers()) {
+            return this.#bottom_player_and_scores;
+        } else {
+            throw new Error(`There are no losers.`);
+        }
+    }
+
+    Draws():
+        Array<Player_And_Score>
+    {
+        if (this.Has_Draws()) {
+            return this.#top_player_and_scores;
+        } else {
+            throw new Error(`There are no draws.`);
+        }
+    }
+
+    Non_Draws():
+        Array<Player_And_Score>
+    {
+        if (this.Has_Non_Draws()) {
+            return this.#bottom_player_and_scores;
+        } else {
+            throw new Error(`There are no non-draws.`);
+        }
+    }
+}
 
 /* A selection of rules which an arena must abide by. */
 export class Rules
@@ -1488,7 +1692,7 @@ export class Player
     }
 
     Score():
-        number
+        Score
     {
         return this.Stake_Count() + this.Board().Claim_Count(this);
     }

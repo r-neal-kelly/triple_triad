@@ -28,6 +28,7 @@ type Game_Start_Data = {
 }
 
 type Game_Stop_Data = {
+    scores: Model.Scores,
 }
 
 type Player_Start_Turn_Data = {
@@ -288,15 +289,6 @@ export class Arena extends React.Component<Arena_Props>
         });
     }
 
-    async On_Game_Stop(
-        {
-        }: Game_Start_Data,
-    ):
-        Promise<void>
-    {
-        this.Results().forceUpdate();
-    }
-
     async On_Player_Stop_Turn(
         {
         }: Player_Stop_Turn_Data,
@@ -311,6 +303,7 @@ export class Arena extends React.Component<Arena_Props>
                 name_suffixes: [
                 ],
                 data: {
+                    scores: this.Model().Scores(),
                 } as Game_Stop_Data,
                 is_atomic: true,
             });
@@ -348,10 +341,6 @@ export class Arena extends React.Component<Arena_Props>
                     {
                         event_name: new Event.Name(ON, GAME_START),
                         event_handler: this.On_Game_Start,
-                    },
-                    {
-                        event_name: new Event.Name(ON, GAME_STOP),
-                        event_handler: this.On_Game_Stop,
                     },
                     {
                         event_name: new Event.Name(ON, PLAYER_STOP_TURN),
@@ -1841,6 +1830,27 @@ class Results extends React.Component<Results_Props>
         return this.props.parent;
     }
 
+    async On_Game_Start(
+        {
+        }: Game_Start_Data,
+    ):
+        Promise<void>
+    {
+        this.forceUpdate();
+    }
+
+    async On_Game_Stop(
+        {
+            scores,
+        }: Game_Stop_Data,
+    ):
+        Promise<void>
+    {
+        console.log(scores); // temp
+
+        this.forceUpdate();
+    }
+
     componentDidMount():
         void
     {
@@ -1848,6 +1858,14 @@ class Results extends React.Component<Results_Props>
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
+                {
+                    event_name: new Event.Name(ON, GAME_START),
+                    event_handler: this.On_Game_Start,
+                },
+                {
+                    event_name: new Event.Name(ON, GAME_STOP),
+                    event_handler: this.On_Game_Stop,
+                },
             ],
         );
     }
@@ -1859,23 +1877,23 @@ class Results extends React.Component<Results_Props>
     }
 
     render():
-        JSX.Element
+        JSX.Element | null
     {
-        const styles: any = {};
         if (this.Model().Is_Game_Over()) {
+            const styles: any = {};
             styles.visibility = `visible`;
             styles.zIndex = `${this.Model().Rules().Selection_Card_Count()}`;
-        } else {
-            styles.visibility = `hidden`;
-        }
 
-        return (
-            <div
-                className={`Results`}
-                style={styles}
-            >
-                GAME OVER MAN, GAME OVER
-            </div>
-        );
+            return (
+                <div
+                    className={`Results`}
+                    style={styles}
+                >
+                    GAME OVER MAN, GAME OVER
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 }
