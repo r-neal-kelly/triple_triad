@@ -1,10 +1,8 @@
-* {
-    box-sizing: border-box;
-}
-
 :root {
     --max_width: 100vw;
     --max_height: 100vh;
+
+    --default_font_size: 2.8vmin;
 
     --bumper_height: 8vmin;
 
@@ -13,6 +11,7 @@
     --board_grid_gap: 0.5vmin;
     --board_grid_column_count: 1;
     --board_grid_row_count: 1;
+    --board_cell_border_size: 0.3vmin;
 
     --card_height: calc((var(--board_grid_height) - (var(--board_grid_padding) * 2) - (var(--board_grid_gap) * (var(--board_grid_row_count) - 1))) / var(--board_grid_row_count));
     --card_width: calc(var(--card_height) * 4 / 5);
@@ -21,6 +20,12 @@
     --player_grid_padding: calc((var(--player_width) - var(--card_width)) / 2);
     --player_grid_gap: 0;
     --player_hand_height: var(--board_grid_height);
+    --player_stake_border_size: 0.15vmin;
+}
+
+* {
+    box-sizing: border-box;
+    font-size: var(--default_font_size);
 }
 
 html,
@@ -111,7 +116,7 @@ body {
     margin: 0;
     padding: 0;
 
-    border: 2px solid #00000080;
+    border: var(--board_cell_border_size) solid #00000080;
 
     cursor: default;
     text-align: center;
@@ -129,7 +134,7 @@ body {
     margin: 0;
     padding: 0;
 
-    border: 2px solid #00000080;
+    border: var(--board_cell_border_size) solid #00000080;
 
     cursor: default;
     text-align: center;
@@ -328,8 +333,7 @@ body {
     display: none;
 }
 
-.Player_Stake,
-.Player_Selected_Stake {
+.Player_Stake {
     height: var(--card_height);
     width: var(--card_width);
     margin: 0;
@@ -346,13 +350,29 @@ body {
     background-position: center;
     background-size: 90% 90%;
 
+    border: var(--player_stake_border_size) solid black;
+
     cursor: default;
 }
 
-.Player_Stake {
-    border: 1px solid black;
-}
+.Player_Stake_Selected {
+    height: var(--card_height);
+    width: var(--card_width);
+    margin: 0;
+    padding: 0;
 
-.Player_Selected_Stake {
-    border: 1px solid white;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90% 90%;
+
+    border: var(--player_stake_border_size) solid white;
+
+    cursor: default;
 }

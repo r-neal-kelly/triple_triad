@@ -1133,6 +1133,12 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         return this.Player_Hand().Player().Arena();
     }
 
+    Player():
+        Player
+    {
+        return this.Player_Hand().Player();
+    }
+
     Player_Hand():
         Player_Hand
     {
@@ -1192,13 +1198,63 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         }
     }
 
+    async On_This_Player_Start_Turn(
+        {
+        }: Player_Start_Turn_Data
+    ):
+        Promise<void>
+    {
+        if (this.Model().Is_Of_Human()) {
+            this.Element().style.cursor = `pointer`;
+        }
+    }
+
+    async On_This_Player_Select_Stake(
+        {
+            stake_index,
+        }: Player_Select_Stake_Data
+    ):
+        Promise<void>
+    {
+        if (this.Index() === stake_index) {
+            this.Element().style.cursor = `default`;
+        } else {
+            this.Element().style.cursor = `pointer`;
+        }
+    }
+
+    async On_This_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Model().Is_Of_Human()) {
+            this.Element().style.cursor = `default`;
+        }
+    }
+
     componentDidMount():
         void
     {
+        const player_index: Model.Player_Index = this.Player().Index();
+
         this.props.event_grid.Add(this);
         this.props.event_grid.Add_Many_Listeners(
             this,
             [
+                {
+                    event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                    event_handler: this.On_This_Player_Start_Turn,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Place_Stake,
+                },
             ],
         );
     }
@@ -1221,15 +1277,14 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                 ref={ref => this.#element = ref}
                 className={
                     this.Model().Is_Selected() ?
-                        `Player_Selected_Stake` :
+                        `Player_Stake_Selected` :
                         `Player_Stake`
                 }
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                     backgroundImage: `url("${this.Model().Card().Image()}")`,
-                    cursor: `${is_of_human && is_selectable ? `pointer` : `default`}`,
-                    zIndex: `${this.props.index}`,
                     top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.props.index})`,
+                    zIndex: `${this.props.index}`,
                 }}
                 onClick={
                     is_of_human && is_selectable ?
