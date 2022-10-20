@@ -55,13 +55,60 @@ body {
     height: var(--max_height);
 
     overflow-x: hidden;
+
+    background-color: black;
 }
 
-.View {
+.Root {
+    width: 100%;
+    height: 100%;
+}
+
+.Main {
     width: 100%;
     height: 100%;
 
-    background-color: black;
+    position: relative;
+}
+
+.Menu {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    column-gap: 5%;
+
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+
+    /*background-color: rgba(0, 0, 0, 0.7);*/
+    background-color: transparent;
+}
+
+.Menu_Title {
+    width: 100%;
+    height: 100%;
+}
+
+.Menu_Button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 40%;
+    height: 100%;
+
+    align-self: center;
+    justify-self: center;
+}
+
+.Menu_Button_Text {
+    font-size: calc(var(--default_font_size) * 3);
 }
 
 .Arena {
@@ -72,7 +119,10 @@ body {
     width: 100%;
     height: 100%;
 
-    position: relative;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
 }
 
 .Board {

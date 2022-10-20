@@ -1,7 +1,9 @@
-import final_fantasy_8_pack_json from "./packs/final_fantasy_8.json"
 import cats_pack_json from "./packs/cats.json"
 
 /* Various aliases to assist reading comprehension. */
+type Name =
+    string;
+
 type Count =
     number;
 
@@ -21,7 +23,7 @@ type URL =
     string;
 
 type Pack_Name =
-    string;
+    Name;
 
 type Pack_Count =
     Count;
@@ -33,7 +35,7 @@ type Tier_Index =
     Index;
 
 type Card_Name =
-    string;
+    Name;
 
 type Card_Count =
     Count;
@@ -45,10 +47,19 @@ type Card_Number =
     number;
 
 type Element_Name =
-    string;
+    Name;
 
 type Shuffle_Count =
     Count;
+
+export type Color_Count =
+    Count;
+
+export type Color_Index =
+    Index;
+
+export type Player_Name =
+    Name;
 
 export type Player_Count =
     Count;
@@ -104,29 +115,106 @@ export type Defense_Count =
 export type Score =
     number;
 
+export enum Difficulty_e
+{
+    _NONE_ = -1,
+
+    VERY_EASY,
+    EASY,
+    MEDIUM,
+    HARD,
+    VERY_HARD,
+
+    _COUNT_,
+    _FIRST_ = VERY_EASY,
+    _LAST_ = VERY_HARD,
+}
+
 export enum Direction_e
 {
-    NONE,
+    _NONE_ = -1,
 
     LEFT,
     TOP,
     RIGHT,
     BOTTOM,
+
+    _COUNT_,
+    _FIRST_ = LEFT,
+    _LAST_ = BOTTOM,
 }
 
 export enum Rule_e
 {
-    NONE,
+    _NONE_ = -1,
 
     SAME,
     PLUS,
     COMBO,
+
+    _COUNT_,
+    _FIRST_ = SAME,
+    _LAST_ = COMBO,
 }
+
+const MIN_TIER_COUNT = Difficulty_e._COUNT_;
 
 function Random_Boolean():
     boolean
 {
     return Math.random() < 0.5;
+}
+
+function Random_Integer_Inclusive(
+    from_inclusive: number,
+    to_inclusive: number,
+):
+    number
+{
+    if (from_inclusive <= to_inclusive) {
+        return Math.floor((Math.random() * ((to_inclusive + 1) - from_inclusive)) + from_inclusive);
+    } else {
+        throw new Error(`from_inclusive must be <= to_inclusive.`);
+    }
+}
+
+function Random_Integer_Exclusive(
+    from_inclusive: number,
+    to_exclusive: number,
+):
+    number
+{
+    if (from_inclusive < to_exclusive) {
+        return Math.floor((Math.random() * (to_exclusive - from_inclusive)) + from_inclusive);
+    } else {
+        throw new Error(`from_inclusive must be < to_exclusive.`);
+    }
+}
+
+function Random_Float_Inclusive(
+    from_inclusive: number,
+    to_inclusive: number,
+):
+    number
+{
+    if (from_inclusive <= to_inclusive) {
+        return (Math.random() * ((to_inclusive + Number.EPSILON) - from_inclusive)) + from_inclusive;
+    } else {
+        throw new Error(`from_inclusive must be <= to_inclusive.`);
+    }
+}
+
+function Random_Float_Exclusive(
+    from_inclusive: number,
+    to_exclusive: number,
+):
+    number
+{
+    if (from_inclusive < to_exclusive) {
+        return (Math.random() * (to_exclusive - from_inclusive)) + from_inclusive;
+    } else {
+        throw new Error(`from_inclusive must be < to_exclusive.`);
+    }
 }
 
 /* Packs and their components as provided and represented by parsed JSON. */
@@ -157,7 +245,6 @@ export class Packs
     constructor()
     {
         const packs_json: Array<Pack_JSON> = [
-            final_fantasy_8_pack_json,
             cats_pack_json,
         ];
 
@@ -208,7 +295,7 @@ export class Packs
     Random_Pack():
         Pack
     {
-        return this.As_Array()[Math.floor(Math.random() * this.Pack_Count())];
+        return this.As_Array()[Random_Integer_Exclusive(0, this.Pack_Count())];
     }
 
     As_Array():
@@ -224,6 +311,7 @@ class Pack
     #packs: Packs;
     #name: Pack_Name;
     #tiers: Array<Tier>;
+    #difficulties: Array<Array<Tier>>;
 
     constructor(
         {
@@ -235,8 +323,8 @@ class Pack
         }
     )
     {
-        if (pack_json.tiers.length < 1) {
-            throw new Error(`The pack ${pack_json.name} must have at least one tier.`);
+        if (pack_json.tiers.length < MIN_TIER_COUNT) {
+            throw new Error(`The pack ${pack_json.name} must have at least ${MIN_TIER_COUNT} tiers.`);
         } else {
             this.#packs = packs;
             this.#name = pack_json.name;
@@ -255,9 +343,35 @@ class Pack
                     tier_json,
                 });
             }, this);
+            this.#difficulties = [];
+            {
+                const tiers_to_distribute: Tier_Count =
+                    this.Tier_Count() % Difficulty_e._COUNT_;
+                const min_tiers_per_difficulty: Tier_Count =
+                    Math.floor(this.Tier_Count() / Difficulty_e._COUNT_);
+                const counts_per_difficulty: Array<Tier_Count> =
+                    new Array(Difficulty_e._COUNT_).fill(min_tiers_per_difficulty);
+                const start_idx_to_distribute: Index = (tiers_to_distribute & 1) > 0 ?
+                    Math.floor(tiers_to_distribute / 2) :
+                    Math.floor(tiers_to_distribute / 2) + 1;
+                for (let idx = start_idx_to_distribute, end = idx + tiers_to_distribute; idx < end; idx += 1) {
+                    counts_per_difficulty[idx] += 1;
+                }
+                let tier_idx: Tier_Index = 0;
+                for (const count of counts_per_difficulty) {
+                    const difficulty: Array<Tier> = [];
+                    for (let count_idx = 0, end = count; count_idx < end; count_idx += 1) {
+                        difficulty.push(this.Tier(tier_idx));
+                        tier_idx += 1;
+                    }
+                    this.#difficulties.push(difficulty);
+                    Object.freeze(difficulty);
+                }
+            }
 
             Object.freeze(this);
             Object.freeze(this.#tiers);
+            Object.freeze(this.#difficulties);
         }
     }
 
@@ -293,6 +407,16 @@ class Pack
         Array<Tier>
     {
         return Array.from(this.#tiers);
+    }
+
+    Tiers_By_Difficulty(difficulty: Difficulty_e):
+        Array<Tier>
+    {
+        if (difficulty == null || difficulty < Difficulty_e._FIRST_ || difficulty > Difficulty_e._LAST_) {
+            throw new Error(`Invalid difficulty: ${difficulty}.`);
+        } else {
+            return Array.from(this.#difficulties[difficulty]);
+        }
     }
 }
 
@@ -463,10 +587,333 @@ class Card
     }
 }
 
+export class Main
+{
+    #packs: Packs;
+    #rules: Rules;
+    #collections: { [index: Player_Name]: Collection };
+    #menu: Menu;
+    #arena: Arena;
+
+    constructor(
+        {
+            rules = new Rules({}),
+            collections = [],
+        }: {
+            rules?: Rules,
+            collections?: Array<Collection>,
+        },
+    )
+    {
+        this.#packs = new Packs();
+
+        this.#rules = rules;
+
+        this.#collections = {};
+        for (const collection of collections) {
+            this.#collections[collection.Owner_Name()] = collection;
+        }
+
+        this.#menu = new Menu();
+
+        // we create an exhibition match between computers for the background of main
+        // and keep doing rematches until the player decides to start up a game of their own
+        {
+            const random_packs: Array<Pack> = this.#packs.As_Array();
+            const random_rules: Random_Rules = new Random_Rules({});
+            const random_colors: Unique_Random_Colors = new Unique_Random_Colors({
+                color_count: random_rules.Player_Count(),
+
+                min_red: 31,
+                max_red: 191,
+
+                min_green: 31,
+                max_green: 191,
+
+                min_blue: 31,
+                max_blue: 191,
+
+                min_alpha: 0.7,
+                max_alpha: 0.7,
+            });
+            const random_selections: Array<Random_Selection> = [];
+            for (let idx = 0, end = random_rules.Player_Count(); idx < end; idx += 1) {
+                random_selections.push(
+                    new Random_Selection({
+                        collection: new Collection({
+                            default_shuffle: new Random_Shuffle({
+                                packs: random_packs,
+                                min_difficulty: Difficulty_e.VERY_EASY,
+                                max_difficulty: Difficulty_e.VERY_HARD,
+                                allow_multiple_difficulties: true,
+                            }),
+                        }),
+                        color: random_colors.Color(idx),
+                        is_of_human: false,
+                        card_count: random_rules.Selection_Card_Count(),
+                    })
+                );
+            }
+            this.#arena = new Arena({
+                rules: random_rules,
+                selections: random_selections,
+            });
+        }
+    }
+
+    Packs():
+        Packs
+    {
+        return this.#packs;
+    }
+
+    Rules():
+        Rules
+    {
+        return this.#rules;
+    }
+
+    Change_Rules(rules: Rules):
+        void
+    {
+        this.#rules = rules;
+    }
+
+    Collection(owner_name: Player_Name):
+        Collection
+    {
+        if (this.#collections[owner_name] == null) {
+            throw new Error(`${owner_name} does not have a collection.`);
+        } else {
+            return this.#collections[owner_name];
+        }
+    }
+
+    Collection_Owner_Names():
+        Array<Player_Name>
+    {
+        return Object.keys(this.#collections).sort();
+    }
+
+    Menu():
+        Menu
+    {
+        return this.#menu;
+    }
+
+    Arena():
+        Arena
+    {
+        return this.#arena;
+    }
+}
+
+export class Menu
+{
+}
+
+/* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
+export class Arena
+{
+    #rules: Rules;
+    #players: Array<Player>;
+    #board: Board;
+
+    #turn_count: Turn_Count;
+    #turn_queue: Array<Player>; // does this need to be separate from players? if we need to keep track of humans players, we can store separate
+    #turn_queue_index: Index;
+
+    #is_input_enabled: boolean;
+
+    constructor(
+        {
+            rules,
+            selections,
+        }: {
+            rules: Rules,
+            selections: Array<Selection>
+        }
+    )
+    {
+        const player_count: Player_Count = rules.Player_Count();
+        if (selections.length !== player_count) {
+            throw new Error(`Must have a selection for each player, no more and no less.`);
+        } else {
+            this.#rules = rules;
+
+            let human_count: Count = 0;
+            let computer_count: Count = 0;
+            this.#players = [];
+            for (let idx = 0, end = player_count; idx < end; idx += 1) {
+                const selection: Selection = selections[idx];
+                let player_name: Player_Name = selection.Collection().Owner_Name();
+                if (selection.Is_Of_Human()) {
+                    human_count += 1;
+                    this.#players.push(new Human_Player({
+                        arena: this,
+                        index: idx,
+                        name: player_name !== `` ?
+                            player_name :
+                            `P ${human_count}`,
+                        selection: selections[idx],
+                    }));
+                } else {
+                    computer_count += 1;
+                    this.#players.push(new Computer_Player({
+                        arena: this,
+                        index: idx,
+                        name: player_name !== `` ?
+                            player_name :
+                            `CPU ${computer_count}`,
+                        selection: selections[idx],
+                    }));
+                }
+            }
+
+            this.#board = new Board({
+                arena: this,
+            });
+
+            this.#turn_count = rules.Cell_Count();
+            this.#turn_queue = Array.from(this.#players).sort(() => Random_Boolean() ? 1 : -1);
+            this.#turn_queue_index = 0;
+
+            this.#is_input_enabled = true;
+
+            Object.freeze(this.#players);
+            Object.freeze(this.#turn_queue);
+        }
+    }
+
+    Rules():
+        Rules
+    {
+        return this.#rules;
+    }
+
+    Player_Count():
+        Player_Count
+    {
+        return this.#players.length;
+    }
+
+    Player(player_index: Player_Index):
+        Player
+    {
+        if (player_index >= 0 && player_index < this.Player_Count()) {
+            return this.#players[player_index];
+        } else {
+            throw new Error("Invalid player_index.");
+        }
+    }
+
+    Players():
+        Array<Player>
+    {
+        return Array.from(this.#players);
+    }
+
+    Current_Player_Index():
+        Player_Index
+    {
+        return this.Current_Player().Index();
+    }
+
+    Current_Player():
+        Player
+    {
+        if (this.Is_Game_Over()) {
+            throw new Error(`This arena has no current player because the game is over.`);
+        } else {
+            return this.#turn_queue[this.#turn_queue_index];
+        }
+    }
+
+    Board():
+        Board
+    {
+        return this.#board;
+    }
+
+    Turn_Count():
+        Turn_Count
+    {
+        return this.#turn_count;
+    }
+
+    Is_On_Human_Turn():
+        boolean
+    {
+        if (this.Is_Game_Over()) {
+            return false;
+        } else {
+            return this.Current_Player().Is_Human();
+        }
+    }
+
+    Is_On_Computer_Turn():
+        boolean
+    {
+        if (this.Is_Game_Over()) {
+            return false;
+        } else {
+            return !this.Is_On_Human_Turn();
+        }
+    }
+
+    Next_Turn():
+        void
+    {
+        if (this.Is_Game_Over()) {
+            throw new Error(`No more turns, the game is over.`);
+        } else {
+            this.#turn_count -= 1;
+            this.#turn_queue_index += 1;
+            if (this.#turn_queue_index === this.#turn_queue.length) {
+                this.#turn_queue_index = 0;
+            }
+        }
+    }
+
+    Is_Input_Enabled():
+        boolean
+    {
+        return this.#is_input_enabled;
+    }
+
+    Enable_Input():
+        void
+    {
+        this.#is_input_enabled = true;
+    }
+
+    Disable_Input():
+        void
+    {
+        this.#is_input_enabled = false;
+    }
+
+    Is_Game_Over():
+        boolean
+    {
+        return this.#turn_count === 0;
+    }
+
+    Scores():
+        Scores
+    {
+        return new Scores(
+            {
+                players: this.#players,
+            }
+        );
+    }
+}
+
 /* Contains a number of cards held by a player and several shuffles from which to generate cards. */
 export class Collection
 {
-    #owner_name: string;
+    #owner_name: Player_Name;
     #default_shuffle: Shuffle;
     #shuffle_count: Shuffle_Count;
     #shuffles: { [index: Pack_Name]: Shuffle };
@@ -477,7 +924,7 @@ export class Collection
             owner_name = ``,
             default_shuffle,
         }: {
-            owner_name?: string,
+            owner_name?: Player_Name,
             default_shuffle: Shuffle,
         }
     )
@@ -492,7 +939,7 @@ export class Collection
     }
 
     Owner_Name():
-        string
+        Player_Name
     {
         return this.#owner_name;
     }
@@ -518,7 +965,7 @@ export class Collection
     Random_Shuffle():
         Shuffle
     {
-        return Object.values(this.#shuffles)[Math.floor(Math.random() * this.Shuffle_Count())];
+        return Object.values(this.#shuffles)[Random_Integer_Exclusive(0, this.Shuffle_Count())];
     }
 
     Add_Shuffle(shuffle: Shuffle):
@@ -654,13 +1101,12 @@ export class Shuffle
 
         const min_tier_index: Tier_Index = this.Min_Tier_Index();
         const max_tier_index: Tier_Index = this.Max_Tier_Index();
-        const tier_count: Tier_Count = max_tier_index + 1 - min_tier_index;
 
         const results: Array<Card> = [];
         for (let idx = 0, end = card_count; idx < end; idx += 1) {
-            const tier_index: Tier_Index = Math.floor(Math.random() * tier_count) + min_tier_index;
+            const tier_index: Tier_Index = Random_Integer_Inclusive(min_tier_index, max_tier_index);
             const tier: Tier = this.#pack.Tier(tier_index);
-            results.push(tier.Card(Math.floor(Math.random() * tier.Card_Count())));
+            results.push(tier.Card(Random_Integer_Exclusive(0, tier.Card_Count())));
         }
 
         return results;
@@ -683,13 +1129,71 @@ export class Shuffle
         } else {
             const results: Array<Card> = [];
             for (let idx = 0, end = card_count; idx < end; idx += 1) {
-                const card_index: Card_Index = Math.floor(Math.random() * cards.length);
+                const card_index: Card_Index = Random_Integer_Exclusive(0, cards.length);
                 results.push(cards[card_index]);
                 cards[card_index] = cards[cards.length - 1];
                 cards.pop();
             }
 
             return results;
+        }
+    }
+}
+
+export class Random_Shuffle extends Shuffle
+{
+    constructor(
+        {
+            packs,
+            min_difficulty = Difficulty_e.VERY_EASY,
+            max_difficulty = Difficulty_e.VERY_HARD,
+            allow_multiple_difficulties = true,
+        }: {
+            packs: Array<Pack>,
+            min_difficulty?: Difficulty_e,
+            max_difficulty?: Difficulty_e,
+            allow_multiple_difficulties?: boolean,
+        },
+    )
+    {
+        if (packs.length < 1) {
+            throw new Error(`packs must have at least one pack to choose from.`);
+        } else if (min_difficulty < 0 || min_difficulty > max_difficulty) {
+            throw new Error(
+                `min_difficulty of ${min_difficulty} is greater than max_difficulty of ${max_difficulty}.`
+            );
+        } else {
+            const pack: Pack = packs[Random_Integer_Exclusive(0, packs.length)];
+
+            let min_tier_index: Tier_Index = 0;
+            let max_tier_index: Tier_Index = 0;
+            if (allow_multiple_difficulties) {
+                const from_difficulty: Difficulty_e =
+                    Random_Integer_Inclusive(min_difficulty, max_difficulty);
+                const to_difficulty: Difficulty_e =
+                    Random_Integer_Inclusive(from_difficulty, max_difficulty);
+                const from_tiers_by_difficulty: Array<Tier> =
+                    pack.Tiers_By_Difficulty(from_difficulty);
+                const to_tiers_by_difficulty: Array<Tier> =
+                    pack.Tiers_By_Difficulty(to_difficulty);
+                min_tier_index = from_tiers_by_difficulty[0].Index();
+                max_tier_index = to_tiers_by_difficulty[to_tiers_by_difficulty.length - 1].Index();
+            } else {
+                const difficulty: Difficulty_e =
+                    Random_Integer_Inclusive(min_difficulty, max_difficulty);
+                const tiers_by_difficulty: Array<Tier> =
+                    pack.Tiers_By_Difficulty(difficulty);
+                min_tier_index = tiers_by_difficulty[0].Index();
+                max_tier_index = tiers_by_difficulty[tiers_by_difficulty.length - 1].Index();
+            }
+
+            super(
+                {
+                    pack,
+                    min_tier_index,
+                    max_tier_index,
+                }
+            );
         }
     }
 }
@@ -946,205 +1450,357 @@ export class Color
     {
         return this.#alpha;
     }
+
+    Percent_Difference_From(other_color: Color):
+        number
+    {
+        let percent_difference = 0;
+
+        for (const [color_a, color_b] of
+            [
+                [this.Red(), other_color.Red()],
+                [this.Green(), other_color.Green()],
+                [this.Blue(), other_color.Blue()],
+            ] as Array<[number, number]>
+        ) {
+            if (color_a > color_b) {
+                percent_difference += (color_a - color_b) * 100 / 255;
+            } else {
+                percent_difference += (color_b - color_a) * 100 / 255;
+            }
+        }
+
+        const alpha_a = this.Alpha();
+        const alpha_b = other_color.Alpha();
+        if (alpha_a > alpha_b) {
+            percent_difference += (alpha_a - alpha_b) * 100;
+        } else {
+            percent_difference += (alpha_b - alpha_a) * 100;
+        }
+
+        return percent_difference / 4;
+    }
 }
 
-/* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
-export class Arena
+export class Random_Color extends Color
 {
-    #rules: Rules;
-    #players: Array<Player>;
-    #board: Board;
+    constructor(
+        {
+            min_red = 0,
+            max_red = 255,
 
-    #turn_count: Turn_Count;
-    #turn_queue: Array<Player>; // does this need to be separate from players? if we need to keep track of humans players, we can store separate
-    #turn_queue_index: Index;
+            min_green = 0,
+            max_green = 255,
 
-    #is_input_enabled: boolean;
+            min_blue = 0,
+            max_blue = 255,
+
+            min_alpha = 0.0,
+            max_alpha = 1.0,
+        }: {
+            min_red?: number,
+            max_red?: number,
+
+            min_green?: number,
+            max_green?: number,
+
+            min_blue?: number,
+            max_blue?: number,
+
+            min_alpha?: number,
+            max_alpha?: number,
+        },
+    )
+    {
+        if (min_red < 0 || min_red > max_red) {
+            throw new Error(
+                `min_red of ${min_red} is greater than max_red of ${max_red}.`
+            );
+        } else if (min_green < 0 || min_green > max_green) {
+            throw new Error(
+                `min_green of ${min_green} is greater than max_green of ${max_green}.`
+            );
+        } else if (min_blue < 0 || min_blue > max_blue) {
+            throw new Error(
+                `min_blue of ${min_blue} is greater than max_blue of ${max_blue}.`
+            );
+        } else if (min_alpha < 0 || min_alpha > max_alpha) {
+            throw new Error(
+                `min_alpha of ${min_alpha} is greater than max_alpha of ${max_alpha}.`
+            );
+        } else {
+            super({
+                red: Random_Integer_Inclusive(min_red, max_red),
+                green: Random_Integer_Inclusive(min_green, max_green),
+                blue: Random_Integer_Inclusive(min_blue, max_blue),
+                alpha: Random_Float_Inclusive(min_alpha, max_alpha),
+            });
+        }
+    }
+}
+
+export class Unique_Random_Colors
+{
+    #min_red: number;
+    #max_red: number;
+
+    #min_green: number;
+    #max_green: number;
+
+    #min_blue: number;
+    #max_blue: number;
+
+    #min_alpha: number;
+    #max_alpha: number;
+
+    #color_count: number;
+    #colors: Array<Color>;
+
+    #did_interpolate: boolean;
 
     constructor(
         {
-            rules,
-            selections,
+            color_count,
+
+            min_red = 0,
+            max_red = 255,
+
+            min_green = 0,
+            max_green = 255,
+
+            min_blue = 0,
+            max_blue = 255,
+
+            min_alpha = 0.0,
+            max_alpha = 1.0,
         }: {
-            rules: Rules,
-            selections: Array<Selection>
+            color_count: Color_Count,
+
+            min_red?: number,
+            max_red?: number,
+
+            min_green?: number,
+            max_green?: number,
+
+            min_blue?: number,
+            max_blue?: number,
+
+            min_alpha?: number,
+            max_alpha?: number,
         }
     )
     {
-        const player_count: Player_Count = rules.Player_Count();
-        if (selections.length !== player_count) {
-            throw new Error(`Must have a selection for each player, no more and no less.`);
+        if (color_count < 0) {
+            throw new Error(
+                `color_count of ${color_count} is less than 0.`
+            );
+        } else if (min_red < 0 || min_red > max_red) {
+            throw new Error(
+                `min_red of ${min_red} is greater than max_red of ${max_red}.`
+            );
+        } else if (min_green < 0 || min_green > max_green) {
+            throw new Error(
+                `min_green of ${min_green} is greater than max_green of ${max_green}.`
+            );
+        } else if (min_blue < 0 || min_blue > max_blue) {
+            throw new Error(
+                `min_blue of ${min_blue} is greater than max_blue of ${max_blue}.`
+            );
+        } else if (min_alpha < 0 || min_alpha > max_alpha) {
+            throw new Error(
+                `min_alpha of ${min_alpha} is greater than max_alpha of ${max_alpha}.`
+            );
         } else {
-            this.#rules = rules;
+            this.#min_red = min_red;
+            this.#max_red = max_red;
 
-            let human_count: Count = 0;
-            let computer_count: Count = 0;
-            this.#players = [];
-            for (let idx = 0, end = player_count; idx < end; idx += 1) {
-                const selection: Selection = selections[idx];
-                let player_name: string = selection.Collection().Owner_Name();
-                if (selection.Is_Of_Human()) {
-                    human_count += 1;
-                    this.#players.push(new Human_Player({
-                        arena: this,
-                        index: idx,
-                        name: player_name !== `` ?
-                            player_name :
-                            `P ${human_count}`,
-                        selection: selections[idx],
-                    }));
+            this.#min_green = min_green;
+            this.#max_green = max_green;
+
+            this.#min_blue = min_blue;
+            this.#max_blue = max_blue;
+
+            this.#min_alpha = min_alpha;
+            this.#max_alpha = max_alpha;
+
+            this.#color_count = color_count;
+            this.#colors = [];
+
+            const min_percent_difference: number = this.#Min_Percent_Difference();
+            const max_failure_count: number = 50;
+
+            let failure_count: number = 0;
+            while (this.#colors.length < color_count) {
+                if (failure_count <= max_failure_count) {
+                    const new_color: Random_Color = new Random_Color(
+                        {
+                            min_red,
+                            max_red,
+
+                            min_green,
+                            max_green,
+
+                            min_blue,
+                            max_blue,
+
+                            min_alpha,
+                            max_alpha,
+                        }
+                    );
+
+                    let is_different_enough: boolean = true;
+                    for (const old_color of this.#colors) {
+                        if (new_color.Percent_Difference_From(old_color) < min_percent_difference) {
+                            failure_count += 1;
+                            is_different_enough = false;
+                            break;
+                        }
+                    }
+
+                    if (is_different_enough) {
+                        this.#colors.push(new_color);
+                    }
                 } else {
-                    computer_count += 1;
-                    this.#players.push(new Computer_Player({
-                        arena: this,
-                        index: idx,
-                        name: player_name !== `` ?
-                            player_name :
-                            `CPU ${computer_count}`,
-                        selection: selections[idx],
-                    }));
+                    // temp
+                    // we need to interpolate between the first two colors
+                    // with the greatest difference.
+                    this.#colors.push(new Random_Color(
+                        {
+                            min_red,
+                            max_red,
+
+                            min_green,
+                            max_green,
+
+                            min_blue,
+                            max_blue,
+
+                            min_alpha,
+                            max_alpha,
+                        }
+                    ));
                 }
             }
 
-            this.#board = new Board({
-                arena: this,
-            });
+            this.#did_interpolate = failure_count > max_failure_count;
 
-            this.#turn_count = rules.Cell_Count();
-            this.#turn_queue = Array.from(this.#players).sort(() => Math.random() - 0.5);
-            this.#turn_queue_index = 0;
-
-            this.#is_input_enabled = true;
-
-            Object.freeze(this.#players);
-            Object.freeze(this.#turn_queue);
+            Object.freeze(this.#colors);
+            Object.freeze(this);
         }
     }
 
-    Rules():
-        Rules
+    Min_Red():
+        number
     {
-        return this.#rules;
+        return this.#min_red;
     }
 
-    Player_Count():
-        Player_Count
+    Max_Red():
+        number
     {
-        return this.#players.length;
+        return this.#max_red;
     }
 
-    Player(player_index: Player_Index):
-        Player
+    Min_Green():
+        number
     {
-        if (player_index >= 0 && player_index < this.Player_Count()) {
-            return this.#players[player_index];
+        return this.#min_green;
+    }
+
+    Max_Green():
+        number
+    {
+        return this.#max_green;
+    }
+
+    Min_Blue():
+        number
+    {
+        return this.#min_blue;
+    }
+
+    Max_Blue():
+        number
+    {
+        return this.#max_blue;
+    }
+
+    Min_Alpha():
+        number
+    {
+        return this.#min_alpha;
+    }
+
+    Max_Alpha():
+        number
+    {
+        return this.#max_alpha;
+    }
+
+    Color_Count():
+        Color_Count
+    {
+        return this.#color_count;
+    }
+
+    Color(color_index: Color_Index):
+        Color
+    {
+        if (color_index == null || color_index < 0 || color_index > this.Color_Count()) {
+            throw new Error(`Invalid color_index of ${color_index}.`)
         } else {
-            throw new Error("Invalid player_index.");
+            return this.#colors[color_index];
         }
     }
 
-    Players():
-        Array<Player>
+    Colors():
+        Array<Color>
     {
-        return Array.from(this.#players);
+        return Array.from(this.#colors);
     }
 
-    Current_Player_Index():
-        Player_Index
-    {
-        return this.Current_Player().Index();
-    }
-
-    Current_Player():
-        Player
-    {
-        if (this.Is_Game_Over()) {
-            throw new Error(`This arena has no current player because the game is over.`);
-        } else {
-            return this.#turn_queue[this.#turn_queue_index];
-        }
-    }
-
-    Board():
-        Board
-    {
-        return this.#board;
-    }
-
-    Turn_Count():
-        Turn_Count
-    {
-        return this.#turn_count;
-    }
-
-    Is_On_Human_Turn():
+    Did_Interpolate():
         boolean
     {
-        if (this.Is_Game_Over()) {
-            return false;
-        } else {
-            return this.Current_Player().Is_Human();
-        }
+        return this.#did_interpolate;
     }
 
-    Is_On_Computer_Turn():
-        boolean
+    #Min_Percent_Difference():
+        number
     {
-        if (this.Is_Game_Over()) {
-            return false;
-        } else {
-            return !this.Is_On_Human_Turn();
-        }
-    }
-
-    Next_Turn():
-        void
-    {
-        if (this.Is_Game_Over()) {
-            throw new Error(`No more turns, the game is over.`);
-        } else {
-            this.#turn_count -= 1;
-            this.#turn_queue_index += 1;
-            if (this.#turn_queue_index === this.#turn_queue.length) {
-                this.#turn_queue_index = 0;
+        if (this.#color_count > 0) {
+            // if there were no ranges, the min_percent_difference would simply be
+            // (100 / color_count), but because ranges are allowed, it's as if we're
+            // only using a percentage of each color in the count. so we must multiply
+            // the color_count by the average range's scale, such that if only 50% of
+            // each range is used on average, then our equation would be
+            // (100 / (color_count * 0.5)). this would make it so that upon comparison
+            // of each random color generated, there must be a higher min_percent_difference
+            // between the colors with these ranges, to ensure more uniqueness. Because
+            // they randomly generating colors and not equally distributing them, we need to
+            // further decrease the min_percent_difference to ensure that we can get as many
+            // randomly unique colors upto the color_count as possible within reason.
+            let total_decimal_of_ranges_used: number = 0;
+            for (const [min, max] of
+                [
+                    [this.Min_Red(), this.Max_Red()],
+                    [this.Min_Green(), this.Max_Green()],
+                    [this.Min_Blue(), this.Max_Blue()],
+                ] as Array<[number, number]>
+            ) {
+                total_decimal_of_ranges_used += (max - min) * 1.0 / 255;
             }
+            total_decimal_of_ranges_used += (this.Max_Alpha() - this.Min_Alpha());
+
+            const average_decimal_of_ranges_used: number = total_decimal_of_ranges_used / 4;
+            const reasonable_decimal_of_randomness: number = 0.75;
+
+            return 100 / (this.Color_Count() * average_decimal_of_ranges_used * reasonable_decimal_of_randomness);
+        } else {
+            return 0;
         }
     }
-
-    Is_Input_Enabled():
-        boolean
-    {
-        return this.#is_input_enabled;
-    }
-
-    Enable_Input():
-        void
-    {
-        this.#is_input_enabled = true;
-    }
-
-    Disable_Input():
-        void
-    {
-        this.#is_input_enabled = false;
-    }
-
-    Is_Game_Over():
-        boolean
-    {
-        return this.#turn_count === 0;
-    }
-
-    Scores():
-        Scores
-    {
-        return new Scores(
-            {
-                players: this.#players,
-            }
-        );
-    }
-};
+}
 
 export type Player_And_Score_Count =
     Count;
@@ -1357,7 +2013,7 @@ export class Rules
             plus = true,
             wall = true,
             combo = true,
-            random = false,
+            random = true, // temp until we get selection view up and running
 
             is_small_board = true,
         }: {
@@ -1503,12 +2159,99 @@ type Rules_Save_Data = {
     random: boolean,
 }
 
+export class Random_Rules extends Rules
+{
+    constructor(
+        {
+            min_row_count = 3,
+            max_row_count = 6,
+
+            min_column_count = 3,
+            max_column_count = 6,
+
+            min_player_count = 2,
+            max_player_count = 8,
+
+            allow_open = true,
+            allow_same = true,
+            allow_plus = true,
+            allow_wall = true,
+            allow_combo = true,
+            allow_random = true,
+
+            allow_large_board = false,
+        }: {
+            min_row_count?: Row_Count,
+            max_row_count?: Row_Count,
+
+            min_column_count?: Column_Count,
+            max_column_count?: Column_Count,
+
+            min_player_count?: Player_Count,
+            max_player_count?: Player_Count,
+
+            allow_open?: boolean,
+            allow_same?: boolean,
+            allow_plus?: boolean,
+            allow_wall?: boolean,
+            allow_combo?: boolean,
+            allow_random?: boolean,
+
+            allow_large_board?: boolean,
+        },
+    )
+    {
+        if (min_row_count < 0 || min_row_count > max_row_count) {
+            throw new Error(
+                `min_row_count of ${min_row_count} is greater than max_row_count of ${max_row_count}.`
+            );
+        } else if (min_column_count < 0 || min_column_count > max_column_count) {
+            throw new Error(
+                `min_column_count of ${min_column_count} is greater than max_column_count of ${max_column_count}.`
+            );
+        } else if (min_player_count < 0 || min_player_count > max_player_count) {
+            throw new Error(
+                `min_player_count of ${min_player_count} is greater than max_player_count of ${max_player_count}.`
+            );
+        } else {
+            super({
+                row_count: Random_Integer_Inclusive(min_row_count, max_row_count),
+                column_count: Random_Integer_Inclusive(min_column_count, max_column_count),
+                player_count: Random_Integer_Inclusive(min_player_count, max_player_count),
+
+                open: allow_open ?
+                    Random_Boolean() :
+                    false,
+                same: allow_same ?
+                    Random_Boolean() :
+                    false,
+                plus: allow_plus ?
+                    Random_Boolean() :
+                    false,
+                wall: allow_wall ?
+                    Random_Boolean() :
+                    false,
+                combo: allow_combo ?
+                    Random_Boolean() :
+                    false,
+                random: allow_random ?
+                    Random_Boolean() :
+                    false,
+
+                is_small_board: allow_large_board ?
+                    Random_Boolean() :
+                    true,
+            });
+        }
+    }
+}
+
 /* Contains stakes selected for a player. */
 export class Player
 {
     #arena: Arena;
     #index: Player_Index;
-    #name: string;
+    #name: Player_Name;
     #selection: Selection;
 
     #stakes: Array<Stake>;
@@ -1523,7 +2266,7 @@ export class Player
         }: {
             arena: Arena,
             index: Player_Index,
-            name: string,
+            name: Player_Name,
             selection: Selection,
         }
     )
@@ -1569,7 +2312,7 @@ export class Player
     }
 
     Name():
-        string
+        Player_Name
     {
         return this.#name;
     }
@@ -1720,7 +2463,7 @@ export class Computer_Player extends Player
         const stake_count = this.Stake_Count();
         const selection_indices: Array<Stake_Index> = [stake_index];
         let selection_index: Stake_Index = stake_index;
-        let selection_step_count: Count = Math.ceil(Math.random() * Math.min(stake_count * 1.5, 8)) - 1;
+        let selection_step_count: Count = Random_Integer_Inclusive(1, Math.min(stake_count * 1.5, 8)) - 1;
         while (selection_step_count > 0) {
             selection_step_count -= 1;
             if (Random_Boolean()) {
@@ -2664,7 +3407,7 @@ export class Board
                     cell_index: Cell_Index,
                 }
             {
-                const index: Index = Math.floor(Math.random() * this.#stake_indices.length);
+                const index: Index = Random_Integer_Exclusive(0, this.#stake_indices.length);
 
                 return (
                     {
@@ -3008,7 +3751,7 @@ class Turn_Results
         if (this.#turn_results[cell_index] == null) {
             this.#turn_results[cell_index] = {
                 cell_index: cell_index,
-                direction: Direction_e.NONE,
+                direction: Direction_e._NONE_,
                 old_color: null,
                 step: 0,
                 same: {

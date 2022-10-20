@@ -50,11 +50,6 @@ type Player_Place_Stake_Data = {
     cell_index: Model.Cell_Index,
 }
 
-type Arena_Props = {
-    event_grid: Event.Grid,
-    model: Model.Arena,
-}
-
 async function Wait(milliseconds: number):
     Promise<void>
 {
@@ -65,8 +60,199 @@ async function Wait(milliseconds: number):
     });
 }
 
-export class Arena extends React.Component<Arena_Props>
+type Main_Props = {
+}
+
+export default class Main extends React.Component<Main_Props>
 {
+    #event_grid: Event.Grid;
+    #model: Model.Main;
+
+    #element: HTMLElement | null;
+    #menu: Menu | null;
+    #arena: Arena | null;
+
+    constructor(props: Main_Props)
+    {
+        super(props);
+
+        this.#event_grid = new Event.Grid();
+        this.#model = new Model.Main({});
+
+        this.#element = null;
+        this.#menu = null;
+        this.#arena = null;
+    }
+
+    Event_Grid():
+        Event.Grid
+    {
+        return this.#event_grid;
+    }
+
+    Model():
+        Model.Main
+    {
+        return this.#model;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
+    }
+
+    Menu():
+        Menu
+    {
+        if (!this.#menu) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#menu as Menu;
+        }
+    }
+
+    Arena():
+        Arena
+    {
+        if (!this.#arena) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#arena as Arena;
+        }
+    }
+
+    componentDidMount():
+        void
+    {
+        this.Event_Grid().Add(this);
+        this.Event_Grid().Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.Event_Grid().Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        return (
+            <div
+                ref={ref => this.#element = ref}
+                className={`Main`}
+            >
+                <Menu
+                    key={`menu`}
+                    parent={this}
+                    ref={ref => this.#menu = ref}
+                    event_grid={this.Event_Grid()}
+                    model={this.Model().Menu()}
+                />
+                <Arena
+                    key={`arena`}
+                    parent={this}
+                    ref={ref => this.#arena = ref}
+                    event_grid={this.#event_grid}
+                    model={this.Model().Arena()}
+                />
+            </div>
+        );
+    }
+}
+
+type Menu_Props = {
+    parent: Main;
+    event_grid: Event.Grid;
+    model: Model.Menu;
+}
+
+class Menu extends React.Component<Menu_Props>
+{
+    #element: HTMLElement | null;
+
+    constructor(props: Menu_Props)
+    {
+        super(props);
+
+        this.#element = null;
+    }
+
+    Event_Grid():
+        Event.Grid
+    {
+        return this.props.event_grid;
+    }
+
+    Model():
+        Model.Menu
+    {
+        return this.props.model;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
+    }
+
+    Main():
+        Main
+    {
+        return this.props.parent;
+    }
+
+    componentDidMount():
+        void
+    {
+        this.Event_Grid().Add(this);
+        this.Event_Grid().Add_Many_Listeners(
+            this,
+            [
+            ],
+        );
+    }
+
+    componentWillUnmount():
+        void
+    {
+        this.Event_Grid().Remove(this);
+    }
+
+    render():
+        JSX.Element
+    {
+        return (
+            <div
+                className="Menu"
+            >
+            </div>
+        );
+    }
+}
+
+type Arena_Props = {
+    parent: Main;
+    event_grid: Event.Grid;
+    model: Model.Arena;
+}
+
+class Arena extends React.Component<Arena_Props>
+{
+    #element: HTMLElement | null;
     #players: Array<Player | null>;
     #board: Board | null;
     #results: Results | null;
@@ -79,6 +265,7 @@ export class Arena extends React.Component<Arena_Props>
     {
         super(props);
 
+        this.#element = null;
         this.#players = new Array(this.Model().Player_Count()).fill(null);
         this.#board = null;
         this.#results = null;
@@ -88,10 +275,32 @@ export class Arena extends React.Component<Arena_Props>
         this.#animation_names = new Set();
     }
 
+    Event_Grid():
+        Event.Grid
+    {
+        return this.props.event_grid;
+    }
+
     Model():
         Model.Arena
     {
         return this.props.model;
+    }
+
+    Element():
+        HTMLElement
+    {
+        if (!this.#element) {
+            throw new Error(`Component has not yet been rendered.`);
+        } else {
+            return this.#element as HTMLElement;
+        }
+    }
+
+    Main():
+        Main
+    {
+        return this.props.parent;
     }
 
     Player(player_index: Model.Player_Index):
@@ -382,6 +591,7 @@ export class Arena extends React.Component<Arena_Props>
 
         return (
             <div
+                ref={ref => this.#element = ref}
                 className="Arena"
                 style={styles}
             >
@@ -1872,8 +2082,6 @@ class Results extends React.Component<Results_Props>
         while (this.#scores) {
             await Wait(1);
         }
-
-        const element: HTMLElement = this.Element();
     }
 
     componentDidMount():
