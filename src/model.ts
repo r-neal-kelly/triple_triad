@@ -296,6 +296,9 @@ class Pack
                 const tiers_to_distribute: Tier_Count =
                     this.Tier_Count() % Difficulty_e._COUNT_;
                 if (tiers_to_distribute > 0) {
+                    // we favor the right hand side of the array when the count or remainder is even,
+                    // thus giving the harder difficulties more cards to deal with.
+                    // this calculation requires that count > 0, take > 0, and take < count.
                     const middle_idx_to_distribute: Index =
                         Math.floor(Difficulty_e._COUNT_ / 2);
                     const start_idx_to_distribute: Index =
