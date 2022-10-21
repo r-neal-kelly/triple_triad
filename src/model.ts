@@ -1,5 +1,7 @@
 import cats_pack_json from "./packs/cats.json"
 
+import * as Utils from "./utils";
+
 /* Various aliases to assist reading comprehension. */
 type Name =
     string;
@@ -159,64 +161,6 @@ export enum Rule_e
 
 const MIN_TIER_COUNT = Difficulty_e._COUNT_;
 
-function Random_Boolean():
-    boolean
-{
-    return Math.random() < 0.5;
-}
-
-function Random_Integer_Inclusive(
-    from_inclusive: number,
-    to_inclusive: number,
-):
-    number
-{
-    if (from_inclusive <= to_inclusive) {
-        return Math.floor((Math.random() * ((to_inclusive + 1) - from_inclusive)) + from_inclusive);
-    } else {
-        throw new Error(`from_inclusive must be <= to_inclusive.`);
-    }
-}
-
-function Random_Integer_Exclusive(
-    from_inclusive: number,
-    to_exclusive: number,
-):
-    number
-{
-    if (from_inclusive < to_exclusive) {
-        return Math.floor((Math.random() * (to_exclusive - from_inclusive)) + from_inclusive);
-    } else {
-        throw new Error(`from_inclusive must be < to_exclusive.`);
-    }
-}
-
-function Random_Float_Inclusive(
-    from_inclusive: number,
-    to_inclusive: number,
-):
-    number
-{
-    if (from_inclusive <= to_inclusive) {
-        return (Math.random() * ((to_inclusive + Number.EPSILON) - from_inclusive)) + from_inclusive;
-    } else {
-        throw new Error(`from_inclusive must be <= to_inclusive.`);
-    }
-}
-
-function Random_Float_Exclusive(
-    from_inclusive: number,
-    to_exclusive: number,
-):
-    number
-{
-    if (from_inclusive < to_exclusive) {
-        return (Math.random() * (to_exclusive - from_inclusive)) + from_inclusive;
-    } else {
-        throw new Error(`from_inclusive must be < to_exclusive.`);
-    }
-}
-
 /* Packs and their components as provided and represented by parsed JSON. */
 type Pack_JSON = {
     name: Pack_Name;
@@ -295,7 +239,7 @@ export class Packs
     Random_Pack():
         Pack
     {
-        return this.As_Array()[Random_Integer_Exclusive(0, this.Pack_Count())];
+        return this.As_Array()[Utils.Random_Integer_Exclusive(0, this.Pack_Count())];
     }
 
     As_Array():
@@ -345,18 +289,22 @@ class Pack
             }, this);
             this.#difficulties = [];
             {
-                const tiers_to_distribute: Tier_Count =
-                    this.Tier_Count() % Difficulty_e._COUNT_;
                 const min_tiers_per_difficulty: Tier_Count =
                     Math.floor(this.Tier_Count() / Difficulty_e._COUNT_);
                 const counts_per_difficulty: Array<Tier_Count> =
                     new Array(Difficulty_e._COUNT_).fill(min_tiers_per_difficulty);
-                const start_idx_to_distribute: Index = (tiers_to_distribute & 1) > 0 ?
-                    Math.floor(tiers_to_distribute / 2) :
-                    Math.floor(tiers_to_distribute / 2) + 1;
-                for (let idx = start_idx_to_distribute, end = idx + tiers_to_distribute; idx < end; idx += 1) {
-                    counts_per_difficulty[idx] += 1;
+                const tiers_to_distribute: Tier_Count =
+                    this.Tier_Count() % Difficulty_e._COUNT_;
+                if (tiers_to_distribute > 0) {
+                    const middle_idx_to_distribute: Index =
+                        Math.floor(Difficulty_e._COUNT_ / 2);
+                    const start_idx_to_distribute: Index =
+                        middle_idx_to_distribute - (Math.ceil(tiers_to_distribute / 2) - 1);
+                    for (let idx = start_idx_to_distribute, end = idx + tiers_to_distribute; idx < end; idx += 1) {
+                        counts_per_difficulty[idx] += 1;
+                    }
                 }
+
                 let tier_idx: Tier_Index = 0;
                 for (const count of counts_per_difficulty) {
                     const difficulty: Array<Tier> = [];
@@ -783,7 +731,7 @@ export class Arena
             });
 
             this.#turn_count = rules.Cell_Count();
-            this.#turn_queue = Array.from(this.#players).sort(() => Random_Boolean() ? 1 : -1);
+            this.#turn_queue = Array.from(this.#players).sort(() => Utils.Random_Boolean() ? 1 : -1);
             this.#turn_queue_index = 0;
 
             this.#is_input_enabled = true;
@@ -973,7 +921,7 @@ export class Collection
     Random_Shuffle():
         Shuffle
     {
-        return Object.values(this.#shuffles)[Random_Integer_Exclusive(0, this.Shuffle_Count())];
+        return Object.values(this.#shuffles)[Utils.Random_Integer_Exclusive(0, this.Shuffle_Count())];
     }
 
     Add_Shuffle(shuffle: Shuffle):
@@ -1112,9 +1060,9 @@ export class Shuffle
 
         const results: Array<Card> = [];
         for (let idx = 0, end = card_count; idx < end; idx += 1) {
-            const tier_index: Tier_Index = Random_Integer_Inclusive(min_tier_index, max_tier_index);
+            const tier_index: Tier_Index = Utils.Random_Integer_Inclusive(min_tier_index, max_tier_index);
             const tier: Tier = this.#pack.Tier(tier_index);
-            results.push(tier.Card(Random_Integer_Exclusive(0, tier.Card_Count())));
+            results.push(tier.Card(Utils.Random_Integer_Exclusive(0, tier.Card_Count())));
         }
 
         return results;
@@ -1137,7 +1085,7 @@ export class Shuffle
         } else {
             const results: Array<Card> = [];
             for (let idx = 0, end = card_count; idx < end; idx += 1) {
-                const card_index: Card_Index = Random_Integer_Exclusive(0, cards.length);
+                const card_index: Card_Index = Utils.Random_Integer_Exclusive(0, cards.length);
                 results.push(cards[card_index]);
                 cards[card_index] = cards[cards.length - 1];
                 cards.pop();
@@ -1171,15 +1119,15 @@ export class Random_Shuffle extends Shuffle
                 `min_difficulty of ${min_difficulty} is greater than max_difficulty of ${max_difficulty}.`
             );
         } else {
-            const pack: Pack = packs[Random_Integer_Exclusive(0, packs.length)];
+            const pack: Pack = packs[Utils.Random_Integer_Exclusive(0, packs.length)];
 
             let min_tier_index: Tier_Index = 0;
             let max_tier_index: Tier_Index = 0;
             if (allow_multiple_difficulties) {
                 const from_difficulty: Difficulty_e =
-                    Random_Integer_Inclusive(min_difficulty, max_difficulty);
+                    Utils.Random_Integer_Inclusive(min_difficulty, max_difficulty);
                 const to_difficulty: Difficulty_e =
-                    Random_Integer_Inclusive(from_difficulty, max_difficulty);
+                    Utils.Random_Integer_Inclusive(from_difficulty, max_difficulty);
                 const from_tiers_by_difficulty: Array<Tier> =
                     pack.Tiers_By_Difficulty(from_difficulty);
                 const to_tiers_by_difficulty: Array<Tier> =
@@ -1188,7 +1136,7 @@ export class Random_Shuffle extends Shuffle
                 max_tier_index = to_tiers_by_difficulty[to_tiers_by_difficulty.length - 1].Index();
             } else {
                 const difficulty: Difficulty_e =
-                    Random_Integer_Inclusive(min_difficulty, max_difficulty);
+                    Utils.Random_Integer_Inclusive(min_difficulty, max_difficulty);
                 const tiers_by_difficulty: Array<Tier> =
                     pack.Tiers_By_Difficulty(difficulty);
                 min_tier_index = tiers_by_difficulty[0].Index();
@@ -1538,10 +1486,10 @@ export class Random_Color extends Color
             );
         } else {
             super({
-                red: Random_Integer_Inclusive(min_red, max_red),
-                green: Random_Integer_Inclusive(min_green, max_green),
-                blue: Random_Integer_Inclusive(min_blue, max_blue),
-                alpha: Random_Float_Inclusive(min_alpha, max_alpha),
+                red: Utils.Random_Integer_Inclusive(min_red, max_red),
+                green: Utils.Random_Integer_Inclusive(min_green, max_green),
+                blue: Utils.Random_Integer_Inclusive(min_blue, max_blue),
+                alpha: Utils.Random_Float_Inclusive(min_alpha, max_alpha),
             });
         }
     }
@@ -2223,31 +2171,31 @@ export class Random_Rules extends Rules
             );
         } else {
             super({
-                row_count: Random_Integer_Inclusive(min_row_count, max_row_count),
-                column_count: Random_Integer_Inclusive(min_column_count, max_column_count),
-                player_count: Random_Integer_Inclusive(min_player_count, max_player_count),
+                row_count: Utils.Random_Integer_Inclusive(min_row_count, max_row_count),
+                column_count: Utils.Random_Integer_Inclusive(min_column_count, max_column_count),
+                player_count: Utils.Random_Integer_Inclusive(min_player_count, max_player_count),
 
                 open: allow_open ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     false,
                 same: allow_same ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     false,
                 plus: allow_plus ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     false,
                 wall: allow_wall ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     false,
                 combo: allow_combo ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     false,
                 random: allow_random ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     false,
 
                 is_small_board: allow_large_board ?
-                    Random_Boolean() :
+                    Utils.Random_Boolean() :
                     true,
             });
         }
@@ -2471,10 +2419,10 @@ export class Computer_Player extends Player
         const stake_count = this.Stake_Count();
         const selection_indices: Array<Stake_Index> = [stake_index];
         let selection_index: Stake_Index = stake_index;
-        let selection_step_count: Count = Random_Integer_Inclusive(1, Math.min(stake_count * 1.5, 8)) - 1;
+        let selection_step_count: Count = Utils.Random_Integer_Inclusive(1, Math.min(stake_count * 1.5, 8)) - 1;
         while (selection_step_count > 0) {
             selection_step_count -= 1;
-            if (Random_Boolean()) {
+            if (Utils.Random_Boolean()) {
                 if (selection_index > 0) {
                     selection_index -= 1;
                 } else {
@@ -3415,7 +3363,7 @@ export class Board
                     cell_index: Cell_Index,
                 }
             {
-                const index: Index = Random_Integer_Exclusive(0, this.#stake_indices.length);
+                const index: Index = Utils.Random_Integer_Exclusive(0, this.#stake_indices.length);
 
                 return (
                     {
@@ -3595,7 +3543,7 @@ export class Board
             // defensive mode
             const min_claim_placements = choices.Min_Claim_Placements();
             const biggest_defense_placements = min_claim_placements.Filter_By_Biggest_Defense(this);
-            if (Random_Boolean() && this.Defense_Count_Of(biggest_defense_placements.Random().cell_index) >= 2) {
+            if (Utils.Random_Boolean() && this.Defense_Count_Of(biggest_defense_placements.Random().cell_index) >= 2) {
                 // bait mode
                 // place the least valuable yet easily re-claimable card on the board
                 const worst_defense_placements = biggest_defense_placements.Filter_By_Worst_Defense(this, computer_player);
