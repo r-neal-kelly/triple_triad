@@ -168,6 +168,60 @@ body {
     border: var(--board_cell_border_size) solid #00000080;
 }
 
+@keyframes Board_Cell_Occupied_Left_To_Right {
+    0% {
+        background-position: left;
+    }
+
+    100% {
+        background-position: right;
+    }
+}
+
+@keyframes Board_Cell_Occupied_Top_To_Bottom {
+    0% {
+        background-position: top;
+    }
+
+    100% {
+        background-position: bottom;
+    }
+}
+
+@keyframes Board_Cell_Occupied_Right_To_Left {
+    0% {
+        background-position: right;
+    }
+
+    100% {
+        background-position: left;
+    }
+}
+
+@keyframes Board_Cell_Occupied_Bottom_To_Top {
+    0% {
+        background-position: bottom;
+    }
+
+    100% {
+        background-position: top;
+    }
+}
+
+@keyframes Board_Cell_Occupied_Flash {
+    0% {
+        border-color: black;
+    }
+
+    50% {
+        border-color: white;
+    }
+
+    100% {
+        border-color: black;
+    }
+}
+
 .Board_Cell_Card {
     width: 90%;
     height: 90%;
@@ -355,23 +409,25 @@ body {
     border: var(--player_stake_border_size) solid white;
 }
 
-@keyframes Results_Fade_In {
+@keyframes Player_Stake_Selected_Twinkle {
     0% {
-        opacity: 0%;
+        border-color: white;
+    }
+
+    25% {
+        border-color: black;
+    }
+
+    50% {
+        border-color: white;
+    }
+
+    75% {
+        border-color: black;
     }
 
     100% {
-        opacity: 100%;
-    }
-}
-
-@keyframes Results_Banner_Move_In {
-    0% {
-        left: -100%;
-    }
-
-    100% {
-        left: 0;
+        border-color: white;
     }
 }
 
@@ -389,6 +445,16 @@ body {
     animation-duration: 2000ms;
     animation-timing-function: ease-in-out;
     animation-iteration-count: 1;
+}
+
+@keyframes Results_Fade_In {
+    0% {
+        opacity: 0%;
+    }
+
+    100% {
+        opacity: 100%;
+    }
 }
 
 .Results_Banner {
@@ -410,6 +476,16 @@ body {
     animation-duration: 2000ms;
     animation-timing-function: ease-in-out;
     animation-iteration-count: 1;
+}
+
+@keyframes Results_Banner_Move_In {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 0;
+    }
 }
 
 .Results_Winner {

@@ -61,43 +61,33 @@ type Main_Props = {
 
 export class Main extends Component<Main_Props>
 {
-    private menu: Menu | null;
-    private arena: Arena | null;
+    private menu: Menu | null = null;
+    private arena: Arena | null = null;
 
-    constructor(props: Main_Props)
-    {
-        super(props);
-
-        this.menu = null;
-        this.arena = null;
-    }
-
-    /* Children */
     Menu():
         Menu
     {
-        if (this.menu != null) {
-            return this.menu;
-        } else {
+        if (this.menu == null) {
             throw this.Error_Not_Rendered();
+        } else {
+            return this.menu;
         }
     }
 
     Arena():
         Arena
     {
-        if (this.arena != null) {
-            return this.arena;
-        } else {
+        if (this.arena == null) {
             throw this.Error_Not_Rendered();
+        } else {
+            return this.arena;
         }
     }
 
-    /* Events */
     async On_Render():
         Promise<JSX.Element>
     {
-        this.Update(3000);
+        //this.Update(3000);
 
         return (
             <div
@@ -105,17 +95,19 @@ export class Main extends Component<Main_Props>
             >
                 <Menu
                     key={`menu`}
-                    parent={this}
                     ref={ref => this.menu = ref}
-                    event_grid={this.Event_Grid()}
+
                     model={this.Model().Menu()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
                 />
                 <Arena
                     key={`arena_${Date.now()}_${Math.random()}`}
-                    parent={this}
                     ref={ref => this.arena = ref}
-                    event_grid={new Event.Grid()}
+
                     model={this.Model().Random_Arena()}
+                    parent={this}
+                    event_grid={new Event.Grid()}
                 />
             </div>
         );
@@ -123,73 +115,25 @@ export class Main extends Component<Main_Props>
 }
 
 type Menu_Props = {
+    model: Model.Menu;
     parent: Main;
     event_grid: Event.Grid;
-    model: Model.Menu;
 }
 
-class Menu extends React.Component<Menu_Props>
+class Menu extends Component<Menu_Props>
 {
-    #element: HTMLElement | null;
-
-    constructor(props: Menu_Props)
-    {
-        super(props);
-
-        this.#element = null;
-    }
-
-    Event_Grid():
-        Event.Grid
-    {
-        return this.props.event_grid;
-    }
-
-    Model():
-        Model.Menu
-    {
-        return this.props.model;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
-
     Main():
         Main
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
-    componentDidMount():
-        void
-    {
-        this.Event_Grid().Add(this);
-        this.Event_Grid().Add_Many_Listeners(
-            this,
-            [
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.Event_Grid().Remove(this);
-    }
-
-    render():
-        JSX.Element
+    async On_Render():
+        Promise<JSX.Element>
     {
         return (
             <div
-                className="Menu"
+                className={`Menu`}
             >
             </div>
         );
@@ -197,73 +141,43 @@ class Menu extends React.Component<Menu_Props>
 }
 
 type Arena_Props = {
+    model: Model.Arena;
     parent: Main;
     event_grid: Event.Grid;
-    model: Model.Arena;
 }
 
-class Arena extends React.Component<Arena_Props>
+class Arena extends Component<Arena_Props>
 {
-    #element: HTMLElement | null;
-    #players: Array<Player | null>;
-    #board: Board | null;
-    #results: Results | null;
-
-    #animation_stylesheet: HTMLStyleElement | null;
-    #animation_name_prefix: string;
-    #animation_names: Set<string>;
-
-    constructor(props: Arena_Props)
-    {
-        super(props);
-
-        this.#element = null;
-        this.#players = new Array(this.Model().Player_Count()).fill(null);
-        this.#board = null;
-        this.#results = null;
-
-        this.#animation_stylesheet = null;
-        this.#animation_name_prefix = ``;
-        this.#animation_names = new Set();
-    }
-
-    Event_Grid():
-        Event.Grid
-    {
-        return this.props.event_grid;
-    }
-
-    Model():
-        Model.Arena
-    {
-        return this.props.model;
-    }
+    private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
+    private board: Board | null = null;
+    private results: Results | null = null;
 
     Element():
         HTMLElement
     {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
+        const element: HTMLElement | null = super.Element();
+        if (element == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#element as HTMLElement;
+            return element;
         }
     }
 
     Main():
         Main
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
     Player(player_index: Model.Player_Index):
         Player
     {
-        if (player_index < 0 || player_index >= this.#players.length) {
-            throw new Error(`'player_index' of '${player_index}' is invalid.`);
-        } else if (!this.#players[player_index]) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (player_index < 0 || player_index >= this.players.length) {
+            throw new Error(`'player_index' ${player_index} is invalid.`);
+        } else if (this.players[player_index] == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#players[player_index] as Player;
+            return this.players[player_index] as Player;
         }
     }
 
@@ -271,9 +185,9 @@ class Arena extends React.Component<Arena_Props>
         Array<Player>
     {
         const players: Array<Player> = [];
-        for (const player of this.#players) {
-            if (!player) {
-                throw new Error(`Component has not yet been rendered.`);
+        for (const player of this.players) {
+            if (player == null) {
+                throw this.Error_Not_Rendered();
             } else {
                 players.push(player);
             }
@@ -285,150 +199,148 @@ class Arena extends React.Component<Arena_Props>
     Board():
         Board
     {
-        if (!this.#board) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (this.board == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#board as Board;
+            return this.board;
         }
     }
 
     Results():
         Results
     {
-        if (!this.#results) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (this.results == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#results as Results;
+            return this.results;
         }
     }
 
-    #Create_Animations():
-        void
+    async Before_Mount():
+        Promise<void>
     {
-        this.#animation_stylesheet = document.createElement(`style`);
-        document.head.appendChild(this.#animation_stylesheet);
-
-        this.#animation_name_prefix = `_${(Math.ceil(Date.now() + Math.random())).toString()}`;
-
-        if (this.#animation_stylesheet.sheet == null ||
-            this.#animation_stylesheet.parentNode == null) {
-            throw new Error(`Could not successfully create an animation_stylesheet.`);
+        const root_element = document.querySelector(`:root`) as HTMLElement;
+        if (root_element == null) {
+            throw new Error(`Could not find root_element.`);
         } else {
-            for (const [name_affix, from, to] of [
-                [
-                    `left_to_right`,
-                    `left`,
-                    `right`,
-                ],
-                [
-                    `top_to_bottom`,
-                    `top`,
-                    `bottom`,
-                ],
-                [
-                    `right_to_left`,
-                    `right`,
-                    `left`,
-                ],
-                [
-                    `bottom_to_top`,
-                    `bottom`,
-                    `top`,
-                ],
-            ] as Array<[
-                string,
-                string,
-                string,
-            ]>) {
-                const animation_name: string = this.#Animation_Name(name_affix);
-                this.#animation_names.add(animation_name);
-                this.#animation_stylesheet.sheet.insertRule(
-                    `@keyframes ${animation_name} {
-                        0% {
-                            background-position: ${from};
-                        }
-                        100% {
-                            background-position: ${to};
-                        }
-                    }`,
-                    0
-                );
-            }
+            root_element.style.setProperty(`--board_grid_column_count`, `${this.Model().Rules().Column_Count()}`);
+            root_element.style.setProperty(`--board_grid_row_count`, `${this.Model().Rules().Row_Count()}`);
+        }
+    }
 
+    async After_Mount():
+        Promise<void>
+    {
+        this.Send({
+            name_affix: GAME_START,
+            name_suffixes: [
+            ],
+            data: {
+            } as Game_Start_Data,
+            is_atomic: true,
+        });
+    }
+
+    async On_Add_Listeners():
+        Promise<Event.Listener_Info[]>
+    {
+        return ([
             {
-                const animation_name: string = this.#Animation_Name(`twinkle_border`);
-                this.#animation_names.add(animation_name);
-                this.#animation_stylesheet.sheet.insertRule(
-                    `@keyframes ${animation_name} {
-                        0% {
-                            border-color: white;
-                        }
-                        25% {
-                            border-color: black;
-                        }
-                        50% {
-                            border-color: white;
-                        }
-                        75% {
-                            border-color: black;
-                        }
-                        100% {
-                            border-color: white;
-                        }
-                    }`,
-                    0
-                );
-            }
-
+                event_name: new Event.Name(ON, GAME_START),
+                event_handler: this.On_Game_Start,
+            },
             {
-                const animation_name: string = this.#Animation_Name(`twinkle_border_once`);
-                this.#animation_names.add(animation_name);
-                this.#animation_stylesheet.sheet.insertRule(
-                    `@keyframes ${animation_name} {
-                        0% {
-                            border-color: black;
-                        }
-                        50% {
-                            border-color: white;
-                        }
-                        100% {
-                            border-color: black;
-                        }
-                    }`,
-                    0
-                );
-            }
-        }
+                event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                event_handler: this.On_Player_Stop_Turn,
+            },
+        ]);
     }
 
-    #Destroy_Animations():
-        void
+    async On_Render():
+        Promise<JSX.Element | null>
     {
-        if (this.#animation_stylesheet != null &&
-            this.#animation_stylesheet.parentNode != null) {
-            this.#animation_stylesheet.parentNode.removeChild(this.#animation_stylesheet);
+        const styles: any = {};
+        if (this.Model().Rules().Is_Large_Board()) {
+            styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
         }
 
-        this.#animation_names = new Set();
-        this.#animation_name_prefix = ``;
-        this.#animation_stylesheet = null;
-    }
+        const player_count: number = this.Model().Player_Count();
+        const left_player_count: number = Math.floor(player_count / 2);
+        const right_player_count: number = player_count - left_player_count;
 
-    #Animation_Name(name_affix: string):
-        string
-    {
-        return `${this.#animation_name_prefix}_${name_affix}`;
-    }
+        return (
+            <div
+                className={`Arena`}
+                style={styles}
+            >
+                <div
+                    className={`Player_Grid`}
+                    style={{
+                        gridTemplateColumns: `repeat(${left_player_count}, 1fr)`,
+                    }}
+                >
+                    {
+                        Array(left_player_count).fill(null).map((_, index: Model.Player_Index) =>
+                        {
+                            const player_index: Model.Player_Index = index + 0;
 
-    Animation_Name(name_affix: string):
-        string
-    {
-        const animation_name: string = this.#Animation_Name(name_affix);
-        if (!this.#animation_names.has(animation_name)) {
-            throw new Error(`Animation does not exist with the name_affix of ${name_affix}.`);
-        } else {
-            return animation_name;
-        }
+                            return (
+                                <Player
+                                    key={`player_${player_index}`}
+                                    ref={ref => this.players[player_index] = ref}
+
+                                    model={this.Model().Player(player_index)}
+                                    parent={this}
+                                    event_grid={this.Event_Grid()}
+                                    index={player_index}
+                                />
+                            );
+                        })
+                    }
+                </div>
+                <Board
+                    key={`board`}
+                    ref={ref => this.board = ref}
+
+                    model={this.Model().Board()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <div
+                    className={`Player_Grid`}
+                    style={{
+                        gridTemplateColumns: `repeat(${right_player_count}, 1fr)`,
+                    }}
+                >
+                    {
+                        Array(right_player_count).fill(null).map((_, index: Model.Player_Index) =>
+                        {
+                            const player_index: Model.Player_Index = index + left_player_count;
+
+                            return (
+                                <Player
+                                    key={`player_${player_index}`}
+                                    ref={ref => this.players[player_index] = ref}
+
+                                    model={this.Model().Player(player_index)}
+                                    parent={this}
+                                    event_grid={this.Event_Grid()}
+                                    index={player_index}
+                                />
+                            );
+                        })
+                    }
+                </div>
+                <Results
+                    key={`results`}
+                    ref={ref => this.results = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
     }
 
     async On_Game_Start(
@@ -438,7 +350,8 @@ class Arena extends React.Component<Arena_Props>
         Promise<void>
     {
         const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
-        this.props.event_grid.Send_Event({
+
+        this.Send({
             name_affix: PLAYER_START_TURN,
             name_suffixes: [
                 current_player_index.toString(),
@@ -459,7 +372,7 @@ class Arena extends React.Component<Arena_Props>
         this.Model().Next_Turn();
 
         if (this.Model().Is_Game_Over()) {
-            this.props.event_grid.Send_Event({
+            this.Send({
                 name_affix: GAME_STOP,
                 name_suffixes: [
                 ],
@@ -470,7 +383,8 @@ class Arena extends React.Component<Arena_Props>
             });
         } else {
             const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
-            this.props.event_grid.Send_Event({
+
+            this.Send({
                 name_affix: PLAYER_START_TURN,
                 name_suffixes: [
                     current_player_index.toString(),
@@ -482,143 +396,13 @@ class Arena extends React.Component<Arena_Props>
             });
         }
     }
-
-    componentDidMount():
-        void
-    {
-        const root_element = document.querySelector(`:root`) as HTMLElement;
-        if (root_element == null) {
-            throw new Error(`Could not find root_element.`);
-        } else {
-            root_element.style.setProperty(`--board_grid_column_count`, `${this.Model().Rules().Column_Count()}`);
-            root_element.style.setProperty(`--board_grid_row_count`, `${this.Model().Rules().Row_Count()}`);
-
-            this.#Create_Animations();
-
-            this.props.event_grid.Add(this);
-            this.props.event_grid.Add_Many_Listeners(
-                this,
-                [
-                    {
-                        event_name: new Event.Name(ON, GAME_START),
-                        event_handler: this.On_Game_Start,
-                    },
-                    {
-                        event_name: new Event.Name(ON, PLAYER_STOP_TURN),
-                        event_handler: this.On_Player_Stop_Turn,
-                    },
-                ],
-            );
-
-            this.props.event_grid.Send_Event({
-                name_affix: GAME_START,
-                name_suffixes: [
-                ],
-                data: {
-                } as Game_Start_Data,
-                is_atomic: true,
-            });
-        }
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-
-        this.#Destroy_Animations();
-    }
-
-    render():
-        JSX.Element
-    {
-        const styles: any = {};
-        if (this.Model().Rules().Is_Large_Board()) {
-            styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
-        }
-
-        const player_count: number = this.Model().Player_Count();
-        const left_player_count: number = Math.floor(player_count / 2);
-        const right_player_count: number = player_count - left_player_count;
-
-        return (
-            <div
-                ref={ref => this.#element = ref}
-                className="Arena"
-                style={styles}
-            >
-                <div
-                    className={`Player_Grid`}
-                    style={{
-                        gridTemplateColumns: `repeat(${left_player_count}, 1fr)`,
-                    }}
-                >
-                    {
-                        Array(left_player_count).fill(null).map((_, index: Model.Player_Index) =>
-                        {
-                            const player_index: Model.Player_Index = index + 0;
-
-                            return (
-                                <Player
-                                    key={`player_${player_index}`}
-                                    parent={this}
-                                    ref={ref => this.#players[player_index] = ref}
-                                    event_grid={this.props.event_grid}
-                                    model={this.Model().Player(player_index)}
-                                    index={player_index}
-                                />
-                            );
-                        })
-                    }
-                </div>
-                <Board
-                    key={`board`}
-                    parent={this}
-                    ref={ref => this.#board = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model().Board()}
-                />
-                <div
-                    className={`Player_Grid`}
-                    style={{
-                        gridTemplateColumns: `repeat(${right_player_count}, 1fr)`,
-                    }}
-                >
-                    {
-                        Array(right_player_count).fill(null).map((_, index: Model.Player_Index) =>
-                        {
-                            const player_index: Model.Player_Index = index + left_player_count;
-
-                            return (
-                                <Player
-                                    key={`player_${player_index}`}
-                                    parent={this}
-                                    ref={ref => this.#players[player_index] = ref}
-                                    event_grid={this.props.event_grid}
-                                    model={this.Model().Player(player_index)}
-                                    index={player_index}
-                                />
-                            );
-                        })
-                    }
-                </div>
-                <Results
-                    key={`results`}
-                    parent={this}
-                    ref={ref => this.#results = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model()}
-                />
-            </div>
-        );
-    }
 }
 
 type Player_Props = {
-    parent: Arena,
-    event_grid: Event.Grid,
-    model: Model.Player,
-    index: Model.Player_Index,
+    model: Model.Player;
+    parent: Arena;
+    event_grid: Event.Grid;
+    index: Model.Player_Index;
 }
 
 class Player extends React.Component<Player_Props>
@@ -801,7 +585,7 @@ class Player extends React.Component<Player_Props>
         return (
             <div
                 ref={ref => this.#element = ref}
-                className="Player"
+                className={`Player`}
             >
                 <Player_Bumper
                     key={`player_bumper_${this.props.index}`}
@@ -949,7 +733,7 @@ class Player_Bumper extends React.Component<Player_Bumper_Props>
         return (
             <div
                 ref={ref => this.#element = ref}
-                className="Player_Bumper"
+                className={`Player_Bumper`}
             >
                 <Player_Name
                     key={`player_name_${this.props.index}`}
@@ -1021,7 +805,7 @@ class Player_Name extends React.Component<Player_Name_Props>
     {
         return (
             <div
-                className="Player_Name"
+                className={`Player_Name`}
             >
                 {
                     this.Model().Name()
@@ -1093,7 +877,7 @@ class Player_Score extends React.Component<Player_Score_Props>
     {
         return (
             <div
-                className="Player_Score"
+                className={`Player_Score`}
             >
                 {
                     this.Model().Score()
@@ -1233,7 +1017,7 @@ class Player_Hand extends React.Component<Player_Hand_Props>
         return (
             <div
                 ref={ref => this.#element = ref}
-                className="Player_Hand"
+                className={`Player_Hand`}
             >
                 {
                     Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
@@ -1318,7 +1102,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     {
         const element: HTMLElement = this.Element();
 
-        element.style.animationName = this.Arena().Animation_Name(`twinkle_border`);
+        element.style.animationName = `Player_Stake_Selected_Twinkle`;
         element.style.animationDuration = `${for_milliseconds}ms`;
         element.style.animationTimingFunction = `ease-in-out`;
         element.style.animationIterationCount = `1`;
@@ -1586,15 +1370,15 @@ class Board extends React.Component<Board_Props>
         return (
             <div
                 ref={ref => this.#element = ref}
-                className="Board"
+                className={`Board`}
                 style={styles}
             >
                 <div
-                    className="Board_Bumper"
+                    className={`Board_Bumper`}
                 >
                 </div>
                 <div
-                    className="Board_Grid"
+                    className={`Board_Grid`}
                 >
                     {
                         Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
@@ -1681,28 +1465,26 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
 
             let background_size: string = ``;
-            let old_background_position: string = ``;
-            let new_background_position: string = ``;
+            let to_direction: string = ``;
+            let animation_name: string = ``;
             if (turn_result.direction === Model.Direction_e.LEFT) {
                 background_size = `1000% 100%`;
-                old_background_position = `left`;
-                new_background_position = `right`;
+                to_direction = `right`;
+                animation_name = `Board_Cell_Occupied_Left_To_Right`;
             } else if (turn_result.direction === Model.Direction_e.TOP) {
                 background_size = `100% 1000%`;
-                old_background_position = `top`;
-                new_background_position = `bottom`;
+                to_direction = `bottom`;
+                animation_name = `Board_Cell_Occupied_Top_To_Bottom`;
             } else if (turn_result.direction === Model.Direction_e.RIGHT) {
                 background_size = `1000% 100%`;
-                old_background_position = `right`;
-                new_background_position = `left`;
+                to_direction = `left`;
+                animation_name = `Board_Cell_Occupied_Right_To_Left`;
             } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
                 background_size = `100% 1000%`;
-                old_background_position = `bottom`;
-                new_background_position = `top`;
+                to_direction = `top`;
+                animation_name = `Board_Cell_Occupied_Bottom_To_Top`;
             }
 
-            const animation_name: string =
-                this.Arena().Animation_Name(`${old_background_position}_to_${new_background_position}`);
             const animation_duration: number =
                 Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
             const animation_delay: string =
@@ -1711,7 +1493,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
             element.style.backgroundColor =
                 `transparent`;
             element.style.backgroundImage =
-                `linear-gradient(to ${new_background_position}, ${old_background_color}, ${new_background_color})`;
+                `linear-gradient(to ${to_direction}, ${old_background_color}, ${new_background_color})`;
             element.style.backgroundSize =
                 background_size;
             element.style.animation =
@@ -1730,7 +1512,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             await Wait(200);
 
-            element.style.animationName = this.Arena().Animation_Name(`twinkle_border_once`);
+            element.style.animationName = `Board_Cell_Occupied_Flash`;
             element.style.animationDuration = `${300}ms`;
             element.style.animationTimingFunction = `ease-in`;
             element.style.animationIterationCount = `1`;
@@ -1935,7 +1717,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
             return (
                 <div
                     ref={ref => this.#element = ref}
-                    className="Board_Cell_Empty"
+                    className={`Board_Cell_Empty`}
                     style={{
                         cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
                     }}
@@ -1949,7 +1731,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
             return (
                 <div
                     ref={ref => this.#element = ref}
-                    className="Board_Cell_Occupied"
+                    className={`Board_Cell_Occupied`}
                     style={{
                         backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                     }}
