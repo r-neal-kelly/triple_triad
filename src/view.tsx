@@ -110,18 +110,16 @@ interface Component_Props
 */
 class Component<T extends Component_Props> extends React.Component<T>
 {
-    private is_mounting: boolean = false;
-    private is_updating: boolean = false;
-    private is_unmounting: boolean = false;
+    private is_locked: boolean = false;
     private is_mounted: boolean = false;
 
     private renderable: JSX.Element | null = null;
     private element: HTMLElement | null = null;
 
-    private is_component_did_mount_called: boolean = false;
-    private is_render_called: boolean = false;
-    private is_component_did_update_called: boolean = false;
-    private is_component_will_unmount_called: boolean = false;
+    private was_component_did_mount_called: boolean = false;
+    private was_render_called: boolean = false;
+    private was_component_did_update_called: boolean = false;
+    private was_component_will_unmount_called: boolean = false;
 
     constructor(props: T)
     {
@@ -148,40 +146,63 @@ class Component<T extends Component_Props> extends React.Component<T>
         return this.props.event_grid;
     }
 
-    // not sure this is useful, because it can't be called during mount, update, or unmount cycles,
-    // however it should be safe during any other events, I think, that is with listeners
-    async Is_Ready():
-        Promise<boolean>
+    Element():
+        HTMLElement | null
     {
-        await this.Wait_Until_Idle();
-
-        return this.Is_Mounted();
+        return this.element as HTMLElement;
     }
 
-    private async Wait_Until_Idle():
+    Error_Not_Rendered():
+        Error
+    {
+        return new Error(`Component is not rendered.`);
+    }
+
+    Is_Locked():
+        boolean
+    {
+        return this.is_locked;
+    }
+
+    Is_Unlocked():
+        boolean
+    {
+        return !this.is_locked;
+    }
+
+    /*
+        Locks both the async frame that calls it and
+        every other frame after it until Unlock is called.
+    */
+    async Lock():
         Promise<void>
     {
-        while (this.Is_Mounting() || this.Is_Updating() || this.Is_Unmounting()) {
+        while (this.Is_Locked()) {
+            await Wait(1);
+        }
+
+        this.is_locked = true;
+    }
+
+    /*
+        Locks just the async frame that calls it.
+        Does not require an Unlock call. Can still
+        call Lock afterward to fully lock without any
+        real penalty to efficiency, but will then require
+        a call to Unlock.
+    */
+    async Lock_Frame():
+        Promise<void>
+    {
+        while (this.Is_Locked()) {
             await Wait(1);
         }
     }
 
-    Is_Mounting():
-        boolean
+    Unlock():
+        void
     {
-        return this.is_mounting;
-    }
-
-    Is_Updating():
-        boolean
-    {
-        return this.is_updating;
-    }
-
-    Is_Unmounting():
-        boolean
-    {
-        return this.is_unmounting;
+        this.is_locked = false;
     }
 
     Is_Mounted():
@@ -196,16 +217,152 @@ class Component<T extends Component_Props> extends React.Component<T>
         return !this.is_mounted;
     }
 
-    Element():
-        HTMLElement | null
+    // not sure this is useful, because it can't be called during mount, update, or unmount cycles,
+    // however it should be safe during any other events, I think, that is with listeners
+    async Is_Ready():
+        Promise<boolean>
     {
-        return this.element as HTMLElement;
+        await this.Lock_Frame();
+
+        return this.Is_Mounted();
     }
 
-    Error_Not_Rendered():
-        Error
+    /* Events */
+    async Send(event_info: Event.Info):
+        Promise<void>
     {
-        return new Error(`Component is not rendered.`);
+        await this.Event_Grid().Send_Event(event_info);
+    }
+
+    private async Mount():
+        Promise<void>
+    {
+        await this.Lock();
+        try {
+            if (this.Is_Mounted()) {
+                throw new Error(`This component is already mounted.`);
+            } else {
+                await this.Before_Mount();
+                {
+                    await this.Before_Add_Listeners();
+                    this.Event_Grid().Add(this);
+                    this.Event_Grid().Add_Many_Listeners(this, await this.On_Add_Listeners());
+                    await this.After_Add_Listeners();
+
+                    await this.Render_();
+
+                    while (this.was_component_did_mount_called === false) {
+                        await Wait(1);
+                    }
+
+                    if (this.was_component_will_unmount_called === false) {
+                        this.element = ReactDom.findDOMNode(this) as HTMLElement;
+                    } else {
+                        this.element = null;
+                    }
+                }
+                await this.After_Mount();
+
+                this.is_mounted = true;
+            }
+
+            this.Unlock();
+        } catch (error) {
+            this.Unlock();
+            throw error;
+        }
+    }
+
+    async Update(after_milliseconds: number = 0):
+        Promise<void>
+    {
+        await Wait(after_milliseconds);
+
+        await this.Lock();
+        try {
+            if (this.Is_Mounted()) {
+                await this.Before_Update();
+                {
+                    this.was_component_did_update_called = false;
+                    await this.Render_();
+
+                    while (
+                        this.was_component_will_unmount_called === false &&
+                        this.was_component_did_update_called === false
+                    ) {
+                        await Wait(1);
+                    }
+
+                    if (this.was_component_will_unmount_called === false) {
+                        this.element = ReactDom.findDOMNode(this) as HTMLElement;
+                    } else {
+                        this.element = null;
+                    }
+                }
+                await this.After_Update();
+            }
+
+            this.Unlock();
+        } catch (error) {
+            this.Unlock();
+            throw error;
+        }
+    }
+
+    private async Render_():
+        Promise<void>
+    {
+        if (this.was_component_will_unmount_called === false) {
+            await this.Before_Render();
+            {
+                this.renderable = await this.On_Render();
+
+                if (this.was_component_will_unmount_called === false) {
+                    this.was_render_called = false;
+                    this.forceUpdate();
+
+                    while (
+                        this.was_component_will_unmount_called === false &&
+                        this.was_render_called === false
+                    ) {
+                        await Wait(1);
+                    }
+                }
+
+                this.renderable = null;
+            }
+            await this.After_Render();
+        }
+    }
+
+    private async Unmount():
+        Promise<void>
+    {
+        await this.Lock();
+        try {
+            if (this.was_component_will_unmount_called === false) {
+                throw new Error(`componentWillUnmount() must be called before this function`);
+            } else if (this.Is_Unmounted()) {
+                throw new Error(`This component is already unmounted.`);
+            } else {
+                await this.Before_Unmount();
+                {
+                    await this.Before_Remove_Listeners();
+                    this.Event_Grid().Remove(this);
+                    await this.After_Remove_Listeners();
+
+                    this.element = null;
+                }
+                await this.After_Unmount();
+
+                this.is_mounted = false;
+            }
+
+            this.Unlock();
+        } catch (error) {
+            this.Unlock();
+            throw error;
+        }
     }
 
     /* Mounting */
@@ -283,147 +440,17 @@ class Component<T extends Component_Props> extends React.Component<T>
     {
     }
 
-    private async Mount():
-        Promise<void>
-    {
-        await this.Wait_Until_Idle();
-        if (this.Is_Mounted()) {
-            throw new Error(`This component is already mounted.`);
-        } else {
-            this.is_mounting = true;
-            {
-                await this.Before_Mount();
-                {
-                    await this.Before_Add_Listeners();
-                    this.Event_Grid().Add(this);
-                    this.Event_Grid().Add_Many_Listeners(this, await this.On_Add_Listeners());
-                    await this.After_Add_Listeners();
-
-                    await this.Render_();
-
-                    while (this.is_component_did_mount_called === false) {
-                        await Wait(1);
-                    }
-
-                    if (this.is_component_will_unmount_called === false) {
-                        this.element = ReactDom.findDOMNode(this) as HTMLElement;
-                    } else {
-                        this.element = null;
-                    }
-                }
-                await this.After_Mount();
-
-                this.is_mounted = true;
-            }
-            this.is_mounting = false;
-        }
-    }
-
-    async Update(in_milliseconds: number = 0):
-        Promise<void>
-    {
-        await Wait(in_milliseconds);
-
-        await this.Wait_Until_Idle();
-        if (this.Is_Mounted()) {
-            this.is_updating = true;
-            {
-                await this.Before_Update();
-                {
-                    this.is_component_did_update_called = false;
-                    await this.Render_();
-
-                    while (
-                        this.is_component_will_unmount_called === false &&
-                        this.is_component_did_update_called === false
-                    ) {
-                        await Wait(1);
-                    }
-
-                    if (this.is_component_will_unmount_called === false) {
-                        this.element = ReactDom.findDOMNode(this) as HTMLElement;
-                    } else {
-                        this.element = null;
-                    }
-                }
-                await this.After_Update();
-            }
-            this.is_updating = false;
-        }
-    }
-
-    private async Render_():
-        Promise<void>
-    {
-        if (this.is_component_will_unmount_called === false) {
-            await this.Before_Render();
-            {
-                this.renderable = await this.On_Render();
-
-                if (this.is_component_will_unmount_called === false) {
-                    this.is_render_called = false;
-                    this.forceUpdate();
-
-                    while (
-                        this.is_component_will_unmount_called === false &&
-                        this.is_render_called === false
-                    ) {
-                        await Wait(1);
-                    }
-                }
-
-                this.renderable = null;
-            }
-            await this.After_Render();
-        }
-    }
-
-    private async Unmount():
-        Promise<void>
-    {
-        if (this.is_component_will_unmount_called === false) {
-            throw new Error(`componentWillUnmount() must be called before Unmount()`);
-        } else {
-            await this.Wait_Until_Idle();
-            if (this.Is_Unmounted()) {
-                throw new Error(`This component is already unmounted.`);
-            } else {
-                this.is_unmounting = true;
-                {
-                    await this.Before_Unmount();
-                    {
-                        await this.Before_Remove_Listeners();
-                        this.Event_Grid().Remove(this);
-                        await this.After_Remove_Listeners();
-
-                        this.element = null;
-                    }
-                    await this.After_Unmount();
-
-                    this.is_mounted = false;
-                }
-                this.is_unmounting = false;
-            }
-        }
-    }
-
-    async Send(event_info: Event.Info):
-        Promise<void>
-    {
-        await this.Event_Grid().Send_Event(event_info);
-    }
-
     /* React */
     componentDidMount():
         void
     {
-        this.is_component_did_mount_called = true;
+        this.was_component_did_mount_called = true;
     }
 
     render():
         JSX.Element | null
     {
-        this.is_render_called = true;
+        this.was_render_called = true;
 
         return this.renderable;
     }
@@ -431,13 +458,13 @@ class Component<T extends Component_Props> extends React.Component<T>
     componentDidUpdate():
         void
     {
-        this.is_component_did_update_called = true;
+        this.was_component_did_update_called = true;
     }
 
     componentWillUnmount():
         void
     {
-        this.is_component_will_unmount_called = true;
+        this.was_component_will_unmount_called = true;
         this.Unmount();
     }
 }
