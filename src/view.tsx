@@ -486,8 +486,7 @@ export class Main extends Component<Main_Props>
     async On_Render():
         Promise<JSX.Element>
     {
-        // not ready yet, but this is a good test to get our types in tune with a tighter event system
-        //this.Update(3000);
+        this.Update(3000);
 
         return (
             <div
@@ -501,10 +500,10 @@ export class Main extends Component<Main_Props>
                     model={this.Model().Menu()}
                 />
                 <Arena
-                    key={`arena`}
+                    key={`arena_${Date.now()}_${Math.random()}`}
                     parent={this}
                     ref={ref => this.arena = ref}
-                    event_grid={this.Event_Grid()}
+                    event_grid={new Event.Grid()}
                     model={this.Model().Random_Arena()}
                 />
             </div>
