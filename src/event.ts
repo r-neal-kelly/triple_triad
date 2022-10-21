@@ -393,7 +393,7 @@ class Instance
     async Start():
         Promise<void>
     {
-        if (this.#is_started) {
+        if (this.Is_Started()) {
             throw new Error(`This event has already been started.`);
         } else {
             const publisher_info = Object.freeze({
@@ -402,7 +402,7 @@ class Instance
             });
 
             for (const name_prefix of [BEFORE, ON, AFTER]) {
-                if (!this.#is_stopped) {
+                if (!this.Is_Stopped()) {
                     const promises: Array<Promise<void>> = this.#name_suffixes.map(async function (
                         this: Instance,
                         name_suffix: Name_Suffix,
@@ -423,6 +423,8 @@ class Instance
                     await Promise.all(promises);
                 }
             }
+
+            await this.Stop();
         }
     }
 
@@ -432,5 +434,23 @@ class Instance
     {
         this.#is_stopped = true;
     }
+
+    Is_Started():
+        boolean
+    {
+        return this.#is_started;
+    }
+
+    Is_Stopped():
+        boolean
+    {
+        return this.#is_stopped;
+    }
+
+    Is_Running():
+        boolean
+    {
+        return this.Is_Started() && !this.Is_Stopped;
+    }
 };
-export type { Instance };
+export type { Instance }; // this allows the class to be used but not instantiated

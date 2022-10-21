@@ -41,17 +41,20 @@ class Publisher
         this.#next_subscriber_id = 0;
     }
 
-    async Is_Enabled()
+    async Is_Enabled():
+        Promise<boolean>
     {
         return this.#is_enabled;
     }
 
-    async Enable()
+    async Enable():
+        Promise<void>
     {
         this.#is_enabled = true;
     }
 
-    async Disable()
+    async Disable():
+        Promise<void>
     {
         this.#is_enabled = false;
     }
@@ -62,7 +65,9 @@ class Publisher
         return this.#subscriber_count;
     }
 
-    async Subscriber(subscriber_id: Subscriber_ID):
+    async Subscriber(
+        subscriber_id: Subscriber_ID,
+    ):
         Promise<Subscriber>
     {
         if (this.#subscribers[subscriber_id] == null) {
@@ -72,7 +77,9 @@ class Publisher
         }
     }
 
-    async Subscribe(subscriber_info: Subscriber_Info):
+    async Subscribe(
+        subscriber_info: Subscriber_Info,
+    ):
         Promise<Subscriber_ID>
     {
         if (this.#next_subscriber_id + 1 < this.#next_subscriber_id) {
@@ -88,7 +95,9 @@ class Publisher
         }
     }
 
-    async Unsubscribe(subscriber_id: Subscriber_ID):
+    async Unsubscribe(
+        subscriber_id: Subscriber_ID,
+    ):
         Promise<void>
     {
         if (this.#subscribers[subscriber_id] == null) {
@@ -99,18 +108,30 @@ class Publisher
         }
     }
 
-    async Publish({ data = null, disable_until_complete = false }: Publisher_Info)
+    async Publish(
+        {
+            data = null,
+            disable_until_complete = false,
+        }: Publisher_Info,
+    ):
+        Promise<void>
     {
         if (await this.Is_Enabled()) {
             if (disable_until_complete) {
                 await this.Disable();
-                await Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
+                await Promise.all(Object.values(this.#subscribers).map(async function (
+                    subscriber: Subscriber
+                ):
+                    Promise<void>
                 {
                     await (await subscriber.Handler())(data);
                 }));
                 await this.Enable();
             } else {
-                await Promise.all(Object.values(this.#subscribers).map(async function (subscriber: Subscriber)
+                await Promise.all(Object.values(this.#subscribers).map(async function (
+                    subscriber: Subscriber
+                ):
+                    Promise<void>
                 {
                     await (await subscriber.Handler())(data);
                 }));
@@ -124,12 +145,17 @@ class Subscriber
 {
     #handler: Subscriber_Handler;
 
-    constructor({ handler }: Subscriber_Info)
+    constructor(
+        {
+            handler,
+        }: Subscriber_Info,
+    )
     {
         this.#handler = handler;
     }
 
-    async Handler()
+    async Handler():
+        Promise<Subscriber_Handler>
     {
         return this.#handler;
     }
@@ -141,7 +167,10 @@ export class Subscription
     #publisher_name: Publisher_Name;
     #subscriber_id: Subscriber_ID;
 
-    constructor(publisher_name: Publisher_Name, subscriber_id: Subscriber_ID)
+    constructor(
+        publisher_name: Publisher_Name,
+        subscriber_id: Subscriber_ID,
+    )
     {
         this.#publisher_name = publisher_name;
         this.#subscriber_id = subscriber_id;
@@ -172,7 +201,10 @@ export class Instance
         this.#publishers = {};
     }
 
-    async Subscribe(publisher_name: Publisher_Name, subscriber_info: Subscriber_Info):
+    async Subscribe(
+        publisher_name: Publisher_Name,
+        subscriber_info: Subscriber_Info,
+    ):
         Promise<Subscription>
     {
         let publisher = this.#publishers[publisher_name];
@@ -184,7 +216,9 @@ export class Instance
         return new Subscription(publisher_name, await publisher.Subscribe(subscriber_info));
     }
 
-    async Unsubscribe(subscription: Subscription):
+    async Unsubscribe(
+        subscription: Subscription,
+    ):
         Promise<void>
     {
         const publisher = this.#publishers[await subscription.Publisher_Name()];
@@ -195,7 +229,10 @@ export class Instance
         }
     }
 
-    async Publish(publisher_name: Publisher_Name, publisher_info: Publisher_Info):
+    async Publish(
+        publisher_name: Publisher_Name,
+        publisher_info: Publisher_Info,
+    ):
         Promise<void>
     {
         const publisher = this.#publishers[publisher_name];

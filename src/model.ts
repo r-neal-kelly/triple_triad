@@ -618,47 +618,7 @@ export class Main
 
         // we create an exhibition match between computers for the background of main
         // and keep doing rematches until the player decides to start up a game of their own
-        {
-            const random_packs: Array<Pack> = this.#packs.As_Array();
-            const random_rules: Random_Rules = new Random_Rules({});
-            const random_colors: Unique_Random_Colors = new Unique_Random_Colors({
-                color_count: random_rules.Player_Count(),
-
-                min_red: 31,
-                max_red: 191,
-
-                min_green: 31,
-                max_green: 191,
-
-                min_blue: 31,
-                max_blue: 191,
-
-                min_alpha: 0.7,
-                max_alpha: 0.7,
-            });
-            const random_selections: Array<Random_Selection> = [];
-            for (let idx = 0, end = random_rules.Player_Count(); idx < end; idx += 1) {
-                random_selections.push(
-                    new Random_Selection({
-                        collection: new Collection({
-                            default_shuffle: new Random_Shuffle({
-                                packs: random_packs,
-                                min_difficulty: Difficulty_e.VERY_EASY,
-                                max_difficulty: Difficulty_e.VERY_HARD,
-                                allow_multiple_difficulties: true,
-                            }),
-                        }),
-                        color: random_colors.Color(idx),
-                        is_of_human: false,
-                        card_count: random_rules.Selection_Card_Count(),
-                    })
-                );
-            }
-            this.#arena = new Arena({
-                rules: random_rules,
-                selections: random_selections,
-            });
-        }
+        this.#arena = this.Random_Arena();
     }
 
     Packs():
@@ -705,6 +665,54 @@ export class Main
         Arena
     {
         return this.#arena;
+    }
+
+    Random_Arena():
+        Arena
+    {
+        const random_packs: Array<Pack> = this.#packs.As_Array();
+
+        const random_rules: Random_Rules = new Random_Rules({});
+
+        const random_colors: Unique_Random_Colors = new Unique_Random_Colors({
+            color_count: random_rules.Player_Count(),
+
+            min_red: 31,
+            max_red: 191,
+
+            min_green: 31,
+            max_green: 191,
+
+            min_blue: 31,
+            max_blue: 191,
+
+            min_alpha: 0.7,
+            max_alpha: 0.7,
+        });
+
+        const random_selections: Array<Random_Selection> = [];
+        for (let idx = 0, end = random_rules.Player_Count(); idx < end; idx += 1) {
+            random_selections.push(
+                new Random_Selection({
+                    collection: new Collection({
+                        default_shuffle: new Random_Shuffle({
+                            packs: random_packs,
+                            min_difficulty: Difficulty_e.VERY_EASY,
+                            max_difficulty: Difficulty_e.VERY_HARD,
+                            allow_multiple_difficulties: true,
+                        }),
+                    }),
+                    color: random_colors.Color(idx),
+                    is_of_human: false,
+                    card_count: random_rules.Selection_Card_Count(),
+                })
+            );
+        }
+
+        return new Arena({
+            rules: random_rules,
+            selections: random_selections,
+        });
     }
 }
 

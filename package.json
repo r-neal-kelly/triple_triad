@@ -33,7 +33,8 @@
         ],
         "rules": {
             "react/jsx-pascal-case": "off",
-            "no-empty-pattern": "off"
+            "no-empty-pattern": "off",
+            "no-lone-blocks": "off"
         }
     },
     "browserslist": {
