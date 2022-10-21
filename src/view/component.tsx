@@ -141,6 +141,34 @@ export class Component<T extends Component_Props> extends React.Component<T>
         }
     }
 
+    /*
+        Does a full lock and correctly handles unlocking
+        automatically. Will only call method if this
+        component is still mounted. Binds method to this
+        and returns whatever method returns.
+    */
+    async Auto_Lock(
+        method: (...method_arguments: any) => any | Promise<any>,
+        ...method_arguments: any
+    ):
+        Promise<any>
+    {
+        let result: any;
+
+        await this.Lock();
+        try {
+            if (this.Is_Mounted()) {
+                result = await (method.bind(this))(...method_arguments);
+            }
+        } catch (error) {
+            this.Unlock();
+            throw error;
+        }
+        this.Unlock();
+
+        return result;
+    }
+
     Unlock():
         void
     {
@@ -157,16 +185,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
         boolean
     {
         return !this.is_mounted;
-    }
-
-    // not sure this is useful, because it can't be called during mount, update, or unmount cycles,
-    // however it should be safe during any other events, I think, that is with listeners
-    async Is_Ready():
-        Promise<boolean>
-    {
-        await this.Lock_Frame();
-
-        return this.Is_Mounted();
     }
 
     /* Events */
@@ -187,8 +205,29 @@ export class Component<T extends Component_Props> extends React.Component<T>
                 await this.Before_Mount();
                 {
                     await this.Before_Add_Listeners();
-                    this.Event_Grid().Add(this);
-                    this.Event_Grid().Add_Many_Listeners(this, await this.On_Add_Listeners());
+                    {
+                        this.Event_Grid().Add(this);
+                        const {
+                            do_auto_lock,
+                            listener_infos,
+                        } = await this.On_Add_Listeners();
+                        if (do_auto_lock) {
+                            const auto_lock_listener_infos: Event.Listener_Info[] = [];
+                            for (let idx = 0, end = listener_infos.length; idx < end; idx += 1) {
+                                auto_lock_listener_infos.push({
+                                    event_name: listener_infos[idx].event_name,
+                                    event_handler: async function (this: any, ...args: any):
+                                        Promise<void>
+                                    {
+                                        await this.Auto_Lock(listener_infos[idx].event_handler, ...args);
+                                    }.bind(this),
+                                });
+                            }
+                            this.Event_Grid().Add_Many_Listeners(this, auto_lock_listener_infos);
+                        } else {
+                            this.Event_Grid().Add_Many_Listeners(this, listener_infos);
+                        }
+                    }
                     await this.After_Add_Listeners();
 
                     await this.Render_();
@@ -207,12 +246,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
 
                 this.is_mounted = true;
             }
-
-            this.Unlock();
         } catch (error) {
             this.Unlock();
             throw error;
         }
+        this.Unlock();
     }
 
     async Update(after_milliseconds: number = 0):
@@ -243,12 +281,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
                 }
                 await this.After_Update();
             }
-
-            this.Unlock();
         } catch (error) {
             this.Unlock();
             throw error;
         }
+        this.Unlock();
     }
 
     private async Render_():
@@ -299,12 +336,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
 
                 this.is_mounted = false;
             }
-
-            this.Unlock();
         } catch (error) {
             this.Unlock();
             throw error;
         }
+        this.Unlock();
     }
 
     /* Mounting */
@@ -319,9 +355,15 @@ export class Component<T extends Component_Props> extends React.Component<T>
     }
 
     async On_Add_Listeners():
-        Promise<Event.Listener_Info[]>
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
     {
-        return [];
+        return ({
+            do_auto_lock: false,
+            listener_infos: [],
+        });
     }
 
     async After_Add_Listeners():

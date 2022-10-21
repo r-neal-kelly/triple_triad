@@ -85,7 +85,7 @@ export class Main extends Component<Main_Props>
     }
 
     async On_Render():
-        Promise<JSX.Element>
+        Promise<JSX.Element | null>
     {
         //this.Update(3000);
 
@@ -129,7 +129,7 @@ class Menu extends Component<Menu_Props>
     }
 
     async On_Render():
-        Promise<JSX.Element>
+        Promise<JSX.Element | null>
     {
         return (
             <div
@@ -241,21 +241,6 @@ class Arena extends Component<Arena_Props>
         });
     }
 
-    async On_Add_Listeners():
-        Promise<Event.Listener_Info[]>
-    {
-        return ([
-            {
-                event_name: new Event.Name(ON, GAME_START),
-                event_handler: this.On_Game_Start,
-            },
-            {
-                event_name: new Event.Name(ON, PLAYER_STOP_TURN),
-                event_handler: this.On_Player_Stop_Turn,
-            },
-        ]);
-    }
-
     async On_Render():
         Promise<JSX.Element | null>
     {
@@ -343,6 +328,27 @@ class Arena extends Component<Arena_Props>
         );
     }
 
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, GAME_START),
+                    event_handler: this.On_Game_Start,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                    event_handler: this.On_Player_Stop_Turn,
+                },
+            ],
+        });
+    }
+
     async On_Game_Start(
         {
         }: Game_Start_Data,
@@ -405,25 +411,46 @@ type Player_Props = {
     index: Model.Player_Index;
 }
 
-class Player extends React.Component<Player_Props>
+class Player extends Component<Player_Props>
 {
-    #element: HTMLElement | null;
-    #bumper: Player_Bumper | null;
-    #hand: Player_Hand | null;
+    private bumper: Player_Bumper | null = null;
+    private hand: Player_Hand | null = null;
 
-    constructor(props: Player_Props)
+    Element():
+        HTMLElement
     {
-        super(props);
-
-        this.#element = null;
-        this.#bumper = null;
-        this.#hand = null;
+        const element: HTMLElement | null = super.Element();
+        if (element == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return element;
+        }
     }
 
-    Model():
-        Model.Player
+    Arena():
+        Arena
     {
-        return this.props.model;
+        return this.Parent();
+    }
+
+    Bumper():
+        Player_Bumper
+    {
+        if (this.bumper == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.bumper;
+        }
+    }
+
+    Hand():
+        Player_Hand
+    {
+        if (this.hand == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.hand;
+        }
     }
 
     Index():
@@ -432,131 +459,66 @@ class Player extends React.Component<Player_Props>
         return this.props.index;
     }
 
-    Element():
-        HTMLElement
+    async On_Render():
+        Promise<JSX.Element | null>
     {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
+        const model: Model.Player = this.Model();
+        const event_grid: Event.Grid = this.Event_Grid();
+        const index: Model.Player_Index = this.Index();
+        const styles: any = {};
+
+        // Highlight the player to indicate it's their turn.
+        if (model.Is_On_Turn()) {
+            const color: Model.Color = model.Color();
+            styles.backgroundColor =
+                `rgba(
+                    ${color.Red()},
+                    ${color.Green()},
+                    ${color.Blue()},
+                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+                )`;
         } else {
-            return this.#element as HTMLElement;
+            styles.backgroundColor = `transparent`;
         }
+
+        return (
+            <div
+                className={`Player`}
+                style={styles}
+            >
+                <Player_Bumper
+                    key={`player_bumper_${index}`}
+                    ref={ref => this.bumper = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                    index={index}
+                />
+                <Player_Hand
+                    key={`player_hand_${index}`}
+                    ref={ref => this.hand = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                    index={index}
+                />
+            </div>
+        );
     }
 
-    Arena():
-        Arena
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
     {
-        return this.props.parent;
-    }
+        const player_index: Model.Player_Index = this.Index();
 
-    Bumper():
-        Player_Bumper
-    {
-        if (!this.#bumper) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#bumper as Player_Bumper;
-        }
-    }
-
-    Hand():
-        Player_Hand
-    {
-        if (!this.#hand) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#hand as Player_Hand;
-        }
-    }
-
-    async On_This_Player_Start_Turn(
-        {
-            player_index,
-        }: Player_Start_Turn_Data,
-    ):
-        Promise<void>
-    {
-        this.forceUpdate();
-
-        const color: Model.Color = this.Model().Color();
-        this.Element().style.backgroundColor =
-            `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER})`;
-
-        if (this.Model().Is_Computer()) {
-            const computer_player: Model.Computer_Player = this.Model() as Model.Computer_Player;
-            const {
-                selection_indices,
-                cell_index,
-            } = await computer_player.Choose_Stake_And_Cell();
-
-            // we may need to while away at this until the computer chooses its stake and cell,
-            // that way there is no visual hiccup if the computer takes a bit of time
-            for (const selection_index of selection_indices) {
-                this.props.event_grid.Send_Event({
-                    name_affix: PLAYER_SELECT_STAKE,
-                    name_suffixes: [
-                        player_index.toString(),
-                    ],
-                    data: {
-                        player_index,
-                        stake_index: selection_index,
-                    } as Player_Select_Stake_Data,
-                    is_atomic: true,
-                });
-
-                await Wait(AI_SELECTION_WAIT_MILLISECONDS);
-            }
-
-            this.props.event_grid.Send_Event({
-                name_affix: PLAYER_PLACE_STAKE,
-                name_suffixes: [
-                    player_index.toString(),
-                ],
-                data: {
-                    player_index,
-                    stake_index: selection_indices[selection_indices.length - 1],
-                    cell_index,
-                } as Player_Place_Stake_Data,
-                is_atomic: true,
-            });
-        }
-    }
-
-    async On_This_Player_Select_Stake(
-        {
-            stake_index,
-        }: Player_Select_Stake_Data,
-    ):
-        Promise<void>
-    {
-        const previous_selected_stake_index: Model.Stake_Index | null = this.Model().Selected_Stake_Index();
-        if (previous_selected_stake_index !== stake_index) {
-            this.Model().Select_Stake(stake_index);
-            this.Hand().Stake(stake_index).forceUpdate();
-
-            if (previous_selected_stake_index != null) {
-                this.Hand().Stake(previous_selected_stake_index).forceUpdate();
-            }
-        }
-    }
-
-    async On_This_Player_Place_Stake(
-        {
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        this.Element().style.backgroundColor = `transparent`;
-    }
-
-    componentDidMount():
-        void
-    {
-        const player_index: Model.Player_Index = this.props.index;
-
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
                 {
                     event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
                     event_handler: this.On_This_Player_Start_Turn,
@@ -570,41 +532,102 @@ class Player extends React.Component<Player_Props>
                     event_handler: this.On_This_Player_Place_Stake,
                 },
             ],
-        );
+        });
     }
 
-    componentWillUnmount():
-        void
+    async On_This_Player_Start_Turn(
+        {
+            player_index,
+        }: Player_Start_Turn_Data,
+    ):
+        Promise<void>
     {
-        this.props.event_grid.Remove(this);
+        this.Unlock();
+        {
+            await this.Update();
+        }
+        await this.Lock();
+
+        if (this.Is_Mounted()) {
+            // We need to simulate the computer_player choosing a card
+            if (this.Model().Is_Computer()) {
+                const computer_player: Model.Computer_Player =
+                    this.Model() as Model.Computer_Player;
+                const {
+                    selection_indices,
+                    cell_index,
+                } = await computer_player.Choose_Stake_And_Cell();
+
+                for (const selection_index of selection_indices) {
+                    this.Unlock();
+                    {
+                        await this.Send({
+                            name_affix: PLAYER_SELECT_STAKE,
+                            name_suffixes: [
+                                player_index.toString(),
+                            ],
+                            data: {
+                                player_index,
+                                stake_index: selection_index,
+                            } as Player_Select_Stake_Data,
+                            is_atomic: true,
+                        });
+                    }
+                    await this.Lock();
+
+                    if (this.Is_Mounted()) {
+                        // might be fun to randomize this
+                        await Wait(AI_SELECTION_WAIT_MILLISECONDS);
+                    } else {
+                        break;
+                    }
+                }
+
+                if (this.Is_Mounted()) {
+                    this.Send({
+                        name_affix: PLAYER_PLACE_STAKE,
+                        name_suffixes: [
+                            player_index.toString(),
+                        ],
+                        data: {
+                            player_index,
+                            stake_index: selection_indices[selection_indices.length - 1],
+                            cell_index,
+                        } as Player_Place_Stake_Data,
+                        is_atomic: true,
+                    });
+                }
+            }
+        }
     }
 
-    render():
-        JSX.Element
+    async On_This_Player_Select_Stake(
+        {
+            stake_index,
+        }: Player_Select_Stake_Data,
+    ):
+        Promise<void>
     {
-        return (
-            <div
-                ref={ref => this.#element = ref}
-                className={`Player`}
-            >
-                <Player_Bumper
-                    key={`player_bumper_${this.props.index}`}
-                    parent={this}
-                    ref={ref => this.#bumper = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model()}
-                    index={this.props.index}
-                />
-                <Player_Hand
-                    key={`player_hand_${this.props.index}`}
-                    parent={this}
-                    ref={ref => this.#hand = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model()}
-                    index={this.props.index}
-                />
-            </div>
-        );
+        const previous_selected_stake_index: Model.Stake_Index | null =
+            this.Model().Selected_Stake_Index();
+        if (previous_selected_stake_index !== stake_index) {
+            this.Model().Select_Stake(stake_index);
+            this.Hand().Stake(stake_index).forceUpdate(); // replace with Update
+
+            if (previous_selected_stake_index != null) {
+                this.Hand().Stake(previous_selected_stake_index).forceUpdate(); // replace with Update
+            }
+        }
+    }
+
+    async On_This_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        // Remove the player highlight to indicate that selection is over.
+        this.Element().style.backgroundColor = `transparent`;
     }
 }
 
