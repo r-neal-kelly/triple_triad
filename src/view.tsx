@@ -90,13 +90,13 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
-        return (
-            <div
-                className={`Main`}
-            >
+        // we create an exhibition match between computers for the background of main
+        // and keep doing rematches until the player decides to start up a game of their own
+
+        /*
                 <Menu
                     key={`menu`}
                     ref={ref => this.menu = ref}
@@ -105,6 +105,11 @@ export class Main extends Component<Main_Props>
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
+        */
+        return (
+            <div
+                className={`Main`}
+            >
                 <Arena
                     key={`arena_${Date.now()}_${Math.random()}`}
                     ref={ref => this.arena = ref}
@@ -132,8 +137,8 @@ class Menu extends Component<Menu_Props>
         return this.Parent();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         return (
             <div
@@ -209,8 +214,8 @@ class Arena extends Component<Arena_Props>
         }
     }
 
-    async Before_Mount():
-        Promise<void>
+    Before_Refresh():
+        void
     {
         const root_element = document.querySelector(`:root`) as HTMLElement;
         if (root_element == null) {
@@ -221,21 +226,8 @@ class Arena extends Component<Arena_Props>
         }
     }
 
-    async After_Mount():
-        Promise<void>
-    {
-        this.Send({
-            name_affix: GAME_START,
-            name_suffixes: [
-            ],
-            data: {
-            } as Game_Start_Data,
-            is_atomic: true,
-        });
-    }
-
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const styles: any = {};
         if (this.Model().Rules().Is_Large_Board()) {
@@ -319,25 +311,28 @@ class Arena extends Component<Arena_Props>
         );
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, GAME_START),
-                    event_handler: this.On_Game_Start,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
-                    event_handler: this.On_Player_Stop_Turn,
-                },
+        this.Send({
+            name_affix: GAME_START,
+            name_suffixes: [
             ],
+            data: {
+            } as Game_Start_Data,
+            is_atomic: true,
         });
+
+        return ([
+            {
+                event_name: new Event.Name(ON, GAME_START),
+                event_handler: this.On_Game_Start,
+            },
+            {
+                event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                event_handler: this.On_Player_Stop_Turn,
+            },
+        ]);
     }
 
     async On_Game_Start(
@@ -346,39 +341,7 @@ class Arena extends Component<Arena_Props>
     ):
         Promise<void>
     {
-        const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
-
-        this.Send({
-            name_affix: PLAYER_START_TURN,
-            name_suffixes: [
-                current_player_index.toString(),
-            ],
-            data: {
-                player_index: current_player_index,
-            } as Player_Start_Turn_Data,
-            is_atomic: true,
-        });
-    }
-
-    async On_Player_Stop_Turn(
-        {
-        }: Player_Stop_Turn_Data,
-    ):
-        Promise<void>
-    {
-        this.Model().Next_Turn();
-
-        if (this.Model().Is_Game_Over()) {
-            this.Send({
-                name_affix: GAME_STOP,
-                name_suffixes: [
-                ],
-                data: {
-                    scores: this.Model().Scores(),
-                } as Game_Stop_Data,
-                is_atomic: true,
-            });
-        } else {
+        if (this.Is_Alive()) {
             const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
 
             this.Send({
@@ -391,6 +354,42 @@ class Arena extends Component<Arena_Props>
                 } as Player_Start_Turn_Data,
                 is_atomic: true,
             });
+        }
+    }
+
+    async On_Player_Stop_Turn(
+        {
+        }: Player_Stop_Turn_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Next_Turn();
+
+            if (this.Model().Is_Game_Over()) {
+                this.Send({
+                    name_affix: GAME_STOP,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        scores: this.Model().Scores(),
+                    } as Game_Stop_Data,
+                    is_atomic: true,
+                });
+            } else {
+                const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
+
+                this.Send({
+                    name_affix: PLAYER_START_TURN,
+                    name_suffixes: [
+                        current_player_index.toString(),
+                    ],
+                    data: {
+                        player_index: current_player_index,
+                    } as Player_Start_Turn_Data,
+                    is_atomic: true,
+                });
+            }
         }
     }
 }
@@ -438,32 +437,16 @@ class Player extends Component<Player_Props>
         return this.Model().Index();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
         const index: Model.Player_Index = this.Index();
-        const styles: any = {};
-
-        // Highlight the player to indicate it's their turn.
-        if (model.Is_On_Turn()) {
-            const color: Model.Color = model.Color();
-            styles.backgroundColor =
-                `rgba(
-                    ${color.Red()},
-                    ${color.Green()},
-                    ${color.Blue()},
-                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-                )`;
-        } else {
-            styles.backgroundColor = `transparent`;
-        }
 
         return (
             <div
                 className={`Player`}
-                style={styles}
             >
                 <Player_Bumper
                     key={`player_bumper_${index}`}
@@ -485,31 +468,25 @@ class Player extends Component<Player_Props>
         );
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Index();
 
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
-                    event_handler: this.On_This_Player_Start_Turn,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Place_Stake,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                event_handler: this.On_This_Player_Start_Turn,
+            },
+            {
+                event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                event_handler: this.On_This_Player_Select_Stake,
+            },
+            {
+                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.On_This_Player_Place_Stake,
+            },
+        ]);
     }
 
     async On_This_Player_Start_Turn(
@@ -519,60 +496,68 @@ class Player extends Component<Player_Props>
     ):
         Promise<void>
     {
-        this.Unlock();
-        {
-            await this.Update();
-        }
-        await this.Lock();
+        if (this.Is_Alive()) {
+            await this.Refresh();
 
-        if (this.Is_Mounted()) {
-            // We need to simulate the computer_player choosing a card
-            if (this.Model().Is_Computer()) {
-                const computer_player: Model.Computer_Player =
-                    this.Model() as Model.Computer_Player;
-                const {
-                    selection_indices,
-                    cell_index,
-                } = await computer_player.Choose_Stake_And_Cell();
+            if (this.Is_Alive()) {
+                // Highlight the player to indicate it's their turn.
+                const color: Model.Color = this.Model().Color();
+                this.Some_Element().style.backgroundColor =
+                    `rgba(
+                        ${color.Red()},
+                        ${color.Green()},
+                        ${color.Blue()},
+                        ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+                    )`;
 
-                for (const selection_index of selection_indices) {
-                    this.Unlock();
-                    {
-                        await this.Send({
-                            name_affix: PLAYER_SELECT_STAKE,
+                // We need to simulate the computer_player choosing a card
+                if (this.Model().Is_Computer()) {
+                    const computer_player: Model.Computer_Player =
+                        this.Model() as Model.Computer_Player;
+                    const {
+                        selection_indices,
+                        cell_index,
+                    } = await computer_player.Choose_Stake_And_Cell();
+
+                    if (this.Is_Alive()) {
+                        for (const selection_index of selection_indices) {
+                            await this.Send({
+                                name_affix: PLAYER_SELECT_STAKE,
+                                name_suffixes: [
+                                    player_index.toString(),
+                                ],
+                                data: {
+                                    player_index,
+                                    stake_index: selection_index,
+                                } as Player_Select_Stake_Data,
+                                is_atomic: true,
+                            });
+
+                            if (this.Is_Alive()) {
+                                // might be fun to randomize this
+                                await Wait(AI_SELECTION_WAIT_MILLISECONDS);
+
+                                if (this.Is_Dead()) {
+                                    return;
+                                }
+                            } else {
+                                return;
+                            }
+                        }
+
+                        this.Send({
+                            name_affix: PLAYER_PLACE_STAKE,
                             name_suffixes: [
                                 player_index.toString(),
                             ],
                             data: {
                                 player_index,
-                                stake_index: selection_index,
-                            } as Player_Select_Stake_Data,
+                                stake_index: selection_indices[selection_indices.length - 1],
+                                cell_index,
+                            } as Player_Place_Stake_Data,
                             is_atomic: true,
                         });
                     }
-                    await this.Lock();
-
-                    if (this.Is_Mounted()) {
-                        // might be fun to randomize this
-                        await Wait(AI_SELECTION_WAIT_MILLISECONDS);
-                    } else {
-                        break;
-                    }
-                }
-
-                if (this.Is_Mounted()) {
-                    this.Send({
-                        name_affix: PLAYER_PLACE_STAKE,
-                        name_suffixes: [
-                            player_index.toString(),
-                        ],
-                        data: {
-                            player_index,
-                            stake_index: selection_indices[selection_indices.length - 1],
-                            cell_index,
-                        } as Player_Place_Stake_Data,
-                        is_atomic: true,
-                    });
                 }
             }
         }
@@ -585,14 +570,16 @@ class Player extends Component<Player_Props>
     ):
         Promise<void>
     {
-        const previous_selected_stake_index: Model.Stake_Index | null =
-            this.Model().Selected_Stake_Index();
-        if (previous_selected_stake_index !== stake_index) {
-            this.Model().Select_Stake(stake_index);
-            this.Hand().Stake(stake_index).Update();
+        if (this.Is_Alive()) {
+            const previous_selected_stake_index: Model.Stake_Index | null =
+                this.Model().Selected_Stake_Index();
+            if (previous_selected_stake_index !== stake_index) {
+                this.Model().Select_Stake(stake_index);
+                this.Hand().Stake(stake_index).Refresh();
 
-            if (previous_selected_stake_index != null) {
-                this.Hand().Stake(previous_selected_stake_index).Update();
+                if (previous_selected_stake_index != null) {
+                    this.Hand().Stake(previous_selected_stake_index).Refresh();
+                }
             }
         }
     }
@@ -603,8 +590,10 @@ class Player extends Component<Player_Props>
     ):
         Promise<void>
     {
-        // Remove the player highlight to indicate that selection is over.
-        this.Some_Element().style.backgroundColor = `transparent`;
+        if (this.Is_Alive()) {
+            // Remove the player highlight to indicate that selection is over.
+            this.Some_Element().style.backgroundColor = `transparent`;
+        }
     }
 }
 
@@ -651,8 +640,8 @@ class Player_Bumper extends Component<Player_Bumper_Props>
         return this.Model().Index();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
@@ -682,23 +671,17 @@ class Player_Bumper extends Component<Player_Bumper_Props>
         );
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Index();
 
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, GAME_STOP),
-                    event_handler: this.On_Game_Stop,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, GAME_STOP),
+                event_handler: this.On_Game_Stop,
+            },
+        ]);
     }
 
     async On_Game_Stop(
@@ -707,15 +690,17 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     ):
         Promise<void>
     {
-        const color: Model.Color = this.Model().Color();
+        if (this.Is_Alive()) {
+            const color: Model.Color = this.Model().Color();
 
-        this.Some_Element().style.backgroundColor =
-            `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
-                ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-            )`;
+            this.Some_Element().style.backgroundColor =
+                `rgba(
+                    ${color.Red()},
+                    ${color.Green()},
+                    ${color.Blue()},
+                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+                )`;
+        }
     }
 }
 
@@ -739,8 +724,8 @@ class Player_Name extends Component<Player_Name_Props>
         return this.Model().Index();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         return (
             <div
@@ -774,8 +759,8 @@ class Player_Score extends Component<Player_Score_Props>
         return this.Model().Index();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         return (
             <div
@@ -788,25 +773,19 @@ class Player_Score extends Component<Player_Score_Props>
         );
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
-                    event_handler: this.On_Player_Stop_Turn,
-                },
-                {
-                    event_name: new Event.Name(ON, GAME_STOP),
-                    event_handler: this.On_Game_Stop,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                event_handler: this.On_Player_Stop_Turn,
+            },
+            {
+                event_name: new Event.Name(ON, GAME_STOP),
+                event_handler: this.On_Game_Stop,
+            },
+        ]);
     }
 
     async On_Player_Stop_Turn(
@@ -815,11 +794,9 @@ class Player_Score extends Component<Player_Score_Props>
     ):
         Promise<void>
     {
-        this.Unlock();
-        {
-            await this.Update();
+        if (this.Is_Alive()) {
+            await this.Refresh();
         }
-        await this.Lock();
     }
 
     async On_Game_Stop(
@@ -828,11 +805,9 @@ class Player_Score extends Component<Player_Score_Props>
     ):
         Promise<void>
     {
-        this.Unlock();
-        {
-            await this.Update();
+        if (this.Is_Alive()) {
+            await this.Refresh();
         }
-        await this.Lock();
     }
 }
 
@@ -885,8 +860,8 @@ class Player_Hand extends Component<Player_Hand_Props>
         return this.Model().Index();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const stake_count: Model.Stake_Count = this.Model().Stake_Count();
 
@@ -914,23 +889,17 @@ class Player_Hand extends Component<Player_Hand_Props>
         );
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Index();
 
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Place_Stake,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.On_This_Player_Place_Stake,
+            },
+        ]);
     }
 
     async On_This_Player_Place_Stake(
@@ -939,11 +908,9 @@ class Player_Hand extends Component<Player_Hand_Props>
     ):
         Promise<void>
     {
-        this.Unlock();
-        {
-            await this.Update();
+        if (this.Is_Alive()) {
+            await this.Refresh();
         }
-        await this.Lock();
     }
 }
 
@@ -980,8 +947,8 @@ class Player_Stake extends Component<Player_Stake_Props>
         return this.props.index;
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const color: Model.Color = this.Model().Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
@@ -1002,7 +969,7 @@ class Player_Stake extends Component<Player_Stake_Props>
                 }}
                 onClick={
                     is_of_human && is_selectable ?
-                        event => this.Auto_Lock(this.On_Click, event) :
+                        event => this.On_Click(event) :
                         () => { }
                 }
             >
@@ -1013,66 +980,61 @@ class Player_Stake extends Component<Player_Stake_Props>
     async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
-        event.stopPropagation();
+        if (this.Is_Alive()) {
+            event.stopPropagation();
 
-        const arena: Model.Arena = this.Model().Arena();
-        if (arena.Is_Input_Enabled()) {
-            arena.Disable_Input();
+            const arena: Model.Arena = this.Model().Arena();
+            if (arena.Is_Input_Enabled()) {
+                arena.Disable_Input();
 
-            if (this.Model().Is_On_Player()) {
-                const player: Model.Player = this.Model().Origin();
-                if (player.Is_On_Turn()) {
-                    const player_index: Model.Player_Index = player.Index();
-                    const stake_index: Model.Stake_Index = this.Index();
+                if (this.Model().Is_On_Player()) {
+                    const player: Model.Player = this.Model().Origin();
+                    if (player.Is_On_Turn()) {
+                        const player_index: Model.Player_Index = player.Index();
+                        const stake_index: Model.Stake_Index = this.Index();
 
-                    // may want to await this before enabling input
-                    this.Send({
-                        name_affix: PLAYER_SELECT_STAKE,
-                        name_suffixes: [
-                            player_index.toString(),
-                        ],
-                        data: {
-                            player_index,
-                            stake_index,
-                        } as Player_Select_Stake_Data,
-                        is_atomic: true,
-                    });
+                        await this.Send({
+                            name_affix: PLAYER_SELECT_STAKE,
+                            name_suffixes: [
+                                player_index.toString(),
+                            ],
+                            data: {
+                                player_index,
+                                stake_index,
+                            } as Player_Select_Stake_Data,
+                            is_atomic: true,
+                        });
+                    }
                 }
-            }
 
-            arena.Enable_Input();
+                arena.Enable_Input();
+            }
         }
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Player().Index();
 
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
-                    event_handler: this.On_This_Player_Start_Turn,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.Before_This_Player_Place_Stake,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Place_Stake,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                event_handler: this.On_This_Player_Start_Turn,
+            },
+            {
+                event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                event_handler: this.On_This_Player_Select_Stake,
+            },
+            {
+                event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.Before_This_Player_Place_Stake,
+            },
+            {
+                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.On_This_Player_Place_Stake,
+            },
+        ]);
     }
 
     async On_This_Player_Start_Turn(
@@ -1081,8 +1043,10 @@ class Player_Stake extends Component<Player_Stake_Props>
     ):
         Promise<void>
     {
-        if (this.Model().Is_Of_Human()) {
-            this.Some_Element().style.cursor = `pointer`;
+        if (this.Is_Alive()) {
+            if (this.Model().Is_Of_Human()) {
+                this.Some_Element().style.cursor = `pointer`;
+            }
         }
     }
 
@@ -1093,11 +1057,13 @@ class Player_Stake extends Component<Player_Stake_Props>
     ):
         Promise<void>
     {
-        if (this.Model().Is_Of_Human()) {
-            if (this.Index() === stake_index) {
-                this.Some_Element().style.cursor = `default`;
-            } else {
-                this.Some_Element().style.cursor = `pointer`;
+        if (this.Is_Alive()) {
+            if (this.Model().Is_Of_Human()) {
+                if (this.Index() === stake_index) {
+                    this.Some_Element().style.cursor = `default`;
+                } else {
+                    this.Some_Element().style.cursor = `pointer`;
+                }
             }
         }
     }
@@ -1109,24 +1075,27 @@ class Player_Stake extends Component<Player_Stake_Props>
     ):
         Promise<void>
     {
-        if (stake_index === this.Index()) {
-            const element: HTMLElement = this.Some_Element();
+        if (this.Is_Alive()) {
+            if (stake_index === this.Index()) {
+                const element: HTMLElement = this.Some_Element();
 
-            element.style.animationName = `Player_Stake_Selected_Twinkle`;
-            element.style.animationDuration = `${500}ms`;
-            element.style.animationTimingFunction = `ease-in-out`;
-            element.style.animationIterationCount = `1`;
-            element.style.animationDirection = `normal`;
+                element.style.animationName = `Player_Stake_Selected_Twinkle`;
+                element.style.animationDuration = `${500}ms`;
+                element.style.animationTimingFunction = `ease-in-out`;
+                element.style.animationIterationCount = `1`;
+                element.style.animationDirection = `normal`;
 
-            await Wait(500);
+                await Wait(500);
+                if (this.Is_Alive()) {
+                    element.style.animationName = '';
+                    element.style.animationDuration = '';
+                    element.style.animationTimingFunction = '';
+                    element.style.animationIterationCount = '';
+                    element.style.animationDirection = '';
 
-            element.style.animationName = '';
-            element.style.animationDuration = '';
-            element.style.animationTimingFunction = '';
-            element.style.animationIterationCount = '';
-            element.style.animationDirection = '';
-
-            await Wait(100);
+                    await Wait(100);
+                }
+            }
         }
     }
 
@@ -1136,8 +1105,10 @@ class Player_Stake extends Component<Player_Stake_Props>
     ):
         Promise<void>
     {
-        if (this.Model().Is_Of_Human()) {
-            this.Some_Element().style.cursor = `default`;
+        if (this.Is_Alive()) {
+            if (this.Model().Is_Of_Human()) {
+                this.Some_Element().style.cursor = `default`;
+            }
         }
     }
 }
@@ -1185,8 +1156,8 @@ class Board extends Component<Board_Props>
         return cells;
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const styles: any = {};
         if (this.Model().Rules().Is_Small_Board()) {
@@ -1226,21 +1197,15 @@ class Board extends Component<Board_Props>
         );
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
-                    event_handler: this.On_Player_Place_Stake,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
+                event_handler: this.On_Player_Place_Stake,
+            },
+        ]);
     }
 
     async On_Player_Place_Stake(
@@ -1251,49 +1216,46 @@ class Board extends Component<Board_Props>
     ):
         Promise<void>
     {
-        const turn_result_steps: Model.Turn_Result_Steps =
-            await this.Model().Place_Current_Player_Selected_Stake(cell_index);
+        if (this.Is_Alive()) {
+            const turn_result_steps: Model.Turn_Result_Steps =
+                await this.Model().Place_Current_Player_Selected_Stake(cell_index);
+            if (this.Is_Alive()) {
+                for (const turn_result_step of turn_result_steps) {
+                    await Promise.all(turn_result_step.map(async function (
+                        this: Board,
+                        turn_result: Model.Turn_Result,
+                    ):
+                        Promise<void>
+                    {
+                        await this.Send({
+                            name_affix: BOARD_CHANGE_CELL,
+                            name_suffixes: [
+                                turn_result.cell_index.toString(),
+                            ],
+                            data: {
+                                cell_index: turn_result.cell_index,
+                                turn_result: turn_result,
+                            } as Board_Change_Cell_Data,
+                            is_atomic: true,
+                        });
+                    }, this));
 
-        for (const turn_result_step of turn_result_steps) {
-            this.Unlock();
-            {
-                await Promise.all(turn_result_step.map(async function (
-                    this: Board,
-                    turn_result: Model.Turn_Result,
-                ):
-                    Promise<void>
-                {
-                    await this.Send({
-                        name_affix: BOARD_CHANGE_CELL,
-                        name_suffixes: [
-                            turn_result.cell_index.toString(),
-                        ],
-                        data: {
-                            cell_index: turn_result.cell_index,
-                            turn_result: turn_result,
-                        } as Board_Change_Cell_Data,
-                        is_atomic: true,
-                    });
-                }, this));
+                    if (this.Is_Dead()) {
+                        return;
+                    }
+                }
+
+                this.Send({
+                    name_affix: PLAYER_STOP_TURN,
+                    name_suffixes: [
+                        player_index.toString(),
+                    ],
+                    data: {
+                        player_index,
+                    } as Player_Stop_Turn_Data,
+                    is_atomic: true,
+                });
             }
-            await this.Lock();
-
-            if (this.Is_Unmounted()) {
-                break;
-            }
-        }
-
-        if (this.Is_Mounted()) {
-            this.Send({
-                name_affix: PLAYER_STOP_TURN,
-                name_suffixes: [
-                    player_index.toString(),
-                ],
-                data: {
-                    player_index,
-                } as Player_Stop_Turn_Data,
-                is_atomic: true,
-            });
         }
     }
 }
@@ -1327,8 +1289,8 @@ class Board_Cell extends Component<Board_Cell_Props>
         return this.props.index;
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         const model = this.Model()();
 
@@ -1342,7 +1304,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                     style={{
                         cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
                     }}
-                    onClick={event => this.Auto_Lock(this.On_Click, event)}
+                    onClick={event => this.On_Click(event)}
                 >
                 </div>
             );
@@ -1376,64 +1338,59 @@ class Board_Cell extends Component<Board_Cell_Props>
     async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
-        event.stopPropagation();
+        if (this.Is_Alive()) {
+            event.stopPropagation();
 
-        const arena: Model.Arena = this.Board().Model().Arena();
-        if (arena.Is_On_Human_Turn() && arena.Is_Input_Enabled()) {
-            arena.Disable_Input();
+            const arena: Model.Arena = this.Board().Model().Arena();
+            if (arena.Is_On_Human_Turn() && arena.Is_Input_Enabled()) {
+                arena.Disable_Input();
 
-            if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
-                const player_index: Model.Player_Index =
-                    this.Board().Model().Current_Player_Index();
-                const stake_index: Model.Stake_Index =
-                    this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake_Index;
-                const cell_index: Model.Cell_Index =
-                    this.Index();
+                if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
+                    const player_index: Model.Player_Index =
+                        this.Board().Model().Current_Player_Index();
+                    const stake_index: Model.Stake_Index =
+                        this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake_Index;
+                    const cell_index: Model.Cell_Index =
+                        this.Index();
 
-                // may want to await this before enabling input
-                this.Send({
-                    name_affix: PLAYER_PLACE_STAKE,
-                    name_suffixes: [
-                        player_index.toString(),
-                    ],
-                    data: {
-                        player_index,
-                        stake_index,
-                        cell_index,
-                    } as Player_Place_Stake_Data,
-                    is_atomic: true,
-                });
+                    await this.Send({
+                        name_affix: PLAYER_PLACE_STAKE,
+                        name_suffixes: [
+                            player_index.toString(),
+                        ],
+                        data: {
+                            player_index,
+                            stake_index,
+                            cell_index,
+                        } as Player_Place_Stake_Data,
+                        is_atomic: true,
+                    });
+                }
+
+                arena.Enable_Input();
             }
-
-            arena.Enable_Input();
         }
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
         const cell_index: Model.Cell_Index = this.Index();
 
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
-                    event_handler: this.After_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE),
-                    event_handler: this.Before_Player_Place_Stake,
-                },
-                {
-                    event_name: new Event.Name(ON, BOARD_CHANGE_CELL, cell_index.toString()),
-                    event_handler: this.On_Board_Change_This_Cell,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
+                event_handler: this.After_Player_Select_Stake,
+            },
+            {
+                event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE),
+                event_handler: this.Before_Player_Place_Stake,
+            },
+            {
+                event_name: new Event.Name(ON, BOARD_CHANGE_CELL, cell_index.toString()),
+                event_handler: this.On_Board_Change_This_Cell,
+            },
+        ]);
     }
 
     async After_Player_Select_Stake(
@@ -1442,9 +1399,11 @@ class Board_Cell extends Component<Board_Cell_Props>
     ):
         Promise<void>
     {
-        if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
-            // we only need to update the cursor for empty cells
-            this.Some_Element().style.cursor = `pointer`;
+        if (this.Is_Alive()) {
+            if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
+                // we only need to update the cursor for empty cells
+                this.Some_Element().style.cursor = `pointer`;
+            }
         }
     }
 
@@ -1454,9 +1413,11 @@ class Board_Cell extends Component<Board_Cell_Props>
     ):
         Promise<void>
     {
-        if (this.Model()().Is_Empty()) {
-            // we only need to update the cursor for empty cells
-            this.Some_Element().style.cursor = `default`;
+        if (this.Is_Alive()) {
+            if (this.Model()().Is_Empty()) {
+                // we only need to update the cursor for empty cells
+                this.Some_Element().style.cursor = `default`;
+            }
         }
     }
 
@@ -1467,194 +1428,188 @@ class Board_Cell extends Component<Board_Cell_Props>
     ):
         Promise<void>
     {
-        const model: Model.Cell = this.Model()();
+        if (this.Is_Alive()) {
+            const model: Model.Cell = this.Model()();
 
-        if (turn_result.old_color != null) {
-            const old_color: Model.Color = turn_result.old_color;
-            const new_color: Model.Color = model.Color();
-            const old_background_color: string =
-                `rgba(${old_color.Red()}, ${old_color.Green()}, ${old_color.Blue()}, ${old_color.Alpha()})`;
-            const new_background_color: string =
-                `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
+            if (turn_result.old_color != null) {
+                const old_color: Model.Color = turn_result.old_color;
+                const new_color: Model.Color = model.Color();
+                const old_background_color: string =
+                    `rgba(${old_color.Red()}, ${old_color.Green()}, ${old_color.Blue()}, ${old_color.Alpha()})`;
+                const new_background_color: string =
+                    `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
 
-            let background_size: string = ``;
-            let to_direction: string = ``;
-            let animation_name: string = ``;
-            if (turn_result.direction === Model.Direction_e.LEFT) {
-                background_size = `1000% 100%`;
-                to_direction = `right`;
-                animation_name = `Board_Cell_Occupied_Left_To_Right`;
-            } else if (turn_result.direction === Model.Direction_e.TOP) {
-                background_size = `100% 1000%`;
-                to_direction = `bottom`;
-                animation_name = `Board_Cell_Occupied_Top_To_Bottom`;
-            } else if (turn_result.direction === Model.Direction_e.RIGHT) {
-                background_size = `1000% 100%`;
-                to_direction = `left`;
-                animation_name = `Board_Cell_Occupied_Right_To_Left`;
-            } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
-                background_size = `100% 1000%`;
-                to_direction = `top`;
-                animation_name = `Board_Cell_Occupied_Bottom_To_Top`;
-            }
-
-            const animation_duration: number =
-                Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
-            const animation_delay: string =
-                `0ms`;
-            const element: HTMLElement = this.Some_Element();
-            element.style.backgroundColor =
-                `transparent`;
-            element.style.backgroundImage =
-                `linear-gradient(to ${to_direction}, ${old_background_color}, ${new_background_color})`;
-            element.style.backgroundSize =
-                background_size;
-            element.style.animation =
-                `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
-
-            await Wait(animation_duration);
-
-            element.style.backgroundColor =
-                new_background_color;
-            element.style.backgroundImage =
-                ``;
-            element.style.backgroundSize =
-                `100% 100%`;
-            element.style.animation =
-                ``;
-
-            await Wait(200);
-
-            element.style.animationName = `Board_Cell_Occupied_Flash`;
-            element.style.animationDuration = `${300}ms`;
-            element.style.animationTimingFunction = `ease-in`;
-            element.style.animationIterationCount = `1`;
-            element.style.animationDirection = `normal`;
-
-            await Wait(300);
-
-            element.style.animationName = '';
-            element.style.animationDuration = '';
-            element.style.animationTimingFunction = '';
-            element.style.animationIterationCount = '';
-            element.style.animationDirection = '';
-
-            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
-        } else {
-            this.Unlock();
-            {
-                await this.Update();
-            }
-            await this.Lock();
-
-            if (this.Is_Mounted()) {
-                await Wait(TURN_RESULT_WAIT_MILLISECONDS);
-            }
-        }
-
-        if (this.Is_Mounted()) {
-            if (turn_result.combo ||
-                turn_result.same.left ||
-                turn_result.same.top ||
-                turn_result.same.right ||
-                turn_result.same.bottom ||
-                turn_result.plus.left ||
-                turn_result.plus.top ||
-                turn_result.plus.right ||
-                turn_result.plus.bottom) {
-                this.popups = [];
-
-                if (turn_result.combo) {
-                    this.popups.push(
-                        <div
-                            key={`center`}
-                            className={`Board_Cell_Center`}
-                        >
-                            <div>COMBO</div>
-                        </div>
-                    );
+                let background_size: string = ``;
+                let to_direction: string = ``;
+                let animation_name: string = ``;
+                if (turn_result.direction === Model.Direction_e.LEFT) {
+                    background_size = `1000% 100%`;
+                    to_direction = `right`;
+                    animation_name = `Board_Cell_Occupied_Left_To_Right`;
+                } else if (turn_result.direction === Model.Direction_e.TOP) {
+                    background_size = `100% 1000%`;
+                    to_direction = `bottom`;
+                    animation_name = `Board_Cell_Occupied_Top_To_Bottom`;
+                } else if (turn_result.direction === Model.Direction_e.RIGHT) {
+                    background_size = `1000% 100%`;
+                    to_direction = `left`;
+                    animation_name = `Board_Cell_Occupied_Right_To_Left`;
+                } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
+                    background_size = `100% 1000%`;
+                    to_direction = `top`;
+                    animation_name = `Board_Cell_Occupied_Bottom_To_Top`;
                 }
-                for (const [class_name, key, has_same, has_plus] of [
-                    [
-                        `Board_Cell_Left`,
-                        `left`,
-                        turn_result.same.left,
-                        turn_result.plus.left,
-                    ],
-                    [
-                        `Board_Cell_Top`,
-                        `top`,
-                        turn_result.same.top,
-                        turn_result.plus.top,
-                    ],
-                    [
-                        `Board_Cell_Right`,
-                        `right`,
-                        turn_result.same.right,
-                        turn_result.plus.right,
-                    ],
-                    [
-                        `Board_Cell_Bottom`,
-                        `bottom`,
-                        turn_result.same.bottom,
-                        turn_result.plus.bottom,
-                    ],
-                ] as Array<
-                    [
-                        string,
-                        string,
-                        boolean,
-                        boolean,
-                    ]
-                >) {
-                    if (has_same) {
-                        if (has_plus) {
-                            this.popups.push(
-                                <div
-                                    key={key}
-                                    className={class_name}
-                                >
-                                    <div>=</div>
-                                    <div>+</div>
-                                </div>
-                            );
-                        } else {
-                            this.popups.push(
-                                <div
-                                    key={key}
-                                    className={class_name}
-                                >
-                                    <div>=</div>
-                                </div>
-                            );
+
+                const animation_duration: number =
+                    Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
+                const animation_delay: string =
+                    `0ms`;
+                const element: HTMLElement = this.Some_Element();
+                element.style.backgroundColor =
+                    `transparent`;
+                element.style.backgroundImage =
+                    `linear-gradient(to ${to_direction}, ${old_background_color}, ${new_background_color})`;
+                element.style.backgroundSize =
+                    background_size;
+                element.style.animation =
+                    `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
+
+                await Wait(animation_duration);
+                if (this.Is_Alive()) {
+                    element.style.backgroundColor =
+                        new_background_color;
+                    element.style.backgroundImage =
+                        ``;
+                    element.style.backgroundSize =
+                        `100% 100%`;
+                    element.style.animation =
+                        ``;
+
+                    await Wait(200);
+                    if (this.Is_Alive()) {
+                        element.style.animationName = `Board_Cell_Occupied_Flash`;
+                        element.style.animationDuration = `${300}ms`;
+                        element.style.animationTimingFunction = `ease-in`;
+                        element.style.animationIterationCount = `1`;
+                        element.style.animationDirection = `normal`;
+
+                        await Wait(300);
+                        if (this.Is_Alive()) {
+                            element.style.animationName = '';
+                            element.style.animationDuration = '';
+                            element.style.animationTimingFunction = '';
+                            element.style.animationIterationCount = '';
+                            element.style.animationDirection = '';
+
+                            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
                         }
-                    } else if (has_plus) {
+                    }
+                }
+            } else {
+                await this.Refresh();
+                if (this.Is_Alive()) {
+                    await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+                }
+            }
+
+            if (this.Is_Alive()) {
+                if (
+                    turn_result.combo ||
+                    turn_result.same.left ||
+                    turn_result.same.top ||
+                    turn_result.same.right ||
+                    turn_result.same.bottom ||
+                    turn_result.plus.left ||
+                    turn_result.plus.top ||
+                    turn_result.plus.right ||
+                    turn_result.plus.bottom
+                ) {
+                    this.popups = [];
+
+                    if (turn_result.combo) {
                         this.popups.push(
                             <div
-                                key={key}
-                                className={class_name}
+                                key={`center`}
+                                className={`Board_Cell_Center`}
                             >
-                                <div>+</div>
+                                <div>COMBO</div>
                             </div>
                         );
                     }
-                }
-
-                this.Unlock();
-                {
-                    await this.Update();
-                }
-                await this.Lock();
-                if (this.Is_Mounted()) {
-                    await Wait(TURN_RESULT_WAIT_MILLISECONDS);
-
-                    this.popups = null;
-
-                    this.Unlock();
-                    {
-                        await this.Update();
+                    for (const [class_name, key, has_same, has_plus] of [
+                        [
+                            `Board_Cell_Left`,
+                            `left`,
+                            turn_result.same.left,
+                            turn_result.plus.left,
+                        ],
+                        [
+                            `Board_Cell_Top`,
+                            `top`,
+                            turn_result.same.top,
+                            turn_result.plus.top,
+                        ],
+                        [
+                            `Board_Cell_Right`,
+                            `right`,
+                            turn_result.same.right,
+                            turn_result.plus.right,
+                        ],
+                        [
+                            `Board_Cell_Bottom`,
+                            `bottom`,
+                            turn_result.same.bottom,
+                            turn_result.plus.bottom,
+                        ],
+                    ] as Array<
+                        [
+                            string,
+                            string,
+                            boolean,
+                            boolean,
+                        ]
+                    >) {
+                        if (has_same) {
+                            if (has_plus) {
+                                this.popups.push(
+                                    <div
+                                        key={key}
+                                        className={class_name}
+                                    >
+                                        <div>=</div>
+                                        <div>+</div>
+                                    </div>
+                                );
+                            } else {
+                                this.popups.push(
+                                    <div
+                                        key={key}
+                                        className={class_name}
+                                    >
+                                        <div>=</div>
+                                    </div>
+                                );
+                            }
+                        } else if (has_plus) {
+                            this.popups.push(
+                                <div
+                                    key={key}
+                                    className={class_name}
+                                >
+                                    <div>+</div>
+                                </div>
+                            );
+                        }
                     }
-                    await this.Lock();
+
+                    await this.Refresh();
+                    if (this.Is_Alive()) {
+                        await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+                        if (this.Is_Alive()) {
+                            this.popups = null;
+                            await this.Refresh();
+                        }
+                    }
                 }
             }
         }
@@ -1677,8 +1632,8 @@ class Results extends Component<Results_Props>
         return this.Parent();
     }
 
-    async On_Render():
-        Promise<JSX.Element | null>
+    On_Refresh():
+        JSX.Element | null
     {
         if (this.scores != null) {
             const scores: Model.Scores = this.scores;
@@ -1770,25 +1725,19 @@ class Results extends Component<Results_Props>
         }
     }
 
-    async On_Add_Listeners():
-        Promise<{
-            do_auto_lock: boolean,
-            listener_infos: Event.Listener_Info[],
-        }>
+    On_Life():
+        Event.Listener_Info[]
     {
-        return ({
-            do_auto_lock: true,
-            listener_infos: [
-                {
-                    event_name: new Event.Name(ON, GAME_START),
-                    event_handler: this.On_Game_Start,
-                },
-                {
-                    event_name: new Event.Name(ON, GAME_STOP),
-                    event_handler: this.On_Game_Stop,
-                },
-            ],
-        });
+        return ([
+            {
+                event_name: new Event.Name(ON, GAME_START),
+                event_handler: this.On_Game_Start,
+            },
+            {
+                event_name: new Event.Name(ON, GAME_STOP),
+                event_handler: this.On_Game_Stop,
+            },
+        ]);
     }
 
     async On_Game_Start(
@@ -1797,11 +1746,9 @@ class Results extends Component<Results_Props>
     ):
         Promise<void>
     {
-        this.Unlock();
-        {
-            await this.Update();
+        if (this.Is_Alive()) {
+            await this.Refresh();
         }
-        await this.Lock();
     }
 
     async On_Game_Stop(
@@ -1811,11 +1758,9 @@ class Results extends Component<Results_Props>
     ):
         Promise<void>
     {
-        this.scores = scores;
-        this.Unlock();
-        {
-            await this.Update();
+        if (this.Is_Alive()) {
+            this.scores = scores;
+            await this.Refresh();
         }
-        await this.Lock();
     }
 }

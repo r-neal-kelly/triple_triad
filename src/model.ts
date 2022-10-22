@@ -567,8 +567,6 @@ export class Main
 
         this.#menu = new Menu();
 
-        // we create an exhibition match between computers for the background of main
-        // and keep doing rematches until the player decides to start up a game of their own
         this.#arena = this.Random_Arena();
     }
 
