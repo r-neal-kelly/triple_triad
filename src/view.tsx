@@ -24,6 +24,7 @@ const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
 const PLAYER_STOP_TURN: Event.Name_Affix = `Player_Stop_Turn`;
 const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
 const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
+const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 
 // might want to turn these into full classes so that the sender has to fill out the info properly.
 // that would mean changing how the event types add the event instance to the data
@@ -51,6 +52,11 @@ type Player_Place_Stake_Data = {
     player_index: Model.Player_Index;
     stake_index: Model.Stake_Index;
     cell_index: Model.Cell_Index;
+}
+
+type Board_Change_Cell_Data = {
+    cell_index: Model.Cell_Index;
+    turn_result: Model.Turn_Result;
 }
 
 type Main_Props = {
@@ -583,10 +589,10 @@ class Player extends Component<Player_Props>
             this.Model().Selected_Stake_Index();
         if (previous_selected_stake_index !== stake_index) {
             this.Model().Select_Stake(stake_index);
-            this.Hand().Stake(stake_index).forceUpdate(); // replace with Update
+            this.Hand().Stake(stake_index).Update();
 
             if (previous_selected_stake_index != null) {
-                this.Hand().Stake(previous_selected_stake_index).forceUpdate(); // replace with Update
+                this.Hand().Stake(previous_selected_stake_index).Update();
             }
         }
     }
@@ -898,7 +904,7 @@ class Player_Hand extends Component<Player_Hand_Props>
 
                                 model={this.Model().Stake(stake_index)}
                                 parent={this}
-                                event_grid={this.props.event_grid}
+                                event_grid={this.Event_Grid()}
                                 index={stake_index}
                             />
                         );
@@ -991,8 +997,8 @@ class Player_Stake extends Component<Player_Stake_Props>
                 style={{
                     backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
                     backgroundImage: `url("${this.Model().Card().Image()}")`,
-                    top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.props.index})`,
-                    zIndex: `${this.props.index}`,
+                    top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.Index()})`,
+                    zIndex: `${this.Index()}`,
                 }}
                 onClick={
                     is_of_human && is_selectable ?
@@ -1019,6 +1025,7 @@ class Player_Stake extends Component<Player_Stake_Props>
                     const player_index: Model.Player_Index = player.Index();
                     const stake_index: Model.Stake_Index = this.Index();
 
+                    // may want to await this before enabling input
                     this.Send({
                         name_affix: PLAYER_SELECT_STAKE,
                         name_suffixes: [
@@ -1141,110 +1148,45 @@ type Board_Props = {
     model: Model.Board;
 }
 
-class Board extends React.Component<Board_Props>
+class Board extends Component<Board_Props>
 {
-    #element: HTMLElement | null;
-    #cells: Array<Board_Cell | null>;
-
-    constructor(props: Board_Props)
-    {
-        super(props);
-
-        this.#element = null;
-        this.#cells = new Array(this.Model().Cell_Count()).fill(null);
-    }
-
-    Model():
-        Model.Board
-    {
-        return this.props.model;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
+    private cells: Array<Board_Cell | null> = new Array(this.Model().Cell_Count()).fill(null);
 
     Arena():
         Arena
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
     Cell(cell_index: Model.Cell_Index):
         Board_Cell
     {
-        if (cell_index < 0 || cell_index >= this.#cells.length) {
-            throw new Error(`'cell_index' of '${cell_index}' is invalid.`);
-        } else if (!this.#cells[cell_index]) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (cell_index < 0 || cell_index >= this.cells.length) {
+            throw new Error(`'cell_index' of ${cell_index} is invalid.`);
+        } else if (this.cells[cell_index] == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#cells[cell_index] as Board_Cell;
+            return this.cells[cell_index] as Board_Cell;
         }
     }
 
-    async On_Player_Place_Stake(
-        {
-            player_index,
-            cell_index,
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
+    Cells():
+        Array<Board_Cell>
     {
-        const turn_result_steps: Model.Turn_Result_Steps =
-            await this.Model().Place_Current_Player_Selected_Stake(cell_index);
-
-        for (const turn_result_step of turn_result_steps) {
-            await Promise.all(turn_result_step.map(function (
-                this: Board,
-                turn_result: Model.Turn_Result,
-            ):
-                Promise<void>
-            {
-                return this.Cell(turn_result.cell_index).Update(turn_result);
-            }, this));
+        const cells: Array<Board_Cell> = [];
+        for (const cell of this.cells) {
+            if (cell == null) {
+                throw this.Error_Not_Rendered();
+            } else {
+                cells.push(cell);
+            }
         }
 
-        this.props.event_grid.Send_Event({
-            name_affix: PLAYER_STOP_TURN,
-            name_suffixes: [
-                player_index.toString(),
-            ],
-            data: {
-                player_index,
-            } as Player_Stop_Turn_Data,
-            is_atomic: true,
-        });
+        return cells;
     }
 
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
-                    event_handler: this.On_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
+    async On_Render():
+        Promise<JSX.Element | null>
     {
         const styles: any = {};
         if (this.Model().Rules().Is_Small_Board()) {
@@ -1253,7 +1195,6 @@ class Board extends React.Component<Board_Props>
 
         return (
             <div
-                ref={ref => this.#element = ref}
                 className={`Board`}
                 style={styles}
             >
@@ -1270,9 +1211,11 @@ class Board extends React.Component<Board_Props>
                             return (
                                 <Board_Cell
                                     key={cell_index}
+                                    ref={ref => this.cells[cell_index] = ref}
+
                                     parent={this}
-                                    ref={ref => this.#cells[cell_index] = ref}
-                                    event_grid={this.props.event_grid}
+                                    event_grid={this.Event_Grid()}
+                                    model={() => this.Model().Cell(cell_index)}
                                     index={cell_index}
                                 />
                             );
@@ -1282,48 +1225,89 @@ class Board extends React.Component<Board_Props>
             </div>
         );
     }
+
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
+                    event_handler: this.On_Player_Place_Stake,
+                },
+            ],
+        });
+    }
+
+    async On_Player_Place_Stake(
+        {
+            player_index,
+            cell_index,
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        const turn_result_steps: Model.Turn_Result_Steps =
+            await this.Model().Place_Current_Player_Selected_Stake(cell_index);
+
+        for (const turn_result_step of turn_result_steps) {
+            this.Unlock();
+            {
+                await Promise.all(turn_result_step.map(async function (
+                    this: Board,
+                    turn_result: Model.Turn_Result,
+                ):
+                    Promise<void>
+                {
+                    await this.Send({
+                        name_affix: BOARD_CHANGE_CELL,
+                        name_suffixes: [
+                            turn_result.cell_index.toString(),
+                        ],
+                        data: {
+                            cell_index: turn_result.cell_index,
+                            turn_result: turn_result,
+                        } as Board_Change_Cell_Data,
+                        is_atomic: true,
+                    });
+                }, this));
+            }
+            await this.Lock();
+
+            if (this.Is_Unmounted()) {
+                break;
+            }
+        }
+
+        if (this.Is_Mounted()) {
+            this.Send({
+                name_affix: PLAYER_STOP_TURN,
+                name_suffixes: [
+                    player_index.toString(),
+                ],
+                data: {
+                    player_index,
+                } as Player_Stop_Turn_Data,
+                is_atomic: true,
+            });
+        }
+    }
 }
 
 type Board_Cell_Props = {
     parent: Board;
     event_grid: Event.Grid;
+    model: () => Model.Cell;
     index: Model.Cell_Index;
 }
 
-class Board_Cell extends React.Component<Board_Cell_Props>
+class Board_Cell extends Component<Board_Cell_Props>
 {
-    #element: HTMLElement | null;
-    #popups: Array<JSX.Element> | null;
-
-    constructor(props: Board_Cell_Props)
-    {
-        super(props);
-
-        this.#element = null;
-        this.#popups = null;
-    }
-
-    Model():
-        Model.Cell
-    {
-        return this.Board().Model().Cell(this.props.index);
-    }
-
-    Index():
-        Model.Cell_Index
-    {
-        return this.props.index;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
+    private popups: Array<JSX.Element> | null = null;
 
     Arena():
         Arena
@@ -1334,15 +1318,160 @@ class Board_Cell extends React.Component<Board_Cell_Props>
     Board():
         Board
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
-    async Update(turn_result: Model.Turn_Result):
+    Index():
+        Model.Cell_Index
+    {
+        return this.props.index;
+    }
+
+    async On_Render():
+        Promise<JSX.Element | null>
+    {
+        const model = this.Model()();
+
+        if (model.Is_Empty()) {
+            const is_on_human_turn: boolean = this.Board().Model().Is_On_Human_Turn();
+            const is_selectable: boolean = this.Board().Model().Is_Cell_Selectable(this.Index());
+
+            return (
+                <div
+                    className={`Board_Cell_Empty`}
+                    style={{
+                        cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
+                    }}
+                    onClick={event => this.Auto_Lock(this.On_Click, event)}
+                >
+                </div>
+            );
+        } else {
+            const color: Model.Color = model.Color();
+
+            return (
+                <div
+                    className={`Board_Cell_Occupied`}
+                    style={{
+                        backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                    }}
+                >
+                    <div
+                        className={`Board_Cell_Card`}
+                        style={{
+                            backgroundImage: `url("${model.Stake().Card().Image()}")`,
+                        }}
+                    >
+                    </div>
+                    {
+                        this.popups ?
+                            this.popups :
+                            []
+                    }
+                </div>
+            );
+        }
+    }
+
+    async On_Click(event: React.SyntheticEvent):
         Promise<void>
     {
+        event.stopPropagation();
+
+        const arena: Model.Arena = this.Board().Model().Arena();
+        if (arena.Is_On_Human_Turn() && arena.Is_Input_Enabled()) {
+            arena.Disable_Input();
+
+            if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
+                const player_index: Model.Player_Index =
+                    this.Board().Model().Current_Player_Index();
+                const stake_index: Model.Stake_Index =
+                    this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake_Index;
+                const cell_index: Model.Cell_Index =
+                    this.Index();
+
+                // may want to await this before enabling input
+                this.Send({
+                    name_affix: PLAYER_PLACE_STAKE,
+                    name_suffixes: [
+                        player_index.toString(),
+                    ],
+                    data: {
+                        player_index,
+                        stake_index,
+                        cell_index,
+                    } as Player_Place_Stake_Data,
+                    is_atomic: true,
+                });
+            }
+
+            arena.Enable_Input();
+        }
+    }
+
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        const cell_index: Model.Cell_Index = this.Index();
+
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
+                    event_handler: this.After_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE),
+                    event_handler: this.Before_Player_Place_Stake,
+                },
+                {
+                    event_name: new Event.Name(ON, BOARD_CHANGE_CELL, cell_index.toString()),
+                    event_handler: this.On_Board_Change_This_Cell,
+                },
+            ],
+        });
+    }
+
+    async After_Player_Select_Stake(
+        {
+        }: Player_Select_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
+            // we only need to update the cursor for empty cells
+            this.Some_Element().style.cursor = `pointer`;
+        }
+    }
+
+    async Before_Player_Place_Stake(
+        {
+        }: Player_Select_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Model()().Is_Empty()) {
+            // we only need to update the cursor for empty cells
+            this.Some_Element().style.cursor = `default`;
+        }
+    }
+
+    async On_Board_Change_This_Cell(
+        {
+            turn_result,
+        }: Board_Change_Cell_Data,
+    ):
+        Promise<void>
+    {
+        const model: Model.Cell = this.Model()();
+
         if (turn_result.old_color != null) {
             const old_color: Model.Color = turn_result.old_color;
-            const new_color: Model.Color = this.Model().Color();
+            const new_color: Model.Color = model.Color();
             const old_background_color: string =
                 `rgba(${old_color.Red()}, ${old_color.Green()}, ${old_color.Blue()}, ${old_color.Alpha()})`;
             const new_background_color: string =
@@ -1373,7 +1502,7 @@ class Board_Cell extends React.Component<Board_Cell_Props>
                 Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
             const animation_delay: string =
                 `0ms`;
-            const element: HTMLElement = this.Element();
+            const element: HTMLElement = this.Some_Element();
             element.style.backgroundColor =
                 `transparent`;
             element.style.backgroundImage =
@@ -1412,228 +1541,122 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 
             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
         } else {
-            this.forceUpdate();
-            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+            this.Unlock();
+            {
+                await this.Update();
+            }
+            await this.Lock();
+
+            if (this.Is_Mounted()) {
+                await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+            }
         }
 
-        if (turn_result.combo ||
-            turn_result.same.left ||
-            turn_result.same.top ||
-            turn_result.same.right ||
-            turn_result.same.bottom ||
-            turn_result.plus.left ||
-            turn_result.plus.top ||
-            turn_result.plus.right ||
-            turn_result.plus.bottom) {
-            this.#popups = [];
+        if (this.Is_Mounted()) {
+            if (turn_result.combo ||
+                turn_result.same.left ||
+                turn_result.same.top ||
+                turn_result.same.right ||
+                turn_result.same.bottom ||
+                turn_result.plus.left ||
+                turn_result.plus.top ||
+                turn_result.plus.right ||
+                turn_result.plus.bottom) {
+                this.popups = [];
 
-            if (turn_result.combo) {
-                this.#popups.push(
-                    <div
-                        key={`center`}
-                        className={`Board_Cell_Center`}
-                    >
-                        <div>COMBO</div>
-                    </div>
-                );
-            }
-            for (const [class_name, key, has_same, has_plus] of [
-                [
-                    `Board_Cell_Left`,
-                    `left`,
-                    turn_result.same.left,
-                    turn_result.plus.left,
-                ],
-                [
-                    `Board_Cell_Top`,
-                    `top`,
-                    turn_result.same.top,
-                    turn_result.plus.top,
-                ],
-                [
-                    `Board_Cell_Right`,
-                    `right`,
-                    turn_result.same.right,
-                    turn_result.plus.right,
-                ],
-                [
-                    `Board_Cell_Bottom`,
-                    `bottom`,
-                    turn_result.same.bottom,
-                    turn_result.plus.bottom,
-                ],
-            ] as Array<
-                [
-                    string,
-                    string,
-                    boolean,
-                    boolean,
-                ]
-            >) {
-                if (has_same) {
-                    if (has_plus) {
-                        this.#popups.push(
-                            <div
-                                key={key}
-                                className={class_name}
-                            >
-                                <div>=</div>
-                                <div>+</div>
-                            </div>
-                        );
-                    } else {
-                        this.#popups.push(
-                            <div
-                                key={key}
-                                className={class_name}
-                            >
-                                <div>=</div>
-                            </div>
-                        );
-                    }
-                } else if (has_plus) {
-                    this.#popups.push(
+                if (turn_result.combo) {
+                    this.popups.push(
                         <div
-                            key={key}
-                            className={class_name}
+                            key={`center`}
+                            className={`Board_Cell_Center`}
                         >
-                            <div>+</div>
+                            <div>COMBO</div>
                         </div>
                     );
                 }
-            }
-
-            this.forceUpdate();
-            await Wait(TURN_RESULT_WAIT_MILLISECONDS);
-            this.#popups = null;
-            this.forceUpdate();
-        }
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        event.stopPropagation();
-
-        const arena: Model.Arena = this.Board().Model().Arena();
-        if (arena.Is_On_Human_Turn() && arena.Is_Input_Enabled()) {
-            arena.Disable_Input();
-
-            if (this.Board().Model().Is_Cell_Selectable(this.props.index)) {
-                const player_index: Model.Player_Index = this.Board().Model().Current_Player_Index();
-                const stake_index: Model.Stake_Index = this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake_Index;
-                const cell_index: Model.Cell_Index = this.props.index;
-
-                await this.props.event_grid.Send_Event({
-                    name_affix: PLAYER_PLACE_STAKE,
-                    name_suffixes: [
-                        player_index.toString(),
+                for (const [class_name, key, has_same, has_plus] of [
+                    [
+                        `Board_Cell_Left`,
+                        `left`,
+                        turn_result.same.left,
+                        turn_result.plus.left,
                     ],
-                    data: {
-                        player_index,
-                        stake_index,
-                        cell_index,
-                    } as Player_Place_Stake_Data,
-                    is_atomic: true,
-                });
-            }
-
-            arena.Enable_Input();
-        }
-    }
-
-    async After_Player_Select_Stake(
-        {
-        }: Player_Select_Stake_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Board().Model().Is_Cell_Selectable(this.props.index)) {
-            // we only need to update the cursor for empty cells
-            this.forceUpdate();
-        }
-    }
-
-    async Before_Player_Place_Stake(
-        {
-        }: Player_Select_Stake_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Model().Is_Empty()) {
-            // we only need to update the cursor for empty cells
-            this.Element().style.cursor = `default`;
-        }
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
-                    event_handler: this.After_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE),
-                    event_handler: this.Before_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
-    {
-        if (this.Model().Is_Empty()) {
-            const is_on_human_turn: boolean = this.Board().Model().Is_On_Human_Turn();
-            const is_selectable: boolean = this.Board().Model().Is_Cell_Selectable(this.props.index);
-
-            return (
-                <div
-                    ref={ref => this.#element = ref}
-                    className={`Board_Cell_Empty`}
-                    style={{
-                        cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
-                    }}
-                    onClick={event => this.On_Click.bind(this)(event)}
-                >
-                </div>
-            );
-        } else {
-            const color: Model.Color = this.Model().Color();
-
-            return (
-                <div
-                    ref={ref => this.#element = ref}
-                    className={`Board_Cell_Occupied`}
-                    style={{
-                        backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                    }}
-                >
-                    <div
-                        className={`Board_Cell_Card`}
-                        style={{
-                            backgroundImage: `url("${this.Model().Stake().Card().Image()}")`,
-                        }}
-                    >
-                    </div>
-                    {
-                        this.#popups ?
-                            this.#popups :
-                            []
+                    [
+                        `Board_Cell_Top`,
+                        `top`,
+                        turn_result.same.top,
+                        turn_result.plus.top,
+                    ],
+                    [
+                        `Board_Cell_Right`,
+                        `right`,
+                        turn_result.same.right,
+                        turn_result.plus.right,
+                    ],
+                    [
+                        `Board_Cell_Bottom`,
+                        `bottom`,
+                        turn_result.same.bottom,
+                        turn_result.plus.bottom,
+                    ],
+                ] as Array<
+                    [
+                        string,
+                        string,
+                        boolean,
+                        boolean,
+                    ]
+                >) {
+                    if (has_same) {
+                        if (has_plus) {
+                            this.popups.push(
+                                <div
+                                    key={key}
+                                    className={class_name}
+                                >
+                                    <div>=</div>
+                                    <div>+</div>
+                                </div>
+                            );
+                        } else {
+                            this.popups.push(
+                                <div
+                                    key={key}
+                                    className={class_name}
+                                >
+                                    <div>=</div>
+                                </div>
+                            );
+                        }
+                    } else if (has_plus) {
+                        this.popups.push(
+                            <div
+                                key={key}
+                                className={class_name}
+                            >
+                                <div>+</div>
+                            </div>
+                        );
                     }
-                </div>
-            );
+                }
+
+                this.Unlock();
+                {
+                    await this.Update();
+                }
+                await this.Lock();
+                if (this.Is_Mounted()) {
+                    await Wait(TURN_RESULT_WAIT_MILLISECONDS);
+
+                    this.popups = null;
+
+                    this.Unlock();
+                    {
+                        await this.Update();
+                    }
+                    await this.Lock();
+                }
+            }
         }
     }
 }
@@ -1644,95 +1667,22 @@ type Results_Props = {
     model: Model.Arena;
 }
 
-class Results extends React.Component<Results_Props>
+class Results extends Component<Results_Props>
 {
-    #element: HTMLElement | null;
-    #scores: Model.Scores | null;
-
-    constructor(props: Results_Props)
-    {
-        super(props);
-
-        this.#element = null;
-        this.#scores = null;
-    }
-
-    Model():
-        Model.Arena
-    {
-        return this.props.model;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
+    private scores: Model.Scores | null = null;
 
     Arena():
         Arena
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
-    async On_Game_Start(
-        {
-        }: Game_Start_Data,
-    ):
-        Promise<void>
+    async On_Render():
+        Promise<JSX.Element | null>
     {
-        this.forceUpdate();
-    }
-
-    async On_Game_Stop(
-        {
-            scores,
-        }: Game_Stop_Data,
-    ):
-        Promise<void>
-    {
-        this.#scores = scores;
-        this.forceUpdate();
-        while (this.#scores) {
-            await Wait(1);
-        }
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, GAME_START),
-                    event_handler: this.On_Game_Start,
-                },
-                {
-                    event_name: new Event.Name(ON, GAME_STOP),
-                    event_handler: this.On_Game_Stop,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element | null
-    {
-        if (this.#scores != null) {
-            const scores: Model.Scores = this.#scores;
-            this.#scores = null;
+        if (this.scores != null) {
+            const scores: Model.Scores = this.scores;
+            this.scores = null;
 
             if (scores.Has_Winner()) {
                 const winner: Model.Player_And_Score = scores.Winner();
@@ -1740,7 +1690,6 @@ class Results extends React.Component<Results_Props>
 
                 return (
                     <div
-                        ref={ref => this.#element = ref}
                         className={`Results`}
                         style={{
                             zIndex: `${this.Model().Rules().Selection_Card_Count()}`,
@@ -1752,7 +1701,13 @@ class Results extends React.Component<Results_Props>
                             <div
                                 className={`Results_Winner`}
                                 style={{
-                                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                                    backgroundColor:
+                                        `rgba(
+                                            ${color.Red()},
+                                            ${color.Green()},
+                                            ${color.Blue()},
+                                            ${color.Alpha()}
+                                        )`,
                                 }}
                             >
                                 <div
@@ -1783,7 +1738,6 @@ class Results extends React.Component<Results_Props>
 
                 return (
                     <div
-                        ref={ref => this.#element = ref}
                         className={`Results`}
                         style={{
                             zIndex: `${this.Model().Rules().Selection_Card_Count()}`,
@@ -1814,5 +1768,54 @@ class Results extends React.Component<Results_Props>
         } else {
             return null;
         }
+    }
+
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, GAME_START),
+                    event_handler: this.On_Game_Start,
+                },
+                {
+                    event_name: new Event.Name(ON, GAME_STOP),
+                    event_handler: this.On_Game_Stop,
+                },
+            ],
+        });
+    }
+
+    async On_Game_Start(
+        {
+        }: Game_Start_Data,
+    ):
+        Promise<void>
+    {
+        this.Unlock();
+        {
+            await this.Update();
+        }
+        await this.Lock();
+    }
+
+    async On_Game_Stop(
+        {
+            scores,
+        }: Game_Stop_Data,
+    ):
+        Promise<void>
+    {
+        this.scores = scores;
+        this.Unlock();
+        {
+            await this.Update();
+        }
+        await this.Lock();
     }
 }
