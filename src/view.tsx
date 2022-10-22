@@ -31,26 +31,26 @@ type Game_Start_Data = {
 }
 
 type Game_Stop_Data = {
-    scores: Model.Scores,
+    scores: Model.Scores;
 }
 
 type Player_Start_Turn_Data = {
-    player_index: Model.Player_Index,
+    player_index: Model.Player_Index;
 }
 
 type Player_Stop_Turn_Data = {
-    player_index: Model.Player_Index,
+    player_index: Model.Player_Index;
 }
 
 type Player_Select_Stake_Data = {
-    player_index: Model.Player_Index,
-    stake_index: Model.Stake_Index,
+    player_index: Model.Player_Index;
+    stake_index: Model.Stake_Index;
 }
 
 type Player_Place_Stake_Data = {
-    player_index: Model.Player_Index,
-    stake_index: Model.Stake_Index,
-    cell_index: Model.Cell_Index,
+    player_index: Model.Player_Index;
+    stake_index: Model.Stake_Index;
+    cell_index: Model.Cell_Index;
 }
 
 type Main_Props = {
@@ -87,8 +87,6 @@ export class Main extends Component<Main_Props>
     async On_Render():
         Promise<JSX.Element | null>
     {
-        //this.Update(3000);
-
         return (
             <div
                 className={`Main`}
@@ -151,17 +149,6 @@ class Arena extends Component<Arena_Props>
     private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
     private board: Board | null = null;
     private results: Results | null = null;
-
-    Element():
-        HTMLElement
-    {
-        const element: HTMLElement | null = super.Element();
-        if (element == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return element;
-        }
-    }
 
     Main():
         Main
@@ -277,7 +264,6 @@ class Arena extends Component<Arena_Props>
                                     model={this.Model().Player(player_index)}
                                     parent={this}
                                     event_grid={this.Event_Grid()}
-                                    index={player_index}
                                 />
                             );
                         })
@@ -310,7 +296,6 @@ class Arena extends Component<Arena_Props>
                                     model={this.Model().Player(player_index)}
                                     parent={this}
                                     event_grid={this.Event_Grid()}
-                                    index={player_index}
                                 />
                             );
                         })
@@ -408,24 +393,12 @@ type Player_Props = {
     model: Model.Player;
     parent: Arena;
     event_grid: Event.Grid;
-    index: Model.Player_Index;
 }
 
 class Player extends Component<Player_Props>
 {
     private bumper: Player_Bumper | null = null;
     private hand: Player_Hand | null = null;
-
-    Element():
-        HTMLElement
-    {
-        const element: HTMLElement | null = super.Element();
-        if (element == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return element;
-        }
-    }
 
     Arena():
         Arena
@@ -456,7 +429,7 @@ class Player extends Component<Player_Props>
     Index():
         Model.Player_Index
     {
-        return this.props.index;
+        return this.Model().Index();
     }
 
     async On_Render():
@@ -493,7 +466,6 @@ class Player extends Component<Player_Props>
                     model={model}
                     parent={this}
                     event_grid={event_grid}
-                    index={index}
                 />
                 <Player_Hand
                     key={`player_hand_${index}`}
@@ -502,7 +474,6 @@ class Player extends Component<Player_Props>
                     model={model}
                     parent={this}
                     event_grid={event_grid}
-                    index={index}
                 />
             </div>
         );
@@ -627,78 +598,101 @@ class Player extends Component<Player_Props>
         Promise<void>
     {
         // Remove the player highlight to indicate that selection is over.
-        this.Element().style.backgroundColor = `transparent`;
+        this.Some_Element().style.backgroundColor = `transparent`;
     }
 }
 
 type Player_Bumper_Props = {
-    parent: Player,
-    event_grid: Event.Grid,
-    model: Model.Player,
-    index: Model.Player_Index,
+    model: Model.Player;
+    parent: Player;
+    event_grid: Event.Grid;
 }
 
-class Player_Bumper extends React.Component<Player_Bumper_Props>
+class Player_Bumper extends Component<Player_Bumper_Props>
 {
-    #element: HTMLElement | null;
-    #name: Player_Name | null;
-    #score: Player_Score | null;
-
-    constructor(props: Player_Bumper_Props)
-    {
-        super(props);
-
-        this.#element = null;
-        this.#name = null;
-        this.#score = null;
-    }
-
-    Model():
-        Model.Player
-    {
-        return this.props.model;
-    }
-
-    Index():
-        Model.Player_Index
-    {
-        return this.props.index;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
+    private name: Player_Name | null = null;
+    private score: Player_Score | null = null;
 
     Player():
         Player
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
     Name():
         Player_Name
     {
-        if (!this.#name) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (this.name == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#name as Player_Name;
+            return this.name;
         }
     }
 
     Score():
         Player_Score
     {
-        if (!this.#score) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (this.score == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#score as Player_Score;
+            return this.score;
         }
+    }
+
+    Index():
+        Model.Player_Index
+    {
+        return this.Model().Index();
+    }
+
+    async On_Render():
+        Promise<JSX.Element | null>
+    {
+        const model: Model.Player = this.Model();
+        const event_grid: Event.Grid = this.Event_Grid();
+        const index: Model.Player_Index = this.Index();
+
+        return (
+            <div
+                className={`Player_Bumper`}
+            >
+                <Player_Name
+                    key={`player_name_${index}`}
+                    ref={ref => this.name = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Player_Score
+                    key={`player_score_${index}`}
+                    ref={ref => this.score = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+            </div>
+        );
+    }
+
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        const player_index: Model.Player_Index = this.Index();
+
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, GAME_STOP),
+                    event_handler: this.On_Game_Stop,
+                },
+            ],
+        });
     }
 
     async On_Game_Stop(
@@ -708,123 +702,39 @@ class Player_Bumper extends React.Component<Player_Bumper_Props>
         Promise<void>
     {
         const color: Model.Color = this.Model().Color();
-        this.Element().style.backgroundColor =
-            `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER})`;
 
-        this.Score().forceUpdate();
-    }
-
-    async After_This_Player_Place_Stake(
-        {
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        this.Name().forceUpdate();
-    }
-
-    componentDidMount():
-        void
-    {
-        const player_index: Model.Player_Index = this.props.index;
-
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, GAME_STOP),
-                    event_handler: this.On_Game_Stop,
-                },
-                {
-                    event_name: new Event.Name(AFTER, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.After_This_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
-    {
-        return (
-            <div
-                ref={ref => this.#element = ref}
-                className={`Player_Bumper`}
-            >
-                <Player_Name
-                    key={`player_name_${this.props.index}`}
-                    parent={this}
-                    ref={ref => this.#name = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model()}
-                    index={this.props.index}
-                />
-                <Player_Score
-                    key={`player_score_${this.props.index}`}
-                    parent={this}
-                    ref={ref => this.#score = ref}
-                    event_grid={this.props.event_grid}
-                    model={this.Model()}
-                    index={this.props.index}
-                />
-            </div>
-        );
+        this.Some_Element().style.backgroundColor =
+            `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+            )`;
     }
 }
 
 type Player_Name_Props = {
-    parent: Player_Bumper,
-    event_grid: Event.Grid,
-    model: Model.Player,
-    index: Model.Player_Index,
+    model: Model.Player;
+    parent: Player_Bumper;
+    event_grid: Event.Grid;
 }
 
-class Player_Name extends React.Component<Player_Name_Props>
+class Player_Name extends Component<Player_Name_Props>
 {
-    Model():
-        Model.Player
+    Player_Bumper():
+        Player_Bumper
     {
-        return this.props.model;
+        return this.Parent();
     }
 
     Index():
         Model.Player_Index
     {
-        return this.props.index;
+        return this.Model().Index();
     }
 
-    Player_Bumper():
-        Player_Bumper
-    {
-        return this.props.parent;
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
+    async On_Render():
+        Promise<JSX.Element | null>
     {
         return (
             <div
@@ -839,64 +749,27 @@ class Player_Name extends React.Component<Player_Name_Props>
 }
 
 type Player_Score_Props = {
-    parent: Player_Bumper,
-    event_grid: Event.Grid,
-    model: Model.Player,
-    index: Model.Player_Index,
+    model: Model.Player;
+    parent: Player_Bumper;
+    event_grid: Event.Grid;
 }
 
-class Player_Score extends React.Component<Player_Score_Props>
+class Player_Score extends Component<Player_Score_Props>
 {
-    Model():
-        Model.Player
+    Player_Bumper():
+        Player_Bumper
     {
-        return this.props.model;
+        return this.Parent();
     }
 
     Index():
         Model.Player_Index
     {
-        return this.props.index;
+        return this.Model().Index();
     }
 
-    Player():
-        Player_Bumper
-    {
-        return this.props.parent;
-    }
-
-    async On_Player_Stop_Turn(
-        {
-        }: Player_Stop_Turn_Data,
-    ):
-        Promise<void>
-    {
-        this.forceUpdate();
-    }
-
-    componentDidMount():
-        void
-    {
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
-                    event_handler: this.On_Player_Stop_Turn,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
+    async On_Render():
+        Promise<JSX.Element | null>
     {
         return (
             <div
@@ -908,65 +781,80 @@ class Player_Score extends React.Component<Player_Score_Props>
             </div>
         );
     }
+
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                    event_handler: this.On_Player_Stop_Turn,
+                },
+                {
+                    event_name: new Event.Name(ON, GAME_STOP),
+                    event_handler: this.On_Game_Stop,
+                },
+            ],
+        });
+    }
+
+    async On_Player_Stop_Turn(
+        {
+        }: Player_Stop_Turn_Data,
+    ):
+        Promise<void>
+    {
+        this.Unlock();
+        {
+            await this.Update();
+        }
+        await this.Lock();
+    }
+
+    async On_Game_Stop(
+        {
+        }: Game_Stop_Data,
+    ):
+        Promise<void>
+    {
+        this.Unlock();
+        {
+            await this.Update();
+        }
+        await this.Lock();
+    }
 }
 
 type Player_Hand_Props = {
-    parent: Player,
-    event_grid: Event.Grid,
-    model: Model.Player,
-    index: Model.Player_Index,
+    model: Model.Player;
+    parent: Player;
+    event_grid: Event.Grid;
 }
 
-class Player_Hand extends React.Component<Player_Hand_Props>
+class Player_Hand extends Component<Player_Hand_Props>
 {
-    #element: HTMLElement | null;
-    #stakes: Array<Player_Stake | null>;
-
-    constructor(props: Player_Hand_Props)
-    {
-        super(props);
-
-        this.#element = null;
-        this.#stakes = new Array(this.Model().Stake_Count()).fill(null);
-    }
-
-    Model():
-        Model.Player
-    {
-        return this.props.model;
-    }
-
-    Index():
-        Model.Player_Index
-    {
-        return this.props.index;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
+    private stakes: Array<Player_Stake | null> = new Array(this.Model().Stake_Count()).fill(null);
 
     Player():
         Player
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
     Stake(stake_index: Model.Stake_Index):
         Player_Stake
     {
-        if (stake_index < 0 || stake_index >= this.#stakes.length) {
-            throw new Error(`'stake_index' of '${stake_index}' is invalid.`);
-        } else if (!this.#stakes[stake_index]) {
-            throw new Error(`Component has not yet been rendered.`);
+        if (stake_index < 0 || stake_index >= this.stakes.length) {
+            throw new Error(`'stake_index' of ${stake_index} is invalid.`);
+        } else if (this.stakes[stake_index] == null) {
+            throw this.Error_Not_Rendered();
         } else {
-            return this.#stakes[stake_index] as Player_Stake;
+            return this.stakes[stake_index] as Player_Stake;
         }
     }
 
@@ -974,9 +862,9 @@ class Player_Hand extends React.Component<Player_Hand_Props>
         Array<Player_Stake>
     {
         const stakes: Array<Player_Stake> = [];
-        for (const stake of this.#stakes) {
-            if (!stake) {
-                throw new Error(`Component has not yet been rendered.`);
+        for (const stake of this.stakes) {
+            if (stake == null) {
+                throw this.Error_Not_Rendered();
             } else {
                 stakes.push(stake);
             }
@@ -985,61 +873,19 @@ class Player_Hand extends React.Component<Player_Hand_Props>
         return stakes;
     }
 
-    async Before_This_Player_Place_Stake(
-        {
-            stake_index,
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
+    Index():
+        Model.Player_Index
     {
-        await this.Stake(stake_index).Twinkle_Border(500);
-        await Wait(100);
+        return this.Model().Index();
     }
 
-    async On_This_Player_Place_Stake(
-        {
-        }: Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        this.forceUpdate();
-    }
-
-    componentDidMount():
-        void
-    {
-        const player_index: Model.Player_Index = this.Index();
-
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.Before_This_Player_Place_Stake,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
+    async On_Render():
+        Promise<JSX.Element | null>
     {
         const stake_count: Model.Stake_Count = this.Model().Stake_Count();
 
         return (
             <div
-                ref={ref => this.#element = ref}
                 className={`Player_Hand`}
             >
                 {
@@ -1048,10 +894,11 @@ class Player_Hand extends React.Component<Player_Hand_Props>
                         return (
                             <Player_Stake
                                 key={`player_stake_${stake_index}`}
-                                parent={this}
-                                ref={ref => this.#stakes[stake_index] = ref}
-                                event_grid={this.props.event_grid}
+                                ref={ref => this.stakes[stake_index] = ref}
+
                                 model={this.Model().Stake(stake_index)}
+                                parent={this}
+                                event_grid={this.props.event_grid}
                                 index={stake_index}
                             />
                         );
@@ -1060,52 +907,53 @@ class Player_Hand extends React.Component<Player_Hand_Props>
             </div>
         );
     }
+
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        const player_index: Model.Player_Index = this.Index();
+
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Place_Stake,
+                },
+            ],
+        });
+    }
+
+    async On_This_Player_Place_Stake(
+        {
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        this.Unlock();
+        {
+            await this.Update();
+        }
+        await this.Lock();
+    }
 }
 
 type Player_Stake_Props = {
-    parent: Player_Hand,
-    event_grid: Event.Grid,
-    model: Model.Stake,
-    index: Model.Stake_Index,
+    parent: Player_Hand;
+    event_grid: Event.Grid;
+    model: Model.Stake;
+    index: Model.Stake_Index;
 }
 
-class Player_Stake extends React.Component<Player_Stake_Props>
+class Player_Stake extends Component<Player_Stake_Props>
 {
-    #element: HTMLElement | null;
-
-    constructor(props: Player_Stake_Props)
-    {
-        super(props);
-
-        this.#element = null;
-    }
-
-    Model():
-        Model.Stake
-    {
-        return this.props.model;
-    }
-
-    Index():
-        Model.Stake_Index
-    {
-        return this.props.index;
-    }
-
-    Element():
-        HTMLElement
-    {
-        if (!this.#element) {
-            throw new Error(`Component has not yet been rendered.`);
-        } else {
-            return this.#element as HTMLElement;
-        }
-    }
-
     Arena():
         Arena
     {
-        return this.Player_Hand().Player().Arena();
+        return this.Player().Arena();
     }
 
     Player():
@@ -1117,27 +965,43 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     Player_Hand():
         Player_Hand
     {
-        return this.props.parent;
+        return this.Parent();
     }
 
-    async Twinkle_Border(for_milliseconds: number):
-        Promise<void>
+    Index():
+        Model.Stake_Index
     {
-        const element: HTMLElement = this.Element();
+        return this.props.index;
+    }
 
-        element.style.animationName = `Player_Stake_Selected_Twinkle`;
-        element.style.animationDuration = `${for_milliseconds}ms`;
-        element.style.animationTimingFunction = `ease-in-out`;
-        element.style.animationIterationCount = `1`;
-        element.style.animationDirection = `normal`;
+    async On_Render():
+        Promise<JSX.Element | null>
+    {
+        const color: Model.Color = this.Model().Color();
+        const is_of_human: boolean = this.Model().Is_Of_Human();
+        const is_selectable: boolean = this.Model().Is_Selectable();
 
-        await Wait(for_milliseconds);
-
-        element.style.animationName = '';
-        element.style.animationDuration = '';
-        element.style.animationTimingFunction = '';
-        element.style.animationIterationCount = '';
-        element.style.animationDirection = '';
+        return (
+            <div
+                className={
+                    this.Model().Is_Selected() ?
+                        `Player_Stake_Selected` :
+                        `Player_Stake`
+                }
+                style={{
+                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
+                    backgroundImage: `url("${this.Model().Card().Image()}")`,
+                    top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.props.index})`,
+                    zIndex: `${this.props.index}`,
+                }}
+                onClick={
+                    is_of_human && is_selectable ?
+                        event => this.Auto_Lock(this.On_Click, event) :
+                        () => { }
+                }
+            >
+            </div>
+        );
     }
 
     async On_Click(event: React.SyntheticEvent):
@@ -1153,9 +1017,9 @@ class Player_Stake extends React.Component<Player_Stake_Props>
                 const player: Model.Player = this.Model().Origin();
                 if (player.Is_On_Turn()) {
                     const player_index: Model.Player_Index = player.Index();
-                    const stake_index: Model.Stake_Index = this.props.index;
+                    const stake_index: Model.Stake_Index = this.Index();
 
-                    this.props.event_grid.Send_Event({
+                    this.Send({
                         name_affix: PLAYER_SELECT_STAKE,
                         name_suffixes: [
                             player_index.toString(),
@@ -1173,6 +1037,37 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         }
     }
 
+    async On_Add_Listeners():
+        Promise<{
+            do_auto_lock: boolean,
+            listener_infos: Event.Listener_Info[],
+        }>
+    {
+        const player_index: Model.Player_Index = this.Player().Index();
+
+        return ({
+            do_auto_lock: true,
+            listener_infos: [
+                {
+                    event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                    event_handler: this.On_This_Player_Start_Turn,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Select_Stake,
+                },
+                {
+                    event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.Before_This_Player_Place_Stake,
+                },
+                {
+                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                    event_handler: this.On_This_Player_Place_Stake,
+                },
+            ],
+        });
+    }
+
     async On_This_Player_Start_Turn(
         {
         }: Player_Start_Turn_Data
@@ -1180,7 +1075,7 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         Promise<void>
     {
         if (this.Model().Is_Of_Human()) {
-            this.Element().style.cursor = `pointer`;
+            this.Some_Element().style.cursor = `pointer`;
         }
     }
 
@@ -1193,10 +1088,38 @@ class Player_Stake extends React.Component<Player_Stake_Props>
     {
         if (this.Model().Is_Of_Human()) {
             if (this.Index() === stake_index) {
-                this.Element().style.cursor = `default`;
+                this.Some_Element().style.cursor = `default`;
             } else {
-                this.Element().style.cursor = `pointer`;
+                this.Some_Element().style.cursor = `pointer`;
             }
+        }
+    }
+
+    async Before_This_Player_Place_Stake(
+        {
+            stake_index,
+        }: Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (stake_index === this.Index()) {
+            const element: HTMLElement = this.Some_Element();
+
+            element.style.animationName = `Player_Stake_Selected_Twinkle`;
+            element.style.animationDuration = `${500}ms`;
+            element.style.animationTimingFunction = `ease-in-out`;
+            element.style.animationIterationCount = `1`;
+            element.style.animationDirection = `normal`;
+
+            await Wait(500);
+
+            element.style.animationName = '';
+            element.style.animationDuration = '';
+            element.style.animationTimingFunction = '';
+            element.style.animationIterationCount = '';
+            element.style.animationDirection = '';
+
+            await Wait(100);
         }
     }
 
@@ -1207,77 +1130,15 @@ class Player_Stake extends React.Component<Player_Stake_Props>
         Promise<void>
     {
         if (this.Model().Is_Of_Human()) {
-            this.Element().style.cursor = `default`;
+            this.Some_Element().style.cursor = `default`;
         }
-    }
-
-    componentDidMount():
-        void
-    {
-        const player_index: Model.Player_Index = this.Player().Index();
-
-        this.props.event_grid.Add(this);
-        this.props.event_grid.Add_Many_Listeners(
-            this,
-            [
-                {
-                    event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
-                    event_handler: this.On_This_Player_Start_Turn,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Select_Stake,
-                },
-                {
-                    event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
-                    event_handler: this.On_This_Player_Place_Stake,
-                },
-            ],
-        );
-    }
-
-    componentWillUnmount():
-        void
-    {
-        this.props.event_grid.Remove(this);
-    }
-
-    render():
-        JSX.Element
-    {
-        const color: Model.Color = this.Model().Color();
-        const is_of_human: boolean = this.Model().Is_Of_Human();
-        const is_selectable: boolean = this.Model().Is_Selectable();
-
-        return (
-            <div
-                ref={ref => this.#element = ref}
-                className={
-                    this.Model().Is_Selected() ?
-                        `Player_Stake_Selected` :
-                        `Player_Stake`
-                }
-                style={{
-                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                    backgroundImage: `url("${this.Model().Card().Image()}")`,
-                    top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.props.index})`,
-                    zIndex: `${this.props.index}`,
-                }}
-                onClick={
-                    is_of_human && is_selectable ?
-                        event => this.On_Click.bind(this)(event) :
-                        () => { }
-                }
-            >
-            </div>
-        );
     }
 }
 
 type Board_Props = {
-    parent: Arena,
-    event_grid: Event.Grid,
-    model: Model.Board,
+    parent: Arena;
+    event_grid: Event.Grid;
+    model: Model.Board;
 }
 
 class Board extends React.Component<Board_Props>
@@ -1424,9 +1285,9 @@ class Board extends React.Component<Board_Props>
 }
 
 type Board_Cell_Props = {
-    parent: Board,
-    event_grid: Event.Grid,
-    index: Model.Cell_Index,
+    parent: Board;
+    event_grid: Event.Grid;
+    index: Model.Cell_Index;
 }
 
 class Board_Cell extends React.Component<Board_Cell_Props>
@@ -1778,9 +1639,9 @@ class Board_Cell extends React.Component<Board_Cell_Props>
 }
 
 type Results_Props = {
-    parent: Arena,
-    event_grid: Event.Grid,
-    model: Model.Arena,
+    parent: Arena;
+    event_grid: Event.Grid;
+    model: Model.Arena;
 }
 
 class Results extends React.Component<Results_Props>

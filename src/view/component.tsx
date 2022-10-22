@@ -42,13 +42,6 @@ export interface Component_Props
         After_Unmount
 
     Each method can be overridden by a derived class.
-
-    Is_Mounting is true during Before_Mount and After_Mount.
-    Is_Updating is true during Before_Update and After_Update.
-    Is_Unmounting is true during Before_Unmount and After_Unmount.
-
-    It's safe to call Update() during Listener events or even other updates.
-    Using async calls, it's now easy to set up a simple loop of updates.
 */
 export class Component<T extends Component_Props> extends React.Component<T>
 {
@@ -88,10 +81,20 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return this.props.event_grid;
     }
 
-    Element():
+    Maybe_Element():
         HTMLElement | null
     {
         return this.element as HTMLElement;
+    }
+
+    Some_Element():
+        HTMLElement
+    {
+        if (this.element == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.element;
+        }
     }
 
     Error_Not_Rendered():
@@ -230,7 +233,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
                     }
                     await this.After_Add_Listeners();
 
-                    await this.Render_();
+                    await this.Send_Render();
 
                     while (this.was_component_did_mount_called === false) {
                         await Wait(1);
@@ -264,7 +267,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
                 await this.Before_Update();
                 {
                     this.was_component_did_update_called = false;
-                    await this.Render_();
+                    await this.Send_Render();
 
                     while (
                         this.was_component_will_unmount_called === false &&
@@ -288,12 +291,15 @@ export class Component<T extends Component_Props> extends React.Component<T>
         this.Unlock();
     }
 
-    private async Render_():
+    private async Send_Render():
         Promise<void>
     {
         if (this.was_component_will_unmount_called === false) {
             await this.Before_Render();
             {
+                // This is not set to null after so tha automatic calls to render
+                // keep the old renderable on screen until the async On_Render gets
+                // called again.
                 this.renderable = await this.On_Render();
 
                 if (this.was_component_will_unmount_called === false) {
@@ -307,8 +313,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
                         await Wait(1);
                     }
                 }
-
-                this.renderable = null;
             }
             await this.After_Render();
         }
@@ -434,6 +438,12 @@ export class Component<T extends Component_Props> extends React.Component<T>
     render():
         JSX.Element | null
     {
+        // This catches automatic render calls after mounting,
+        // because manual render calls always set this to false first.
+        if (this.Is_Mounted() && this.was_render_called === true) {
+            this.Auto_Lock(this.Send_Render);
+        }
+
         this.was_render_called = true;
 
         return this.renderable;
