@@ -18,9 +18,9 @@ const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
 const AFTER: Event.Name_Prefix = Event.AFTER;
 
-const MAIN_START_EXHIBITION: Event.Name_Affix = `Main_Start_Exhibition`;
-const MAIN_STOP_EXHIBITION: Event.Name_Affix = `Main_Stop_Exhibition`;
-const MAIN_SWITCH_EXHIBITION: Event.Name_Affix = `Main_Switch_Exhibition`;
+const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
+const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
+const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
 const GAME_START: Event.Name_Affix = `Game_Start`;
 const GAME_STOP: Event.Name_Affix = `Game_Stop`;
 const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
@@ -31,6 +31,11 @@ const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 
 // might want to turn these into full classes so that the sender has to fill out the info properly.
 // that would mean changing how the event types add the event instance to the data
+type Switch_Exhibition_Data = {
+    previous: Model.Exhibition,
+    next: Model.Exhibition,
+}
+
 type Game_Start_Data = {
 }
 
@@ -71,9 +76,8 @@ type Main_Props = {
 export class Main extends Component<Main_Props>
 {
     private menu: Menu | null = null;
-    private exhibitions: Array<Exhibition | null> = new Array(this.Model().Exhibition_Count()).fill(null);
+    private exhibitions: Exhibitions | null = null;
     private arena: Arena | null = null;
-    private arena_event_grid: Event.Grid = new Event.Grid();
 
     Menu():
         Menu
@@ -83,6 +87,248 @@ export class Main extends Component<Main_Props>
         } else {
             return this.menu;
         }
+    }
+
+    Exhibitions():
+        Exhibitions
+    {
+        if (this.exhibitions == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.exhibitions;
+        }
+    }
+
+    Arena():
+        Arena
+    {
+        if (this.arena == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.arena;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+
+            position: `relative`,
+
+            animationName: `Main_Fade_In`,
+            animationDuration: `5000ms`,
+            animationTimingFunction: `ease-in-out`,
+            animationIterationCount: `1`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        // we create an exhibition match between computers for the background of main
+        // and keep doing rematches until the player decides to start up a game of their own
+
+        const model: Model.Main = this.Model();
+
+        if (model.Isnt_In_Game()) {
+            return (
+                <div
+                    className={`Main`}
+                    style={this.Styles()}
+                >
+                    <Menu
+                        key={`menu`}
+                        ref={ref => this.menu = ref}
+
+                        model={model.Menu()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                    <Exhibitions
+                        key={`exhibitions`}
+                        ref={ref => this.exhibitions = ref}
+
+                        model={this.Model()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else {
+            const arena: Model.Arena = model.Current_Arena() as Model.Arena;
+
+            return (
+                <div
+                    className={`Main`}
+                    style={this.Styles()}
+                >
+                    <Arena
+                        key={`arena`}
+                        ref={ref => this.arena = ref}
+
+                        model={arena}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        }
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        this.While_Alive();
+
+        return [];
+    }
+
+    async While_Alive():
+        Promise<void>
+    {
+        while (true) {
+            await Wait(5000);
+            if (this.Is_Alive()) {
+                this.Model().Change_Current_Exhibition();
+                await this.Refresh();
+            } else {
+                return;
+            }
+        }
+    }
+}
+
+type Menu_Props = {
+    model: Model.Menu;
+    parent: Main;
+    event_grid: Event.Grid;
+}
+
+class Menu extends Component<Menu_Props>
+{
+    private title: Menu_Title | null = null;
+
+    Main():
+        Main
+    {
+        return this.Parent();
+    }
+
+    Title():
+        Menu_Title
+    {
+        if (this.title == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.title;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `2.5fr 1fr 1fr 1fr`,
+            columnGap: `5%`,
+
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `1`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu`}
+                style={this.Styles()}
+            >
+                <Menu_Title
+                    key={`menu_title`}
+                    ref={ref => this.title = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+}
+
+type Menu_Title_Props = {
+    model: Model.Menu;
+    parent: Menu;
+    event_grid: Event.Grid;
+}
+
+class Menu_Title extends Component<Menu_Title_Props>
+{
+    Menu():
+        Menu
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+
+            width: `100%`,
+            height: `100%`,
+
+            fontSize: `5em`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu_Title`}
+                style={this.Styles()}
+            >
+                <div>{`Triple Triad`}</div>
+            </div>
+        );
+    }
+}
+
+type Exhibitions_Props = {
+    model: Model.Main;
+    parent: Main;
+    event_grid: Event.Grid;
+}
+
+class Exhibitions extends Component<Exhibitions_Props>
+{
+    private exhibitions: Array<Exhibition | null> =
+        new Array(this.Model().Exhibition_Count()).fill(null);
+    private exhibition_event_grids: Array<Event.Grid> =
+        Array.from(new Array(this.Model().Exhibition_Count()).fill(null).map(() => new Event.Grid()));
+
+    Main():
+        Main
+    {
+        return this.Parent();
     }
 
     Exhibition(exhibition_index: Model.Exhibition_Index):
@@ -112,13 +358,13 @@ export class Main extends Component<Main_Props>
         return exhibitions;
     }
 
-    Arena():
-        Arena
+    Exhibition_Event_Grid(exhibition_index: Model.Exhibition_Index):
+        Event.Grid
     {
-        if (this.arena == null) {
-            throw this.Error_Not_Rendered();
+        if (exhibition_index == null || exhibition_index < 0 || exhibition_index >= this.exhibitions.length) {
+            throw new Error(`'exhibition_index' ${exhibition_index} is invalid.`);
         } else {
-            return this.arena;
+            return this.exhibition_event_grids[exhibition_index] as Event.Grid;
         }
     }
 
@@ -126,119 +372,44 @@ export class Main extends Component<Main_Props>
         Component_Styles
     {
         return ({
-            width: `100%`,
-            height: `100%`,
-
-            position: `relative`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        // we create an exhibition match between computers for the background of main
-        // and keep doing rematches until the player decides to start up a game of their own
-
-        const model: Model.Main = this.Model();
-
-        if (model.Isnt_In_Game()) {
-            const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
-
-            return (
-                <div
-                    className={`Main`}
-                    style={this.Styles()}
-                >
-                    <Menu
-                        key={`menu`}
-                        ref={ref => this.menu = ref}
-
-                        model={model.Menu()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                    {
-                        Array(exhibition_count).fill(null).map((_, exhibition_index: Model.Exhibition_Index) =>
-                        {
-                            return (
-                                <Exhibition
-                                    key={`exhibition_${exhibition_index}`}
-                                    ref={ref => this.exhibitions[exhibition_index] = ref}
-
-                                    model={model.Exhibition(exhibition_index)}
-                                    parent={this}
-                                    event_grid={new Event.Grid()}
-                                />
-                            );
-                        })
-                    }
-                </div>
-            );
-        } else {
-            const arena: Model.Arena = model.Current_Arena() as Model.Arena;
-
-            return (
-                <div
-                    className={`Main`}
-                    style={this.Styles()}
-                >
-                    <Arena
-                        key={`arena`}
-                        ref={ref => this.arena = ref}
-
-                        model={arena}
-                        parent={this}
-                        event_grid={this.arena_event_grid}
-                    />
-                </div>
-            );
-        }
-    }
-}
-
-type Menu_Props = {
-    model: Model.Menu;
-    parent: Main;
-    event_grid: Event.Grid;
-}
-
-class Menu extends Component<Menu_Props>
-{
-    Main():
-        Main
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `2.5fr 1fr 1fr 1fr`,
-            gridTemplateRows: `1fr`,
-            columnGap: `5%`,
-
             width: `100%`,
             height: `100%`,
 
             position: `absolute`,
             left: `0`,
             top: `0`,
-            zIndex: `1`,
+            zIndex: `0`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+            filter: `blur(0.1vmin)`, // I'm not sure, maybe doing pixels would be best?
         });
     }
 
     On_Refresh():
         JSX.Element | null
     {
+        const model: Model.Main = this.Model();
+        const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
+
         return (
             <div
-                className={`Menu`}
+                className={`Exhibitions`}
                 style={this.Styles()}
             >
+                {
+                    Array(exhibition_count).fill(null).map((_, exhibition_index: Model.Exhibition_Index) =>
+                    {
+                        return (
+                            <Exhibition
+                                key={`exhibition_${exhibition_index}`}
+                                ref={ref => this.exhibitions[exhibition_index] = ref}
+
+                                model={model.Exhibition(exhibition_index)}
+                                parent={this}
+                                event_grid={this.Exhibition_Event_Grid(exhibition_index)}
+                            />
+                        );
+                    })
+                }
             </div>
         );
     }
@@ -246,7 +417,7 @@ class Menu extends Component<Menu_Props>
 
 type Exhibition_Props = {
     model: Model.Exhibition;
-    parent: Main;
+    parent: Exhibitions;
     event_grid: Event.Grid;
 }
 
@@ -254,8 +425,8 @@ class Exhibition extends Component<Exhibition_Props>
 {
     private arena: Arena | null = null;
 
-    Main():
-        Main
+    Exhibitions():
+        Exhibitions
     {
         return this.Parent();
     }

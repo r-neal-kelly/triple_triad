@@ -677,6 +677,15 @@ export class Main
         }
     }
 
+    Change_Current_Exhibition():
+        void
+    {
+        const old_current_exhibition_index = this.current_exhibition_index;
+        while (this.current_exhibition_index === old_current_exhibition_index) {
+            this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, this.Exhibition_Count());
+        }
+    }
+
     Current_Arena():
         Arena | null
     {
