@@ -117,6 +117,15 @@ export type Defense_Count =
 export type Score =
     number;
 
+export type Exhibition_Count =
+    Count;
+
+export type Exhibition_Index =
+    Index;
+
+export type Iteration_Count =
+    Count;
+
 export enum Difficulty_e
 {
     _NONE_ = -1,
@@ -540,87 +549,239 @@ class Card
 
 export class Main
 {
-    #packs: Packs;
-    #rules: Rules;
-    #collections: { [index: Player_Name]: Collection };
-    #menu: Menu;
-    #arena: Arena;
+    private packs: Packs;
+    private rules: Rules;
+    private collections: { [index: Player_Name]: Collection };
+    private menu: Menu;
+    private exhibitions: Exhibition[];
+    private current_exhibition_index: Exhibition_Index | null;
+    private current_arena: Arena | null;
 
     constructor(
         {
             rules = new Rules({}),
             collections = [],
+            exhibition_count = 16,
         }: {
             rules?: Rules,
             collections?: Array<Collection>,
+            exhibition_count?: Exhibition_Count,
         },
     )
     {
-        this.#packs = new Packs();
+        this.packs = new Packs();
 
-        this.#rules = rules;
+        this.rules = rules;
 
-        this.#collections = {};
+        this.collections = {};
         for (const collection of collections) {
-            this.#collections[collection.Owner_Name()] = collection;
+            this.collections[collection.Owner_Name()] = collection;
         }
 
-        this.#menu = new Menu();
+        this.menu = new Menu();
 
-        this.#arena = this.Random_Arena();
+        this.exhibitions = [];
+        for (let idx = 0, end = exhibition_count; idx < end; idx += 1) {
+            this.exhibitions.push(new Exhibition({
+                main: this,
+                index: idx,
+            }));
+        }
+
+        this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, exhibition_count);
+
+        this.current_arena = null;
     }
 
     Packs():
         Packs
     {
-        return this.#packs;
+        return this.packs;
     }
 
     Rules():
         Rules
     {
-        return this.#rules;
+        return this.rules;
     }
 
     Change_Rules(rules: Rules):
         void
     {
-        this.#rules = rules;
+        this.rules = rules;
     }
 
     Collection(owner_name: Player_Name):
         Collection
     {
-        if (this.#collections[owner_name] == null) {
+        if (this.collections[owner_name] == null) {
             throw new Error(`${owner_name} does not have a collection.`);
         } else {
-            return this.#collections[owner_name];
+            return this.collections[owner_name];
         }
+    }
+
+    Collections():
+        Array<Collection>
+    {
+        return Object.values(this.collections);
     }
 
     Collection_Owner_Names():
         Array<Player_Name>
     {
-        return Object.keys(this.#collections).sort();
+        return Object.keys(this.collections).sort();
     }
 
     Menu():
         Menu
     {
-        return this.#menu;
+        return this.menu;
+    }
+
+    Exhibition_Count():
+        Exhibition_Count
+    {
+        return this.exhibitions.length;
+    }
+
+    Exhibition(exhibition_index: Exhibition_Index):
+        Exhibition
+    {
+        if (exhibition_index == null || exhibition_index < 0 || exhibition_index > this.exhibitions.length) {
+            throw new Error(`Invalid exhibition_index.`);
+        } else {
+            return this.exhibitions[exhibition_index];
+        }
+    }
+
+    Exhibitions():
+        Exhibition[]
+    {
+        return Array.from(this.exhibitions);
+    }
+
+    Current_Exhibition_Index():
+        Exhibition_Index | null
+    {
+        return this.current_exhibition_index;
+    }
+
+    Current_Exhibition():
+        Exhibition | null
+    {
+        if (this.current_exhibition_index != null) {
+            return this.exhibitions[this.current_exhibition_index as Exhibition_Index];
+        } else {
+            return null;
+        }
+    }
+
+    Current_Arena():
+        Arena | null
+    {
+        return this.current_arena;
+    }
+
+    New_Game(arena_selections: Array<Selection>):
+        Arena
+    {
+        this.current_exhibition_index = null;
+        this.current_arena = new Arena({
+            rules: this.rules,
+            selections: arena_selections,
+        });
+
+        return this.current_arena as Arena;
+    }
+
+    Exit_Game():
+        void
+    {
+        this.current_arena = null;
+        this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, this.exhibitions.length);
+    }
+
+    Is_In_Game():
+        boolean
+    {
+        return this.current_arena != null;
+    }
+
+    Isnt_In_Game():
+        boolean
+    {
+        return this.current_arena == null;
+    }
+}
+
+export class Menu
+{
+}
+
+export class Exhibition
+{
+    private main: Main;
+    private index: Exhibition_Index;
+    private arena: Arena;
+    private iteration_count: Iteration_Count;
+
+    constructor(
+        {
+            main,
+            index,
+        }: {
+            main: Main,
+            index: Exhibition_Index,
+        },
+    )
+    {
+        this.main = main;
+        this.index = index;
+        this.arena = Exhibition.Generate(main.Packs().As_Array());
+        this.iteration_count = 1;
+    }
+
+    Main():
+        Main
+    {
+        return this.main;
+    }
+
+    Index():
+        Exhibition_Index
+    {
+        return this.index;
     }
 
     Arena():
         Arena
     {
-        return this.#arena;
+        return this.arena;
     }
 
-    Random_Arena():
+    Iteration_Count():
+        Iteration_Count
+    {
+        return this.iteration_count;
+    }
+
+    Is_Visible():
+        boolean
+    {
+        return this.Index() === this.Main().Current_Exhibition_Index();
+    }
+
+    Regenerate():
+        void
+    {
+        this.arena = Exhibition.Generate(this.main.Packs().As_Array());
+        this.iteration_count += 1;
+    }
+
+    private static Generate(packs: Array<Pack>):
         Arena
     {
-        const random_packs: Array<Pack> = this.#packs.As_Array();
-
         const random_rules: Random_Rules = new Random_Rules({});
 
         const random_colors: Unique_Random_Colors = new Unique_Random_Colors({
@@ -645,7 +806,7 @@ export class Main
                 new Random_Selection({
                     collection: new Collection({
                         default_shuffle: new Random_Shuffle({
-                            packs: random_packs,
+                            packs: packs,
                             min_difficulty: Difficulty_e.VERY_EASY,
                             max_difficulty: Difficulty_e.VERY_HARD,
                             allow_multiple_difficulties: true,
@@ -665,10 +826,6 @@ export class Main
     }
 }
 
-export class Menu
-{
-}
-
 /* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
 export class Arena
 {
@@ -677,7 +834,7 @@ export class Arena
     #board: Board;
 
     #turn_count: Turn_Count;
-    #turn_queue: Array<Player>; // does this need to be separate from players? if we need to keep track of humans players, we can store separate
+    #turn_queue: Array<Player>;
     #turn_queue_index: Index;
 
     #is_input_enabled: boolean;
@@ -688,8 +845,8 @@ export class Arena
             selections,
         }: {
             rules: Rules,
-            selections: Array<Selection>
-        }
+            selections: Array<Selection>,
+        },
     )
     {
         const player_count: Player_Count = rules.Player_Count();
@@ -1944,6 +2101,23 @@ export class Scores
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
+    static Clone(rules: Rules):
+        Rules
+    {
+        return new Rules({
+            row_count: rules.Row_Count(),
+            column_count: rules.Column_Count(),
+            player_count: rules.Player_Count(),
+
+            open: rules.Open(),
+            same: rules.Same(),
+            plus: rules.Plus(),
+            wall: rules.Wall(),
+            combo: rules.Combo(),
+            random: rules.Random(),
+        });
+    }
+
     #row_count: Row_Count;
     #column_count: Column_Count;
     #cell_count: Cell_Count;
@@ -1957,8 +2131,6 @@ export class Rules
     #combo: boolean;
     #random: boolean;
 
-    #is_small_board: boolean;
-
     constructor(
         {
             row_count = 3,
@@ -1971,8 +2143,6 @@ export class Rules
             wall = true,
             combo = true,
             random = true, // temp until we get selection view up and running
-
-            is_small_board = true,
         }: {
             row_count?: Row_Count,
             column_count?: Column_Count,
@@ -1984,8 +2154,6 @@ export class Rules
             wall?: boolean,
             combo?: boolean,
             random?: boolean,
-
-            is_small_board?: boolean,
         }
     )
     {
@@ -2004,10 +2172,6 @@ export class Rules
             this.#wall = wall;
             this.#combo = combo;
             this.#random = random;
-
-            this.#is_small_board = is_small_board;
-
-            Object.freeze(this);
 
             if (this.Player_Count() > this.Cell_Count()) {
                 throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
@@ -2081,18 +2245,6 @@ export class Rules
         return this.#random;
     }
 
-    Is_Small_Board():
-        boolean
-    {
-        return this.#is_small_board;
-    }
-
-    Is_Large_Board():
-        boolean
-    {
-        return !this.#is_small_board;
-    }
-
     Serialize():
         Rules_Save_Data
     {
@@ -2135,8 +2287,6 @@ export class Random_Rules extends Rules
             allow_wall = true,
             allow_combo = true,
             allow_random = true,
-
-            allow_large_board = false,
         }: {
             min_row_count?: Row_Count,
             max_row_count?: Row_Count,
@@ -2153,8 +2303,6 @@ export class Random_Rules extends Rules
             allow_wall?: boolean,
             allow_combo?: boolean,
             allow_random?: boolean,
-
-            allow_large_board?: boolean,
         },
     )
     {
@@ -2194,10 +2342,6 @@ export class Random_Rules extends Rules
                 random: allow_random ?
                     Utils.Random_Boolean() :
                     false,
-
-                is_small_board: allow_large_board ?
-                    Utils.Random_Boolean() :
-                    true,
             });
         }
     }

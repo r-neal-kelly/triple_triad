@@ -4,6 +4,10 @@ import ReactDom from "react-dom";
 import { Wait } from "../utils";
 import * as Event from "../event";
 
+export type Component_Styles = {
+    [index: string]: string,
+};
+
 /*
     Must be satisfied to inherit from Component.
 */
@@ -18,30 +22,30 @@ export interface Component_Props
     A simplification of the React Life-Cycle.
 
     Method Overrides/Event Handlers in the Life-Cycle:
-        1.) Before_Refresh
+        1.) Before_Life
         2.) On_Refresh
-        3.) After_Refresh
-        4.) On_Life
+        3.) On_Life
             while (Refresh) {
-                Before_Refresh
                 On_Refresh
-                After_Refresh
             }
-        5.) On_Death
+        4.) On_Death
     Each of these methods can be overridden by a derived class.
 */
 export class Component<T extends Component_Props> extends React.Component<T>
 {
-    private is_refreshing: boolean = false;
-    private is_alive: boolean = false;
-    private body: HTMLElement | null = null;
+    private styles: Component_Styles;
+    private body: HTMLElement | null;
+    private is_alive: boolean;
+    private is_refreshing: boolean;
 
     constructor(props: T)
     {
         super(props);
 
+        this.styles = this.Before_Life();
+        this.body = null;
+        this.is_alive = false;
         this.is_refreshing = true;
-        this.Before_Refresh();
     }
 
     render():
@@ -53,7 +57,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
     componentDidUpdate():
         void
     {
-        this.After_Refresh();
         this.body = ReactDom.findDOMNode(this) as HTMLElement;
         this.is_refreshing = false;
     }
@@ -93,8 +96,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
 
         if (this.is_alive) {
             this.is_refreshing = true;
-            this.Before_Refresh();
-
             this.forceUpdate();
             while (this.is_refreshing) {
                 await Wait(1);
@@ -126,20 +127,16 @@ export class Component<T extends Component_Props> extends React.Component<T>
         this.is_alive = false;
     }
 
-    Before_Refresh():
-        void
-    {
-    }
-
     On_Refresh():
         JSX.Element | null
     {
         return null;
     }
 
-    After_Refresh():
-        void
+    Before_Life():
+        Component_Styles
     {
+        return {};
     }
 
     On_Life():
@@ -181,6 +178,27 @@ export class Component<T extends Component_Props> extends React.Component<T>
         Event.Grid
     {
         return this.props.event_grid;
+    }
+
+    Styles():
+        Component_Styles
+    {
+        return Object.assign({}, this.styles);
+    }
+
+    Style(style_name_in_camel_case: string):
+        string
+    {
+        return this.styles[style_name_in_camel_case];
+    }
+
+    Change_Style(style_name_in_camel_case: string, style_value: string):
+        void
+    {
+        this.styles[style_name_in_camel_case] = style_value;
+        if (this.body) {
+            (this.body.style as any)[style_name_in_camel_case] = style_value;
+        }
     }
 
     Maybe_Element():

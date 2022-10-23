@@ -1,32 +1,3 @@
-:root {
-    --max_width: 100vw;
-    --max_height: 100vh;
-
-    --default_font_size: 2.8vmin;
-
-    --bumper_height: 8vmin;
-
-    --board_grid_height: 92vmin;
-    --board_grid_padding: 2vmin;
-    --board_grid_gap: 0.5vmin;
-    --board_grid_column_count: 1;
-    --board_grid_row_count: 1;
-    --board_cell_border_size: 0.3vmin;
-
-    --card_height: calc((var(--board_grid_height) - (var(--board_grid_padding) * 2) - (var(--board_grid_gap) * (var(--board_grid_row_count) - 1))) / var(--board_grid_row_count));
-    --card_width: calc(var(--card_height) * 4 / 5);
-
-    --player_width: calc(var(--card_width) * 1.07);
-    --player_grid_padding: calc((var(--player_width) - var(--card_width)) / 2);
-    --player_grid_gap: 0;
-    --player_hand_height: var(--board_grid_height);
-    --player_stake_border_size: 0.15vmin;
-
-    --results_banner_height: 40vmin;
-    --results_banner_border_size: 0.6vmin;
-    --results_message_font_size: 6vmin;
-}
-
 * {
     box-sizing: border-box;
 
@@ -40,7 +11,6 @@
 
     color: white;
     text-align: center;
-    font-size: var(--default_font_size);
 
     cursor: default;
     -webkit-user-select: none;
@@ -51,42 +21,19 @@
 
 html,
 body {
-    width: var(--max_width);
-    height: var(--max_height);
+    width: 100vw;
+    height: 100vh;
 
     overflow-x: hidden;
 
     background-color: black;
+
+    font-size: 2.8vmin;
 }
 
 .Root {
     width: 100%;
     height: 100%;
-}
-
-.Main {
-    width: 100%;
-    height: 100%;
-
-    position: relative;
-}
-
-.Menu {
-    display: grid;
-    grid-template-columns: 2.5fr 1fr 1fr 1fr;
-    grid-template-rows: 1fr;
-    column-gap: 5%;
-
-    width: 100%;
-    height: 100%;
-
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 1;
-
-    /*background-color: rgba(0, 0, 0, 0.7);*/
-    background-color: transparent;
 }
 
 .Menu_Title {
@@ -108,67 +55,24 @@ body {
 }
 
 .Menu_Button_Text {
-    font-size: calc(var(--default_font_size) * 3);
+    font-size: 300%;
 }
 
-.Arena {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 0;
+.Player_Hand {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-.Board {
-    display: grid;
-    grid-template-columns: auto;
-    grid-template-rows: var(--bumper_height) var(--board_grid_height);
-
-    height: 100%;
+.Player_Hand::-webkit-scrollbar {
+    display: none;
 }
 
-.Board_Bumper {
+.Results_Losers {
     width: 100%;
     height: 100%;
 }
 
-.Board_Grid {
-    display: grid;
-    grid-template-columns: repeat(var(--board_grid_column_count), 1fr);
-    grid-template-rows: repeat(var(--board_grid_row_count), 1fr);
-    grid-gap: var(--board_grid_gap) var(--board_grid_gap);
-
-    width: 100%;
-    height: 100%;
-    padding: var(--board_grid_padding);
-}
-
-.Board_Cell_Empty {
-    width: var(--card_width);
-    height: var(--card_height);
-
-    border: var(--board_cell_border_size) solid #00000080;
-}
-
-.Board_Cell_Occupied {
-    display: grid;
-    grid-template-columns: 4fr 3fr 4fr 3fr 4fr;
-    grid-template-rows: 4fr 3fr 4fr 3fr 4fr;
-    column-gap: 5%;
-
-    width: var(--card_width);
-    height: var(--card_height);
-
-    border: var(--board_cell_border_size) solid #00000080;
-}
-
-@keyframes Board_Cell_Occupied_Left_To_Right {
+@keyframes Board_Cell_Left_To_Right {
     0% {
         background-position: left;
     }
@@ -178,7 +82,7 @@ body {
     }
 }
 
-@keyframes Board_Cell_Occupied_Top_To_Bottom {
+@keyframes Board_Cell_Top_To_Bottom {
     0% {
         background-position: top;
     }
@@ -188,7 +92,7 @@ body {
     }
 }
 
-@keyframes Board_Cell_Occupied_Right_To_Left {
+@keyframes Board_Cell_Right_To_Left {
     0% {
         background-position: right;
     }
@@ -198,7 +102,7 @@ body {
     }
 }
 
-@keyframes Board_Cell_Occupied_Bottom_To_Top {
+@keyframes Board_Cell_Bottom_To_Top {
     0% {
         background-position: bottom;
     }
@@ -208,7 +112,7 @@ body {
     }
 }
 
-@keyframes Board_Cell_Occupied_Flash {
+@keyframes Board_Cell_Flash {
     0% {
         border-color: black;
     }
@@ -222,194 +126,7 @@ body {
     }
 }
 
-.Board_Cell_Card {
-    width: 90%;
-    height: 90%;
-
-    grid-column: 1 / span 5;
-    grid-row: 1 / span 5;
-    align-self: center;
-    justify-self: center;
-    z-index: 0;
-}
-
-.Board_Cell_Center {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    grid-column: 2 / span 3;
-    grid-row: 3 / span 1;
-    align-self: center;
-    justify-self: center;
-    z-index: 1;
-
-    background-color: rgba(0, 0, 0, 0.5);
-
-    border-radius: 30%;
-}
-
-.Board_Cell_Left {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    grid-column: 1 / span 1;
-    grid-row: 3 / span 1;
-    align-self: center;
-    justify-self: start;
-    z-index: 1;
-
-    background-color: rgba(0, 0, 0, 0.5);
-
-    border-radius: 50%;
-}
-
-.Board_Cell_Top {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    grid-column: 3 / span 1;
-    grid-row: 1 / span 1;
-    align-self: start;
-    justify-self: center;
-    z-index: 1;
-
-    background-color: rgba(0, 0, 0, 0.5);
-
-    border-radius: 50%;
-}
-
-.Board_Cell_Right {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    grid-column: 5 / span 1;
-    grid-row: 3 / span 1;
-    align-self: center;
-    justify-self: end;
-    z-index: 1;
-
-    background-color: rgba(0, 0, 0, 0.5);
-
-    border-radius: 50%;
-}
-
-.Board_Cell_Bottom {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    grid-column: 3 / span 1;
-    grid-row: 5 / span 1;
-    align-self: end;
-    justify-self: center;
-    z-index: 1;
-
-    background-color: rgba(0, 0, 0, 0.5);
-
-    border-radius: 50%;
-}
-
-.Player_Grid {
-    display: grid;
-    grid-template-rows: auto;
-    grid-gap: var(--player_grid_gap) var(--player_grid_gap);
-
-    height: 100%;
-    padding: 0 var(--player_grid_padding);
-}
-
-.Player {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    width: var(--player_width);
-    height: 100%;
-
-    position: relative;
-}
-
-.Player_Bumper {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-
-    width: var(--card_width);
-    height: var(--bumper_height);
-}
-
-.Player_Name {
-    width: 100%;
-    height: 100%;
-}
-
-.Player_Score {
-    width: 100%;
-    height: 100%;
-}
-
-.Player_Hand {
-    position: relative;
-
-    width: var(--card_width);
-    height: var(--player_hand_height);
-    overflow-x: hidden;
-    overflow-y: auto;
-
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.Player_Hand::-webkit-scrollbar {
-    display: none;
-}
-
-.Player_Stake {
-    height: var(--card_height);
-    width: var(--card_width);
-
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    background-size: 90% 90%;
-
-    border: var(--player_stake_border_size) solid black;
-}
-
-.Player_Stake_Selected {
-    height: var(--card_height);
-    width: var(--card_width);
-
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    background-size: 90% 90%;
-
-    border: var(--player_stake_border_size) solid white;
-}
-
-@keyframes Player_Stake_Selected_Twinkle {
+@keyframes Player_Stake_Twinkle {
     0% {
         border-color: white;
     }
@@ -431,22 +148,6 @@ body {
     }
 }
 
-.Results {
-    width: 100%;
-    height: 100%;
-
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    background-color: rgba(0, 0, 0, 0.5);
-
-    animation-name: Results_Fade_In;
-    animation-duration: 2000ms;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: 1;
-}
-
 @keyframes Results_Fade_In {
     0% {
         opacity: 0%;
@@ -457,27 +158,6 @@ body {
     }
 }
 
-.Results_Banner {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    width: 100%;
-    height: var(--results_banner_height);
-
-    position: absolute;
-    left: 0;
-    top: calc(50% - (var(--results_banner_height) / 2) + (var(--bumper_height) / 2));
-
-    border: var(--results_banner_border_size) solid #00000080;
-
-    animation-name: Results_Banner_Move_In;
-    animation-duration: 2000ms;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: 1;
-}
-
 @keyframes Results_Banner_Move_In {
     0% {
         left: -100%;
@@ -486,37 +166,4 @@ body {
     100% {
         left: 0;
     }
-}
-
-.Results_Winner {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    width: 100%;
-    height: 100%;
-}
-
-.Results_Winner_Message {
-    font-size: var(--results_message_font_size);
-}
-
-.Results_Draws {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    width: 100%;
-    height: 100%;
-}
-
-.Results_Draws_Message {
-    font-size: var(--results_message_font_size);
-}
-
-.Results_Losers {
-    width: 100%;
-    height: 100%;
 }

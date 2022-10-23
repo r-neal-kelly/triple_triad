@@ -69,6 +69,12 @@ export function Random_Float_Exclusive(
     }
 }
 
+export function Random_String():
+    string
+{
+    return `${Date.now()}_${Math.random()}`;
+}
+
 export function Is_Odd_Integer(
     integer: number,
 ):

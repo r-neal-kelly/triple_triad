@@ -6,7 +6,7 @@ import ReactDOM_Client from "react-dom/client";
 import { Wait } from "./utils";
 import * as Event from "./event";
 import * as Model from "./model";
-import { Component } from "./view/component";
+import { Component, Component_Styles } from "./view/component";
 
 const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
 const PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER: number = 0.7;
@@ -18,6 +18,9 @@ const BEFORE: Event.Name_Prefix = Event.BEFORE;
 const ON: Event.Name_Prefix = Event.ON;
 const AFTER: Event.Name_Prefix = Event.AFTER;
 
+const MAIN_START_EXHIBITION: Event.Name_Affix = `Main_Start_Exhibition`;
+const MAIN_STOP_EXHIBITION: Event.Name_Affix = `Main_Stop_Exhibition`;
+const MAIN_SWITCH_EXHIBITION: Event.Name_Affix = `Main_Switch_Exhibition`;
 const GAME_START: Event.Name_Affix = `Game_Start`;
 const GAME_STOP: Event.Name_Affix = `Game_Stop`;
 const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
@@ -68,7 +71,9 @@ type Main_Props = {
 export class Main extends Component<Main_Props>
 {
     private menu: Menu | null = null;
+    private exhibitions: Array<Exhibition | null> = new Array(this.Model().Exhibition_Count()).fill(null);
     private arena: Arena | null = null;
+    private arena_event_grid: Event.Grid = new Event.Grid();
 
     Menu():
         Menu
@@ -78,6 +83,33 @@ export class Main extends Component<Main_Props>
         } else {
             return this.menu;
         }
+    }
+
+    Exhibition(exhibition_index: Model.Exhibition_Index):
+        Exhibition
+    {
+        if (exhibition_index == null || exhibition_index < 0 || exhibition_index >= this.exhibitions.length) {
+            throw new Error(`'exhibition_index' ${exhibition_index} is invalid.`);
+        } else if (this.exhibitions[exhibition_index] == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.exhibitions[exhibition_index] as Exhibition;
+        }
+    }
+
+    Exhibitions():
+        Array<Exhibition>
+    {
+        const exhibitions: Array<Exhibition> = [];
+        for (const exhibition of this.exhibitions) {
+            if (exhibition == null) {
+                throw this.Error_Not_Rendered();
+            } else {
+                exhibitions.push(exhibition);
+            }
+        }
+
+        return exhibitions;
     }
 
     Arena():
@@ -90,36 +122,77 @@ export class Main extends Component<Main_Props>
         }
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+
+            position: `relative`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
         // we create an exhibition match between computers for the background of main
         // and keep doing rematches until the player decides to start up a game of their own
 
-        /*
-                <Menu
-                    key={`menu`}
-                    ref={ref => this.menu = ref}
+        const model: Model.Main = this.Model();
 
-                    model={this.Model().Menu()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-        */
-        return (
-            <div
-                className={`Main`}
-            >
-                <Arena
-                    key={`arena_${Date.now()}_${Math.random()}`}
-                    ref={ref => this.arena = ref}
+        if (model.Isnt_In_Game()) {
+            const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
 
-                    model={this.Model().Random_Arena()}
-                    parent={this}
-                    event_grid={new Event.Grid()}
-                />
-            </div>
-        );
+            return (
+                <div
+                    className={`Main`}
+                    style={this.Styles()}
+                >
+                    <Menu
+                        key={`menu`}
+                        ref={ref => this.menu = ref}
+
+                        model={model.Menu()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                    {
+                        Array(exhibition_count).fill(null).map((_, exhibition_index: Model.Exhibition_Index) =>
+                        {
+                            return (
+                                <Exhibition
+                                    key={`exhibition_${exhibition_index}`}
+                                    ref={ref => this.exhibitions[exhibition_index] = ref}
+
+                                    model={model.Exhibition(exhibition_index)}
+                                    parent={this}
+                                    event_grid={new Event.Grid()}
+                                />
+                            );
+                        })
+                    }
+                </div>
+            );
+        } else {
+            const arena: Model.Arena = model.Current_Arena() as Model.Arena;
+
+            return (
+                <div
+                    className={`Main`}
+                    style={this.Styles()}
+                >
+                    <Arena
+                        key={`arena`}
+                        ref={ref => this.arena = ref}
+
+                        model={arena}
+                        parent={this}
+                        event_grid={this.arena_event_grid}
+                    />
+                </div>
+            );
+        }
     }
 }
 
@@ -137,21 +210,131 @@ class Menu extends Component<Menu_Props>
         return this.Parent();
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `2.5fr 1fr 1fr 1fr`,
+            gridTemplateRows: `1fr`,
+            columnGap: `5%`,
+
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `1`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Menu`}
+                style={this.Styles()}
             >
             </div>
         );
     }
 }
 
+type Exhibition_Props = {
+    model: Model.Exhibition;
+    parent: Main;
+    event_grid: Event.Grid;
+}
+
+class Exhibition extends Component<Exhibition_Props>
+{
+    private arena: Arena | null = null;
+
+    Main():
+        Main
+    {
+        return this.Parent();
+    }
+
+    Arena():
+        Arena
+    {
+        if (this.arena == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.arena;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `0`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Exhibition = this.Model();
+
+        this.Change_Style(`visibility`, this.Model().Is_Visible() ? `visible` : `hidden`);
+
+        return (
+            <div
+                className={`Exhibition`}
+                style={this.Styles()}
+            >
+                <Arena
+                    key={`arena_${model.Iteration_Count()}`}
+                    ref={ref => this.arena = ref}
+
+                    model={model.Arena()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return ([
+            {
+                event_name: new Event.Name(AFTER, GAME_STOP),
+                event_handler: this.After_Game_Stop,
+            },
+        ]);
+    }
+
+    async After_Game_Stop():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await Wait(5000);
+            if (this.Is_Alive()) {
+                this.Model().Regenerate();
+                await this.Refresh();
+            }
+        }
+    }
+}
+
 type Arena_Props = {
     model: Model.Arena;
-    parent: Main;
+    parent: Main | Exhibition;
     event_grid: Event.Grid;
 }
 
@@ -160,12 +343,6 @@ class Arena extends Component<Arena_Props>
     private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
     private board: Board | null = null;
     private results: Results | null = null;
-
-    Main():
-        Main
-    {
-        return this.Parent();
-    }
 
     Player(player_index: Model.Player_Index):
         Player
@@ -214,39 +391,107 @@ class Arena extends Component<Arena_Props>
         }
     }
 
-    Before_Refresh():
-        void
+    CSS_Card_Width():
+        string
     {
-        const root_element = document.querySelector(`:root`) as HTMLElement;
-        if (root_element == null) {
-            throw new Error(`Could not find root_element.`);
-        } else {
-            root_element.style.setProperty(`--board_grid_column_count`, `${this.Model().Rules().Column_Count()}`);
-            root_element.style.setProperty(`--board_grid_row_count`, `${this.Model().Rules().Row_Count()}`);
-        }
+        return `calc(${this.CSS_Card_Height()} * 4 / 5)`
+    }
+
+    CSS_Card_Height():
+        string
+    {
+        // I would actually like to get the width and height of the root element,
+        // which should exist at all times, and just use that to derive all
+        // measurements. that way we can size it depending on the actual container
+        // instead of the viewport or anything else. we might even decide here
+        // if we need to go by the width, when they size of the players would be
+        // bigger than the root width. so we go with whichever is bigger. Or maybe
+        // we can figure how to always go by width?
+        const row_count: Model.Row_Count = this.Model().Rules().Row_Count();
+
+        return `
+            calc(
+                (
+                    ${this.CSS_Board_Cells_Height()} -
+                    (${this.CSS_Board_Cells_Padding()} * 2) -
+                    (${this.CSS_Board_Cells_Grid_Gap()} * ${row_count - 1})
+                ) /
+                ${row_count}
+            )
+        `;
+    }
+
+    CSS_Bumper_Height():
+        string
+    {
+        return `8vmin`;
+    }
+
+    CSS_Player_Width():
+        string
+    {
+        return `calc(${this.CSS_Card_Width()} * 1.07)`;
+    }
+
+    CSS_Board_Cells_Height():
+        string
+    {
+        return `calc(100vmin - ${this.CSS_Bumper_Height()})`;
+    }
+
+    CSS_Board_Cells_Padding():
+        string
+    {
+        return `2vmin`;
+    }
+
+    CSS_Board_Cells_Grid_Gap():
+        string
+    {
+        return `0.5vmin`;
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `row`,
+            justifyContent: `center`,
+
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `0`,
+        });
     }
 
     On_Refresh():
         JSX.Element | null
     {
-        const styles: any = {};
-        if (this.Model().Rules().Is_Large_Board()) {
-            styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
-        }
-
-        const player_count: number = this.Model().Player_Count();
+        const model: Model.Arena = this.Model();
+        const player_count: number = model.Player_Count();
         const left_player_count: number = Math.floor(player_count / 2);
         const right_player_count: number = player_count - left_player_count;
 
         return (
             <div
                 className={`Arena`}
-                style={styles}
+                style={this.Styles()}
             >
                 <div
                     className={`Player_Grid`}
                     style={{
+                        display: `grid`,
                         gridTemplateColumns: `repeat(${left_player_count}, 1fr)`,
+                        gridTemplateRows: `auto`,
+                        gridGap: `0 0`,
+
+                        height: `100%`,
+                        padding: `0 calc((${this.CSS_Player_Width()} - ${this.CSS_Card_Width()}) / 2)`,
                     }}
                 >
                     {
@@ -259,7 +504,7 @@ class Arena extends Component<Arena_Props>
                                     key={`player_${player_index}`}
                                     ref={ref => this.players[player_index] = ref}
 
-                                    model={this.Model().Player(player_index)}
+                                    model={model.Player(player_index)}
                                     parent={this}
                                     event_grid={this.Event_Grid()}
                                 />
@@ -271,14 +516,20 @@ class Arena extends Component<Arena_Props>
                     key={`board`}
                     ref={ref => this.board = ref}
 
-                    model={this.Model().Board()}
+                    model={model.Board()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
                 <div
                     className={`Player_Grid`}
                     style={{
+                        display: `grid`,
                         gridTemplateColumns: `repeat(${right_player_count}, 1fr)`,
+                        gridTemplateRows: `auto`,
+                        gridGap: `0 0`,
+
+                        height: `100%`,
+                        padding: `0 calc((${this.CSS_Player_Width()} - ${this.CSS_Card_Width()}) / 2)`,
                     }}
                 >
                     {
@@ -291,7 +542,7 @@ class Arena extends Component<Arena_Props>
                                     key={`player_${player_index}`}
                                     ref={ref => this.players[player_index] = ref}
 
-                                    model={this.Model().Player(player_index)}
+                                    model={model.Player(player_index)}
                                     parent={this}
                                     event_grid={this.Event_Grid()}
                                 />
@@ -303,7 +554,7 @@ class Arena extends Component<Arena_Props>
                     key={`results`}
                     ref={ref => this.results = ref}
 
-                    model={this.Model()}
+                    model={model}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
@@ -437,6 +688,27 @@ class Player extends Component<Player_Props>
         return this.Model().Index();
     }
 
+    CSS_Width():
+        string
+    {
+        return this.Arena().CSS_Player_Width();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            alignItems: `center`,
+
+            width: this.CSS_Width(),
+            height: `100%`,
+
+            position: `relative`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
@@ -447,6 +719,7 @@ class Player extends Component<Player_Props>
         return (
             <div
                 className={`Player`}
+                style={this.Styles()}
             >
                 <Player_Bumper
                     key={`player_bumper_${index}`}
@@ -502,13 +775,15 @@ class Player extends Component<Player_Props>
             if (this.Is_Alive()) {
                 // Highlight the player to indicate it's their turn.
                 const color: Model.Color = this.Model().Color();
-                this.Some_Element().style.backgroundColor =
+                this.Change_Style(
+                    `backgroundColor`,
                     `rgba(
                         ${color.Red()},
                         ${color.Green()},
                         ${color.Blue()},
                         ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-                    )`;
+                    )`,
+                );
 
                 // We need to simulate the computer_player choosing a card
                 if (this.Model().Is_Computer()) {
@@ -592,7 +867,7 @@ class Player extends Component<Player_Props>
     {
         if (this.Is_Alive()) {
             // Remove the player highlight to indicate that selection is over.
-            this.Some_Element().style.backgroundColor = `transparent`;
+            this.Change_Style(`backgroundColor`, `transparent`);
         }
     }
 }
@@ -607,6 +882,12 @@ class Player_Bumper extends Component<Player_Bumper_Props>
 {
     private name: Player_Name | null = null;
     private score: Player_Score | null = null;
+
+    Arena():
+        Arena
+    {
+        return this.Player().Arena();
+    }
 
     Player():
         Player
@@ -640,6 +921,21 @@ class Player_Bumper extends Component<Player_Bumper_Props>
         return this.Model().Index();
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
+
+            width: arena.CSS_Card_Width(),
+            height: arena.CSS_Bumper_Height(),
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
@@ -650,6 +946,7 @@ class Player_Bumper extends Component<Player_Bumper_Props>
         return (
             <div
                 className={`Player_Bumper`}
+                style={this.Styles()}
             >
                 <Player_Name
                     key={`player_name_${index}`}
@@ -674,8 +971,6 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     On_Life():
         Event.Listener_Info[]
     {
-        const player_index: Model.Player_Index = this.Index();
-
         return ([
             {
                 event_name: new Event.Name(ON, GAME_STOP),
@@ -692,14 +987,15 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     {
         if (this.Is_Alive()) {
             const color: Model.Color = this.Model().Color();
-
-            this.Some_Element().style.backgroundColor =
+            this.Change_Style(
+                `backgroundColor`,
                 `rgba(
                     ${color.Red()},
                     ${color.Green()},
                     ${color.Blue()},
                     ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-                )`;
+                )`
+            );
         }
     }
 }
@@ -724,12 +1020,22 @@ class Player_Name extends Component<Player_Name_Props>
         return this.Model().Index();
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Player_Name`}
+                style={this.Styles()}
             >
                 {
                     this.Model().Name()
@@ -759,12 +1065,22 @@ class Player_Score extends Component<Player_Score_Props>
         return this.Model().Index();
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Player_Score`}
+                style={this.Styles()}
             >
                 {
                     this.Model().Score()
@@ -821,6 +1137,12 @@ class Player_Hand extends Component<Player_Hand_Props>
 {
     private stakes: Array<Player_Stake | null> = new Array(this.Model().Stake_Count()).fill(null);
 
+    Arena():
+        Arena
+    {
+        return this.Player().Arena();
+    }
+
     Player():
         Player
     {
@@ -860,6 +1182,23 @@ class Player_Hand extends Component<Player_Hand_Props>
         return this.Model().Index();
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            position: `relative`,
+
+            width: arena.CSS_Card_Width(),
+            height: arena.CSS_Board_Cells_Height(),
+            overflowX: `hidden`,
+            overflowY: `auto`,
+
+            scrollbarWidth: `none`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
@@ -868,6 +1207,7 @@ class Player_Hand extends Component<Player_Hand_Props>
         return (
             <div
                 className={`Player_Hand`}
+                style={this.Styles()}
             >
                 {
                     Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
@@ -947,26 +1287,65 @@ class Player_Stake extends Component<Player_Stake_Props>
         return this.props.index;
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            width: arena.CSS_Card_Width(),
+            height: arena.CSS_Card_Height(),
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+
+            backgroundSize: `90% 90%`,
+
+            cursor: `default`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
-        const color: Model.Color = this.Model().Color();
+        const arena: Arena = this.Arena();
+        const model: Model.Stake = this.Model();
+        const color: Model.Color = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
+        if (model.Is_Selected()) {
+            this.Change_Style(`border`, `0.15vmin solid white`);
+        } else {
+            this.Change_Style(`border`, `0.15vmin solid black`);
+        }
+
+        this.Change_Style(
+            `backgroundColor`,
+            `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`,
+        );
+        this.Change_Style(`backgroundImage`, `url("${model.Card().Image()}")`);
+
+        this.Change_Style(
+            `top`,
+            `calc(
+                ${arena.CSS_Card_Height()} *
+                ${PLAYER_STAKE_HEIGHT_MULTIPLIER} *
+                ${this.Index()}
+            )`,
+        );
+        this.Change_Style(`zIndex`, `${this.Index()}`);
+
         return (
             <div
-                className={
-                    this.Model().Is_Selected() ?
-                        `Player_Stake_Selected` :
-                        `Player_Stake`
-                }
-                style={{
-                    backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                    backgroundImage: `url("${this.Model().Card().Image()}")`,
-                    top: `calc(var(--card_height) * ${PLAYER_STAKE_HEIGHT_MULTIPLIER} * ${this.Index()})`,
-                    zIndex: `${this.Index()}`,
-                }}
+                className={`Player_Stake`}
+                style={this.Styles()}
                 onClick={
                     is_of_human && is_selectable ?
                         event => this.On_Click(event) :
@@ -1045,7 +1424,7 @@ class Player_Stake extends Component<Player_Stake_Props>
     {
         if (this.Is_Alive()) {
             if (this.Model().Is_Of_Human()) {
-                this.Some_Element().style.cursor = `pointer`;
+                this.Change_Style(`cursor`, `pointer`);
             }
         }
     }
@@ -1060,9 +1439,9 @@ class Player_Stake extends Component<Player_Stake_Props>
         if (this.Is_Alive()) {
             if (this.Model().Is_Of_Human()) {
                 if (this.Index() === stake_index) {
-                    this.Some_Element().style.cursor = `default`;
+                    this.Change_Style(`cursor`, `default`);
                 } else {
-                    this.Some_Element().style.cursor = `pointer`;
+                    this.Change_Style(`cursor`, `pointer`);
                 }
             }
         }
@@ -1077,21 +1456,19 @@ class Player_Stake extends Component<Player_Stake_Props>
     {
         if (this.Is_Alive()) {
             if (stake_index === this.Index()) {
-                const element: HTMLElement = this.Some_Element();
-
-                element.style.animationName = `Player_Stake_Selected_Twinkle`;
-                element.style.animationDuration = `${500}ms`;
-                element.style.animationTimingFunction = `ease-in-out`;
-                element.style.animationIterationCount = `1`;
-                element.style.animationDirection = `normal`;
+                this.Change_Style(`animationName`, `Player_Stake_Twinkle`);
+                this.Change_Style(`animationDuration`, `${500}ms`);
+                this.Change_Style(`animationTimingFunction`, `ease-in-out`);
+                this.Change_Style(`animationIterationCount`, `1`);
+                this.Change_Style(`animationDirection`, `normal`);
 
                 await Wait(500);
                 if (this.Is_Alive()) {
-                    element.style.animationName = '';
-                    element.style.animationDuration = '';
-                    element.style.animationTimingFunction = '';
-                    element.style.animationIterationCount = '';
-                    element.style.animationDirection = '';
+                    this.Change_Style(`animationName`, ``);
+                    this.Change_Style(`animationDuration`, ``);
+                    this.Change_Style(`animationTimingFunction`, ``);
+                    this.Change_Style(`animationIterationCount`, ``);
+                    this.Change_Style(`animationDirection`, ``);
 
                     await Wait(100);
                 }
@@ -1107,7 +1484,7 @@ class Player_Stake extends Component<Player_Stake_Props>
     {
         if (this.Is_Alive()) {
             if (this.Model().Is_Of_Human()) {
-                this.Some_Element().style.cursor = `default`;
+                this.Change_Style(`cursor`, `default`);
             }
         }
     }
@@ -1121,7 +1498,8 @@ type Board_Props = {
 
 class Board extends Component<Board_Props>
 {
-    private cells: Array<Board_Cell | null> = new Array(this.Model().Cell_Count()).fill(null);
+    private bumper: Board_Bumper | null = null;
+    private cells: Board_Cells | null = null;
 
     Arena():
         Arena
@@ -1129,71 +1507,67 @@ class Board extends Component<Board_Props>
         return this.Parent();
     }
 
-    Cell(cell_index: Model.Cell_Index):
-        Board_Cell
+    Bumper():
+        Board_Bumper
     {
-        if (cell_index < 0 || cell_index >= this.cells.length) {
-            throw new Error(`'cell_index' of ${cell_index} is invalid.`);
-        } else if (this.cells[cell_index] == null) {
+        if (this.bumper == null) {
             throw this.Error_Not_Rendered();
         } else {
-            return this.cells[cell_index] as Board_Cell;
+            return this.bumper;
         }
     }
 
     Cells():
-        Array<Board_Cell>
+        Board_Cells
     {
-        const cells: Array<Board_Cell> = [];
-        for (const cell of this.cells) {
-            if (cell == null) {
-                throw this.Error_Not_Rendered();
-            } else {
-                cells.push(cell);
-            }
+        if (this.cells == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.cells;
         }
+    }
 
-        return cells;
+    Before_Life():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `auto`,
+            gridTemplateRows: `${arena.CSS_Bumper_Height()} ${arena.CSS_Board_Cells_Height()}`,
+
+            height: `100%`,
+        });
     }
 
     On_Refresh():
         JSX.Element | null
     {
-        const styles: any = {};
-        if (this.Model().Rules().Is_Small_Board()) {
-            styles.backgroundImage = `url("img/boards/pexels-fwstudio-172296.jpg")`;
-        }
+        this.Change_Style(`backgroundImage`, `url("img/boards/pexels-fwstudio-172296.jpg")`);
 
         return (
             <div
                 className={`Board`}
-                style={styles}
+                style={this.Styles()}
             >
-                <div
-                    className={`Board_Bumper`}
-                >
-                </div>
-                <div
-                    className={`Board_Grid`}
-                >
-                    {
-                        Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
-                        {
-                            return (
-                                <Board_Cell
-                                    key={cell_index}
-                                    ref={ref => this.cells[cell_index] = ref}
+                <Board_Bumper
+                    key={`board_bumper`}
+                    ref={ref => this.bumper = ref}
 
-                                    parent={this}
-                                    event_grid={this.Event_Grid()}
-                                    model={() => this.Model().Cell(cell_index)}
-                                    index={cell_index}
-                                />
-                            );
-                        })
-                    }
-                </div>
-            </div>
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                    model={this.Model()}
+                />
+                <Board_Cells
+                    key={`board_cells`}
+                    ref={ref => this.cells = ref}
+
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                    model={this.Model()}
+                />
+            </div >
         );
     }
 
@@ -1260,8 +1634,170 @@ class Board extends Component<Board_Props>
     }
 }
 
-type Board_Cell_Props = {
+type Board_Bumper_Props = {
     parent: Board;
+    event_grid: Event.Grid;
+    model: Model.Board;
+}
+
+class Board_Bumper extends Component<Board_Bumper_Props>
+{
+    Arena():
+        Arena
+    {
+        return this.Board().Arena();
+    }
+
+    Board():
+        Board
+    {
+        return this.Parent();
+    }
+
+    CSS_Height():
+        string
+    {
+        return this.Arena().CSS_Bumper_Height();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Board_Bumper`}
+                style={this.Styles()}
+            >
+            </div >
+        );
+    }
+}
+
+type Board_Cells_Props = {
+    parent: Board;
+    event_grid: Event.Grid;
+    model: Model.Board;
+}
+
+class Board_Cells extends Component<Board_Cells_Props>
+{
+    private cells: Array<Board_Cell | null> = new Array(this.Model().Cell_Count()).fill(null);
+
+    Arena():
+        Arena
+    {
+        return this.Board().Arena();
+    }
+
+    Board():
+        Board
+    {
+        return this.Parent();
+    }
+
+    Cell(cell_index: Model.Cell_Index):
+        Board_Cell
+    {
+        if (cell_index < 0 || cell_index >= this.cells.length) {
+            throw new Error(`'cell_index' of ${cell_index} is invalid.`);
+        } else if (this.cells[cell_index] == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.cells[cell_index] as Board_Cell;
+        }
+    }
+
+    Cells():
+        Array<Board_Cell>
+    {
+        const cells: Array<Board_Cell> = [];
+        for (const cell of this.cells) {
+            if (cell == null) {
+                throw this.Error_Not_Rendered();
+            } else {
+                cells.push(cell);
+            }
+        }
+
+        return cells;
+    }
+
+    CSS_Height():
+        string
+    {
+        return this.Arena().CSS_Board_Cells_Height();
+    }
+
+    CSS_Padding():
+        string
+    {
+        return this.Arena().CSS_Board_Cells_Padding();
+    }
+
+    CSS_Grid_Gap():
+        string
+    {
+        return this.Arena().CSS_Board_Cells_Grid_Gap();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        const rules: Model.Rules = this.Model().Rules();
+        const grid_gap: string = this.CSS_Grid_Gap();
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `repeat(${rules.Column_Count()}, 1fr)`,
+            gridTemplateRows: `repeat(${rules.Row_Count()}, 1fr)`,
+            gridGap: `${grid_gap} ${grid_gap}`,
+
+            width: `100%`,
+            height: `100%`,
+            padding: this.CSS_Padding(),
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Board_Cells`}
+                style={this.Styles()}
+            >
+                {
+                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
+                    {
+                        return (
+                            <Board_Cell
+                                key={cell_index}
+                                ref={ref => this.cells[cell_index] = ref}
+
+                                parent={this}
+                                event_grid={this.Event_Grid()}
+                                model={() => this.Model().Cell(cell_index)}
+                                index={cell_index}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
+    }
+}
+
+type Board_Cell_Props = {
+    parent: Board_Cells;
     event_grid: Event.Grid;
     model: () => Model.Cell;
     index: Model.Cell_Index;
@@ -1280,6 +1816,12 @@ class Board_Cell extends Component<Board_Cell_Props>
     Board():
         Board
     {
+        return this.Cells().Board();
+    }
+
+    Cells():
+        Board_Cells
+    {
         return this.Parent();
     }
 
@@ -1287,6 +1829,26 @@ class Board_Cell extends Component<Board_Cell_Props>
         Model.Cell_Index
     {
         return this.props.index;
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `4fr 3fr 4fr 3fr 4fr`,
+            gridTemplateRows: `4fr 3fr 4fr 3fr 4fr`,
+            columnGap: `5%`,
+
+            width: arena.CSS_Card_Width(),
+            height: arena.CSS_Card_Height(),
+
+            border: `0.3vmin solid #00000080`,
+
+            cursor: `default`,
+        });
     }
 
     On_Refresh():
@@ -1298,12 +1860,16 @@ class Board_Cell extends Component<Board_Cell_Props>
             const is_on_human_turn: boolean = this.Board().Model().Is_On_Human_Turn();
             const is_selectable: boolean = this.Board().Model().Is_Cell_Selectable(this.Index());
 
+            if (is_on_human_turn && is_selectable) {
+                this.Change_Style('cursor', `pointer`);
+            } else {
+                this.Change_Style('cursor', `default`);
+            }
+
             return (
                 <div
-                    className={`Board_Cell_Empty`}
-                    style={{
-                        cursor: `${is_on_human_turn && is_selectable ? `pointer` : `default`}`,
-                    }}
+                    className={`Board_Cell`}
+                    style={this.Styles()}
                     onClick={event => this.On_Click(event)}
                 >
                 </div>
@@ -1311,16 +1877,33 @@ class Board_Cell extends Component<Board_Cell_Props>
         } else {
             const color: Model.Color = model.Color();
 
+            this.Change_Style(
+                `backgroundColor`,
+                `rgba(
+                    ${color.Red()},
+                    ${color.Green()},
+                    ${color.Blue()},
+                    ${color.Alpha()}
+                )`,
+            );
+
             return (
                 <div
-                    className={`Board_Cell_Occupied`}
-                    style={{
-                        backgroundColor: `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()})`,
-                    }}
+                    className={`Board_Cell`}
+                    style={this.Styles()}
                 >
                     <div
                         className={`Board_Cell_Card`}
                         style={{
+                            width: `90%`,
+                            height: `90%`,
+
+                            gridColumn: `1 / span 5`,
+                            gridRow: `1 / span 5`,
+                            alignSelf: `center`,
+                            justifySelf: `center`,
+                            zIndex: `0`,
+
                             backgroundImage: `url("${model.Stake().Card().Image()}")`,
                         }}
                     >
@@ -1402,7 +1985,7 @@ class Board_Cell extends Component<Board_Cell_Props>
         if (this.Is_Alive()) {
             if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
                 // we only need to update the cursor for empty cells
-                this.Some_Element().style.cursor = `pointer`;
+                this.Change_Style(`cursor`, `pointer`);
             }
         }
     }
@@ -1416,7 +1999,7 @@ class Board_Cell extends Component<Board_Cell_Props>
         if (this.Is_Alive()) {
             if (this.Model()().Is_Empty()) {
                 // we only need to update the cursor for empty cells
-                this.Some_Element().style.cursor = `default`;
+                this.Change_Style(`cursor`, `default`);
             }
         }
     }
@@ -1445,61 +2028,65 @@ class Board_Cell extends Component<Board_Cell_Props>
                 if (turn_result.direction === Model.Direction_e.LEFT) {
                     background_size = `1000% 100%`;
                     to_direction = `right`;
-                    animation_name = `Board_Cell_Occupied_Left_To_Right`;
+                    animation_name = `Board_Cell_Left_To_Right`;
                 } else if (turn_result.direction === Model.Direction_e.TOP) {
                     background_size = `100% 1000%`;
                     to_direction = `bottom`;
-                    animation_name = `Board_Cell_Occupied_Top_To_Bottom`;
+                    animation_name = `Board_Cell_Top_To_Bottom`;
                 } else if (turn_result.direction === Model.Direction_e.RIGHT) {
                     background_size = `1000% 100%`;
                     to_direction = `left`;
-                    animation_name = `Board_Cell_Occupied_Right_To_Left`;
+                    animation_name = `Board_Cell_Right_To_Left`;
                 } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
                     background_size = `100% 1000%`;
                     to_direction = `top`;
-                    animation_name = `Board_Cell_Occupied_Bottom_To_Top`;
+                    animation_name = `Board_Cell_Bottom_To_Top`;
                 }
 
                 const animation_duration: number =
                     Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
                 const animation_delay: string =
                     `0ms`;
-                const element: HTMLElement = this.Some_Element();
-                element.style.backgroundColor =
-                    `transparent`;
-                element.style.backgroundImage =
-                    `linear-gradient(to ${to_direction}, ${old_background_color}, ${new_background_color})`;
-                element.style.backgroundSize =
-                    background_size;
-                element.style.animation =
-                    `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`;
+
+                this.Change_Style(
+                    `backgroundColor`,
+                    `transparent`,
+                );
+                this.Change_Style(
+                    `backgroundImage`,
+                    `linear-gradient(to ${to_direction}, ${old_background_color}, ${new_background_color})`,
+                );
+                this.Change_Style(
+                    `backgroundSize`,
+                    background_size,
+                );
+                this.Change_Style(
+                    `animation`,
+                    `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`,
+                );
 
                 await Wait(animation_duration);
                 if (this.Is_Alive()) {
-                    element.style.backgroundColor =
-                        new_background_color;
-                    element.style.backgroundImage =
-                        ``;
-                    element.style.backgroundSize =
-                        `100% 100%`;
-                    element.style.animation =
-                        ``;
+                    this.Change_Style(`backgroundColor`, new_background_color);
+                    this.Change_Style(`backgroundImage`, ``);
+                    this.Change_Style(`backgroundSize`, `100% 100%`);
+                    this.Change_Style(`animation`, ``);
 
                     await Wait(200);
                     if (this.Is_Alive()) {
-                        element.style.animationName = `Board_Cell_Occupied_Flash`;
-                        element.style.animationDuration = `${300}ms`;
-                        element.style.animationTimingFunction = `ease-in`;
-                        element.style.animationIterationCount = `1`;
-                        element.style.animationDirection = `normal`;
+                        this.Change_Style(`animationName`, `Board_Cell_Flash`);
+                        this.Change_Style(`animationDuration`, `${300}ms`);
+                        this.Change_Style(`animationTimingFunction`, `ease-in`);
+                        this.Change_Style(`animationIterationCount`, `1`);
+                        this.Change_Style(`animationDirection`, `normal`);
 
                         await Wait(300);
                         if (this.Is_Alive()) {
-                            element.style.animationName = '';
-                            element.style.animationDuration = '';
-                            element.style.animationTimingFunction = '';
-                            element.style.animationIterationCount = '';
-                            element.style.animationDirection = '';
+                            this.Change_Style(`animationName`, ``);
+                            this.Change_Style(`animationDuration`, ``);
+                            this.Change_Style(`animationTimingFunction`, ``);
+                            this.Change_Style(`animationIterationCount`, ``);
+                            this.Change_Style(`animationDirection`, ``);
 
                             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
                         }
@@ -1531,35 +2118,125 @@ class Board_Cell extends Component<Board_Cell_Props>
                             <div
                                 key={`center`}
                                 className={`Board_Cell_Center`}
+                                style={{
+                                    display: `flex`,
+                                    flexDirection: `column`,
+                                    justifyContent: `center`,
+
+                                    width: `100%`,
+                                    height: `100%`,
+
+                                    gridColumn: `2 / span 3`,
+                                    gridRow: `3 / span 1`,
+                                    alignSelf: `center`,
+                                    justifySelf: `center`,
+                                    zIndex: `1`,
+
+                                    backgroundColor: `rgba(0, 0, 0, 0.5)`,
+
+                                    borderRadius: `30%`,
+                                }}
                             >
                                 <div>COMBO</div>
                             </div>
                         );
                     }
-                    for (const [class_name, key, has_same, has_plus] of [
+                    for (const [class_name, key, has_same, has_plus, styles] of [
                         [
                             `Board_Cell_Left`,
                             `left`,
                             turn_result.same.left,
                             turn_result.plus.left,
+                            {
+                                display: `flex`,
+                                flexDirection: `column`,
+                                justifyContent: `center`,
+
+                                width: `100%`,
+                                height: `100%`,
+
+                                gridColumn: `1 / span 1`,
+                                gridRow: `3 / span 1`,
+                                alignSelf: `center`,
+                                justifySelf: `start`,
+                                zIndex: `1`,
+
+                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
+
+                                borderRadius: `50%`,
+                            },
                         ],
                         [
                             `Board_Cell_Top`,
                             `top`,
                             turn_result.same.top,
                             turn_result.plus.top,
+                            {
+                                display: `flex`,
+                                flexDirection: `column`,
+                                justifyContent: `center`,
+
+                                width: `100%`,
+                                height: `100%`,
+
+                                gridColumn: `3 / span 1`,
+                                gridRow: `1 / span 1`,
+                                alignSelf: `start`,
+                                justifySelf: `center`,
+                                zIndex: `1`,
+
+                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
+
+                                borderRadius: `50%`,
+                            },
                         ],
                         [
                             `Board_Cell_Right`,
                             `right`,
                             turn_result.same.right,
                             turn_result.plus.right,
+                            {
+                                display: `flex`,
+                                flexDirection: `column`,
+                                justifyContent: `center`,
+
+                                width: `100%`,
+                                height: `100%`,
+
+                                gridColumn: `5 / span 1`,
+                                gridRow: `3 / span 1`,
+                                alignSelf: `center`,
+                                justifySelf: `end`,
+                                zIndex: `1`,
+
+                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
+
+                                borderRadius: `50%`,
+                            },
                         ],
                         [
                             `Board_Cell_Bottom`,
                             `bottom`,
                             turn_result.same.bottom,
                             turn_result.plus.bottom,
+                            {
+                                display: `flex`,
+                                flexDirection: `column`,
+                                justifyContent: `center`,
+
+                                width: `100%`,
+                                height: `100%`,
+
+                                gridColumn: `3 / span 1`,
+                                gridRow: `5 / span 1`,
+                                alignSelf: `end`,
+                                justifySelf: `center`,
+                                zIndex: `1`,
+
+                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
+
+                                borderRadius: `50%`,
+                            },
                         ],
                     ] as Array<
                         [
@@ -1567,6 +2244,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                             string,
                             boolean,
                             boolean,
+                            any,
                         ]
                     >) {
                         if (has_same) {
@@ -1575,6 +2253,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                                     <div
                                         key={key}
                                         className={class_name}
+                                        style={styles}
                                     >
                                         <div>=</div>
                                         <div>+</div>
@@ -1585,6 +2264,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                                     <div
                                         key={key}
                                         className={class_name}
+                                        style={styles}
                                     >
                                         <div>=</div>
                                     </div>
@@ -1595,6 +2275,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                                 <div
                                     key={key}
                                     className={class_name}
+                                    style={styles}
                                 >
                                     <div>+</div>
                                 </div>
@@ -1632,12 +2313,34 @@ class Results extends Component<Results_Props>
         return this.Parent();
     }
 
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.5)`,
+
+            animationName: `Results_Fade_In`,
+            animationDuration: `2000ms`,
+            animationTimingFunction: `ease-in-out`,
+            animationIterationCount: `1`,
+        });
+    }
+
     On_Refresh():
         JSX.Element | null
     {
         if (this.scores != null) {
             const scores: Model.Scores = this.scores;
             this.scores = null;
+
+            this.Change_Style(`zIndex`, `${this.Model().Rules().Selection_Card_Count()}`);
 
             if (scores.Has_Winner()) {
                 const winner: Model.Player_And_Score = scores.Winner();
@@ -1646,27 +2349,59 @@ class Results extends Component<Results_Props>
                 return (
                     <div
                         className={`Results`}
-                        style={{
-                            zIndex: `${this.Model().Rules().Selection_Card_Count()}`,
-                        }}
+                        style={this.Styles()}
                     >
                         <div
                             className={`Results_Banner`}
+                            style={{
+                                display: `flex`,
+                                flexDirection: `column`,
+                                justifyContent: `center`,
+                                alignItems: `center`,
+
+                                width: `100%`,
+                                height: `40vmin`,
+
+                                position: `absolute`,
+                                left: `0`,
+                                top: `calc(
+                                    50% -
+                                    (40vmin / 2) +
+                                    (${this.Arena().CSS_Bumper_Height()} / 2)
+                                )`,
+
+                                border: `0.6vmin solid #00000080`,
+
+                                animationName: `Results_Banner_Move_In`,
+                                animationDuration: `2000ms`,
+                                animationTimingFunction: `ease-in-out`,
+                                animationIterationCount: `1`,
+                            }}
                         >
                             <div
                                 className={`Results_Winner`}
                                 style={{
-                                    backgroundColor:
-                                        `rgba(
-                                            ${color.Red()},
-                                            ${color.Green()},
-                                            ${color.Blue()},
-                                            ${color.Alpha()}
-                                        )`,
+                                    display: `flex`,
+                                    flexDirection: `column`,
+                                    justifyContent: `center`,
+                                    alignItems: `center`,
+
+                                    width: `100%`,
+                                    height: `100%`,
+
+                                    backgroundColor: `rgba(
+                                        ${color.Red()},
+                                        ${color.Green()},
+                                        ${color.Blue()},
+                                        ${color.Alpha()}
+                                    )`,
                                 }}
                             >
                                 <div
                                     className={`Results_Winner_Message`}
+                                    style={{
+                                        fontSize: `6vmin`,
+                                    }}
                                 >
                                     {`${winner.player.Name()} Wins!`}
                                     <div>
@@ -1694,21 +2429,54 @@ class Results extends Component<Results_Props>
                 return (
                     <div
                         className={`Results`}
-                        style={{
-                            zIndex: `${this.Model().Rules().Selection_Card_Count()}`,
-                        }}
+                        style={this.Styles()}
                     >
                         <div
                             className={`Results_Banner`}
+                            style={{
+                                display: `flex`,
+                                flexDirection: `column`,
+                                justifyContent: `center`,
+                                alignItems: `center`,
+
+                                width: `100%`,
+                                height: `40vmin`,
+
+                                position: `absolute`,
+                                left: `0`,
+                                top: `calc(
+                                    50% -
+                                    (40vmin / 2) +
+                                    (${this.Arena().CSS_Bumper_Height()} / 2)
+                                )`,
+
+                                border: `0.6vmin solid #00000080`,
+
+                                animationName: `Results_Banner_Move_In`,
+                                animationDuration: `2000ms`,
+                                animationTimingFunction: `ease-in-out`,
+                                animationIterationCount: `1`,
+                            }}
                         >
                             <div
                                 className={`Results_Draws`}
                                 style={{
+                                    display: `flex`,
+                                    flexDirection: `column`,
+                                    justifyContent: `center`,
+                                    alignItems: `center`,
+
+                                    width: `100%`,
+                                    height: `100%`,
+
                                     backgroundImage: `linear-gradient(to right, ${linear_gradient_colors})`,
                                 }}
                             >
                                 <div
                                     className={`Results_Draws_Message`}
+                                    style={{
+                                        fontSize: `6vmin`,
+                                    }}
                                 >
                                     {`Draw`}
                                     <div>
