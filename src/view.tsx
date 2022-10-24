@@ -2231,17 +2231,22 @@ class Board_Cell extends Component<Board_Cell_Props>
                     `backgroundSize`,
                     background_size,
                 );
-                this.Change_Style(
-                    `animation`,
-                    `${animation_name} ${animation_duration}ms ease-in-out ${animation_delay} 1 normal`,
-                );
+                this.Change_Style(`animationName`, animation_name);
+                this.Change_Style(`animationDuration`, `${animation_duration}ms`);
+                this.Change_Style(`animationTimingFunction`, `ease-in-out`);
+                this.Change_Style(`animationIterationCount`, `1`);
+                this.Change_Style(`animationDirection`, `normal`);
 
                 await Wait(animation_duration);
                 if (this.Is_Alive()) {
                     this.Change_Style(`backgroundColor`, new_background_color);
                     this.Change_Style(`backgroundImage`, ``);
                     this.Change_Style(`backgroundSize`, `100% 100%`);
-                    this.Change_Style(`animation`, ``);
+                    this.Change_Style(`animationName`, ``);
+                    this.Change_Style(`animationDuration`, ``);
+                    this.Change_Style(`animationTimingFunction`, ``);
+                    this.Change_Style(`animationIterationCount`, ``);
+                    this.Change_Style(`animationDirection`, ``);
 
                     await Wait(200);
                     if (this.Is_Alive()) {
