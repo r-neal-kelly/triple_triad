@@ -1,9 +1,8 @@
 import "./view.css";
 
 import React from "react";
-import ReactDOM_Client from "react-dom/client";
 
-import { Wait } from "./utils";
+import { Integer, Wait } from "./utils";
 import * as Event from "./event";
 import * as Model from "./model";
 import { Component, Component_Styles } from "./view/component";
@@ -69,7 +68,7 @@ type Board_Change_Cell_Data = {
 
 type Main_Props = {
     model: Model.Main;
-    parent: ReactDOM_Client.Root;
+    parent: HTMLElement;
     event_grid: Event.Grid;
 }
 
@@ -78,6 +77,10 @@ export class Main extends Component<Main_Props>
     private menu: Menu | null = null;
     private exhibitions: Exhibitions | null = null;
     private arena: Arena | null = null;
+
+    private resize_observer: ResizeObserver = new ResizeObserver(this.On_Resize.bind(this));
+    private current_width: Integer = this.Parent().clientWidth;
+    private current_height: Integer = this.Parent().clientHeight;
 
     Menu():
         Menu
@@ -107,6 +110,18 @@ export class Main extends Component<Main_Props>
         } else {
             return this.arena;
         }
+    }
+
+    Width():
+        Integer
+    {
+        return this.current_width;
+    }
+
+    Height():
+        Integer
+    {
+        return this.current_height;
     }
 
     Before_Life():
@@ -178,9 +193,24 @@ export class Main extends Component<Main_Props>
         }
     }
 
+    async On_Resize():
+        Promise<void>
+    {
+        const element: HTMLElement = this.Some_Element();
+        const width: Integer = element.clientWidth;
+        const height: Integer = element.clientHeight;
+        if (this.current_width !== width || this.current_height !== height) {
+            this.current_width = width;
+            this.current_height = height;
+            this.Refresh();
+        }
+    }
+
     On_Life():
         Event.Listener_Info[]
     {
+        this.resize_observer.observe(this.Some_Element());
+
         this.While_Alive();
 
         return [];
@@ -198,6 +228,14 @@ export class Main extends Component<Main_Props>
                 return;
             }
         }
+    }
+
+    On_Death():
+        void
+    {
+        this.resize_observer.disconnect();
+        this.current_height = 0;
+        this.current_width = 0;
     }
 }
 
@@ -2216,8 +2254,6 @@ class Board_Cell extends Component<Board_Cell_Props>
 
                 const animation_duration: number =
                     Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
-                const animation_delay: string =
-                    `0ms`;
 
                 this.Change_Style(
                     `backgroundColor`,

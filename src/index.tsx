@@ -13,7 +13,7 @@ if (root_element == null) {
     root_component.render(
         <View.Main
             model={new Model.Main({})}
-            parent={root_component}
+            parent={root_element}
             event_grid={new Event.Grid()}
         />
     );

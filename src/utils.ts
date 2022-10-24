@@ -1,3 +1,6 @@
+export type Integer =
+    number;
+
 export async function Wait(milliseconds: number):
     Promise<void>
 {
