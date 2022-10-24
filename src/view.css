@@ -36,23 +36,6 @@ body {
     height: 100%;
 }
 
-.Menu_Button {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    width: 40%;
-    height: 100%;
-
-    align-self: center;
-    justify-self: center;
-}
-
-.Menu_Button_Text {
-    font-size: 300%;
-}
-
 .Player_Hand {
     -ms-overflow-style: none;
     scrollbar-width: none;

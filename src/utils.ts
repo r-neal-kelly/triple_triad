@@ -1,6 +1,17 @@
 export type Integer =
     number;
 
+export function Assert(
+    boolean: boolean,
+    message: string = `Tripped assert!`,
+):
+    void
+{
+    if (!boolean) {
+        throw new Error(message);
+    }
+}
+
 export async function Wait(milliseconds: number):
     Promise<void>
 {

@@ -2,7 +2,7 @@ import "./view.css";
 
 import React from "react";
 
-import { Integer, Wait } from "./utils";
+import { Integer, Assert, Wait } from "./utils";
 import * as Event from "./event";
 import * as Model from "./model";
 import { Component, Component_Styles } from "./view/component";
@@ -20,6 +20,8 @@ const AFTER: Event.Name_Prefix = Event.AFTER;
 const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
 const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
 const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
+const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
+const OPEN_OPTIONS: Event.Name_Affix = `Open_Options`;
 const GAME_START: Event.Name_Affix = `Game_Start`;
 const GAME_STOP: Event.Name_Affix = `Game_Stop`;
 const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
@@ -30,6 +32,12 @@ const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 
 // might want to turn these into full classes so that the sender has to fill out the info properly.
 // that would mean changing how the event types add the event instance to the data
+type Start_New_Game_Data = {
+}
+
+type Open_Options_Data = {
+}
+
 type Switch_Exhibition_Data = {
     previous: Model.Exhibition,
     next: Model.Exhibition,
@@ -78,9 +86,9 @@ export class Main extends Component<Main_Props>
     private exhibitions: Exhibitions | null = null;
     private arena: Arena | null = null;
 
-    private resize_observer: ResizeObserver = new ResizeObserver(this.On_Resize.bind(this));
     private current_width: Integer = this.Parent().clientWidth;
     private current_height: Integer = this.Parent().clientHeight;
+    private resize_observer: ResizeObserver = new ResizeObserver(this.On_Resize.bind(this));
 
     Menu():
         Menu
@@ -122,6 +130,18 @@ export class Main extends Component<Main_Props>
         Integer
     {
         return this.current_height;
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
     }
 
     Before_Life():
@@ -213,7 +233,12 @@ export class Main extends Component<Main_Props>
 
         this.While_Alive();
 
-        return [];
+        return [
+            {
+                event_name: new Event.Name(ON, START_NEW_GAME),
+                event_handler: this.On_Start_New_Game,
+            },
+        ];
     }
 
     async While_Alive():
@@ -227,6 +252,55 @@ export class Main extends Component<Main_Props>
             } else {
                 return;
             }
+        }
+    }
+
+    async On_Start_New_Game():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Main = this.Model();
+            const packs: Model.Packs = model.Packs();
+            const rules: Model.Rules = model.Rules();
+
+            model.New_Game([
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: new Model.Color({
+                        red: 63,
+                        green: 63,
+                        blue: 127,
+                        alpha: 0.7,
+                    }),
+                    is_of_human: true,
+                    card_count: rules.Selection_Card_Count(),
+                }),
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: new Model.Color({
+                        red: 63,
+                        green: 127,
+                        blue: 63,
+                        alpha: 0.7,
+                    }),
+                    is_of_human: false,
+                    card_count: rules.Selection_Card_Count(),
+                }),
+            ]);
+
+            await this.Refresh();
         }
     }
 
@@ -248,6 +322,7 @@ type Menu_Props = {
 class Menu extends Component<Menu_Props>
 {
     private title: Menu_Title | null = null;
+    private buttons: Menu_Buttons | null = null;
 
     Main():
         Main
@@ -271,8 +346,8 @@ class Menu extends Component<Menu_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `2.5fr 1fr 1fr 1fr`,
-            columnGap: `5%`,
+            gridTemplateRows: `45% 55%`,
+            rowGap: `0`,
 
             width: `100%`,
             height: `100%`,
@@ -297,6 +372,14 @@ class Menu extends Component<Menu_Props>
                 <Menu_Title
                     key={`menu_title`}
                     ref={ref => this.title = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Menu_Buttons
+                    key={`menu_buttons`}
+                    ref={ref => this.buttons = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -347,6 +430,264 @@ class Menu_Title extends Component<Menu_Title_Props>
                 <div>{`Triple Triad`}</div>
             </div>
         );
+    }
+}
+
+type Menu_Buttons_Props = {
+    model: Model.Menu;
+    parent: Menu;
+    event_grid: Event.Grid;
+}
+
+class Menu_Buttons extends Component<Menu_Buttons_Props>
+{
+    private new_game: Menu_New_Game_Button | null = null;
+    private options: Menu_Options_Button | null = null;
+
+    Menu():
+        Menu
+    {
+        return this.Parent();
+    }
+
+    New_Game():
+        Menu_New_Game_Button
+    {
+        if (this.new_game == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.new_game;
+        }
+    }
+
+    Options():
+        Menu_Options_Button
+    {
+        if (this.options == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.options;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr 1fr`,
+            rowGap: `5%`,
+
+            width: `100%`,
+            height: `100%`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu_Buttons`}
+                style={this.Styles()}
+            >
+                <Menu_New_Game_Button
+                    key={`menu_new_game_button`}
+                    ref={ref => this.new_game = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Menu_Options_Button
+                    key={`menu_options_button`}
+                    ref={ref => this.options = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+}
+
+type Menu_Button_Props = {
+    model: Model.Menu;
+    parent: Menu_Buttons;
+    event_grid: Event.Grid;
+}
+
+class Menu_Button extends Component<Menu_Button_Props>
+{
+    private cover: Menu_Button_Cover | null = null;
+
+    Buttons():
+        Menu_Buttons
+    {
+        return this.Parent();
+    }
+
+    Text():
+        string
+    {
+        return ``;
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `40%`,
+            height: `100%`,
+
+            position: `relative`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            fontSize: `2.5em`,
+
+            cursor: `pointer`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu_Button`}
+                style={this.Styles()}
+                onClick={this.On_Click.bind(this)}
+            >
+                <div>
+                    {this.Text()}
+                </div>
+                <Menu_Button_Cover
+                    key={`menu_button_cover`}
+                    ref={ref => this.cover = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+    }
+}
+
+type Menu_Button_Cover_Props = {
+    model: Model.Menu;
+    parent: Menu_Button;
+    event_grid: Event.Grid;
+}
+
+class Menu_Button_Cover extends Component<Menu_Button_Cover_Props>
+{
+    Menu_Button():
+        Menu_Button
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `1`,
+
+            backgroundColor: `transparent`,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            cursor: `pointer`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu_Button_Cover`}
+                style={this.Styles()}
+                onClick={this.Parent().On_Click.bind(this)}
+            >
+            </div>
+        );
+    }
+}
+
+class Menu_New_Game_Button extends Menu_Button
+{
+    Text():
+        string
+    {
+        return `New Game`;
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        this.Send({
+            name_affix: START_NEW_GAME,
+            name_suffixes: [
+            ],
+            data: {
+            } as Start_New_Game_Data,
+            is_atomic: true,
+        });
+    }
+}
+
+class Menu_Options_Button extends Menu_Button
+{
+    Text():
+        string
+    {
+        return `Options`;
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        this.Send({
+            name_affix: OPEN_OPTIONS,
+            name_suffixes: [
+            ],
+            data: {
+            } as Open_Options_Data,
+            is_atomic: true,
+        });
     }
 }
 
@@ -827,12 +1168,15 @@ class Arena extends Component<Arena_Props>
             this.Model().Next_Turn();
 
             if (this.Model().Is_Game_Over()) {
+                const scores: Model.Scores = this.Model().Scores() as Model.Scores;
+                Assert(scores != null);
+
                 this.Send({
                     name_affix: GAME_STOP,
                     name_suffixes: [
                     ],
                     data: {
-                        scores: this.Model().Scores(),
+                        scores,
                     } as Game_Stop_Data,
                     is_atomic: true,
                 });
@@ -1464,9 +1808,9 @@ class Player_Hand extends Component<Player_Hand_Props>
 }
 
 type Player_Stake_Props = {
+    model: Model.Stake;
     parent: Player_Hand;
     event_grid: Event.Grid;
-    model: Model.Stake;
     index: Model.Stake_Index;
 }
 
@@ -1700,9 +2044,9 @@ class Player_Stake extends Component<Player_Stake_Props>
 }
 
 type Board_Props = {
+    model: Model.Board;
     parent: Arena;
     event_grid: Event.Grid;
-    model: Model.Board;
 }
 
 class Board extends Component<Board_Props>
@@ -1844,9 +2188,9 @@ class Board extends Component<Board_Props>
 }
 
 type Board_Bumper_Props = {
+    model: Model.Board;
     parent: Board;
     event_grid: Event.Grid;
-    model: Model.Board;
 }
 
 class Board_Bumper extends Component<Board_Bumper_Props>
@@ -1892,9 +2236,9 @@ class Board_Bumper extends Component<Board_Bumper_Props>
 }
 
 type Board_Cells_Props = {
+    model: Model.Board;
     parent: Board;
     event_grid: Event.Grid;
-    model: Model.Board;
 }
 
 class Board_Cells extends Component<Board_Cells_Props>
@@ -2006,14 +2350,15 @@ class Board_Cells extends Component<Board_Cells_Props>
 }
 
 type Board_Cell_Props = {
+    model: () => Model.Cell;
     parent: Board_Cells;
     event_grid: Event.Grid;
-    model: () => Model.Cell;
     index: Model.Cell_Index;
 }
 
 class Board_Cell extends Component<Board_Cell_Props>
 {
+    private current_color: Model.Color | null = null;
     private popups: Array<JSX.Element> | null = null;
 
     Arena():
@@ -2084,7 +2429,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                 </div>
             );
         } else {
-            const color: Model.Color = model.Color();
+            Assert(this.current_color != null);
+
+            const color: Model.Color = this.current_color as Model.Color;
 
             this.Change_Style(
                 `backgroundColor`,
@@ -2201,7 +2548,9 @@ class Board_Cell extends Component<Board_Cell_Props>
 
     async Before_Player_Place_Stake(
         {
-        }: Player_Select_Stake_Data,
+            player_index,
+            cell_index,
+        }: Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -2209,6 +2558,9 @@ class Board_Cell extends Component<Board_Cell_Props>
             if (this.Model()().Is_Empty()) {
                 // we only need to update the cursor for empty cells
                 this.Change_Style(`cursor`, `default`);
+            }
+            if (this.Index() === cell_index) {
+                this.current_color = this.Arena().Player(player_index).Model().Color();
             }
         }
     }
@@ -2232,41 +2584,52 @@ class Board_Cell extends Component<Board_Cell_Props>
                     `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
 
                 let background_size: string = ``;
-                let to_direction: string = ``;
+                let from_position: string = ``;
+                let to_position: string = ``;
                 let animation_name: string = ``;
                 if (turn_result.direction === Model.Direction_e.LEFT) {
                     background_size = `1000% 100%`;
-                    to_direction = `right`;
+                    from_position = `left`;
+                    to_position = `right`;
                     animation_name = `Board_Cell_Left_To_Right`;
                 } else if (turn_result.direction === Model.Direction_e.TOP) {
                     background_size = `100% 1000%`;
-                    to_direction = `bottom`;
+                    from_position = `top`;
+                    to_position = `bottom`;
                     animation_name = `Board_Cell_Top_To_Bottom`;
                 } else if (turn_result.direction === Model.Direction_e.RIGHT) {
                     background_size = `1000% 100%`;
-                    to_direction = `left`;
+                    from_position = `right`;
+                    to_position = `left`;
                     animation_name = `Board_Cell_Right_To_Left`;
                 } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
                     background_size = `100% 1000%`;
-                    to_direction = `top`;
+                    from_position = `bottom`;
+                    to_position = `top`;
                     animation_name = `Board_Cell_Bottom_To_Top`;
                 }
 
                 const animation_duration: number =
                     Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
 
+                this.current_color = old_color;
+
                 this.Change_Style(
                     `backgroundColor`,
-                    `transparent`,
+                    old_background_color,
                 );
                 this.Change_Style(
                     `backgroundImage`,
-                    `linear-gradient(to ${to_direction}, ${old_background_color}, ${new_background_color})`,
+                    `linear-gradient(to ${to_position}, ${old_background_color}, ${new_background_color})`,
                 );
                 this.Change_Style(
                     `backgroundSize`,
                     background_size,
                 );
+                this.Change_Style(
+                    `backgroundPosition`,
+                    from_position,
+                )
                 this.Change_Style(`animationName`, animation_name);
                 this.Change_Style(`animationDuration`, `${animation_duration}ms`);
                 this.Change_Style(`animationTimingFunction`, `ease-in-out`);
@@ -2275,6 +2638,8 @@ class Board_Cell extends Component<Board_Cell_Props>
 
                 await Wait(animation_duration);
                 if (this.Is_Alive()) {
+                    this.current_color = new_color;
+
                     this.Change_Style(`backgroundColor`, new_background_color);
                     this.Change_Style(`backgroundImage`, ``);
                     this.Change_Style(`backgroundSize`, `100% 100%`);
@@ -2510,19 +2875,29 @@ class Board_Cell extends Component<Board_Cell_Props>
 }
 
 type Results_Props = {
+    model: Model.Arena;
     parent: Arena;
     event_grid: Event.Grid;
-    model: Model.Arena;
 }
 
 class Results extends Component<Results_Props>
 {
-    private scores: Model.Scores | null = null;
+    private banner: Results_Banner | null = null;
 
     Arena():
         Arena
     {
         return this.Parent();
+    }
+
+    Banner():
+        Results_Banner
+    {
+        if (this.banner == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.banner;
+        }
     }
 
     Before_Life():
@@ -2548,158 +2923,22 @@ class Results extends Component<Results_Props>
     On_Refresh():
         JSX.Element | null
     {
-        if (this.scores != null) {
-            const scores: Model.Scores = this.scores;
-            this.scores = null;
+        const model: Model.Arena = this.Model();
+        const scores: Model.Scores | null = model.Scores();
 
+        if (scores != null) {
             this.Change_Style(`zIndex`, `${this.Model().Rules().Selection_Card_Count()}`);
 
-            if (scores.Has_Winner()) {
-                const winner: Model.Player_And_Score = scores.Winner();
-                const color: Model.Color = winner.player.Color();
+            return (
+                <Results_Banner
+                    key={`results_banner`}
+                    ref={ref => this.banner = ref}
 
-                return (
-                    <div
-                        className={`Results`}
-                        style={this.Styles()}
-                    >
-                        <div
-                            className={`Results_Banner`}
-                            style={{
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-                                alignItems: `center`,
-
-                                width: `100%`,
-                                height: `40vmin`,
-
-                                position: `absolute`,
-                                left: `0`,
-                                top: `calc(
-                                    50% -
-                                    (40vmin / 2) +
-                                    (${this.Arena().CSS_Bumper_Height()} / 2)
-                                )`,
-
-                                border: `0.6vmin solid #00000080`,
-
-                                animationName: `Results_Banner_Move_In`,
-                                animationDuration: `2000ms`,
-                                animationTimingFunction: `ease-in-out`,
-                                animationIterationCount: `1`,
-                            }}
-                        >
-                            <div
-                                className={`Results_Winner`}
-                                style={{
-                                    display: `flex`,
-                                    flexDirection: `column`,
-                                    justifyContent: `center`,
-                                    alignItems: `center`,
-
-                                    width: `100%`,
-                                    height: `100%`,
-
-                                    backgroundColor: `rgba(
-                                        ${color.Red()},
-                                        ${color.Green()},
-                                        ${color.Blue()},
-                                        ${color.Alpha()}
-                                    )`,
-                                }}
-                            >
-                                <div
-                                    className={`Results_Winner_Message`}
-                                    style={{
-                                        fontSize: `6vmin`,
-                                    }}
-                                >
-                                    {`${winner.player.Name()} Wins!`}
-                                    <div>
-                                        {`Refresh the page to play again`}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            } else {
-                const draws: Array<Model.Player_And_Score> = scores.Draws();
-                const color_stop_percent: number = 100 / draws.length;
-                const linear_gradient_colors: string = draws.map(function (
-                    draw: Model.Player_And_Score,
-                    index: Model.Player_Index,
-                ):
-                    string
-                {
-                    const color: Model.Color = draw.player.Color();
-                    const color_stop: string = `${index * color_stop_percent}% ${(index + 1) * color_stop_percent}%`;
-                    return `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()}) ${color_stop}`;
-                }).join(`, `);
-
-                return (
-                    <div
-                        className={`Results`}
-                        style={this.Styles()}
-                    >
-                        <div
-                            className={`Results_Banner`}
-                            style={{
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-                                alignItems: `center`,
-
-                                width: `100%`,
-                                height: `40vmin`,
-
-                                position: `absolute`,
-                                left: `0`,
-                                top: `calc(
-                                    50% -
-                                    (40vmin / 2) +
-                                    (${this.Arena().CSS_Bumper_Height()} / 2)
-                                )`,
-
-                                border: `0.6vmin solid #00000080`,
-
-                                animationName: `Results_Banner_Move_In`,
-                                animationDuration: `2000ms`,
-                                animationTimingFunction: `ease-in-out`,
-                                animationIterationCount: `1`,
-                            }}
-                        >
-                            <div
-                                className={`Results_Draws`}
-                                style={{
-                                    display: `flex`,
-                                    flexDirection: `column`,
-                                    justifyContent: `center`,
-                                    alignItems: `center`,
-
-                                    width: `100%`,
-                                    height: `100%`,
-
-                                    backgroundImage: `linear-gradient(to right, ${linear_gradient_colors})`,
-                                }}
-                            >
-                                <div
-                                    className={`Results_Draws_Message`}
-                                    style={{
-                                        fontSize: `6vmin`,
-                                    }}
-                                >
-                                    {`Draw`}
-                                    <div>
-                                        {`Refresh the page to play again`}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
+                    model={scores}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            );
         } else {
             return null;
         }
@@ -2739,8 +2978,265 @@ class Results extends Component<Results_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.scores = scores;
             await this.Refresh();
         }
+    }
+}
+
+type Results_Banner_Props = {
+    model: Model.Scores;
+    parent: Results;
+    event_grid: Event.Grid;
+}
+
+class Results_Banner extends Component<Results_Banner_Props>
+{
+    private winner: Results_Winner | null = null;
+    private draws: Results_Draws | null = null;
+
+    Arena():
+        Arena
+    {
+        return this.Results().Arena();
+    }
+
+    Results():
+        Results
+    {
+        return this.Parent();
+    }
+
+    Winner():
+        Results_Winner
+    {
+        if (this.winner == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.winner;
+        }
+    }
+
+    Draws():
+        Results_Draws
+    {
+        if (this.draws == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.draws;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+            height: `40vmin`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `calc(
+                50% -
+                (40vmin / 2) +
+                (${this.Arena().CSS_Bumper_Height()} / 2)
+            )`,
+
+            borderWidth: `0.6vmin 0`,
+            borderStyle: `solid`,
+            borderColor: `#00000080`,
+
+            animationName: `Results_Banner_Move_In`,
+            animationDuration: `2000ms`,
+            animationTimingFunction: `ease-in-out`,
+            animationIterationCount: `1`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Scores = this.Model();
+
+        if (model.Has_Winner()) {
+            return (
+                <div
+                    className={`Results_Banner`}
+                    style={this.Styles()}
+                >
+                    <Results_Winner
+                        key={`results_winner`}
+                        ref={ref => this.winner = ref}
+
+                        model={model.Winner()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else {
+            return (
+                <div
+                    className={`Results_Banner`}
+                    style={this.Styles()}
+                >
+                    <Results_Draws
+                        key={`results_draws`}
+                        ref={ref => this.draws = ref}
+
+                        model={model.Draws()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        }
+    }
+}
+
+type Results_Winner_Props = {
+    model: Model.Player_And_Score;
+    parent: Results_Banner;
+    event_grid: Event.Grid;
+}
+
+class Results_Winner extends Component<Results_Winner_Props>
+{
+    Arena():
+        Arena
+    {
+        return this.Banner().Results().Arena();
+    }
+
+    Banner():
+        Results_Banner
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        const model: Model.Player_And_Score = this.Model();
+        const color: Model.Color = model.player.Color();
+
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+            height: `100%`,
+
+            backgroundColor: `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`,
+
+            fontSize: `6vmin`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Player_And_Score = this.Model();
+
+        return (
+            <div
+                className={`Results_Winner`}
+                style={this.Styles()}
+            >
+                <div>
+                    {`${model.player.Name()} Wins!`}
+                </div>
+                <div>
+                    {`Refresh the page to play again`}
+                </div>
+            </div>
+        );
+    }
+}
+
+type Results_Draws_Props = {
+    model: Array<Model.Player_And_Score>;
+    parent: Results_Banner;
+    event_grid: Event.Grid;
+}
+
+class Results_Draws extends Component<Results_Draws_Props>
+{
+    Arena():
+        Arena
+    {
+        return this.Banner().Results().Arena();
+    }
+
+    Banner():
+        Results_Banner
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+            height: `100%`,
+
+            backgroundImage: ``,
+
+            fontSize: `6vmin`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Array<Model.Player_And_Score> = this.Model();
+        const color_stop_percent: number = 100 / model.length;
+        const linear_gradient_colors: string = model.map(function (
+            draw: Model.Player_And_Score,
+            index: Model.Player_Index,
+        ):
+            string
+        {
+            const color: Model.Color = draw.player.Color();
+            const color_stop: string = `${index * color_stop_percent}% ${(index + 1) * color_stop_percent}%`;
+
+            return `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()}) ${color_stop}`;
+        }).join(`, `);
+
+        this.Change_Style(
+            `backgroundImage`,
+            `linear-gradient(to right, ${linear_gradient_colors})`,
+        );
+
+        return (
+            <div
+                className={`Results_Draws`}
+                style={this.Styles()}
+            >
+                <div>
+                    {`Draw`}
+                </div>
+                <div>
+                    {`Refresh the page to play again`}
+                </div>
+            </div>
+        );
     }
 }

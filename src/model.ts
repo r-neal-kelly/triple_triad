@@ -848,6 +848,8 @@ export class Arena
 
     #is_input_enabled: boolean;
 
+    private scores: Scores | null;
+
     constructor(
         {
             rules,
@@ -877,7 +879,7 @@ export class Arena
                         index: idx,
                         name: player_name !== `` ?
                             player_name :
-                            `P ${human_count}`,
+                            `PLAYER ${human_count}`,
                         selection: selections[idx],
                     }));
                 } else {
@@ -902,6 +904,8 @@ export class Arena
             this.#turn_queue_index = 0;
 
             this.#is_input_enabled = true;
+
+            this.scores = null;
 
             Object.freeze(this.#players);
             Object.freeze(this.#turn_queue);
@@ -987,14 +991,22 @@ export class Arena
     Next_Turn():
         void
     {
+        Utils.Assert(
+            this.Is_Game_Over() === false,
+            `No more turns, the game is over.`,
+        );
+
+
+        this.#turn_count -= 1;
+        this.#turn_queue_index += 1;
+        if (this.#turn_queue_index === this.#turn_queue.length) {
+            this.#turn_queue_index = 0;
+        }
+
         if (this.Is_Game_Over()) {
-            throw new Error(`No more turns, the game is over.`);
-        } else {
-            this.#turn_count -= 1;
-            this.#turn_queue_index += 1;
-            if (this.#turn_queue_index === this.#turn_queue.length) {
-                this.#turn_queue_index = 0;
-            }
+            this.scores = new Scores({
+                players: this.#players,
+            });
         }
     }
 
@@ -1023,13 +1035,9 @@ export class Arena
     }
 
     Scores():
-        Scores
+        Scores | null
     {
-        return new Scores(
-            {
-                players: this.#players,
-            }
-        );
+        return this.scores;
     }
 }
 
