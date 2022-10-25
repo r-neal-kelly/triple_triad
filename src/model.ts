@@ -168,6 +168,19 @@ export enum Rule_e
     _LAST_ = COMBO,
 }
 
+export enum Menu_e
+{
+    _NONE_ = -1,
+
+    TOP,
+    OPTIONS,
+    HELP,
+
+    _COUNT_,
+    _FIRST_ = TOP,
+    _LAST_ = HELP,
+}
+
 const MIN_TIER_COUNT = Difficulty_e._COUNT_;
 
 /* Packs and their components as provided and represented by parsed JSON. */
@@ -550,36 +563,35 @@ class Card
 export class Main
 {
     private packs: Packs;
-    private rules: Rules;
     private collections: { [index: Player_Name]: Collection };
+
     private menu: Menu;
     private exhibitions: Exhibition[];
+
     private current_exhibition_index: Exhibition_Index | null;
     private current_arena: Arena | null;
 
     constructor(
         {
-            rules = new Rules({}),
             collections = [],
+            options = new Options({}),
             exhibition_count = 16,
         }: {
-            rules?: Rules,
             collections?: Array<Collection>,
+            options?: Options,
             exhibition_count?: Exhibition_Count,
         },
     )
     {
         this.packs = new Packs();
-
-        this.rules = rules;
-
         this.collections = {};
         for (const collection of collections) {
             this.collections[collection.Owner_Name()] = collection;
         }
 
-        this.menu = new Menu();
-
+        this.menu = new Menu({
+            options,
+        });
         this.exhibitions = [];
         for (let idx = 0, end = exhibition_count; idx < end; idx += 1) {
             this.exhibitions.push(new Exhibition({
@@ -589,7 +601,6 @@ export class Main
         }
 
         this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, exhibition_count);
-
         this.current_arena = null;
     }
 
@@ -597,18 +608,6 @@ export class Main
         Packs
     {
         return this.packs;
-    }
-
-    Rules():
-        Rules
-    {
-        return this.rules;
-    }
-
-    Change_Rules(rules: Rules):
-        void
-    {
-        this.rules = rules;
     }
 
     Collection(owner_name: Player_Name):
@@ -692,12 +691,24 @@ export class Main
         return this.current_arena;
     }
 
+    Is_In_Game():
+        boolean
+    {
+        return this.current_arena != null;
+    }
+
+    Isnt_In_Game():
+        boolean
+    {
+        return this.current_arena == null;
+    }
+
     New_Game(arena_selections: Array<Selection>):
         Arena
     {
         this.current_exhibition_index = null;
         this.current_arena = new Arena({
-            rules: this.rules,
+            rules: this.menu.Options().Data().Rules(),
             selections: arena_selections,
         });
 
@@ -710,22 +721,157 @@ export class Main
         this.current_arena = null;
         this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, this.exhibitions.length);
     }
-
-    Is_In_Game():
-        boolean
-    {
-        return this.current_arena != null;
-    }
-
-    Isnt_In_Game():
-        boolean
-    {
-        return this.current_arena == null;
-    }
 }
 
 export class Menu
 {
+    private top: Menu_Top;
+    private options: Menu_Options;
+
+    private current_menu: Menu_e;
+
+    constructor(
+        {
+            options = new Options({}),
+        }: {
+            options?: Options,
+        },
+    )
+    {
+        this.top = new Menu_Top({
+            menu: this,
+        });
+        this.options = new Menu_Options({
+            menu: this,
+            options,
+        });
+
+        this.current_menu = Menu_e.TOP;
+    }
+
+    Top():
+        Menu_Top
+    {
+        return this.top;
+    }
+
+    Options():
+        Menu_Options
+    {
+        return this.options;
+    }
+
+    Current_Menu():
+        Menu_e
+    {
+        return this.current_menu;
+    }
+
+    Open_Top():
+        void
+    {
+        Utils.Assert(this.current_menu !== Menu_e.TOP);
+
+        this.current_menu = Menu_e.TOP;
+    }
+
+    Open_Options():
+        void
+    {
+        Utils.Assert(this.current_menu === Menu_e.TOP);
+
+        this.current_menu = Menu_e.OPTIONS;
+    }
+}
+
+export class Menu_Top
+{
+    private menu: Menu;
+
+    constructor(
+        {
+            menu,
+        }: {
+            menu: Menu,
+        }
+    )
+    {
+        this.menu = menu;
+    }
+
+    Menu():
+        Menu
+    {
+        return this.menu;
+    }
+}
+
+export class Menu_Options
+{
+    private menu: Menu;
+    private options: Options;
+
+    constructor(
+        {
+            menu,
+            options = new Options({}),
+        }: {
+            menu: Menu,
+            options?: Options,
+        }
+    )
+    {
+        this.menu = menu;
+        this.options = options;
+    }
+
+    Menu():
+        Menu
+    {
+        return this.menu;
+    }
+
+    Data():
+        Options
+    {
+        return this.options;
+    }
+}
+
+export class Options
+{
+    private rules: Rules;
+
+    private use_small_board: boolean;
+
+    constructor(
+        {
+            rules = new Rules({}),
+
+            use_small_board = true,
+        }: {
+            rules?: Rules,
+
+            use_small_board?: boolean,
+        },
+    )
+    {
+        this.rules = rules.Clone();
+
+        this.use_small_board = use_small_board;
+    }
+
+    Rules():
+        Rules
+    {
+        return this.rules;
+    }
+
+    Use_Small_Board():
+        boolean
+    {
+        return this.use_small_board;
+    }
 }
 
 export class Exhibition
@@ -864,7 +1010,7 @@ export class Arena
         if (selections.length !== player_count) {
             throw new Error(`Must have a selection for each player, no more and no less.`);
         } else {
-            this.#rules = rules;
+            this.#rules = rules.Clone();
 
             let human_count: Count = 0;
             let computer_count: Count = 0;
@@ -907,6 +1053,7 @@ export class Arena
 
             this.scores = null;
 
+            Object.freeze(this.#rules);
             Object.freeze(this.#players);
             Object.freeze(this.#turn_queue);
         }
@@ -2118,23 +2265,6 @@ export class Scores
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
-    static Clone(rules: Rules):
-        Rules
-    {
-        return new Rules({
-            row_count: rules.Row_Count(),
-            column_count: rules.Column_Count(),
-            player_count: rules.Player_Count(),
-
-            open: rules.Open(),
-            same: rules.Same(),
-            plus: rules.Plus(),
-            wall: rules.Wall(),
-            combo: rules.Combo(),
-            random: rules.Random(),
-        });
-    }
-
     #row_count: Row_Count;
     #column_count: Column_Count;
     #cell_count: Cell_Count;
@@ -2194,6 +2324,23 @@ export class Rules
                 throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
             }
         }
+    }
+
+    Clone():
+        Rules
+    {
+        return new Rules({
+            row_count: this.Row_Count(),
+            column_count: this.Column_Count(),
+            player_count: this.Player_Count(),
+
+            open: this.Open(),
+            same: this.Same(),
+            plus: this.Plus(),
+            wall: this.Wall(),
+            combo: this.Combo(),
+            random: this.Random(),
+        });
     }
 
     Row_Count():
