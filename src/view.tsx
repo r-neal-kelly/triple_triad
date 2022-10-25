@@ -22,6 +22,7 @@ const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
 const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
 
 const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
+const EXIT_GAME: Event.Name_Affix = `Exit_Game`;
 const OPEN_TOP_MENU: Event.Name_Affix = `Open_Top_Menu`;
 const OPEN_OPTIONS_MENU: Event.Name_Affix = `Open_Options_Menu`;
 
@@ -36,6 +37,9 @@ const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 // might want to turn these into full classes so that the sender has to fill out the info properly.
 // that would mean changing how the event types add the event instance to the data
 type Start_New_Game_Data = {
+}
+
+type Exit_Game_Data = {
 }
 
 type Open_Top_Menu_Data = {
@@ -244,6 +248,10 @@ export class Main extends Component<Main_Props>
                 event_name: new Event.Name(ON, START_NEW_GAME),
                 event_handler: this.On_Start_New_Game,
             },
+            {
+                event_name: new Event.Name(ON, EXIT_GAME),
+                event_handler: this.On_Exit_Game,
+            },
         ];
     }
 
@@ -305,6 +313,18 @@ export class Main extends Component<Main_Props>
                     card_count: rules.Selection_Card_Count(),
                 }),
             ]);
+
+            await this.Refresh();
+        }
+    }
+
+    async On_Exit_Game():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Main = this.Model();
+
+            model.Exit_Game();
 
             await this.Refresh();
         }
@@ -3129,6 +3149,7 @@ type Results_Props = {
 class Results extends Component<Results_Props>
 {
     private banner: Results_Banner | null = null;
+    private exit_button: Results_Exit_Button | null = null;
 
     Arena():
         Arena
@@ -3146,10 +3167,24 @@ class Results extends Component<Results_Props>
         }
     }
 
+    Exit_Button():
+        Results_Exit_Button
+    {
+        if (this.exit_button == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.exit_button;
+        }
+    }
+
     Before_Life():
         Component_Styles
     {
         return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `15% 85%`,
+
             width: `100%`,
             height: `100%`,
 
@@ -3176,14 +3211,31 @@ class Results extends Component<Results_Props>
             this.Change_Style(`zIndex`, `${this.Model().Rules().Selection_Card_Count()}`);
 
             return (
-                <Results_Banner
-                    key={`results_banner`}
-                    ref={ref => this.banner = ref}
+                <div
+                    className={`Results`}
+                    style={this.Styles()}
+                >
+                    <Results_Banner
+                        key={`results_banner`}
+                        ref={ref => this.banner = ref}
 
-                    model={scores}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
+                        model={scores}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                    {
+                        this.Arena().Model().Has_Human_Players() ?
+                            <Results_Exit_Button
+                                key={`results_exit_button`}
+                                ref={ref => this.exit_button = ref}
+
+                                model={scores}
+                                parent={this}
+                                event_grid={this.Event_Grid()}
+                            /> :
+                            null
+                    }
+                </div>
             );
         } else {
             return null;
@@ -3403,9 +3455,6 @@ class Results_Winner extends Component<Results_Winner_Props>
                 <div>
                     {`${model.player.Name()} Wins!`}
                 </div>
-                <div>
-                    {`Refresh the page to play again`}
-                </div>
             </div>
         );
     }
@@ -3479,10 +3528,152 @@ class Results_Draws extends Component<Results_Draws_Props>
                 <div>
                     {`Draw`}
                 </div>
-                <div>
-                    {`Refresh the page to play again`}
-                </div>
             </div>
         );
+    }
+}
+
+type Results_Exit_Button_Props = {
+    model: Model.Scores;
+    parent: Results;
+    event_grid: Event.Grid;
+}
+
+class Results_Exit_Button extends Component<Results_Exit_Button_Props>
+{
+    private cover: Results_Exit_Button_Cover | null = null;
+
+    Results():
+        Results
+    {
+        return this.Parent();
+    }
+
+    Cover():
+        Results_Exit_Button_Cover
+    {
+        if (this.cover == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.cover;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `40%`,
+            height: `100%`,
+
+            position: `relative`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            fontSize: `2.5em`,
+
+            cursor: `pointer`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Results_Exit_Button`}
+                style={this.Styles()}
+            >
+                {`Exit Game`}
+                <Results_Exit_Button_Cover
+                    key={`results_exit_button_cover`}
+                    ref={ref => this.cover = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+}
+
+type Results_Exit_Button_Cover_Props = {
+    model: Model.Scores;
+    parent: Results_Exit_Button;
+    event_grid: Event.Grid;
+}
+
+class Results_Exit_Button_Cover extends Component<Results_Exit_Button_Cover_Props>
+{
+    Exit_Button():
+        Results_Exit_Button
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `1`,
+
+            backgroundColor: `transparent`,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            cursor: `pointer`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Results_Exit_Button_Cover`}
+                style={this.Styles()}
+                onClick={this.On_Click.bind(this)}
+            >
+            </div>
+        );
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Send({
+                name_affix: EXIT_GAME,
+                name_suffixes: [
+                ],
+                data: {
+                } as Exit_Game_Data,
+                is_atomic: true,
+            });
+        }
     }
 }

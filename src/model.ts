@@ -719,7 +719,16 @@ export class Main
         void
     {
         this.current_arena = null;
-        this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, this.exhibitions.length);
+
+        const exhibition_count: Exhibition_Count = this.exhibitions.length;
+        this.exhibitions = [];
+        for (let idx = 0, end = exhibition_count; idx < end; idx += 1) {
+            this.exhibitions.push(new Exhibition({
+                main: this,
+                index: idx,
+            }));
+        }
+        this.current_exhibition_index = Utils.Random_Integer_Exclusive(0, exhibition_count);
     }
 }
 
@@ -1185,6 +1194,18 @@ export class Arena
         Scores | null
     {
         return this.scores;
+    }
+
+    Has_Human_Players():
+        boolean
+    {
+        for (const player of this.#players) {
+            if (player.Is_Human()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
