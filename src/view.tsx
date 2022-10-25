@@ -36,7 +36,10 @@ const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 type Start_New_Game_Data = {
 }
 
-type Open_Options_Data = {
+type Open_Top_Menu_Data = {
+}
+
+type Open_Options_Menu_Data = {
 }
 
 type Switch_Exhibition_Data = {
@@ -439,226 +442,15 @@ class Menu extends Component<Menu_Props>
     }
 }
 
-type Menu_Top_Props = {
-    model: Model.Menu_Top;
-    parent: Menu;
-    event_grid: Event.Grid;
-}
-
-class Menu_Top extends Component<Menu_Top_Props>
-{
-    private title: Menu_Title | null = null;
-    private buttons: Menu_Buttons | null = null;
-
-    Menu():
-        Menu
-    {
-        return this.Parent();
-    }
-
-    Title():
-        Menu_Title
-    {
-        if (this.title == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.title;
-        }
-    }
-
-    Buttons():
-        Menu_Buttons
-    {
-        if (this.buttons == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.buttons;
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `45% 55%`,
-            rowGap: `0`,
-
-            width: `100%`,
-            height: `100%`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu`}
-                style={this.Styles()}
-            >
-                <Menu_Title
-                    key={`menu_title`}
-                    ref={ref => this.title = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Menu_Buttons
-                    key={`menu_buttons`}
-                    ref={ref => this.buttons = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-}
-
-type Menu_Title_Props = {
-    model: Model.Menu_Top;
-    parent: Menu_Top;
-    event_grid: Event.Grid;
-}
-
-class Menu_Title extends Component<Menu_Title_Props>
-{
-    Top():
-        Menu_Top
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-
-            width: `100%`,
-            height: `100%`,
-
-            fontSize: `5em`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Title`}
-                style={this.Styles()}
-            >
-                <div>{`Triple Triad`}</div>
-            </div>
-        );
-    }
-}
-
-type Menu_Buttons_Props = {
-    model: Model.Menu_Top;
-    parent: Menu_Top;
-    event_grid: Event.Grid;
-}
-
-class Menu_Buttons extends Component<Menu_Buttons_Props>
-{
-    private new_game: Menu_New_Game_Button | null = null;
-    private options: Menu_Options_Button | null = null;
-
-    Top():
-        Menu_Top
-    {
-        return this.Parent();
-    }
-
-    New_Game():
-        Menu_New_Game_Button
-    {
-        if (this.new_game == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.new_game;
-        }
-    }
-
-    Options():
-        Menu_Options_Button
-    {
-        if (this.options == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.options;
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
-            rowGap: `5%`,
-
-            width: `100%`,
-            height: `100%`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Buttons`}
-                style={this.Styles()}
-            >
-                <Menu_New_Game_Button
-                    key={`menu_new_game_button`}
-                    ref={ref => this.new_game = ref}
-
-                    model={this.Model().Menu()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Menu_Options_Button
-                    key={`menu_options_button`}
-                    ref={ref => this.options = ref}
-
-                    model={this.Model().Menu()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-}
-
 type Menu_Button_Props = {
     model: Model.Menu;
-    parent: Menu_Buttons;
+    parent: any;
     event_grid: Event.Grid;
 }
 
 class Menu_Button extends Component<Menu_Button_Props>
 {
     private cover: Menu_Button_Cover | null = null;
-
-    Buttons():
-        Menu_Buttons
-    {
-        return this.Parent();
-    }
 
     Cover():
         Menu_Button_Cover
@@ -788,7 +580,212 @@ class Menu_Button_Cover extends Component<Menu_Button_Cover_Props>
     }
 }
 
-class Menu_New_Game_Button extends Menu_Button
+type Menu_Top_Props = {
+    model: Model.Menu_Top;
+    parent: Menu;
+    event_grid: Event.Grid;
+}
+
+class Menu_Top extends Component<Menu_Top_Props>
+{
+    private title: Menu_Top_Title | null = null;
+    private buttons: Menu_Top_Buttons | null = null;
+
+    Menu():
+        Menu
+    {
+        return this.Parent();
+    }
+
+    Title():
+        Menu_Top_Title
+    {
+        if (this.title == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.title;
+        }
+    }
+
+    Buttons():
+        Menu_Top_Buttons
+    {
+        if (this.buttons == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.buttons;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `45% 55%`,
+            rowGap: `0`,
+
+            width: `100%`,
+            height: `100%`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu`}
+                style={this.Styles()}
+            >
+                <Menu_Top_Title
+                    key={`menu_title`}
+                    ref={ref => this.title = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Menu_Top_Buttons
+                    key={`menu_buttons`}
+                    ref={ref => this.buttons = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+}
+
+type Menu_Top_Title_Props = {
+    model: Model.Menu_Top;
+    parent: Menu_Top;
+    event_grid: Event.Grid;
+}
+
+class Menu_Top_Title extends Component<Menu_Top_Title_Props>
+{
+    Top():
+        Menu_Top
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+
+            width: `100%`,
+            height: `100%`,
+
+            fontSize: `5em`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu_Title`}
+                style={this.Styles()}
+            >
+                <div>{`Triple Triad`}</div>
+            </div>
+        );
+    }
+}
+
+type Menu_Top_Buttons_Props = {
+    model: Model.Menu_Top;
+    parent: Menu_Top;
+    event_grid: Event.Grid;
+}
+
+class Menu_Top_Buttons extends Component<Menu_Top_Buttons_Props>
+{
+    private new_game: Menu_Top_New_Game_Button | null = null;
+    private options: Menu_Top_Options_Button | null = null;
+
+    Top():
+        Menu_Top
+    {
+        return this.Parent();
+    }
+
+    New_Game():
+        Menu_Top_New_Game_Button
+    {
+        if (this.new_game == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.new_game;
+        }
+    }
+
+    Options():
+        Menu_Top_Options_Button
+    {
+        if (this.options == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.options;
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr 1fr`,
+            rowGap: `5%`,
+
+            width: `100%`,
+            height: `100%`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Menu_Buttons`}
+                style={this.Styles()}
+            >
+                <Menu_Top_New_Game_Button
+                    key={`menu_new_game_button`}
+                    ref={ref => this.new_game = ref}
+
+                    model={this.Model().Menu()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Menu_Top_Options_Button
+                    key={`menu_options_button`}
+                    ref={ref => this.options = ref}
+
+                    model={this.Model().Menu()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+}
+
+class Menu_Top_New_Game_Button extends Menu_Button
 {
     Text():
         string
@@ -810,7 +807,7 @@ class Menu_New_Game_Button extends Menu_Button
     }
 }
 
-class Menu_Options_Button extends Menu_Button
+class Menu_Top_Options_Button extends Menu_Button
 {
     Text():
         string
@@ -826,7 +823,7 @@ class Menu_Options_Button extends Menu_Button
             name_suffixes: [
             ],
             data: {
-            } as Open_Options_Data,
+            } as Open_Options_Menu_Data,
             is_atomic: true,
         });
     }
