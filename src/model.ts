@@ -2306,10 +2306,10 @@ export class Rules
             player_count = 2,
 
             open = true,
-            same = true,
-            plus = true,
-            wall = true,
-            combo = true,
+            same = false,
+            plus = false,
+            wall = false,
+            combo = false,
             random = true, // temp until we get selection view up and running
         }: {
             row_count?: Row_Count,
