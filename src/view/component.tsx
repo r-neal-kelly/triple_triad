@@ -11,7 +11,7 @@ export type Component_Styles = {
 /*
     Must be satisfied to inherit from Component.
 */
-export interface Component_Props
+interface Component_Props
 {
     model: any;
     parent: any;

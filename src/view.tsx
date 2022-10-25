@@ -3,9 +3,12 @@ import "./view.css";
 import React from "react";
 
 import { Integer, Assert, Wait } from "./utils";
-import * as Event from "./event";
+
 import * as Model from "./model";
+
+import * as Event from "./view/event";
 import { Component, Component_Styles } from "./view/component";
+import { Main } from "./view/main";
 
 const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
 const PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER: number = 0.7;
@@ -13,957 +16,13 @@ const AI_SELECTION_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
 
-const BEFORE: Event.Name_Prefix = Event.BEFORE;
-const ON: Event.Name_Prefix = Event.ON;
-const AFTER: Event.Name_Prefix = Event.AFTER;
-
-const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
-const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
-const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
-
-const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
-const EXIT_GAME: Event.Name_Affix = `Exit_Game`;
-const OPEN_TOP_MENU: Event.Name_Affix = `Open_Top_Menu`;
-const OPEN_OPTIONS_MENU: Event.Name_Affix = `Open_Options_Menu`;
-
-const GAME_START: Event.Name_Affix = `Game_Start`;
-const GAME_STOP: Event.Name_Affix = `Game_Stop`;
-const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
-const PLAYER_STOP_TURN: Event.Name_Affix = `Player_Stop_Turn`;
-const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
-const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
-const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
-
-// might want to turn these into full classes so that the sender has to fill out the info properly.
-// that would mean changing how the event types add the event instance to the data
-type Start_New_Game_Data = {
-}
-
-type Exit_Game_Data = {
-}
-
-type Open_Top_Menu_Data = {
-}
-
-type Open_Options_Menu_Data = {
-}
-
-type Switch_Exhibition_Data = {
-    previous: Model.Exhibition,
-    next: Model.Exhibition,
-}
-
-type Game_Start_Data = {
-}
-
-type Game_Stop_Data = {
-    scores: Model.Scores;
-}
-
-type Player_Start_Turn_Data = {
-    player_index: Model.Player_Index;
-}
-
-type Player_Stop_Turn_Data = {
-    player_index: Model.Player_Index;
-}
-
-type Player_Select_Stake_Data = {
-    player_index: Model.Player_Index;
-    stake_index: Model.Stake_Index;
-}
-
-type Player_Place_Stake_Data = {
-    player_index: Model.Player_Index;
-    stake_index: Model.Stake_Index;
-    cell_index: Model.Cell_Index;
-}
-
-type Board_Change_Cell_Data = {
-    cell_index: Model.Cell_Index;
-    turn_result: Model.Turn_Result;
-}
-
-type Main_Props = {
-    model: Model.Main;
-    parent: HTMLElement;
-    event_grid: Event.Grid;
-}
-
-export class Main extends Component<Main_Props>
-{
-    private menu: Menu | null = null;
-    private exhibitions: Exhibitions | null = null;
-    private arena: Arena | null = null;
-
-    private current_width: Integer = this.Parent().clientWidth;
-    private current_height: Integer = this.Parent().clientHeight;
-    private resize_observer: ResizeObserver = new ResizeObserver(this.On_Resize.bind(this));
-
-    Menu():
-        Menu
-    {
-        if (this.menu == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.menu;
-        }
-    }
-
-    Exhibitions():
-        Exhibitions
-    {
-        if (this.exhibitions == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.exhibitions;
-        }
-    }
-
-    Arena():
-        Arena
-    {
-        if (this.arena == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.arena;
-        }
-    }
-
-    Width():
-        Integer
-    {
-        return this.current_width;
-    }
-
-    Height():
-        Integer
-    {
-        return this.current_height;
-    }
-
-    CSS_Width():
-        string
-    {
-        return `${this.Width()}px`;
-    }
-
-    CSS_Height():
-        string
-    {
-        return `${this.Height()}px`;
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            width: `100%`,
-            height: `100%`,
-
-            position: `relative`,
-
-            animationName: `Main_Fade_In`,
-            animationDuration: `5000ms`,
-            animationTimingFunction: `ease-in-out`,
-            animationIterationCount: `1`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        // we create an exhibition match between computers for the background of main
-        // and keep doing rematches until the player decides to start up a game of their own
-
-        const model: Model.Main = this.Model();
-
-        if (model.Isnt_In_Game()) {
-            return (
-                <div
-                    className={`Main`}
-                    style={this.Styles()}
-                >
-                    <Menu
-                        key={`menu`}
-                        ref={ref => this.menu = ref}
-
-                        model={model.Menu()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                    <Exhibitions
-                        key={`exhibitions`}
-                        ref={ref => this.exhibitions = ref}
-
-                        model={this.Model()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else {
-            const arena: Model.Arena = model.Current_Arena() as Model.Arena;
-
-            return (
-                <div
-                    className={`Main`}
-                    style={this.Styles()}
-                >
-                    <Arena
-                        key={`arena`}
-                        ref={ref => this.arena = ref}
-
-                        model={arena}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        }
-    }
-
-    async On_Resize():
-        Promise<void>
-    {
-        const element: HTMLElement = this.Some_Element();
-        const width: Integer = element.clientWidth;
-        const height: Integer = element.clientHeight;
-        if (this.current_width !== width || this.current_height !== height) {
-            this.current_width = width;
-            this.current_height = height;
-            this.Refresh();
-        }
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        this.resize_observer.observe(this.Some_Element());
-
-        this.While_Alive();
-
-        return [
-            {
-                event_name: new Event.Name(ON, START_NEW_GAME),
-                event_handler: this.On_Start_New_Game,
-            },
-            {
-                event_name: new Event.Name(ON, EXIT_GAME),
-                event_handler: this.On_Exit_Game,
-            },
-        ];
-    }
-
-    async While_Alive():
-        Promise<void>
-    {
-        while (true) {
-            await Wait(5000);
-            if (this.Is_Alive()) {
-                this.Model().Change_Current_Exhibition();
-                await this.Refresh();
-            } else {
-                return;
-            }
-        }
-    }
-
-    async On_Start_New_Game():
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model: Model.Main = this.Model();
-            const packs: Model.Packs = model.Packs();
-            const rules: Model.Rules = model.Menu().Options().Data().Rules();
-
-            model.New_Game([
-                new Model.Random_Selection({
-                    collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle({
-                            pack: packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 9,
-                        }),
-                    }),
-                    color: new Model.Color({
-                        red: 63,
-                        green: 63,
-                        blue: 127,
-                        alpha: 0.7,
-                    }),
-                    is_of_human: true,
-                    card_count: rules.Selection_Card_Count(),
-                }),
-                new Model.Random_Selection({
-                    collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle({
-                            pack: packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 9,
-                        }),
-                    }),
-                    color: new Model.Color({
-                        red: 63,
-                        green: 127,
-                        blue: 63,
-                        alpha: 0.7,
-                    }),
-                    is_of_human: false,
-                    card_count: rules.Selection_Card_Count(),
-                }),
-            ]);
-
-            await this.Refresh();
-        }
-    }
-
-    async On_Exit_Game():
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model: Model.Main = this.Model();
-
-            model.Exit_Game();
-
-            await this.Refresh();
-        }
-    }
-
-    On_Death():
-        void
-    {
-        this.resize_observer.disconnect();
-        this.current_height = 0;
-        this.current_width = 0;
-    }
-}
-
-type Menu_Props = {
-    model: Model.Menu;
-    parent: Main;
-    event_grid: Event.Grid;
-}
-
-class Menu extends Component<Menu_Props>
-{
-    private top: Menu_Top | null = null;
-    private options: Menu_Options | null = null;
-
-    Main():
-        Main
-    {
-        return this.Parent();
-    }
-
-    Top():
-        Menu_Top
-    {
-        if (this.top == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.top;
-        }
-    }
-
-    Options():
-        Menu_Options
-    {
-        if (this.options == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.options;
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element
-    {
-        const model: Model.Menu = this.Model();
-        const current_menu: Model.Menu_e = model.Current_Menu();
-
-        if (current_menu === Model.Menu_e.TOP) {
-            return (
-                <div
-                    className={`Menu`}
-                    style={this.Styles()}
-                >
-                    <Menu_Top
-                        key={`menu_top`}
-                        ref={ref => this.top = ref}
-
-                        model={this.Model().Top()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else if (current_menu === Model.Menu_e.OPTIONS) {
-            return (
-                <div
-                    className={`Menu`}
-                    style={this.Styles()}
-                >
-                    <Menu_Options
-                        key={`menu_options`}
-                        ref={ref => this.options = ref}
-
-                        model={this.Model().Options()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else {
-            Assert(false);
-
-            return <div></div>;
-        }
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        return [
-            {
-                event_name: new Event.Name(ON, OPEN_TOP_MENU),
-                event_handler: this.On_Open_Top_Menu,
-            },
-            {
-                event_name: new Event.Name(ON, OPEN_OPTIONS_MENU),
-                event_handler: this.On_Open_Options_Menu,
-            },
-        ];
-    }
-
-    async On_Open_Top_Menu():
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            this.Model().Open_Top();
-
-            await this.Refresh();
-        }
-    }
-
-    async On_Open_Options_Menu():
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            this.Model().Open_Options();
-
-            await this.Refresh();
-        }
-    }
-}
-
-type Menu_Button_Props = {
-    model: any;
-    parent: any;
-    event_grid: Event.Grid;
-}
-
-class Menu_Button extends Component<Menu_Button_Props>
-{
-    private cover: Menu_Button_Cover | null = null;
-
-    Cover():
-        Menu_Button_Cover
-    {
-        if (this.cover == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cover;
-        }
-    }
-
-    Text():
-        string
-    {
-        return ``;
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `40%`,
-            height: `100%`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            fontSize: `2.5em`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Button`}
-                style={this.Styles()}
-            >
-                <div>
-                    {this.Text()}
-                </div>
-                <Menu_Button_Cover
-                    key={`menu_button_cover`}
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-    }
-}
-
-type Menu_Button_Cover_Props = {
-    model: any;
-    parent: Menu_Button;
-    event_grid: Event.Grid;
-}
-
-class Menu_Button_Cover extends Component<Menu_Button_Cover_Props>
-{
-    Menu_Button():
-        Menu_Button
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `transparent`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Button_Cover`}
-                style={this.Styles()}
-                onClick={this.Parent().On_Click.bind(this)}
-            >
-            </div>
-        );
-    }
-}
-
-type Menu_Top_Props = {
-    model: Model.Menu_Top;
-    parent: Menu;
-    event_grid: Event.Grid;
-}
-
-class Menu_Top extends Component<Menu_Top_Props>
-{
-    private title: Menu_Top_Title | null = null;
-    private buttons: Menu_Top_Buttons | null = null;
-
-    Menu():
-        Menu
-    {
-        return this.Parent();
-    }
-
-    Title():
-        Menu_Top_Title
-    {
-        if (this.title == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.title;
-        }
-    }
-
-    Buttons():
-        Menu_Top_Buttons
-    {
-        if (this.buttons == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.buttons;
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `45% 55%`,
-            rowGap: `0`,
-
-            width: `100%`,
-            height: `100%`,
-
-            backgroundColor: `transparent`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Top`}
-                style={this.Styles()}
-            >
-                <Menu_Top_Title
-                    key={`menu_top_title`}
-                    ref={ref => this.title = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Menu_Top_Buttons
-                    key={`menu_top_buttons`}
-                    ref={ref => this.buttons = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-}
-
-type Menu_Top_Title_Props = {
-    model: Model.Menu_Top;
-    parent: Menu_Top;
-    event_grid: Event.Grid;
-}
-
-class Menu_Top_Title extends Component<Menu_Top_Title_Props>
-{
-    Top():
-        Menu_Top
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-
-            width: `100%`,
-            height: `100%`,
-
-            fontSize: `5em`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Top_Title`}
-                style={this.Styles()}
-            >
-                <div>{`Triple Triad`}</div>
-            </div>
-        );
-    }
-}
-
-type Menu_Top_Buttons_Props = {
-    model: Model.Menu_Top;
-    parent: Menu_Top;
-    event_grid: Event.Grid;
-}
-
-class Menu_Top_Buttons extends Component<Menu_Top_Buttons_Props>
-{
-    private new_game: Menu_Top_New_Game_Button | null = null;
-    private options: Menu_Top_Options_Button | null = null;
-
-    Top():
-        Menu_Top
-    {
-        return this.Parent();
-    }
-
-    New_Game():
-        Menu_Top_New_Game_Button
-    {
-        if (this.new_game == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.new_game;
-        }
-    }
-
-    Options():
-        Menu_Top_Options_Button
-    {
-        if (this.options == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.options;
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
-            rowGap: `5%`,
-
-            width: `100%`,
-            height: `100%`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Top_Buttons`}
-                style={this.Styles()}
-            >
-                <Menu_Top_New_Game_Button
-                    key={`menu_top_new_game_button`}
-                    ref={ref => this.new_game = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Menu_Top_Options_Button
-                    key={`menu_top_options_button`}
-                    ref={ref => this.options = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-}
-
-class Menu_Top_New_Game_Button extends Menu_Button
-{
-    Text():
-        string
-    {
-        return `New Game`;
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        this.Send({
-            name_affix: START_NEW_GAME,
-            name_suffixes: [
-            ],
-            data: {
-            } as Start_New_Game_Data,
-            is_atomic: true,
-        });
-    }
-}
-
-class Menu_Top_Options_Button extends Menu_Button
-{
-    Text():
-        string
-    {
-        return `Options`;
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        this.Send({
-            name_affix: OPEN_OPTIONS_MENU,
-            name_suffixes: [
-            ],
-            data: {
-            } as Open_Options_Menu_Data,
-            is_atomic: true,
-        });
-    }
-}
-
-type Menu_Options_Props = {
-    model: Model.Menu_Options;
-    parent: Menu;
-    event_grid: Event.Grid;
-}
-
-class Menu_Options extends Component<Menu_Options_Props>
-{
-    private back_button: Menu_Options_Back_Button | null = null;
-
-    Menu():
-        Menu
-    {
-        return this.Parent();
-    }
-
-    Back_Button():
-        Menu_Options_Back_Button
-    {
-        if (this.back_button == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.back_button;
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr 1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
-            columnGap: `3%`,
-            rowGap: `5%`,
-
-            width: `90%`,
-            height: `90%`,
-            margin: `0`,
-            padding: `3%`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.3)`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Menu_Options`}
-                style={this.Styles()}
-            >
-                <Menu_Options_Back_Button
-                    key={`menu_options_back_button`}
-                    ref={ref => this.back_button = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-}
-
-class Menu_Options_Back_Button extends Menu_Button
-{
-    Text():
-        string
-    {
-        return `Back`;
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        this.Send({
-            name_affix: OPEN_TOP_MENU,
-            name_suffixes: [
-            ],
-            data: {
-            } as Open_Top_Menu_Data,
-            is_atomic: true,
-        });
-    }
-}
-
 type Exhibitions_Props = {
     model: Model.Main;
     parent: Main;
     event_grid: Event.Grid;
 }
 
-class Exhibitions extends Component<Exhibitions_Props>
+export class Exhibitions extends Component<Exhibitions_Props>
 {
     private exhibitions: Array<Exhibition | null> =
         new Array(this.Model().Exhibition_Count()).fill(null);
@@ -1129,7 +188,7 @@ class Exhibition extends Component<Exhibition_Props>
     {
         return ([
             {
-                event_name: new Event.Name(AFTER, GAME_STOP),
+                event_name: new Event.Name(Event.AFTER, Event.GAME_STOP),
                 event_handler: this.After_Game_Stop,
             },
         ]);
@@ -1154,7 +213,7 @@ type Arena_Props = {
     event_grid: Event.Grid;
 }
 
-class Arena extends Component<Arena_Props>
+export class Arena extends Component<Arena_Props>
 {
     private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
     private board: Board | null = null;
@@ -1382,21 +441,21 @@ class Arena extends Component<Arena_Props>
         Event.Listener_Info[]
     {
         this.Send({
-            name_affix: GAME_START,
+            name_affix: Event.GAME_START,
             name_suffixes: [
             ],
             data: {
-            } as Game_Start_Data,
+            } as Event.Game_Start_Data,
             is_atomic: true,
         });
 
         return ([
             {
-                event_name: new Event.Name(ON, GAME_START),
+                event_name: new Event.Name(Event.ON, Event.GAME_START),
                 event_handler: this.On_Game_Start,
             },
             {
-                event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_STOP_TURN),
                 event_handler: this.On_Player_Stop_Turn,
             },
         ]);
@@ -1404,7 +463,7 @@ class Arena extends Component<Arena_Props>
 
     async On_Game_Start(
         {
-        }: Game_Start_Data,
+        }: Event.Game_Start_Data,
     ):
         Promise<void>
     {
@@ -1412,13 +471,13 @@ class Arena extends Component<Arena_Props>
             const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
 
             this.Send({
-                name_affix: PLAYER_START_TURN,
+                name_affix: Event.PLAYER_START_TURN,
                 name_suffixes: [
                     current_player_index.toString(),
                 ],
                 data: {
                     player_index: current_player_index,
-                } as Player_Start_Turn_Data,
+                } as Event.Player_Start_Turn_Data,
                 is_atomic: true,
             });
         }
@@ -1426,7 +485,7 @@ class Arena extends Component<Arena_Props>
 
     async On_Player_Stop_Turn(
         {
-        }: Player_Stop_Turn_Data,
+        }: Event.Player_Stop_Turn_Data,
     ):
         Promise<void>
     {
@@ -1438,25 +497,25 @@ class Arena extends Component<Arena_Props>
                 Assert(scores != null);
 
                 this.Send({
-                    name_affix: GAME_STOP,
+                    name_affix: Event.GAME_STOP,
                     name_suffixes: [
                     ],
                     data: {
                         scores,
-                    } as Game_Stop_Data,
+                    } as Event.Game_Stop_Data,
                     is_atomic: true,
                 });
             } else {
                 const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
 
                 this.Send({
-                    name_affix: PLAYER_START_TURN,
+                    name_affix: Event.PLAYER_START_TURN,
                     name_suffixes: [
                         current_player_index.toString(),
                     ],
                     data: {
                         player_index: current_player_index,
-                    } as Player_Start_Turn_Data,
+                    } as Event.Player_Start_Turn_Data,
                     is_atomic: true,
                 });
             }
@@ -1567,15 +626,15 @@ class Player extends Component<Player_Props>
 
         return ([
             {
-                event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_START_TURN, player_index.toString()),
                 event_handler: this.On_This_Player_Start_Turn,
             },
             {
-                event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_SELECT_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Select_Stake,
             },
             {
-                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Place_Stake,
             },
         ]);
@@ -1584,7 +643,7 @@ class Player extends Component<Player_Props>
     async On_This_Player_Start_Turn(
         {
             player_index,
-        }: Player_Start_Turn_Data,
+        }: Event.Player_Start_Turn_Data,
     ):
         Promise<void>
     {
@@ -1616,14 +675,14 @@ class Player extends Component<Player_Props>
                     if (this.Is_Alive()) {
                         for (const selection_index of selection_indices) {
                             await this.Send({
-                                name_affix: PLAYER_SELECT_STAKE,
+                                name_affix: Event.PLAYER_SELECT_STAKE,
                                 name_suffixes: [
                                     player_index.toString(),
                                 ],
                                 data: {
                                     player_index,
                                     stake_index: selection_index,
-                                } as Player_Select_Stake_Data,
+                                } as Event.Player_Select_Stake_Data,
                                 is_atomic: true,
                             });
 
@@ -1640,7 +699,7 @@ class Player extends Component<Player_Props>
                         }
 
                         this.Send({
-                            name_affix: PLAYER_PLACE_STAKE,
+                            name_affix: Event.PLAYER_PLACE_STAKE,
                             name_suffixes: [
                                 player_index.toString(),
                             ],
@@ -1648,7 +707,7 @@ class Player extends Component<Player_Props>
                                 player_index,
                                 stake_index: selection_indices[selection_indices.length - 1],
                                 cell_index,
-                            } as Player_Place_Stake_Data,
+                            } as Event.Player_Place_Stake_Data,
                             is_atomic: true,
                         });
                     }
@@ -1660,7 +719,7 @@ class Player extends Component<Player_Props>
     async On_This_Player_Select_Stake(
         {
             stake_index,
-        }: Player_Select_Stake_Data,
+        }: Event.Player_Select_Stake_Data,
     ):
         Promise<void>
     {
@@ -1680,7 +739,7 @@ class Player extends Component<Player_Props>
 
     async On_This_Player_Place_Stake(
         {
-        }: Player_Place_Stake_Data,
+        }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -1792,7 +851,7 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     {
         return ([
             {
-                event_name: new Event.Name(ON, GAME_STOP),
+                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
                 event_handler: this.On_Game_Stop,
             },
         ]);
@@ -1800,7 +859,7 @@ class Player_Bumper extends Component<Player_Bumper_Props>
 
     async On_Game_Stop(
         {
-        }: Game_Stop_Data
+        }: Event.Game_Stop_Data
     ):
         Promise<void>
     {
@@ -1913,11 +972,11 @@ class Player_Score extends Component<Player_Score_Props>
     {
         return ([
             {
-                event_name: new Event.Name(ON, PLAYER_STOP_TURN),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_STOP_TURN),
                 event_handler: this.On_Player_Stop_Turn,
             },
             {
-                event_name: new Event.Name(ON, GAME_STOP),
+                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
                 event_handler: this.On_Game_Stop,
             },
         ]);
@@ -1925,7 +984,7 @@ class Player_Score extends Component<Player_Score_Props>
 
     async On_Player_Stop_Turn(
         {
-        }: Player_Stop_Turn_Data,
+        }: Event.Player_Stop_Turn_Data,
     ):
         Promise<void>
     {
@@ -1936,7 +995,7 @@ class Player_Score extends Component<Player_Score_Props>
 
     async On_Game_Stop(
         {
-        }: Game_Stop_Data,
+        }: Event.Game_Stop_Data,
     ):
         Promise<void>
     {
@@ -2055,7 +1114,7 @@ class Player_Hand extends Component<Player_Hand_Props>
 
         return ([
             {
-                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Place_Stake,
             },
         ]);
@@ -2063,7 +1122,7 @@ class Player_Hand extends Component<Player_Hand_Props>
 
     async On_This_Player_Place_Stake(
         {
-        }: Player_Place_Stake_Data,
+        }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -2192,14 +1251,14 @@ class Player_Stake extends Component<Player_Stake_Props>
                         const stake_index: Model.Stake_Index = this.Index();
 
                         await this.Send({
-                            name_affix: PLAYER_SELECT_STAKE,
+                            name_affix: Event.PLAYER_SELECT_STAKE,
                             name_suffixes: [
                                 player_index.toString(),
                             ],
                             data: {
                                 player_index,
                                 stake_index,
-                            } as Player_Select_Stake_Data,
+                            } as Event.Player_Select_Stake_Data,
                             is_atomic: true,
                         });
                     }
@@ -2217,19 +1276,19 @@ class Player_Stake extends Component<Player_Stake_Props>
 
         return ([
             {
-                event_name: new Event.Name(ON, PLAYER_START_TURN, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_START_TURN, player_index.toString()),
                 event_handler: this.On_This_Player_Start_Turn,
             },
             {
-                event_name: new Event.Name(ON, PLAYER_SELECT_STAKE, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_SELECT_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Select_Stake,
             },
             {
-                event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.Before_This_Player_Place_Stake,
             },
             {
-                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE, player_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Place_Stake,
             },
         ]);
@@ -2237,7 +1296,7 @@ class Player_Stake extends Component<Player_Stake_Props>
 
     async On_This_Player_Start_Turn(
         {
-        }: Player_Start_Turn_Data
+        }: Event.Player_Start_Turn_Data
     ):
         Promise<void>
     {
@@ -2251,7 +1310,7 @@ class Player_Stake extends Component<Player_Stake_Props>
     async On_This_Player_Select_Stake(
         {
             stake_index,
-        }: Player_Select_Stake_Data
+        }: Event.Player_Select_Stake_Data
     ):
         Promise<void>
     {
@@ -2269,7 +1328,7 @@ class Player_Stake extends Component<Player_Stake_Props>
     async Before_This_Player_Place_Stake(
         {
             stake_index,
-        }: Player_Place_Stake_Data,
+        }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -2297,7 +1356,7 @@ class Player_Stake extends Component<Player_Stake_Props>
 
     async On_This_Player_Place_Stake(
         {
-        }: Player_Place_Stake_Data,
+        }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -2395,7 +1454,7 @@ class Board extends Component<Board_Props>
     {
         return ([
             {
-                event_name: new Event.Name(ON, PLAYER_PLACE_STAKE),
+                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE),
                 event_handler: this.On_Player_Place_Stake,
             },
         ]);
@@ -2405,7 +1464,7 @@ class Board extends Component<Board_Props>
         {
             player_index,
             cell_index,
-        }: Player_Place_Stake_Data,
+        }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -2421,14 +1480,14 @@ class Board extends Component<Board_Props>
                         Promise<void>
                     {
                         await this.Send({
-                            name_affix: BOARD_CHANGE_CELL,
+                            name_affix: Event.BOARD_CHANGE_CELL,
                             name_suffixes: [
                                 turn_result.cell_index.toString(),
                             ],
                             data: {
                                 cell_index: turn_result.cell_index,
                                 turn_result: turn_result,
-                            } as Board_Change_Cell_Data,
+                            } as Event.Board_Change_Cell_Data,
                             is_atomic: true,
                         });
                     }, this));
@@ -2439,13 +1498,13 @@ class Board extends Component<Board_Props>
                 }
 
                 this.Send({
-                    name_affix: PLAYER_STOP_TURN,
+                    name_affix: Event.PLAYER_STOP_TURN,
                     name_suffixes: [
                         player_index.toString(),
                     ],
                     data: {
                         player_index,
-                    } as Player_Stop_Turn_Data,
+                    } as Event.Player_Stop_Turn_Data,
                     is_atomic: true,
                 });
             }
@@ -2759,7 +1818,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                         this.Index();
 
                     await this.Send({
-                        name_affix: PLAYER_PLACE_STAKE,
+                        name_affix: Event.PLAYER_PLACE_STAKE,
                         name_suffixes: [
                             player_index.toString(),
                         ],
@@ -2767,7 +1826,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                             player_index,
                             stake_index,
                             cell_index,
-                        } as Player_Place_Stake_Data,
+                        } as Event.Player_Place_Stake_Data,
                         is_atomic: true,
                     });
                 }
@@ -2784,15 +1843,15 @@ class Board_Cell extends Component<Board_Cell_Props>
 
         return ([
             {
-                event_name: new Event.Name(AFTER, PLAYER_SELECT_STAKE),
+                event_name: new Event.Name(Event.AFTER, Event.PLAYER_SELECT_STAKE),
                 event_handler: this.After_Player_Select_Stake,
             },
             {
-                event_name: new Event.Name(BEFORE, PLAYER_PLACE_STAKE),
+                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE),
                 event_handler: this.Before_Player_Place_Stake,
             },
             {
-                event_name: new Event.Name(ON, BOARD_CHANGE_CELL, cell_index.toString()),
+                event_name: new Event.Name(Event.ON, Event.BOARD_CHANGE_CELL, cell_index.toString()),
                 event_handler: this.On_Board_Change_This_Cell,
             },
         ]);
@@ -2800,7 +1859,7 @@ class Board_Cell extends Component<Board_Cell_Props>
 
     async After_Player_Select_Stake(
         {
-        }: Player_Select_Stake_Data,
+        }: Event.Player_Select_Stake_Data,
     ):
         Promise<void>
     {
@@ -2816,7 +1875,7 @@ class Board_Cell extends Component<Board_Cell_Props>
         {
             player_index,
             cell_index,
-        }: Player_Place_Stake_Data,
+        }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
     {
@@ -2834,7 +1893,7 @@ class Board_Cell extends Component<Board_Cell_Props>
     async On_Board_Change_This_Cell(
         {
             turn_result,
-        }: Board_Change_Cell_Data,
+        }: Event.Board_Change_Cell_Data,
     ):
         Promise<void>
     {
@@ -3247,11 +2306,11 @@ class Results extends Component<Results_Props>
     {
         return ([
             {
-                event_name: new Event.Name(ON, GAME_START),
+                event_name: new Event.Name(Event.ON, Event.GAME_START),
                 event_handler: this.On_Game_Start,
             },
             {
-                event_name: new Event.Name(ON, GAME_STOP),
+                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
                 event_handler: this.On_Game_Stop,
             },
         ]);
@@ -3259,7 +2318,7 @@ class Results extends Component<Results_Props>
 
     async On_Game_Start(
         {
-        }: Game_Start_Data,
+        }: Event.Game_Start_Data,
     ):
         Promise<void>
     {
@@ -3270,8 +2329,7 @@ class Results extends Component<Results_Props>
 
     async On_Game_Stop(
         {
-            scores,
-        }: Game_Stop_Data,
+        }: Event.Game_Stop_Data,
     ):
         Promise<void>
     {
@@ -3667,11 +2725,11 @@ class Results_Exit_Button_Cover extends Component<Results_Exit_Button_Cover_Prop
     {
         if (this.Is_Alive()) {
             this.Send({
-                name_affix: EXIT_GAME,
+                name_affix: Event.EXIT_GAME,
                 name_suffixes: [
                 ],
                 data: {
-                } as Exit_Game_Data,
+                } as Event.Exit_Game_Data,
                 is_atomic: true,
             });
         }
