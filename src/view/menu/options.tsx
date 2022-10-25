@@ -1,7 +1,12 @@
+import { Integer } from "../../utils";
+
 import * as Model from "../../model";
 
 import * as Event from "../event";
 import { Component, Component_Styles } from "../component";
+import { Button } from "../common/button";
+import { Toggle } from "../common/toggle";
+import { Counter } from "../common/counter";
 import { Menu } from "../menu";
 
 type Options_Props = {
@@ -12,6 +17,7 @@ type Options_Props = {
 
 export class Options extends Component<Options_Props>
 {
+    private player_counter: Player_Counter | null = null;
     private same_toggle: Same_Toggle | null = null;
     private plus_toggle: Plus_Toggle | null = null;
     private wall_toggle: Wall_Toggle | null = null;
@@ -23,6 +29,16 @@ export class Options extends Component<Options_Props>
         Menu
     {
         return this.Parent();
+    }
+
+    Player_Counter():
+        Player_Counter
+    {
+        if (this.player_counter == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.player_counter;
+        }
     }
 
     Same_Toggle():
@@ -106,6 +122,13 @@ export class Options extends Component<Options_Props>
             <div
                 style={this.Styles()}
             >
+                <Player_Counter
+                    ref={ref => this.player_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
                 <Same_Toggle
                     ref={ref => this.same_toggle = ref}
 
@@ -146,442 +169,204 @@ export class Options extends Component<Options_Props>
     }
 }
 
-type Toggle_Props = {
-    model: Model.Menu_Options;
-    parent: Options;
-    event_grid: Event.Grid;
-}
-
-class Toggle extends Component<Toggle_Props>
+class Player_Counter extends Counter
 {
-    private cover: Toggle_Cover | null = null;
-
-    Options():
-        Options
-    {
-        return this.Parent();
-    }
-
-    Cover():
-        Toggle_Cover
-    {
-        if (this.cover == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cover;
-        }
-    }
-
-    Text():
+    override Text():
         string
     {
-        return ``;
+        return `Player Count`;
     }
 
-    Is_Toggled():
+    override Count():
+        Integer
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Player_Count();
+    }
+
+    override Can_Decrement():
         boolean
     {
-        return false;
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Can_Decrement_Player_Count();
     }
 
-    Can_Toggle():
+    override Can_Increment():
         boolean
     {
-        return true;
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Can_Increment_Player_Count();
     }
 
-    CSS_Untoggled_Background_Color():
+    override CSS_Width():
         string
     {
-        return `rgba(0, 0, 0, 0.7)`;
+        return `90%`;
     }
 
-    CSS_Untoggled_Text_Color():
+    override CSS_Height():
         string
     {
-        return `white`;
+        return `90%`;
     }
 
-    CSS_Toggled_Background_Color():
+    override CSS_Text_Size():
         string
     {
-        return `rgba(255, 255, 255, 0.7)`;
+        return `2.5em`;
     }
 
-    CSS_Toggled_Text_Color():
-        string
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
     {
-        return `black`;
-    }
-
-    CSS_Disabled_Background_Color():
-        string
-    {
-        return `rgba(128, 128, 128, 0.7)`;
-    }
-
-    CSS_Disabled_Text_Color():
-        string
-    {
-        return `white`;
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `90%`,
-            height: `90%`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: 'transparent',
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            fontSize: `2.5em`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        if (this.Can_Toggle()) {
-            if (this.Is_Toggled()) {
-                this.Change_Style(`backgroundColor`, this.CSS_Toggled_Background_Color());
-                this.Change_Style(`color`, this.CSS_Toggled_Text_Color());
-            } else {
-                this.Change_Style(`backgroundColor`, this.CSS_Untoggled_Background_Color());
-                this.Change_Style(`color`, this.CSS_Untoggled_Text_Color());
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Rules().Can_Decrement_Player_Count()) {
+                model.Data().Rules().Decrement_Player_Count();
+                await this.Parent().Refresh();
             }
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`backgroundColor`, this.CSS_Disabled_Background_Color());
-            this.Change_Style(`color`, this.CSS_Disabled_Text_Color());
-            this.Change_Style(`cursor`, `default`);
         }
-
-        return (
-            <div
-                style={this.Styles()}
-            >
-                <div
-                    style={{
-                        color: `inherit`,
-                    }}
-                >
-                    {this.Text()}
-                </div>
-                <Toggle_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override async On_Increment(event: React.SyntheticEvent):
         Promise<void>
     {
-    }
-}
-
-type Toggle_Cover_Props = {
-    model: Model.Menu_Options;
-    parent: Toggle;
-    event_grid: Event.Grid;
-}
-
-class Toggle_Cover extends Component<Toggle_Cover_Props>
-{
-    Toggle():
-        Toggle
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `transparent`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        if (this.Toggle().Can_Toggle()) {
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`cursor`, `default`);
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Rules().Can_Increment_Player_Count()) {
+                model.Data().Rules().Increment_Player_Count();
+                await this.Parent().Refresh();
+            }
         }
-
-        return (
-            <div
-                style={this.Styles()}
-                onClick={event => this.Parent().On_Click(event)}
-            >
-            </div>
-        );
-    }
-}
-
-type Button_Props = {
-    model: Model.Menu_Options;
-    parent: Options;
-    event_grid: Event.Grid;
-}
-
-class Button extends Component<Button_Props>
-{
-    private cover: Button_Cover | null = null;
-
-    Options():
-        Options
-    {
-        return this.Parent();
-    }
-
-    Cover():
-        Button_Cover
-    {
-        if (this.cover == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cover;
-        }
-    }
-
-    Text():
-        string
-    {
-        return ``;
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `40%`,
-            height: `100%`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            fontSize: `2.5em`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                style={this.Styles()}
-            >
-                <div>
-                    {this.Text()}
-                </div>
-                <Button_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-    }
-}
-
-type Button_Cover_Props = {
-    model: Model.Menu_Options;
-    parent: Button;
-    event_grid: Event.Grid;
-}
-
-class Button_Cover extends Component<Button_Cover_Props>
-{
-    Button():
-        Button
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `transparent`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                style={this.Styles()}
-                onClick={event => this.Parent().On_Click(event)}
-            >
-            </div>
-        );
     }
 }
 
 class Same_Toggle extends Toggle
 {
-    Text():
+    override Text():
         string
     {
         return `Same`;
     }
 
-    Is_Toggled():
+    override Is_Toggled():
         boolean
     {
         return this.Model().Data().Rules().Same();
     }
 
-    Can_Toggle():
+    override Is_Enabled():
         boolean
     {
         return this.Model().Data().Rules().Can_Toggle_Same();
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
             this.Model().Data().Rules().Toggle_Same();
-            await this.Options().Refresh();
+            await this.Parent().Refresh();
         }
     }
 }
 
 class Plus_Toggle extends Toggle
 {
-    Text():
+    override Text():
         string
     {
         return `Plus`;
     }
 
-    Is_Toggled():
+    override Is_Toggled():
         boolean
     {
         return this.Model().Data().Rules().Plus();
     }
 
-    Can_Toggle():
+    override Is_Enabled():
         boolean
     {
         return this.Model().Data().Rules().Can_Toggle_Plus();
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
             this.Model().Data().Rules().Toggle_Plus();
-            await this.Options().Refresh();
+            await this.Parent().Refresh();
         }
     }
 }
 
 class Wall_Toggle extends Toggle
 {
-    Text():
+    override Text():
         string
     {
         return `Wall`;
     }
 
-    Is_Toggled():
+    override Is_Toggled():
         boolean
     {
         return this.Model().Data().Rules().Wall();
     }
 
-    Can_Toggle():
+    override Is_Enabled():
         boolean
     {
         return this.Model().Data().Rules().Can_Toggle_Wall();
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
-            if (this.Can_Toggle()) {
+            if (this.Is_Enabled()) {
                 this.Model().Data().Rules().Toggle_Wall();
-                await this.Options().Refresh();
+                await this.Parent().Refresh();
             }
         }
     }
@@ -589,31 +374,43 @@ class Wall_Toggle extends Toggle
 
 class Combo_Toggle extends Toggle
 {
-    Text():
+    override Text():
         string
     {
         return `Combo`;
     }
 
-    Is_Toggled():
+    override Is_Toggled():
         boolean
     {
         return this.Model().Data().Rules().Combo();
     }
 
-    Can_Toggle():
+    override Is_Enabled():
         boolean
     {
         return this.Model().Data().Rules().Can_Toggle_Combo();
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
-            if (this.Can_Toggle()) {
+            if (this.Is_Enabled()) {
                 this.Model().Data().Rules().Toggle_Combo();
-                await this.Options().Refresh();
+                await this.Parent().Refresh();
             }
         }
     }
@@ -621,22 +418,36 @@ class Combo_Toggle extends Toggle
 
 class Back_Button extends Button
 {
-    Text():
+    override Text():
         string
     {
         return `Back`;
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `40%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
-        this.Send({
-            name_affix: Event.OPEN_TOP_MENU,
-            name_suffixes: [
-            ],
-            data: {
-            } as Event.Open_Top_Menu_Data,
-            is_atomic: true,
-        });
+        if (this.Is_Alive()) {
+            this.Send({
+                name_affix: Event.OPEN_TOP_MENU,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Open_Top_Menu_Data,
+                is_atomic: true,
+            });
+        }
     }
 }

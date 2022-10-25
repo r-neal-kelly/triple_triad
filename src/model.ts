@@ -2283,6 +2283,9 @@ export class Scores
     }
 }
 
+const MIN_PLAYER_COUNT: Player_Count = 2;
+const MAX_PLAYER_COUNT: Player_Count = 8;
+
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
@@ -2303,7 +2306,7 @@ export class Rules
         {
             row_count = 3,
             column_count = 3,
-            player_count = 2,
+            player_count = MIN_PLAYER_COUNT,
 
             open = true,
             same = false,
@@ -2325,8 +2328,10 @@ export class Rules
         }
     )
     {
-        if (player_count < 2) {
-            throw new Error(`Must have a player_count of at least 2.`);
+        if (player_count < MIN_PLAYER_COUNT) {
+            throw new Error(`Must have a player_count of at least ${MIN_PLAYER_COUNT}.`);
+        } else if (player_count > MAX_PLAYER_COUNT) {
+            throw new Error(`Must have a player_count less than ${MAX_PLAYER_COUNT}.`);
         } else {
             this.#row_count = row_count;
             this.#column_count = column_count;
@@ -2430,6 +2435,30 @@ export class Rules
         return this.#random;
     }
 
+    Can_Toggle_Same():
+        boolean
+    {
+        return true;
+    }
+
+    Can_Toggle_Plus():
+        boolean
+    {
+        return true;
+    }
+
+    Can_Toggle_Wall():
+        boolean
+    {
+        return this.#same || this.#plus;
+    }
+
+    Can_Toggle_Combo():
+        boolean
+    {
+        return this.#same || this.#plus;
+    }
+
     Toggle_Same():
         void
     {
@@ -2474,41 +2503,42 @@ export class Rules
         this.#combo = !this.#combo;
     }
 
-    Can_Toggle_Same():
+    Can_Decrement_Player_Count():
         boolean
     {
-        return true;
+        const player_count: Player_Count = this.Player_Count();
+
+        return (
+            player_count > MIN_PLAYER_COUNT &&
+            (this.Player_Count() - 1) <= this.Cell_Count()
+        );
     }
 
-    Can_Toggle_Plus():
+    Can_Increment_Player_Count():
         boolean
     {
-        return true;
+        const player_count: Player_Count = this.Player_Count();
+
+        return (
+            player_count < MAX_PLAYER_COUNT &&
+            (this.Player_Count() + 1) <= this.Cell_Count()
+        );
     }
 
-    Can_Toggle_Wall():
-        boolean
+    Decrement_Player_Count():
+        void
     {
-        return this.#same || this.#plus;
+        Utils.Assert(this.Can_Decrement_Player_Count());
+
+        this.#player_count -= 1;
     }
 
-    Can_Toggle_Combo():
-        boolean
+    Increment_Player_Count():
+        void
     {
-        return this.#same || this.#plus;
-    }
+        Utils.Assert(this.Can_Increment_Player_Count());
 
-    Serialize():
-        Rules_Save_Data
-    {
-        return ({
-            row_count: this.#row_count,
-            column_count: this.#column_count,
-            player_count: this.#player_count,
-
-            open: this.#open,
-            random: this.#random,
-        });
+        this.#player_count += 1;
     }
 }
 

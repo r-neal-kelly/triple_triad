@@ -5,7 +5,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component, Component_Styles } from "./component";
 import { Menu } from "./menu"
-import { Exhibitions, Arena } from "../view";
+import { Exhibitions, Arena, Results } from "../view";
 
 type Main_Props = {
     model: Model.Main;
@@ -18,6 +18,7 @@ export class Main extends Component<Main_Props>
     private menu: Menu | null = null;
     private exhibitions: Exhibitions | null = null;
     private arena: Arena | null = null;
+    private results: Results | null = null;
 
     private current_width: Integer = this.Parent().clientWidth;
     private current_height: Integer = this.Parent().clientHeight;
@@ -50,6 +51,16 @@ export class Main extends Component<Main_Props>
             throw this.Error_Not_Rendered();
         } else {
             return this.arena;
+        }
+    }
+
+    Results():
+        Results
+    {
+        if (this.results == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.results;
         }
     }
 
@@ -141,6 +152,14 @@ export class Main extends Component<Main_Props>
                         parent={this}
                         event_grid={this.Event_Grid()}
                     />
+                    <Results
+                        key={`results`}
+                        ref={ref => this.results = ref}
+
+                        model={arena}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
                 </div>
             );
         }
@@ -200,7 +219,7 @@ export class Main extends Component<Main_Props>
             const packs: Model.Packs = model.Packs();
             const rules: Model.Rules = model.Menu().Options().Data().Rules();
 
-            model.New_Game([
+            const selections: Array<Model.Selection> = [
                 new Model.Random_Selection({
                     collection: new Model.Collection({
                         default_shuffle: new Model.Shuffle({
@@ -218,24 +237,30 @@ export class Main extends Component<Main_Props>
                     is_of_human: true,
                     card_count: rules.Selection_Card_Count(),
                 }),
-                new Model.Random_Selection({
-                    collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle({
-                            pack: packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 9,
+            ];
+            for (let idx = 0, end = rules.Player_Count() - 1; idx < end; idx += 1) {
+                selections.push(
+                    new Model.Random_Selection({
+                        collection: new Model.Collection({
+                            default_shuffle: new Model.Shuffle({
+                                pack: packs.Pack(`Cats`),
+                                min_tier_index: 0,
+                                max_tier_index: 9,
+                            }),
                         }),
+                        color: new Model.Color({
+                            red: 63,
+                            green: 127,
+                            blue: 63,
+                            alpha: 0.7,
+                        }),
+                        is_of_human: false,
+                        card_count: rules.Selection_Card_Count(),
                     }),
-                    color: new Model.Color({
-                        red: 63,
-                        green: 127,
-                        blue: 63,
-                        alpha: 0.7,
-                    }),
-                    is_of_human: false,
-                    card_count: rules.Selection_Card_Count(),
-                }),
-            ]);
+                );
+            }
+
+            model.New_Game(selections);
 
             await this.Refresh();
         }

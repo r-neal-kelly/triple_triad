@@ -217,7 +217,6 @@ export class Arena extends Component<Arena_Props>
 {
     private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
     private board: Board | null = null;
-    private results: Results | null = null;
 
     Player(player_index: Model.Player_Index):
         Player
@@ -253,16 +252,6 @@ export class Arena extends Component<Arena_Props>
             throw this.Error_Not_Rendered();
         } else {
             return this.board;
-        }
-    }
-
-    Results():
-        Results
-    {
-        if (this.results == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.results;
         }
     }
 
@@ -425,14 +414,6 @@ export class Arena extends Component<Arena_Props>
                         })
                     }
                 </div>
-                <Results
-                    key={`results`}
-                    ref={ref => this.results = ref}
-
-                    model={model}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
             </div>
         );
     }
@@ -2201,19 +2182,25 @@ class Board_Cell extends Component<Board_Cell_Props>
 
 type Results_Props = {
     model: Model.Arena;
-    parent: Arena;
+    parent: Main;
     event_grid: Event.Grid;
 }
 
-class Results extends Component<Results_Props>
+export class Results extends Component<Results_Props>
 {
     private banner: Results_Banner | null = null;
     private exit_button: Results_Exit_Button | null = null;
 
+    Main():
+        Main
+    {
+        return this.Parent();
+    }
+
     Arena():
         Arena
     {
-        return this.Parent();
+        return this.Main().Arena();
     }
 
     Banner():
@@ -2250,6 +2237,7 @@ class Results extends Component<Results_Props>
             position: `absolute`,
             left: `0`,
             top: `0`,
+            zIndex: `1`,
 
             backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
@@ -2267,8 +2255,6 @@ class Results extends Component<Results_Props>
         const scores: Model.Scores | null = model.Scores();
 
         if (scores != null) {
-            this.Change_Style(`zIndex`, `${this.Model().Rules().Selection_Card_Count()}`);
-
             return (
                 <div
                     className={`Results`}
