@@ -2430,6 +2430,74 @@ export class Rules
         return this.#random;
     }
 
+    Toggle_Same():
+        void
+    {
+        this.#same = !this.#same;
+        if (!this.Can_Toggle_Wall()) {
+            this.#wall = false;
+        }
+        if (!this.Can_Toggle_Combo()) {
+            this.#combo = false;
+        }
+    }
+
+    Toggle_Plus():
+        void
+    {
+        this.#plus = !this.#plus;
+        if (!this.Can_Toggle_Wall()) {
+            this.#wall = false;
+        }
+        if (!this.Can_Toggle_Combo()) {
+            this.#combo = false;
+        }
+    }
+
+    Toggle_Wall():
+        void
+    {
+        if (!this.#wall) {
+            Utils.Assert(this.Can_Toggle_Wall());
+        }
+
+        this.#wall = !this.#wall;
+    }
+
+    Toggle_Combo():
+        void
+    {
+        if (!this.#combo) {
+            Utils.Assert(this.Can_Toggle_Combo());
+        }
+
+        this.#combo = !this.#combo;
+    }
+
+    Can_Toggle_Same():
+        boolean
+    {
+        return true;
+    }
+
+    Can_Toggle_Plus():
+        boolean
+    {
+        return true;
+    }
+
+    Can_Toggle_Wall():
+        boolean
+    {
+        return this.#same || this.#plus;
+    }
+
+    Can_Toggle_Combo():
+        boolean
+    {
+        return this.#same || this.#plus;
+    }
+
     Serialize():
         Rules_Save_Data
     {

@@ -329,7 +329,7 @@ class Button_Cover extends Component<Button_Cover_Props>
         return (
             <div
                 style={this.Styles()}
-                onClick={this.Parent().On_Click.bind(this)}
+                onClick={event => this.Parent().On_Click(event)}
             >
             </div>
         );
