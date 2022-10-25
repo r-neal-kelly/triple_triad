@@ -20,9 +20,11 @@ const AFTER: Event.Name_Prefix = Event.AFTER;
 const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
 const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
 const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
+
 const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
 const OPEN_TOP_MENU: Event.Name_Affix = `Open_Top_Menu`;
 const OPEN_OPTIONS_MENU: Event.Name_Affix = `Open_Options_Menu`;
+
 const GAME_START: Event.Name_Affix = `Game_Start`;
 const GAME_STOP: Event.Name_Affix = `Game_Stop`;
 const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
@@ -371,7 +373,7 @@ class Menu extends Component<Menu_Props>
             top: `0`,
             zIndex: `1`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.3)`,
+            backgroundColor: `rgba(0, 0, 0, 0.7)`,
         });
     }
 
@@ -425,13 +427,27 @@ class Menu extends Component<Menu_Props>
     {
         return [
             {
+                event_name: new Event.Name(ON, OPEN_TOP_MENU),
+                event_handler: this.On_Open_Top_Menu,
+            },
+            {
                 event_name: new Event.Name(ON, OPEN_OPTIONS_MENU),
-                event_handler: this.On_Open_Options,
+                event_handler: this.On_Open_Options_Menu,
             },
         ];
     }
 
-    async On_Open_Options():
+    async On_Open_Top_Menu():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Open_Top();
+
+            await this.Refresh();
+        }
+    }
+
+    async On_Open_Options_Menu():
         Promise<void>
     {
         if (this.Is_Alive()) {
@@ -443,7 +459,7 @@ class Menu extends Component<Menu_Props>
 }
 
 type Menu_Button_Props = {
-    model: Model.Menu;
+    model: any;
     parent: any;
     event_grid: Event.Grid;
 }
@@ -508,7 +524,6 @@ class Menu_Button extends Component<Menu_Button_Props>
             <div
                 className={`Menu_Button`}
                 style={this.Styles()}
-                onClick={this.On_Click.bind(this)}
             >
                 <div>
                     {this.Text()}
@@ -532,7 +547,7 @@ class Menu_Button extends Component<Menu_Button_Props>
 }
 
 type Menu_Button_Cover_Props = {
-    model: Model.Menu;
+    model: any;
     parent: Menu_Button;
     event_grid: Event.Grid;
 }
@@ -629,7 +644,7 @@ class Menu_Top extends Component<Menu_Top_Props>
             width: `100%`,
             height: `100%`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+            backgroundColor: `transparent`,
         });
     }
 
@@ -638,11 +653,11 @@ class Menu_Top extends Component<Menu_Top_Props>
     {
         return (
             <div
-                className={`Menu`}
+                className={`Menu_Top`}
                 style={this.Styles()}
             >
                 <Menu_Top_Title
-                    key={`menu_title`}
+                    key={`menu_top_title`}
                     ref={ref => this.title = ref}
 
                     model={this.Model()}
@@ -650,7 +665,7 @@ class Menu_Top extends Component<Menu_Top_Props>
                     event_grid={this.Event_Grid()}
                 />
                 <Menu_Top_Buttons
-                    key={`menu_buttons`}
+                    key={`menu_top_buttons`}
                     ref={ref => this.buttons = ref}
 
                     model={this.Model()}
@@ -696,7 +711,7 @@ class Menu_Top_Title extends Component<Menu_Top_Title_Props>
     {
         return (
             <div
-                className={`Menu_Title`}
+                className={`Menu_Top_Title`}
                 style={this.Styles()}
             >
                 <div>{`Triple Triad`}</div>
@@ -761,22 +776,22 @@ class Menu_Top_Buttons extends Component<Menu_Top_Buttons_Props>
     {
         return (
             <div
-                className={`Menu_Buttons`}
+                className={`Menu_Top_Buttons`}
                 style={this.Styles()}
             >
                 <Menu_Top_New_Game_Button
-                    key={`menu_new_game_button`}
+                    key={`menu_top_new_game_button`}
                     ref={ref => this.new_game = ref}
 
-                    model={this.Model().Menu()}
+                    model={this.Model()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
                 <Menu_Top_Options_Button
-                    key={`menu_options_button`}
+                    key={`menu_top_options_button`}
                     ref={ref => this.options = ref}
 
-                    model={this.Model().Menu()}
+                    model={this.Model()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
@@ -837,10 +852,22 @@ type Menu_Options_Props = {
 
 class Menu_Options extends Component<Menu_Options_Props>
 {
+    private back_button: Menu_Options_Back_Button | null = null;
+
     Menu():
         Menu
     {
         return this.Parent();
+    }
+
+    Back_Button():
+        Menu_Options_Back_Button
+    {
+        if (this.back_button == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.back_button;
+        }
     }
 
     Before_Life():
@@ -855,13 +882,15 @@ class Menu_Options extends Component<Menu_Options_Props>
 
             width: `90%`,
             height: `90%`,
+            margin: `0`,
+            padding: `3%`,
 
             borderWidth: `0.6vmin`,
             borderRadius: `0`,
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+            backgroundColor: `rgba(0, 0, 0, 0.3)`,
         });
     }
 
@@ -873,9 +902,38 @@ class Menu_Options extends Component<Menu_Options_Props>
                 className={`Menu_Options`}
                 style={this.Styles()}
             >
-                Hallo
+                <Menu_Options_Back_Button
+                    key={`menu_options_back_button`}
+                    ref={ref => this.back_button = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
             </div>
         );
+    }
+}
+
+class Menu_Options_Back_Button extends Menu_Button
+{
+    Text():
+        string
+    {
+        return `Back`;
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        this.Send({
+            name_affix: OPEN_TOP_MENU,
+            name_suffixes: [
+            ],
+            data: {
+            } as Open_Top_Menu_Data,
+            is_atomic: true,
+        });
     }
 }
 
