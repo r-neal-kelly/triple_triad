@@ -1,4 +1,4 @@
-import { Integer } from "../../utils";
+import { Integer } from "../../types";
 
 import * as Model from "../../model";
 

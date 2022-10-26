@@ -1,32 +1,19 @@
 import cats_pack_json from "./packs/cats.json"
 
+import { Count } from "./types";
+import { Index } from "./types";
+import { Delta } from "./types";
+import { Min } from "./types";
+import { Max } from "./types";
+import { Name } from "./types";
+import { URL_Path } from "./types";
+
 import * as Utils from "./utils";
 
+import { Arena } from "./model/arena";
+export { Arena } from "./model/arena";
+
 /* Various aliases to assist reading comprehension. */
-type Name =
-    string;
-
-type Count =
-    number;
-
-type Index =
-    number;
-
-type Delta =
-    number;
-
-type Min =
-    number;
-
-type Max =
-    number;
-
-type ID =
-    number;
-
-type URL =
-    string;
-
 type Pack_Name =
     Name;
 
@@ -56,9 +43,6 @@ type Element_Name =
 
 type Shuffle_Count =
     Count;
-
-export type Arena_ID =
-    ID;
 
 export type Color_Count =
     Count;
@@ -93,9 +77,6 @@ export type Cell_Count =
 export type Cell_Index =
     Index;
 
-export type Turn_Count =
-    Count;
-
 export type Claim_Count =
     Count;
 
@@ -128,9 +109,6 @@ export type Exhibition_Count =
 
 export type Exhibition_Index =
     Index;
-
-export type Iteration_Count =
-    Count;
 
 export enum Difficulty_e
 {
@@ -200,7 +178,7 @@ type Tier_JSON =
 
 type Card_JSON = {
     name: Card_Name;
-    image: URL;
+    image: URL_Path;
     element: Element_Name;
     left: Card_Number;
     top: Card_Number;
@@ -480,7 +458,7 @@ class Tier
 }
 
 /* Contains the data for each individual card in a pack. */
-class Card
+export class Card
 {
     #tier: Tier;
     #index: Card_Index;
@@ -530,7 +508,7 @@ class Card
     }
 
     Image():
-        URL
+        URL_Path
     {
         return this.#card_json.image;
     }
@@ -726,7 +704,7 @@ export class Main
     {
         Utils.Assert(this.current_arena != null);
 
-        this.current_arena = (this.current_arena as Arena).Clone();
+        this.current_arena = (this.current_arena as Arena).New();
 
         return this.current_arena as Arena;
     }
@@ -994,263 +972,6 @@ export class Exhibition
             rules: random_rules,
             selections: random_selections,
         });
-    }
-}
-
-let old_arena_id: Arena_ID = 0;
-function Generate_Arena_ID():
-    Arena_ID
-{
-    old_arena_id += 1;
-
-    return old_arena_id;
-}
-
-/* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
-export class Arena
-{
-    private rules: Rules;
-    private selections: Array<Selection>;
-
-    private id: Arena_ID;
-
-    private players: Array<Player>;
-    private board: Board;
-
-    private turn_count: Turn_Count;
-    private turn_queue: Array<Player>;
-    private turn_queue_index: Index;
-
-    private is_input_enabled: boolean;
-
-    private scores: Scores | null;
-
-    constructor(
-        {
-            rules,
-            selections,
-        }: {
-            rules: Rules,
-            selections: Array<Selection>,
-        },
-    )
-    {
-        const player_count: Player_Count = rules.Player_Count();
-        if (selections.length !== player_count) {
-            throw new Error(`Must have a selection for each player, no more and no less.`);
-        } else {
-            this.rules = rules.Clone();
-            this.selections = Array.from(selections);
-
-            this.id = Generate_Arena_ID();
-
-            let human_count: Count = 0;
-            let computer_count: Count = 0;
-            this.players = [];
-            for (let idx = 0, end = player_count; idx < end; idx += 1) {
-                const selection: Selection = selections[idx];
-                let player_name: Player_Name = selection.Collection().Owner_Name();
-                if (selection.Is_Of_Human()) {
-                    human_count += 1;
-                    this.players.push(new Human_Player({
-                        arena: this,
-                        index: idx,
-                        name: player_name !== `` ?
-                            player_name :
-                            `PLAYER ${human_count}`,
-                        selection: selections[idx],
-                    }));
-                } else {
-                    computer_count += 1;
-                    this.players.push(new Computer_Player({
-                        arena: this,
-                        index: idx,
-                        name: player_name !== `` ?
-                            player_name :
-                            `CPU ${computer_count}`,
-                        selection: selections[idx],
-                    }));
-                }
-            }
-
-            this.board = new Board({
-                arena: this,
-            });
-
-            this.turn_count = rules.Cell_Count();
-            this.turn_queue = Array.from(this.players).sort(() => Utils.Random_Boolean() ? 1 : -1);
-            this.turn_queue_index = 0;
-
-            this.is_input_enabled = true;
-
-            this.scores = null;
-
-            Object.freeze(this.rules);
-            Object.freeze(this.selections);
-            Object.freeze(this.players);
-            Object.freeze(this.turn_queue);
-        }
-    }
-
-    Clone():
-        Arena
-    {
-        return new Arena({
-            rules: this.rules,
-            selections: this.selections,
-        });
-    }
-
-    Rules():
-        Rules
-    {
-        return this.rules;
-    }
-
-    Selections():
-        Array<Selection>
-    {
-        return Array.from(this.selections);
-    }
-
-    ID():
-        Arena_ID
-    {
-        return this.id;
-    }
-
-    Player_Count():
-        Player_Count
-    {
-        return this.players.length;
-    }
-
-    Player(player_index: Player_Index):
-        Player
-    {
-        if (player_index >= 0 && player_index < this.Player_Count()) {
-            return this.players[player_index];
-        } else {
-            throw new Error("Invalid player_index.");
-        }
-    }
-
-    Players():
-        Array<Player>
-    {
-        return Array.from(this.players);
-    }
-
-    Current_Player_Index():
-        Player_Index
-    {
-        return this.Current_Player().Index();
-    }
-
-    Current_Player():
-        Player
-    {
-        if (this.Is_Game_Over()) {
-            throw new Error(`This arena has no current player because the game is over.`);
-        } else {
-            return this.turn_queue[this.turn_queue_index];
-        }
-    }
-
-    Board():
-        Board
-    {
-        return this.board;
-    }
-
-    Turn_Count():
-        Turn_Count
-    {
-        return this.turn_count;
-    }
-
-    Is_On_Human_Turn():
-        boolean
-    {
-        if (this.Is_Game_Over()) {
-            return false;
-        } else {
-            return this.Current_Player().Is_Human();
-        }
-    }
-
-    Is_On_Computer_Turn():
-        boolean
-    {
-        if (this.Is_Game_Over()) {
-            return false;
-        } else {
-            return !this.Is_On_Human_Turn();
-        }
-    }
-
-    Next_Turn():
-        void
-    {
-        Utils.Assert(
-            this.Is_Game_Over() === false,
-            `No more turns, the game is over.`,
-        );
-
-
-        this.turn_count -= 1;
-        this.turn_queue_index += 1;
-        if (this.turn_queue_index === this.turn_queue.length) {
-            this.turn_queue_index = 0;
-        }
-
-        if (this.Is_Game_Over()) {
-            this.scores = new Scores({
-                players: this.players,
-            });
-        }
-    }
-
-    Is_Input_Enabled():
-        boolean
-    {
-        return this.is_input_enabled;
-    }
-
-    Enable_Input():
-        void
-    {
-        this.is_input_enabled = true;
-    }
-
-    Disable_Input():
-        void
-    {
-        this.is_input_enabled = false;
-    }
-
-    Is_Game_Over():
-        boolean
-    {
-        return this.turn_count === 0;
-    }
-
-    Scores():
-        Scores | null
-    {
-        return this.scores;
-    }
-
-    Has_Human_Players():
-        boolean
-    {
-        for (const player of this.players) {
-            if (player.Is_Human()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
 
@@ -3034,7 +2755,12 @@ export class Computer_Player extends Player
     }
 }
 
-/* Contains a card either on a player or on the board, and its origin. */
+/*
+    Contains a card either on a player or on the board, and its origin.
+    It's important to keep track of the origin so that after a game,
+    if another player has claimed the card, they may possibly be able
+    to remove this card from the origin collection and put it into their own.
+*/
 export class Stake
 {
     #origin: Player;

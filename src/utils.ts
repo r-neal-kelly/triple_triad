@@ -1,5 +1,5 @@
-export type Integer =
-    number;
+import { Integer } from "./types";
+import { Float } from "./types";
 
 export function Assert(
     boolean: boolean,
@@ -12,7 +12,7 @@ export function Assert(
     }
 }
 
-export async function Wait(milliseconds: number):
+export async function Wait(milliseconds: Integer):
     Promise<void>
 {
     return new Promise(function (
@@ -32,10 +32,10 @@ export function Random_Boolean():
 }
 
 export function Random_Integer_Inclusive(
-    from_inclusive: number,
-    to_inclusive: number,
+    from_inclusive: Integer,
+    to_inclusive: Integer,
 ):
-    number
+    Integer
 {
     if (from_inclusive <= to_inclusive) {
         return Math.floor((Math.random() * ((to_inclusive + 1) - from_inclusive)) + from_inclusive);
@@ -45,10 +45,10 @@ export function Random_Integer_Inclusive(
 }
 
 export function Random_Integer_Exclusive(
-    from_inclusive: number,
-    to_exclusive: number,
+    from_inclusive: Integer,
+    to_exclusive: Integer,
 ):
-    number
+    Integer
 {
     if (from_inclusive < to_exclusive) {
         return Math.floor((Math.random() * (to_exclusive - from_inclusive)) + from_inclusive);
@@ -58,10 +58,10 @@ export function Random_Integer_Exclusive(
 }
 
 export function Random_Float_Inclusive(
-    from_inclusive: number,
-    to_inclusive: number,
+    from_inclusive: Float,
+    to_inclusive: Float,
 ):
-    number
+    Float
 {
     if (from_inclusive <= to_inclusive) {
         return (Math.random() * ((to_inclusive + Number.EPSILON) - from_inclusive)) + from_inclusive;
@@ -71,10 +71,10 @@ export function Random_Float_Inclusive(
 }
 
 export function Random_Float_Exclusive(
-    from_inclusive: number,
-    to_exclusive: number,
+    from_inclusive: Float,
+    to_exclusive: Float,
 ):
-    number
+    Float
 {
     if (from_inclusive < to_exclusive) {
         return (Math.random() * (to_exclusive - from_inclusive)) + from_inclusive;
@@ -90,7 +90,7 @@ export function Random_String():
 }
 
 export function Is_Odd_Integer(
-    integer: number,
+    integer: Integer,
 ):
     boolean
 {
@@ -98,7 +98,7 @@ export function Is_Odd_Integer(
 }
 
 export function Is_Even_Integer(
-    integer: number,
+    integer: Integer,
 ):
     boolean
 {

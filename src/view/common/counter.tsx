@@ -1,4 +1,4 @@
-import { Integer } from "../../utils";
+import { Integer } from "../../types";
 
 import * as Event from "../event";
 import { Component, Component_Styles } from "../component";

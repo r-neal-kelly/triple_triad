@@ -1,11 +1,16 @@
-import { Integer, Wait } from "../utils";
+import { Integer } from "../types";
+
+import { Wait } from "../utils";
 
 import * as Model from "../model";
 
 import * as Event from "./event";
-import { Component, Component_Styles } from "./component";
+import { Component } from "./component";
+import { Component_Styles } from "./component";
 import { Menu } from "./menu"
-import { Exhibitions, Arena, Results } from "../view";
+import { Exhibitions } from "../view";
+import { Arena } from "./arena";
+import { Results } from "../view";
 
 type Main_Props = {
     model: Model.Main;

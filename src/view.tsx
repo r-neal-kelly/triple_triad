@@ -2,7 +2,8 @@ import "./view.css";
 
 import React from "react";
 
-import { Integer, Assert, Wait } from "./utils";
+import { Assert } from "./utils";
+import { Wait } from "./utils";
 
 import * as Model from "./model";
 
@@ -10,6 +11,7 @@ import * as Event from "./view/event";
 import { Component, Component_Styles } from "./view/component";
 import { Button } from "./view/common/button";
 import { Main } from "./view/main";
+import { Arena } from "./view/arena";
 
 const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
 const PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER: number = 0.7;
@@ -126,7 +128,7 @@ type Exhibition_Props = {
     event_grid: Event.Grid;
 }
 
-class Exhibition extends Component<Exhibition_Props>
+export class Exhibition extends Component<Exhibition_Props>
 {
     private arena: Arena | null = null;
 
@@ -150,6 +152,8 @@ class Exhibition extends Component<Exhibition_Props>
         Component_Styles
     {
         return ({
+            display: `none`,
+
             width: `100%`,
             height: `100%`,
 
@@ -166,7 +170,7 @@ class Exhibition extends Component<Exhibition_Props>
         const model: Model.Exhibition = this.Model();
         const arena: Model.Arena = model.Arena();
 
-        this.Change_Style(`visibility`, this.Model().Is_Visible() ? `visible` : `hidden`);
+        this.Change_Style(`display`, this.Model().Is_Visible() ? `` : `none`);
 
         return (
             <div
@@ -209,310 +213,13 @@ class Exhibition extends Component<Exhibition_Props>
     }
 }
 
-type Arena_Props = {
-    model: Model.Arena;
-    parent: Main | Exhibition;
-    event_grid: Event.Grid;
-}
-
-export class Arena extends Component<Arena_Props>
-{
-    private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
-    private board: Board | null = null;
-
-    Player(player_index: Model.Player_Index):
-        Player
-    {
-        if (player_index < 0 || player_index >= this.players.length) {
-            throw new Error(`'player_index' ${player_index} is invalid.`);
-        } else if (this.players[player_index] == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.players[player_index] as Player;
-        }
-    }
-
-    Players():
-        Array<Player>
-    {
-        const players: Array<Player> = [];
-        for (const player of this.players) {
-            if (player == null) {
-                throw this.Error_Not_Rendered();
-            } else {
-                players.push(player);
-            }
-        }
-
-        return players;
-    }
-
-    Board():
-        Board
-    {
-        if (this.board == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.board;
-        }
-    }
-
-    CSS_Card_Width():
-        string
-    {
-        return `calc(${this.CSS_Card_Height()} * 4 / 5)`
-    }
-
-    CSS_Card_Height():
-        string
-    {
-        // I would actually like to get the width and height of the root element,
-        // which should exist at all times, and just use that to derive all
-        // measurements. that way we can size it depending on the actual container
-        // instead of the viewport or anything else. we might even decide here
-        // if we need to go by the width, when they size of the players would be
-        // bigger than the root width. so we go with whichever is bigger. Or maybe
-        // we can figure how to always go by width?
-        const row_count: Model.Row_Count = this.Model().Rules().Row_Count();
-
-        return `
-            calc(
-                (
-                    ${this.CSS_Board_Cells_Height()} -
-                    (${this.CSS_Board_Cells_Padding()} * 2) -
-                    (${this.CSS_Board_Cells_Grid_Gap()} * ${row_count - 1})
-                ) /
-                ${row_count}
-            )
-        `;
-    }
-
-    CSS_Bumper_Height():
-        string
-    {
-        return `8vmin`;
-    }
-
-    CSS_Player_Width():
-        string
-    {
-        return `calc(${this.CSS_Card_Width()} * 1.07)`;
-    }
-
-    CSS_Board_Cells_Height():
-        string
-    {
-        return `calc(100vmin - ${this.CSS_Bumper_Height()})`;
-    }
-
-    CSS_Board_Cells_Padding():
-        string
-    {
-        return `2vmin`;
-    }
-
-    CSS_Board_Cells_Grid_Gap():
-        string
-    {
-        return `0.5vmin`;
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `row`,
-            justifyContent: `center`,
-
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `0`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const model: Model.Arena = this.Model();
-        const player_count: number = model.Player_Count();
-        const left_player_count: number = Math.floor(player_count / 2);
-        const right_player_count: number = player_count - left_player_count;
-
-        return (
-            <div
-                className={`Arena`}
-                style={this.Styles()}
-            >
-                <div
-                    className={`Player_Grid`}
-                    style={{
-                        display: `grid`,
-                        gridTemplateColumns: `repeat(${left_player_count}, 1fr)`,
-                        gridTemplateRows: `auto`,
-                        gridGap: `0 0`,
-
-                        height: `100%`,
-                        padding: `0 calc((${this.CSS_Player_Width()} - ${this.CSS_Card_Width()}) / 2)`,
-                    }}
-                >
-                    {
-                        Array(left_player_count).fill(null).map((_, index: Model.Player_Index) =>
-                        {
-                            const player_index: Model.Player_Index = index + 0;
-
-                            return (
-                                <Player
-                                    key={`player_${player_index}`}
-                                    ref={ref => this.players[player_index] = ref}
-
-                                    model={model.Player(player_index)}
-                                    parent={this}
-                                    event_grid={this.Event_Grid()}
-                                />
-                            );
-                        })
-                    }
-                </div>
-                <Board
-                    key={`board`}
-                    ref={ref => this.board = ref}
-
-                    model={model.Board()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <div
-                    className={`Player_Grid`}
-                    style={{
-                        display: `grid`,
-                        gridTemplateColumns: `repeat(${right_player_count}, 1fr)`,
-                        gridTemplateRows: `auto`,
-                        gridGap: `0 0`,
-
-                        height: `100%`,
-                        padding: `0 calc((${this.CSS_Player_Width()} - ${this.CSS_Card_Width()}) / 2)`,
-                    }}
-                >
-                    {
-                        Array(right_player_count).fill(null).map((_, index: Model.Player_Index) =>
-                        {
-                            const player_index: Model.Player_Index = index + left_player_count;
-
-                            return (
-                                <Player
-                                    key={`player_${player_index}`}
-                                    ref={ref => this.players[player_index] = ref}
-
-                                    model={model.Player(player_index)}
-                                    parent={this}
-                                    event_grid={this.Event_Grid()}
-                                />
-                            );
-                        })
-                    }
-                </div>
-            </div>
-        );
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        this.Send({
-            name_affix: Event.GAME_START,
-            name_suffixes: [
-            ],
-            data: {
-            } as Event.Game_Start_Data,
-            is_atomic: true,
-        });
-
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, Event.GAME_START),
-                event_handler: this.On_Game_Start,
-            },
-            {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_STOP_TURN),
-                event_handler: this.On_Player_Stop_Turn,
-            },
-        ]);
-    }
-
-    async On_Game_Start(
-        {
-        }: Event.Game_Start_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
-
-            this.Send({
-                name_affix: Event.PLAYER_START_TURN,
-                name_suffixes: [
-                    current_player_index.toString(),
-                ],
-                data: {
-                    player_index: current_player_index,
-                } as Event.Player_Start_Turn_Data,
-                is_atomic: true,
-            });
-        }
-    }
-
-    async On_Player_Stop_Turn(
-        {
-        }: Event.Player_Stop_Turn_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            this.Model().Next_Turn();
-
-            if (this.Model().Is_Game_Over()) {
-                const scores: Model.Scores = this.Model().Scores() as Model.Scores;
-                Assert(scores != null);
-
-                this.Send({
-                    name_affix: Event.GAME_STOP,
-                    name_suffixes: [
-                    ],
-                    data: {
-                        scores,
-                    } as Event.Game_Stop_Data,
-                    is_atomic: true,
-                });
-            } else {
-                const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
-
-                this.Send({
-                    name_affix: Event.PLAYER_START_TURN,
-                    name_suffixes: [
-                        current_player_index.toString(),
-                    ],
-                    data: {
-                        player_index: current_player_index,
-                    } as Event.Player_Start_Turn_Data,
-                    is_atomic: true,
-                });
-            }
-        }
-    }
-}
-
 type Player_Props = {
     model: Model.Player;
     parent: Arena;
     event_grid: Event.Grid;
 }
 
-class Player extends Component<Player_Props>
+export class Player extends Component<Player_Props>
 {
     private bumper: Player_Bumper | null = null;
     private hand: Player_Hand | null = null;
@@ -576,6 +283,25 @@ class Player extends Component<Player_Props>
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
         const index: Model.Player_Index = this.Index();
+        const color: Model.Color = this.Model().Color();
+
+        // Highlight the player to indicate it's their turn.
+        if (model.Is_On_Turn()) {
+            this.Change_Style(
+                `backgroundColor`,
+                `rgba(
+                    ${color.Red()},
+                    ${color.Green()},
+                    ${color.Blue()},
+                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+                )`,
+            );
+        } else {
+            this.Change_Style(
+                `backgroundColor`,
+                `transparent`,
+            );
+        }
 
         return (
             <div
@@ -620,6 +346,14 @@ class Player extends Component<Player_Props>
                 event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Place_Stake,
             },
+            {
+                event_name: new Event.Name(Event.ON, Event.PLAYER_STOP_TURN, player_index.toString()),
+                event_handler: this.On_This_Player_Stop_Turn,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
+                event_handler: this.On_Game_Stop,
+            },
         ]);
     }
 
@@ -634,18 +368,6 @@ class Player extends Component<Player_Props>
             await this.Refresh();
 
             if (this.Is_Alive()) {
-                // Highlight the player to indicate it's their turn.
-                const color: Model.Color = this.Model().Color();
-                this.Change_Style(
-                    `backgroundColor`,
-                    `rgba(
-                        ${color.Red()},
-                        ${color.Green()},
-                        ${color.Blue()},
-                        ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-                    )`,
-                );
-
                 // We need to simulate the computer_player choosing a card
                 if (this.Model().Is_Computer()) {
                     const computer_player: Model.Computer_Player =
@@ -707,16 +429,8 @@ class Player extends Component<Player_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const previous_selected_stake_index: Model.Stake_Index | null =
-                this.Model().Selected_Stake_Index();
-            if (previous_selected_stake_index !== stake_index) {
-                this.Model().Select_Stake(stake_index);
-                this.Hand().Stake(stake_index).Refresh();
-
-                if (previous_selected_stake_index != null) {
-                    this.Hand().Stake(previous_selected_stake_index).Refresh();
-                }
-            }
+            this.Model().Select_Stake(stake_index);
+            await this.Refresh();
         }
     }
 
@@ -727,8 +441,29 @@ class Player extends Component<Player_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            // Remove the player highlight to indicate that selection is over.
-            this.Change_Style(`backgroundColor`, `transparent`);
+            await this.Refresh();
+        }
+    }
+
+    async On_This_Player_Stop_Turn(
+        {
+        }: Event.Player_Stop_Turn_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Refresh();
+        }
+    }
+
+    async On_Game_Stop(
+        {
+        }: Event.Game_Stop_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Refresh();
         }
     }
 }
@@ -803,6 +538,24 @@ class Player_Bumper extends Component<Player_Bumper_Props>
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
         const index: Model.Player_Index = this.Index();
+        const color: Model.Color = this.Model().Color();
+
+        if (model.Arena().Is_Game_Over()) {
+            this.Change_Style(
+                `backgroundColor`,
+                `rgba(
+                    ${color.Red()},
+                    ${color.Green()},
+                    ${color.Blue()},
+                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+                )`
+            );
+        } else {
+            this.Change_Style(
+                `backgroundColor`,
+                `transparent`,
+            );
+        }
 
         return (
             <div
@@ -827,37 +580,6 @@ class Player_Bumper extends Component<Player_Bumper_Props>
                 />
             </div>
         );
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
-                event_handler: this.On_Game_Stop,
-            },
-        ]);
-    }
-
-    async On_Game_Stop(
-        {
-        }: Event.Game_Stop_Data
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const color: Model.Color = this.Model().Color();
-            this.Change_Style(
-                `backgroundColor`,
-                `rgba(
-                    ${color.Red()},
-                    ${color.Green()},
-                    ${color.Blue()},
-                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-                )`
-            );
-        }
     }
 }
 
@@ -948,43 +670,6 @@ class Player_Score extends Component<Player_Score_Props>
                 }
             </div>
         );
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_STOP_TURN),
-                event_handler: this.On_Player_Stop_Turn,
-            },
-            {
-                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
-                event_handler: this.On_Game_Stop,
-            },
-        ]);
-    }
-
-    async On_Player_Stop_Turn(
-        {
-        }: Event.Player_Stop_Turn_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            await this.Refresh();
-        }
-    }
-
-    async On_Game_Stop(
-        {
-        }: Event.Game_Stop_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            await this.Refresh();
-        }
     }
 }
 
@@ -1089,30 +774,6 @@ class Player_Hand extends Component<Player_Hand_Props>
             </div>
         );
     }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        const player_index: Model.Player_Index = this.Index();
-
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
-                event_handler: this.On_This_Player_Place_Stake,
-            },
-        ]);
-    }
-
-    async On_This_Player_Place_Stake(
-        {
-        }: Event.Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            await this.Refresh();
-        }
-    }
 }
 
 type Player_Stake_Props = {
@@ -1154,14 +815,17 @@ class Player_Stake extends Component<Player_Stake_Props>
         const arena: Arena = this.Arena();
 
         return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
             width: arena.CSS_Card_Width(),
             height: arena.CSS_Card_Height(),
 
             position: `absolute`,
             left: `0`,
             top: `0`,
-
-            backgroundSize: `90% 90%`,
 
             cursor: `default`,
         });
@@ -1191,7 +855,6 @@ class Player_Stake extends Component<Player_Stake_Props>
                 ${color.Alpha()}
             )`,
         );
-        this.Change_Style(`backgroundImage`, `url("${model.Card().Image()}")`);
 
         this.Change_Style(
             `top`,
@@ -1203,6 +866,12 @@ class Player_Stake extends Component<Player_Stake_Props>
         );
         this.Change_Style(`zIndex`, `${this.Index()}`);
 
+        if (is_of_human && is_selectable) {
+            this.Change_Style(`cursor`, `pointer`);
+        } else {
+            this.Change_Style(`cursor`, `default`);
+        }
+
         return (
             <div
                 className={`Player_Stake`}
@@ -1213,6 +882,17 @@ class Player_Stake extends Component<Player_Stake_Props>
                         () => { }
                 }
             >
+                <img
+                    style={{
+                        width: `90%`,
+                        height: `90%`,
+
+                        cursor: is_of_human && is_selectable ?
+                            `pointer` :
+                            `default`,
+                    }}
+                    src={model.Card().Image()}
+                />
             </div>
         );
     }
@@ -1259,53 +939,10 @@ class Player_Stake extends Component<Player_Stake_Props>
 
         return ([
             {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_START_TURN, player_index.toString()),
-                event_handler: this.On_This_Player_Start_Turn,
-            },
-            {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_SELECT_STAKE, player_index.toString()),
-                event_handler: this.On_This_Player_Select_Stake,
-            },
-            {
                 event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.Before_This_Player_Place_Stake,
             },
-            {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
-                event_handler: this.On_This_Player_Place_Stake,
-            },
         ]);
-    }
-
-    async On_This_Player_Start_Turn(
-        {
-        }: Event.Player_Start_Turn_Data
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            if (this.Model().Is_Of_Human()) {
-                this.Change_Style(`cursor`, `pointer`);
-            }
-        }
-    }
-
-    async On_This_Player_Select_Stake(
-        {
-            stake_index,
-        }: Event.Player_Select_Stake_Data
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            if (this.Model().Is_Of_Human()) {
-                if (this.Index() === stake_index) {
-                    this.Change_Style(`cursor`, `default`);
-                } else {
-                    this.Change_Style(`cursor`, `pointer`);
-                }
-            }
-        }
     }
 
     async Before_This_Player_Place_Stake(
@@ -1336,19 +973,6 @@ class Player_Stake extends Component<Player_Stake_Props>
             }
         }
     }
-
-    async On_This_Player_Place_Stake(
-        {
-        }: Event.Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            if (this.Model().Is_Of_Human()) {
-                this.Change_Style(`cursor`, `default`);
-            }
-        }
-    }
 }
 
 type Board_Props = {
@@ -1357,7 +981,7 @@ type Board_Props = {
     event_grid: Event.Grid;
 }
 
-class Board extends Component<Board_Props>
+export class Board extends Component<Board_Props>
 {
     private bumper: Board_Bumper | null = null;
     private cells: Board_Cells | null = null;
@@ -1756,7 +1380,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                     className={`Board_Cell`}
                     style={this.Styles()}
                 >
-                    <div
+                    <img
                         className={`Board_Cell_Card`}
                         style={{
                             width: `90%`,
@@ -1767,11 +1391,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                             alignSelf: `center`,
                             justifySelf: `center`,
                             zIndex: `0`,
-
-                            backgroundImage: `url("${model.Stake().Card().Image()}")`,
                         }}
-                    >
-                    </div>
+                        src={model.Stake().Card().Image()}
+                    />
                     {
                         this.popups ?
                             this.popups :
@@ -1847,7 +1469,10 @@ class Board_Cell extends Component<Board_Cell_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
+            if (
+                this.Board().Model().Is_Cell_Selectable(this.Index()) &&
+                this.Arena().Model().Current_Player().Is_Human()
+            ) {
                 // we only need to update the cursor for empty cells
                 this.Change_Style(`cursor`, `pointer`);
             }
@@ -2254,9 +1879,10 @@ export class Results extends Component<Results_Props>
         JSX.Element | null
     {
         const model: Model.Arena = this.Model();
-        const scores: Model.Scores | null = model.Scores();
 
-        if (scores != null) {
+        if (model.Is_Game_Over()) {
+            const scores: Model.Scores = model.Final_Scores();
+
             return (
                 <div
                     className={`Results`}
