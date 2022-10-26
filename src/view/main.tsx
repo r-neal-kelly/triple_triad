@@ -145,7 +145,7 @@ export class Main extends Component<Main_Props>
                     style={this.Styles()}
                 >
                     <Arena
-                        key={`arena`}
+                        key={`arena_${arena.ID()}`}
                         ref={ref => this.arena = ref}
 
                         model={arena}
@@ -191,6 +191,10 @@ export class Main extends Component<Main_Props>
                 event_handler: this.On_Start_New_Game,
             },
             {
+                event_name: new Event.Name(Event.ON, Event.REMATCH_GAME),
+                event_handler: this.On_Rematch_Game,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.EXIT_GAME),
                 event_handler: this.On_Exit_Game,
             },
@@ -211,7 +215,10 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Start_New_Game():
+    async On_Start_New_Game(
+        {
+        }: Event.Start_New_Game_Data
+    ):
         Promise<void>
     {
         if (this.Is_Alive()) {
@@ -266,7 +273,25 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Exit_Game():
+    async On_Rematch_Game(
+        {
+        }: Event.Rematch_Game_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Main = this.Model();
+
+            model.Rematch_Game();
+
+            await this.Refresh();
+        }
+    }
+
+    async On_Exit_Game(
+        {
+        }: Event.Exit_Game_Data,
+    ):
         Promise<void>
     {
         if (this.Is_Alive()) {

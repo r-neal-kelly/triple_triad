@@ -23,11 +23,12 @@ export const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
 export const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
 
 export const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
+export const REMATCH_GAME: Event.Name_Affix = `Rematch_Game`;
 export const EXIT_GAME: Event.Name_Affix = `Exit_Game`;
 export const OPEN_TOP_MENU: Event.Name_Affix = `Open_Top_Menu`;
 export const OPEN_OPTIONS_MENU: Event.Name_Affix = `Open_Options_Menu`;
 
-export const GAME_START: Event.Name_Affix = `Game_Start`;
+export const GAME_START: Event.Name_Affix = `Game_Start`;// maybe ARENA_START and ARENA_STOP
 export const GAME_STOP: Event.Name_Affix = `Game_Stop`;
 export const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
 export const PLAYER_STOP_TURN: Event.Name_Affix = `Player_Stop_Turn`;
@@ -39,6 +40,9 @@ export const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 // that would mean changing how the event grid adds the event instance to the data.
 // simple, just have these inherit from a base Event.Data type
 export type Start_New_Game_Data = {
+}
+
+export type Rematch_Game_Data = {
 }
 
 export type Exit_Game_Data = {

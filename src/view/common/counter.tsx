@@ -140,12 +140,14 @@ export class Counter extends Component<Counter_Props>
     {
         return ({
             display: `grid`,
-            gridTemplateColumns: `2fr 1fr 1fr`,
+            gridTemplateColumns: `2.5fr 1fr 1fr`,
             gridTemplateRows: `1fr`,
-            columnGap: `3%`,
+            columnGap: `0`,
 
             width: this.CSS_Width(),
             height: this.CSS_Height(),
+            margin: `0`,
+            padding: `0`,
 
             position: `relative`,
 
@@ -303,7 +305,7 @@ class Decrementor extends Component<Decrementor_Props>
             justifySelf: `center`,
 
             borderWidth: `0.6vmin`,
-            borderRadius: `0`,
+            borderRadius: `100%`,
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
@@ -460,7 +462,7 @@ class Incrementor extends Component<Incrementor_Props>
             justifySelf: `center`,
 
             borderWidth: `0.6vmin`,
-            borderRadius: `0`,
+            borderRadius: `100%`,
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 

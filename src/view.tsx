@@ -8,6 +8,7 @@ import * as Model from "./model";
 
 import * as Event from "./view/event";
 import { Component, Component_Styles } from "./view/component";
+import { Button } from "./view/common/button";
 import { Main } from "./view/main";
 
 const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
@@ -163,6 +164,7 @@ class Exhibition extends Component<Exhibition_Props>
         JSX.Element | null
     {
         const model: Model.Exhibition = this.Model();
+        const arena: Model.Arena = model.Arena();
 
         this.Change_Style(`visibility`, this.Model().Is_Visible() ? `visible` : `hidden`);
 
@@ -172,10 +174,10 @@ class Exhibition extends Component<Exhibition_Props>
                 style={this.Styles()}
             >
                 <Arena
-                    key={`arena_${model.Iteration_Count()}`}
+                    key={`arena_${arena.ID()}`}
                     ref={ref => this.arena = ref}
 
-                    model={model.Arena()}
+                    model={arena}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
@@ -2189,7 +2191,7 @@ type Results_Props = {
 export class Results extends Component<Results_Props>
 {
     private banner: Results_Banner | null = null;
-    private exit_button: Results_Exit_Button | null = null;
+    private buttons: Results_Buttons | null = null;
 
     Main():
         Main
@@ -2213,13 +2215,13 @@ export class Results extends Component<Results_Props>
         }
     }
 
-    Exit_Button():
-        Results_Exit_Button
+    Buttons():
+        Results_Buttons
     {
-        if (this.exit_button == null) {
+        if (this.buttons == null) {
             throw this.Error_Not_Rendered();
         } else {
-            return this.exit_button;
+            return this.buttons;
         }
     }
 
@@ -2229,7 +2231,7 @@ export class Results extends Component<Results_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `15% 85%`,
+            gridTemplateRows: `25% 75%`,
 
             width: `100%`,
             height: `100%`,
@@ -2261,25 +2263,19 @@ export class Results extends Component<Results_Props>
                     style={this.Styles()}
                 >
                     <Results_Banner
-                        key={`results_banner`}
                         ref={ref => this.banner = ref}
 
                         model={scores}
                         parent={this}
                         event_grid={this.Event_Grid()}
                     />
-                    {
-                        this.Arena().Model().Has_Human_Players() ?
-                            <Results_Exit_Button
-                                key={`results_exit_button`}
-                                ref={ref => this.exit_button = ref}
+                    <Results_Buttons
+                        ref={ref => this.buttons = ref}
 
-                                model={scores}
-                                parent={this}
-                                event_grid={this.Event_Grid()}
-                            /> :
-                            null
-                    }
+                        model={scores}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
                 </div>
             );
         } else {
@@ -2577,15 +2573,22 @@ class Results_Draws extends Component<Results_Draws_Props>
     }
 }
 
-type Results_Exit_Button_Props = {
+type Results_Buttons_Props = {
     model: Model.Scores;
     parent: Results;
     event_grid: Event.Grid;
 }
 
-class Results_Exit_Button extends Component<Results_Exit_Button_Props>
+class Results_Buttons extends Component<Results_Buttons_Props>
 {
-    private cover: Results_Exit_Button_Cover | null = null;
+    private rematch_button: Results_Rematch_Button | null = null;
+    private exit_button: Results_Exit_Button | null = null;
+
+    Arena():
+        Arena
+    {
+        return this.Results().Arena();
+    }
 
     Results():
         Results
@@ -2593,13 +2596,23 @@ class Results_Exit_Button extends Component<Results_Exit_Button_Props>
         return this.Parent();
     }
 
-    Cover():
-        Results_Exit_Button_Cover
+    Rematch_Button():
+        Results_Rematch_Button
     {
-        if (this.cover == null) {
+        if (this.rematch_button == null) {
             throw this.Error_Not_Rendered();
         } else {
-            return this.cover;
+            return this.rematch_button;
+        }
+    }
+
+    Exit_Button():
+        Results_Exit_Button
+    {
+        if (this.exit_button == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.exit_button;
         }
     }
 
@@ -2607,106 +2620,108 @@ class Results_Exit_Button extends Component<Results_Exit_Button_Props>
         Component_Styles
     {
         return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
+            rowGap: `5%`,
 
-            width: `40%`,
-            height: `100%`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            fontSize: `2.5em`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Results_Exit_Button`}
-                style={this.Styles()}
-            >
-                {`Exit Game`}
-                <Results_Exit_Button_Cover
-                    key={`results_exit_button_cover`}
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-}
-
-type Results_Exit_Button_Cover_Props = {
-    model: Model.Scores;
-    parent: Results_Exit_Button;
-    event_grid: Event.Grid;
-}
-
-class Results_Exit_Button_Cover extends Component<Results_Exit_Button_Cover_Props>
-{
-    Exit_Button():
-        Results_Exit_Button
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
             width: `100%`,
             height: `100%`,
 
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `transparent`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            cursor: `pointer`,
+            alignSelf: `center`,
+            justifySelf: `center`,
         });
     }
 
     On_Refresh():
         JSX.Element | null
     {
-        return (
-            <div
-                className={`Results_Exit_Button_Cover`}
-                style={this.Styles()}
-                onClick={this.On_Click.bind(this)}
-            >
-            </div>
-        );
+        const model: Model.Scores = this.Model();
+
+        if (this.Arena().Model().Has_Human_Players()) {
+            return (
+                <div
+                    style={this.Styles()}
+                >
+                    <Results_Rematch_Button
+                        ref={ref => this.rematch_button = ref}
+
+                        model={model}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                    <Results_Exit_Button
+                        ref={ref => this.exit_button = ref}
+
+                        model={model}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+}
+
+class Results_Rematch_Button extends Button
+{
+    override Text():
+        string
+    {
+        return `Play Rematch`;
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `40%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Send({
+                name_affix: Event.REMATCH_GAME,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Rematch_Game_Data,
+                is_atomic: true,
+            });
+        }
+    }
+}
+
+class Results_Exit_Button extends Button
+{
+    override Text():
+        string
+    {
+        return `Exit Game`;
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `40%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {

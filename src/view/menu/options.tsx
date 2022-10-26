@@ -18,6 +18,9 @@ type Options_Props = {
 export class Options extends Component<Options_Props>
 {
     private player_counter: Player_Counter | null = null;
+    private row_counter: Row_Counter | null = null;
+    private column_counter: Column_Counter | null = null;
+
     private same_toggle: Same_Toggle | null = null;
     private plus_toggle: Plus_Toggle | null = null;
     private wall_toggle: Wall_Toggle | null = null;
@@ -38,6 +41,26 @@ export class Options extends Component<Options_Props>
             throw this.Error_Not_Rendered();
         } else {
             return this.player_counter;
+        }
+    }
+
+    Row_Counter():
+        Row_Counter
+    {
+        if (this.row_counter == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.row_counter;
+        }
+    }
+
+    Column_Counter():
+        Column_Counter
+    {
+        if (this.column_counter == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.column_counter;
         }
     }
 
@@ -97,7 +120,7 @@ export class Options extends Component<Options_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr 1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
+            gridTemplateRows: `1fr 1fr 1fr 1fr`,
             columnGap: `3%`,
             rowGap: `5%`,
 
@@ -111,7 +134,7 @@ export class Options extends Component<Options_Props>
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.3)`,
+            backgroundColor: `rgba(0, 0, 0, 0.8)`,
         });
     }
 
@@ -129,6 +152,22 @@ export class Options extends Component<Options_Props>
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
+                <Row_Counter
+                    ref={ref => this.row_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Column_Counter
+                    ref={ref => this.column_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <div>
+                </div>
                 <Same_Toggle
                     ref={ref => this.same_toggle = ref}
 
@@ -174,7 +213,7 @@ class Player_Counter extends Counter
     override Text():
         string
     {
-        return `Player Count`;
+        return `Players`;
     }
 
     override Count():
@@ -238,6 +277,156 @@ class Player_Counter extends Counter
             const model = this.Model() as Model.Menu_Options;
             if (model.Data().Rules().Can_Increment_Player_Count()) {
                 model.Data().Rules().Increment_Player_Count();
+                await this.Parent().Refresh();
+            }
+        }
+    }
+}
+
+class Row_Counter extends Counter
+{
+    override Text():
+        string
+    {
+        return `Rows`;
+    }
+
+    override Count():
+        Integer
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Row_Count();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Can_Decrement_Row_Count();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Can_Increment_Row_Count();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2.5em`;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Rules().Can_Decrement_Row_Count()) {
+                model.Data().Rules().Decrement_Row_Count();
+                await this.Parent().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Rules().Can_Increment_Row_Count()) {
+                model.Data().Rules().Increment_Row_Count();
+                await this.Parent().Refresh();
+            }
+        }
+    }
+}
+
+class Column_Counter extends Counter
+{
+    override Text():
+        string
+    {
+        return `Columns`;
+    }
+
+    override Count():
+        Integer
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Column_Count();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Can_Decrement_Column_Count();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Rules().Can_Increment_Column_Count();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2.5em`;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Rules().Can_Decrement_Column_Count()) {
+                model.Data().Rules().Decrement_Column_Count();
+                await this.Parent().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Rules().Can_Increment_Column_Count()) {
+                model.Data().Rules().Increment_Column_Count();
                 await this.Parent().Refresh();
             }
         }

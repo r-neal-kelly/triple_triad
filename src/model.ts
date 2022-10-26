@@ -21,6 +21,9 @@ type Min =
 type Max =
     number;
 
+type ID =
+    number;
+
 type URL =
     string;
 
@@ -53,6 +56,9 @@ type Element_Name =
 
 type Shuffle_Count =
     Count;
+
+export type Arena_ID =
+    ID;
 
 export type Color_Count =
     Count;
@@ -715,6 +721,16 @@ export class Main
         return this.current_arena as Arena;
     }
 
+    Rematch_Game():
+        Arena
+    {
+        Utils.Assert(this.current_arena != null);
+
+        this.current_arena = (this.current_arena as Arena).Clone();
+
+        return this.current_arena as Arena;
+    }
+
     Exit_Game():
         void
     {
@@ -888,7 +904,6 @@ export class Exhibition
     private main: Main;
     private index: Exhibition_Index;
     private arena: Arena;
-    private iteration_count: Iteration_Count;
 
     constructor(
         {
@@ -903,7 +918,6 @@ export class Exhibition
         this.main = main;
         this.index = index;
         this.arena = Exhibition.Generate(main.Packs().As_Array());
-        this.iteration_count = 1;
     }
 
     Main():
@@ -924,12 +938,6 @@ export class Exhibition
         return this.arena;
     }
 
-    Iteration_Count():
-        Iteration_Count
-    {
-        return this.iteration_count;
-    }
-
     Is_Visible():
         boolean
     {
@@ -940,7 +948,6 @@ export class Exhibition
         void
     {
         this.arena = Exhibition.Generate(this.main.Packs().As_Array());
-        this.iteration_count += 1;
     }
 
     private static Generate(packs: Array<Pack>):
@@ -990,18 +997,31 @@ export class Exhibition
     }
 }
 
+let old_arena_id: Arena_ID = 0;
+function Generate_Arena_ID():
+    Arena_ID
+{
+    old_arena_id += 1;
+
+    return old_arena_id;
+}
+
 /* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
 export class Arena
 {
-    #rules: Rules;
-    #players: Array<Player>;
-    #board: Board;
+    private rules: Rules;
+    private selections: Array<Selection>;
 
-    #turn_count: Turn_Count;
-    #turn_queue: Array<Player>;
-    #turn_queue_index: Index;
+    private id: Arena_ID;
 
-    #is_input_enabled: boolean;
+    private players: Array<Player>;
+    private board: Board;
+
+    private turn_count: Turn_Count;
+    private turn_queue: Array<Player>;
+    private turn_queue_index: Index;
+
+    private is_input_enabled: boolean;
 
     private scores: Scores | null;
 
@@ -1019,17 +1039,20 @@ export class Arena
         if (selections.length !== player_count) {
             throw new Error(`Must have a selection for each player, no more and no less.`);
         } else {
-            this.#rules = rules.Clone();
+            this.rules = rules.Clone();
+            this.selections = Array.from(selections);
+
+            this.id = Generate_Arena_ID();
 
             let human_count: Count = 0;
             let computer_count: Count = 0;
-            this.#players = [];
+            this.players = [];
             for (let idx = 0, end = player_count; idx < end; idx += 1) {
                 const selection: Selection = selections[idx];
                 let player_name: Player_Name = selection.Collection().Owner_Name();
                 if (selection.Is_Of_Human()) {
                     human_count += 1;
-                    this.#players.push(new Human_Player({
+                    this.players.push(new Human_Player({
                         arena: this,
                         index: idx,
                         name: player_name !== `` ?
@@ -1039,7 +1062,7 @@ export class Arena
                     }));
                 } else {
                     computer_count += 1;
-                    this.#players.push(new Computer_Player({
+                    this.players.push(new Computer_Player({
                         arena: this,
                         index: idx,
                         name: player_name !== `` ?
@@ -1050,41 +1073,63 @@ export class Arena
                 }
             }
 
-            this.#board = new Board({
+            this.board = new Board({
                 arena: this,
             });
 
-            this.#turn_count = rules.Cell_Count();
-            this.#turn_queue = Array.from(this.#players).sort(() => Utils.Random_Boolean() ? 1 : -1);
-            this.#turn_queue_index = 0;
+            this.turn_count = rules.Cell_Count();
+            this.turn_queue = Array.from(this.players).sort(() => Utils.Random_Boolean() ? 1 : -1);
+            this.turn_queue_index = 0;
 
-            this.#is_input_enabled = true;
+            this.is_input_enabled = true;
 
             this.scores = null;
 
-            Object.freeze(this.#rules);
-            Object.freeze(this.#players);
-            Object.freeze(this.#turn_queue);
+            Object.freeze(this.rules);
+            Object.freeze(this.selections);
+            Object.freeze(this.players);
+            Object.freeze(this.turn_queue);
         }
+    }
+
+    Clone():
+        Arena
+    {
+        return new Arena({
+            rules: this.rules,
+            selections: this.selections,
+        });
     }
 
     Rules():
         Rules
     {
-        return this.#rules;
+        return this.rules;
+    }
+
+    Selections():
+        Array<Selection>
+    {
+        return Array.from(this.selections);
+    }
+
+    ID():
+        Arena_ID
+    {
+        return this.id;
     }
 
     Player_Count():
         Player_Count
     {
-        return this.#players.length;
+        return this.players.length;
     }
 
     Player(player_index: Player_Index):
         Player
     {
         if (player_index >= 0 && player_index < this.Player_Count()) {
-            return this.#players[player_index];
+            return this.players[player_index];
         } else {
             throw new Error("Invalid player_index.");
         }
@@ -1093,7 +1138,7 @@ export class Arena
     Players():
         Array<Player>
     {
-        return Array.from(this.#players);
+        return Array.from(this.players);
     }
 
     Current_Player_Index():
@@ -1108,20 +1153,20 @@ export class Arena
         if (this.Is_Game_Over()) {
             throw new Error(`This arena has no current player because the game is over.`);
         } else {
-            return this.#turn_queue[this.#turn_queue_index];
+            return this.turn_queue[this.turn_queue_index];
         }
     }
 
     Board():
         Board
     {
-        return this.#board;
+        return this.board;
     }
 
     Turn_Count():
         Turn_Count
     {
-        return this.#turn_count;
+        return this.turn_count;
     }
 
     Is_On_Human_Turn():
@@ -1153,15 +1198,15 @@ export class Arena
         );
 
 
-        this.#turn_count -= 1;
-        this.#turn_queue_index += 1;
-        if (this.#turn_queue_index === this.#turn_queue.length) {
-            this.#turn_queue_index = 0;
+        this.turn_count -= 1;
+        this.turn_queue_index += 1;
+        if (this.turn_queue_index === this.turn_queue.length) {
+            this.turn_queue_index = 0;
         }
 
         if (this.Is_Game_Over()) {
             this.scores = new Scores({
-                players: this.#players,
+                players: this.players,
             });
         }
     }
@@ -1169,25 +1214,25 @@ export class Arena
     Is_Input_Enabled():
         boolean
     {
-        return this.#is_input_enabled;
+        return this.is_input_enabled;
     }
 
     Enable_Input():
         void
     {
-        this.#is_input_enabled = true;
+        this.is_input_enabled = true;
     }
 
     Disable_Input():
         void
     {
-        this.#is_input_enabled = false;
+        this.is_input_enabled = false;
     }
 
     Is_Game_Over():
         boolean
     {
-        return this.#turn_count === 0;
+        return this.turn_count === 0;
     }
 
     Scores():
@@ -1199,7 +1244,7 @@ export class Arena
     Has_Human_Players():
         boolean
     {
-        for (const player of this.#players) {
+        for (const player of this.players) {
             if (player.Is_Human()) {
                 return true;
             }
@@ -2283,30 +2328,69 @@ export class Scores
     }
 }
 
-const MIN_PLAYER_COUNT: Player_Count = 2;
-const MAX_PLAYER_COUNT: Player_Count = 8;
+export const MIN_ROW_COUNT: Row_Count = 2;
+export const MAX_ROW_COUNT: Row_Count = 16;
+export const DEFAULT_ROW_COUNT: Row_Count = 3;
+
+export const MIN_COLUMN_COUNT: Row_Count = 2;
+export const MAX_COLUMN_COUNT: Row_Count = 16;
+export const DEFAULT_COLUMN_COUNT: Row_Count = 3;
+
+export const MIN_PLAYER_COUNT: Player_Count = 2;
+export const MAX_PLAYER_COUNT: Player_Count = 8;
+export const DEFAULT_PLAYER_COUNT: Player_Count = 2;
 
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
-    #row_count: Row_Count;
-    #column_count: Column_Count;
-    #cell_count: Cell_Count;
-    #player_count: Player_Count;
-    #selection_card_count: Card_Count;
+    private static Can_Use_These_Counts(
+        {
+            row_count,
+            column_count,
+            player_count,
+        }: {
+            row_count: Row_Count,
+            column_count: Column_Count,
+            player_count: Player_Count,
+        },
+    ):
+        boolean
+    {
+        Utils.Assert(row_count != null);
+        Utils.Assert(column_count != null);
+        Utils.Assert(player_count != null);
 
-    #open: boolean;
-    #same: boolean;
-    #plus: boolean;
-    #wall: boolean;
-    #combo: boolean;
-    #random: boolean;
+        if (row_count >= MIN_ROW_COUNT &&
+            row_count <= MAX_ROW_COUNT &&
+
+            column_count >= MIN_COLUMN_COUNT &&
+            column_count <= MAX_COLUMN_COUNT &&
+
+            player_count >= MIN_PLAYER_COUNT &&
+            player_count <= MAX_PLAYER_COUNT
+        ) {
+            return player_count <= (row_count * column_count);
+        } else {
+            return false;
+        }
+    }
+
+    private row_count: Row_Count;
+    private column_count: Column_Count;
+    private player_count: Player_Count;
+
+    private open: boolean;
+    private same: boolean;
+    private plus: boolean;
+    private wall: boolean;
+    private combo: boolean;
+    private random: boolean;
 
     constructor(
         {
-            row_count = 3,
-            column_count = 3,
-            player_count = MIN_PLAYER_COUNT,
+            row_count = DEFAULT_ROW_COUNT,
+            column_count = DEFAULT_COLUMN_COUNT,
+            player_count = DEFAULT_PLAYER_COUNT,
 
             open = true,
             same = false,
@@ -2328,28 +2412,44 @@ export class Rules
         }
     )
     {
-        if (player_count < MIN_PLAYER_COUNT) {
-            throw new Error(`Must have a player_count of at least ${MIN_PLAYER_COUNT}.`);
-        } else if (player_count > MAX_PLAYER_COUNT) {
-            throw new Error(`Must have a player_count less than ${MAX_PLAYER_COUNT}.`);
-        } else {
-            this.#row_count = row_count;
-            this.#column_count = column_count;
-            this.#cell_count = this.#row_count * this.#column_count;
-            this.#player_count = player_count;
-            this.#selection_card_count = Math.ceil(this.#cell_count / this.#player_count);
+        Utils.Assert(
+            row_count != null &&
+            row_count >= MIN_ROW_COUNT &&
+            row_count <= MAX_ROW_COUNT,
+            `row_count of ${row_count} is not >= ${MIN_ROW_COUNT} and <= ${MAX_ROW_COUNT}`,
+        );
+        Utils.Assert(
+            column_count != null &&
+            column_count >= MIN_COLUMN_COUNT &&
+            column_count <= MAX_COLUMN_COUNT,
+            `column_count of ${column_count} is not >= ${MIN_COLUMN_COUNT} and <= ${MAX_COLUMN_COUNT}`,
+        );
+        Utils.Assert(
+            player_count != null &&
+            player_count >= MIN_PLAYER_COUNT &&
+            player_count <= MAX_PLAYER_COUNT,
+            `player_count of ${player_count} is not >= ${MIN_PLAYER_COUNT} and <= ${MAX_PLAYER_COUNT}`,
+        );
+        Utils.Assert(
+            Rules.Can_Use_These_Counts({
+                row_count,
+                column_count,
+                player_count,
+            }),
+            `A ${row_count} x ${column_count} grid has ${row_count * column_count} cells.
+            There must be at least one cell per player.`,
+        );
 
-            this.#open = open;
-            this.#same = same;
-            this.#plus = plus;
-            this.#wall = wall;
-            this.#combo = combo;
-            this.#random = random;
+        this.row_count = row_count;
+        this.column_count = column_count;
+        this.player_count = player_count;
 
-            if (this.Player_Count() > this.Cell_Count()) {
-                throw new Error(`A cell_count of ${this.Cell_Count()} is too few for a player_count of ${player_count}.`);
-            }
-        }
+        this.open = open;
+        this.same = same;
+        this.plus = plus;
+        this.wall = wall;
+        this.combo = combo;
+        this.random = random;
     }
 
     Clone():
@@ -2372,67 +2472,175 @@ export class Rules
     Row_Count():
         Row_Count
     {
-        return this.#row_count;
+        return this.row_count;
     }
 
     Column_Count():
         Column_Count
     {
-        return this.#column_count;
+        return this.column_count;
     }
 
     Cell_Count():
         Cell_Count
     {
-        return this.#cell_count;
+        return this.row_count * this.column_count;
     }
 
     Player_Count():
         Player_Count
     {
-        return this.#player_count;
+        return this.player_count;
     }
 
     Selection_Card_Count():
         Card_Count
     {
-        return this.#selection_card_count;
+        return Math.ceil(this.Cell_Count() / this.player_count);
     }
 
     Open():
         boolean
     {
-        return this.#open;
+        return this.open;
     }
 
     Same():
         boolean
     {
-        return this.#same;
+        return this.same;
     }
 
     Plus():
         boolean
     {
-        return this.#plus;
+        return this.plus;
     }
 
     Wall():
         boolean
     {
-        return this.#wall;
+        return this.wall;
     }
 
     Combo():
         boolean
     {
-        return this.#combo;
+        return this.combo;
     }
 
     Random():
         boolean
     {
-        return this.#random;
+        return this.random;
+    }
+
+    Can_Decrement_Row_Count():
+        boolean
+    {
+        return Rules.Can_Use_These_Counts({
+            row_count: this.row_count - 1,
+            column_count: this.column_count,
+            player_count: this.player_count,
+        });
+    }
+
+    Can_Decrement_Column_Count():
+        boolean
+    {
+        return Rules.Can_Use_These_Counts({
+            row_count: this.row_count,
+            column_count: this.column_count - 1,
+            player_count: this.player_count,
+        });
+    }
+
+    Can_Decrement_Player_Count():
+        boolean
+    {
+        return Rules.Can_Use_These_Counts({
+            row_count: this.row_count,
+            column_count: this.column_count,
+            player_count: this.player_count - 1,
+        });
+    }
+
+    Can_Increment_Row_Count():
+        boolean
+    {
+        return Rules.Can_Use_These_Counts({
+            row_count: this.row_count + 1,
+            column_count: this.column_count,
+            player_count: this.player_count,
+        });
+    }
+
+    Can_Increment_Column_Count():
+        boolean
+    {
+        return Rules.Can_Use_These_Counts({
+            row_count: this.row_count,
+            column_count: this.column_count + 1,
+            player_count: this.player_count,
+        });
+    }
+
+    Can_Increment_Player_Count():
+        boolean
+    {
+        return Rules.Can_Use_These_Counts({
+            row_count: this.row_count,
+            column_count: this.column_count,
+            player_count: this.player_count + 1,
+        });
+    }
+
+    Decrement_Row_Count():
+        void
+    {
+        Utils.Assert(this.Can_Decrement_Row_Count());
+
+        this.row_count -= 1;
+    }
+
+    Decrement_Column_Count():
+        void
+    {
+        Utils.Assert(this.Can_Decrement_Column_Count());
+
+        this.column_count -= 1;
+    }
+
+    Decrement_Player_Count():
+        void
+    {
+        Utils.Assert(this.Can_Decrement_Player_Count());
+
+        this.player_count -= 1;
+    }
+
+    Increment_Row_Count():
+        void
+    {
+        Utils.Assert(this.Can_Increment_Row_Count());
+
+        this.row_count += 1;
+    }
+
+    Increment_Column_Count():
+        void
+    {
+        Utils.Assert(this.Can_Increment_Column_Count());
+
+        this.column_count += 1;
+    }
+
+    Increment_Player_Count():
+        void
+    {
+        Utils.Assert(this.Can_Increment_Player_Count());
+
+        this.player_count += 1;
     }
 
     Can_Toggle_Same():
@@ -2450,105 +2658,58 @@ export class Rules
     Can_Toggle_Wall():
         boolean
     {
-        return this.#same || this.#plus;
+        return this.same || this.plus;
     }
 
     Can_Toggle_Combo():
         boolean
     {
-        return this.#same || this.#plus;
+        return this.same || this.plus;
     }
 
     Toggle_Same():
         void
     {
-        this.#same = !this.#same;
+        this.same = !this.same;
         if (!this.Can_Toggle_Wall()) {
-            this.#wall = false;
+            this.wall = false;
         }
         if (!this.Can_Toggle_Combo()) {
-            this.#combo = false;
+            this.combo = false;
         }
     }
 
     Toggle_Plus():
         void
     {
-        this.#plus = !this.#plus;
+        this.plus = !this.plus;
         if (!this.Can_Toggle_Wall()) {
-            this.#wall = false;
+            this.wall = false;
         }
         if (!this.Can_Toggle_Combo()) {
-            this.#combo = false;
+            this.combo = false;
         }
     }
 
     Toggle_Wall():
         void
     {
-        if (!this.#wall) {
+        if (!this.wall) {
             Utils.Assert(this.Can_Toggle_Wall());
         }
 
-        this.#wall = !this.#wall;
+        this.wall = !this.wall;
     }
 
     Toggle_Combo():
         void
     {
-        if (!this.#combo) {
+        if (!this.combo) {
             Utils.Assert(this.Can_Toggle_Combo());
         }
 
-        this.#combo = !this.#combo;
+        this.combo = !this.combo;
     }
-
-    Can_Decrement_Player_Count():
-        boolean
-    {
-        const player_count: Player_Count = this.Player_Count();
-
-        return (
-            player_count > MIN_PLAYER_COUNT &&
-            (this.Player_Count() - 1) <= this.Cell_Count()
-        );
-    }
-
-    Can_Increment_Player_Count():
-        boolean
-    {
-        const player_count: Player_Count = this.Player_Count();
-
-        return (
-            player_count < MAX_PLAYER_COUNT &&
-            (this.Player_Count() + 1) <= this.Cell_Count()
-        );
-    }
-
-    Decrement_Player_Count():
-        void
-    {
-        Utils.Assert(this.Can_Decrement_Player_Count());
-
-        this.#player_count -= 1;
-    }
-
-    Increment_Player_Count():
-        void
-    {
-        Utils.Assert(this.Can_Increment_Player_Count());
-
-        this.#player_count += 1;
-    }
-}
-
-type Rules_Save_Data = {
-    row_count: Row_Count,
-    column_count: Column_Count,
-    player_count: Player_Count,
-
-    open: boolean,
-    random: boolean,
 }
 
 export class Random_Rules extends Rules
