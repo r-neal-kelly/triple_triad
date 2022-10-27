@@ -1,9 +1,18 @@
 import React from "react";
 import ReactDom from "react-dom";
 
+import { Integer } from "../types";
 import { Index } from "../types";
 import { Wait } from "../utils";
 import * as Event from "../event";
+
+export type Component_ID = Integer;
+let component_id = 0;
+function New_Component_ID():
+    Component_ID
+{
+    return component_id++;
+}
 
 export type Component_Styles = {
     [index: string]: string,
@@ -34,6 +43,7 @@ export interface Component_Props
 */
 export class Component<T extends Component_Props> extends React.Component<T>
 {
+    private id: Component_ID;
     private styles: Component_Styles;
     private body: HTMLElement | null;
     private is_alive: boolean;
@@ -43,6 +53,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     {
         super(props);
 
+        this.id = New_Component_ID();
         this.styles = Object.assign({}, this.Before_Life());
         this.body = null;
         this.is_alive = false;
@@ -161,6 +172,12 @@ export class Component<T extends Component_Props> extends React.Component<T>
         boolean
     {
         return !this.is_alive;
+    }
+
+    ID():
+        Component_ID
+    {
+        return this.id;
     }
 
     Model():

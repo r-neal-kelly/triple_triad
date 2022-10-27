@@ -1,4 +1,4 @@
-import { Integer } from "../types";
+import { Float } from "../types";
 
 import { Wait } from "../utils";
 
@@ -25,58 +25,52 @@ export class Main extends Component<Main_Props>
     private arena: Arena | null = null;
     private results: Results | null = null;
 
-    private current_width: Integer = this.Parent().clientWidth;
-    private current_height: Integer = this.Parent().clientHeight;
-    private resize_observer: ResizeObserver = new ResizeObserver(this.On_Resize.bind(this));
+    private current_width: Float;
+    private current_height: Float;
+    private resize_observer: ResizeObserver;
+
+    constructor(props: Main_Props)
+    {
+        super(props);
+
+        const rect: DOMRect = this.Parent().getBoundingClientRect();
+        this.current_width = rect.width;
+        this.current_height = rect.height;
+        this.resize_observer = new ResizeObserver((this.On_Resize.bind(this)));
+    }
 
     Menu():
         Menu
     {
-        if (this.menu == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.menu;
-        }
+        return this.Try_Object(this.menu);
     }
 
     Exhibitions():
         Exhibitions
     {
-        if (this.exhibitions == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.exhibitions;
-        }
+        return this.Try_Object(this.exhibitions);
     }
 
     Arena():
         Arena
     {
-        if (this.arena == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.arena;
-        }
+        return this.Try_Object(this.arena);
     }
 
     Results():
         Results
     {
-        if (this.results == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.results;
-        }
+        return this.Try_Object(this.results);
     }
 
     Width():
-        Integer
+        Float
     {
         return this.current_width;
     }
 
     Height():
-        Integer
+        Float
     {
         return this.current_height;
     }
@@ -97,9 +91,6 @@ export class Main extends Component<Main_Props>
         Component_Styles
     {
         return ({
-            width: `100%`,
-            height: `100%`,
-
             position: `relative`,
 
             animationName: `Main_Fade_In`,
@@ -116,6 +107,9 @@ export class Main extends Component<Main_Props>
         // and keep doing rematches until the player decides to start up a game of their own
 
         const model: Model.Main = this.Model();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
 
         if (model.Isnt_In_Game()) {
             return (
@@ -170,23 +164,10 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Resize():
-        Promise<void>
-    {
-        const element: HTMLElement = this.Some_Element();
-        const width: Integer = element.clientWidth;
-        const height: Integer = element.clientHeight;
-        if (this.current_width !== width || this.current_height !== height) {
-            this.current_width = width;
-            this.current_height = height;
-            this.Refresh();
-        }
-    }
-
     On_Life():
         Event.Listener_Info[]
     {
-        this.resize_observer.observe(this.Some_Element());
+        this.resize_observer.observe(this.Parent());
 
         this.While_Alive();
 
@@ -204,6 +185,29 @@ export class Main extends Component<Main_Props>
                 event_handler: this.On_Exit_Game,
             },
         ];
+    }
+
+    On_Resize():
+        void
+    {
+        const rect: DOMRect = this.Parent().getBoundingClientRect();
+        if (this.current_width !== rect.width || this.current_height !== rect.height) {
+            this.current_width = rect.width;
+            this.current_height = rect.height;
+
+            // Our event system is way faster than react's, so we go
+            // ahead and do preliminary updates then call refresh.
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.current_width,
+                    height: this.current_height,
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+
+            this.Refresh();
+        }
     }
 
     async While_Alive():

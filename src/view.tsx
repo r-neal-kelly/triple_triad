@@ -2,6 +2,8 @@ import "./view.css";
 
 import React from "react";
 
+import { Float } from "./types";
+
 import { Assert } from "./utils";
 import { Wait } from "./utils";
 
@@ -75,13 +77,34 @@ export class Exhibitions extends Component<Exhibitions_Props>
         }
     }
 
+    Width():
+        Float
+    {
+        return this.Parent().Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Parent().Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
     Before_Life():
         Component_Styles
     {
         return ({
-            width: `100%`,
-            height: `100%`,
-
             position: `absolute`,
             left: `0`,
             top: `0`,
@@ -96,6 +119,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         const model: Model.Main = this.Model();
         const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
 
         return (
             <div
@@ -119,6 +145,38 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 }
             </div>
         );
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return [
+            {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+        ];
+    }
+
+    On_Resize(
+        {
+            width,
+            height,
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        this.Send({
+            name_affix: `${Event.RESIZE}_${this.ID()}`,
+            data: {
+                width,
+                height,
+            } as Event.Resize_Data,
+            is_atomic: false,
+        });
     }
 }
 

@@ -1,3 +1,5 @@
+import { Float } from "../types";
+
 import { Assert } from "../utils";
 
 import * as Model from "../model";
@@ -28,21 +30,37 @@ export class Menu extends Component<Menu_Props>
     Top():
         Top
     {
-        if (this.top == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.top;
-        }
+        return this.Try_Object(this.top);
     }
 
     Options():
         Options
     {
-        if (this.options == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.options;
-        }
+        return this.Try_Object(this.options);
+    }
+
+    Width():
+        Float
+    {
+        return this.Parent().Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Parent().Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
     }
 
     Before_Life():
@@ -53,9 +71,6 @@ export class Menu extends Component<Menu_Props>
             flexDirection: `column`,
             justifyContent: `center`,
             alignItems: `center`,
-
-            width: `100%`,
-            height: `100%`,
 
             position: `absolute`,
             left: `0`,
@@ -71,6 +86,9 @@ export class Menu extends Component<Menu_Props>
     {
         const model: Model.Menu = this.Model();
         const current_menu: Model.Menu_e = model.Current_Menu();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
 
         if (current_menu === Model.Menu_e.TOP) {
             return (
@@ -112,6 +130,10 @@ export class Menu extends Component<Menu_Props>
     {
         return [
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.OPEN_TOP_MENU),
                 event_handler: this.On_Open_Top_Menu,
             },
@@ -120,6 +142,27 @@ export class Menu extends Component<Menu_Props>
                 event_handler: this.On_Open_Options_Menu,
             },
         ];
+    }
+
+    On_Resize(
+        {
+            width,
+            height,
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        this.Send({
+            name_affix: `${Event.RESIZE}_${this.ID()}`,
+            data: {
+                width,
+                height,
+            } as Event.Resize_Data,
+            is_atomic: false,
+        });
     }
 
     async On_Open_Top_Menu():

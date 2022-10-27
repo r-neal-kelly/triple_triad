@@ -1,3 +1,5 @@
+import { Float } from "../types";
+
 import * as Event from "../event";
 
 import * as Model from "../model";
@@ -17,6 +19,8 @@ export type Instance = Event.Instance;
 export const BEFORE: Event.Name_Prefix = Event.BEFORE;
 export const ON: Event.Name_Prefix = Event.ON;
 export const AFTER: Event.Name_Prefix = Event.AFTER;
+
+export const RESIZE: Event.Name_Affix = `Resize`;
 
 export const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
 export const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
@@ -39,6 +43,11 @@ export const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 // might want to turn these into full classes so that the sender has to fill out the info properly.
 // that would mean changing how the event grid adds the event instance to the data.
 // simple, just have these inherit from a base Event.Data type
+export type Resize_Data = {
+    width: Float,
+    height: Float,
+}
+
 export type Start_New_Game_Data = {
 }
 
