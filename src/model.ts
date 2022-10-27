@@ -76,8 +76,14 @@ export type Stake_Index =
 export type Row_Count =
     Count;
 
+export type Row_Index =
+    Index;
+
 export type Column_Count =
     Count;
+
+export type Column_Index =
+    Index;
 
 export type Cell_Count =
     Count;
@@ -3213,6 +3219,48 @@ export class Board
         return Array.from(this.#cells);
     }
 
+    Coordinates(cell_index: Cell_Index):
+        {
+            row_index: Row_Index,
+            column_index: Column_Index,
+        }
+    {
+        Utils.Assert(
+            cell_index != null &&
+            cell_index >= 0 &&
+            cell_index < this.Cell_Count()
+        );
+
+        const column_count = this.Column_Count();
+
+        return ({
+            row_index: Math.floor(cell_index / column_count),
+            column_index: cell_index % column_count,
+        });
+    }
+
+    Step_Count(
+        from_cell_index: Cell_Index,
+        to_cell_index: Cell_Index,
+    ):
+        Step_Count
+    {
+        const { row_index: from_row_index, column_index: from_column_index } =
+            this.Coordinates(from_cell_index);
+        const { row_index: to_row_index, column_index: to_column_index } =
+            this.Coordinates(to_cell_index);
+
+        const row_difference: Count = to_row_index > from_row_index ?
+            to_row_index - from_row_index :
+            from_row_index - to_row_index;
+
+        const column_difference: Count = to_column_index > from_column_index ?
+            to_column_index - from_column_index :
+            from_column_index - to_column_index;
+
+        return row_difference + column_difference;
+    }
+
     Left_Of(cell_index: Cell_Index):
         Cell | Wall
     {
@@ -3455,8 +3503,11 @@ export class Board
             },
         );
 
-        const turn_results: Turn_Results = new Turn_Results();
-        await this.#Evaluate_Cell(cell_index, turn_results, 0);
+        const turn_results: Turn_Results = new Turn_Results({
+            board: this,
+            origin_cell_index: cell_index,
+        });
+        await this.#Evaluate_Cell(cell_index, turn_results);
 
         return turn_results.Steps();
     }
@@ -3470,7 +3521,6 @@ export class Board
     async #Evaluate_Cell(
         cell_index: Cell_Index,
         turn_results: Turn_Results,
-        step_count: Step_Count,
     ):
         Promise<void>
     {
@@ -3756,7 +3806,6 @@ export class Board
             const left_turn_result: Turn_Result = turn_results.At(left_index as Cell_Index);
             left_turn_result.direction = Direction_e.LEFT;
             left_turn_result.old_color = (left_cell as Cell).Color();
-            left_turn_result.step = step_count + 1;
         }
         if (top_claimed) {
             this.#cells[top_index as Cell_Index] = new Cell(
@@ -3769,7 +3818,6 @@ export class Board
             const top_turn_result: Turn_Result = turn_results.At(top_index as Cell_Index);
             top_turn_result.direction = Direction_e.TOP;
             top_turn_result.old_color = (top_cell as Cell).Color();
-            top_turn_result.step = step_count + 1;
         }
         if (right_claimed) {
             this.#cells[right_index as Cell_Index] = new Cell(
@@ -3782,7 +3830,6 @@ export class Board
             const right_turn_result: Turn_Result = turn_results.At(right_index as Cell_Index);
             right_turn_result.direction = Direction_e.RIGHT;
             right_turn_result.old_color = (right_cell as Cell).Color();
-            right_turn_result.step = step_count + 1;
         }
         if (bottom_claimed) {
             this.#cells[bottom_index as Cell_Index] = new Cell(
@@ -3795,7 +3842,6 @@ export class Board
             const bottom_turn_result: Turn_Result = turn_results.At(bottom_index as Cell_Index);
             bottom_turn_result.direction = Direction_e.BOTTOM;
             bottom_turn_result.old_color = (bottom_cell as Cell).Color();
-            bottom_turn_result.step = step_count + 1;
         }
 
         if (this.Rules().Combo()) {
@@ -3820,7 +3866,7 @@ export class Board
             }
 
             for (const cell_index_to_combo of cell_indices_to_combo) {
-                await this.#Evaluate_Cell(cell_index_to_combo, turn_results, step_count + 1);
+                await this.#Evaluate_Cell(cell_index_to_combo, turn_results);
             }
         }
     }
@@ -4269,11 +4315,23 @@ export class Wall
 
 class Turn_Results
 {
-    #turn_results: { [index: Cell_Index]: Turn_Result };
+    private board: Board;
+    private origin_cell_index: Cell_Index;
+    private turn_results: { [index: Cell_Index]: Turn_Result };
 
-    constructor()
+    constructor(
+        {
+            board,
+            origin_cell_index,
+        }: {
+            board: Board,
+            origin_cell_index: Cell_Index,
+        },
+    )
     {
-        this.#turn_results = {};
+        this.board = board;
+        this.origin_cell_index = origin_cell_index;
+        this.turn_results = {};
 
         Object.freeze(this);
     }
@@ -4281,7 +4339,7 @@ class Turn_Results
     Freeze():
         void
     {
-        for (const turn_result of Object.values(this.#turn_results)) {
+        for (const turn_result of Object.values(this.turn_results)) {
             Object.freeze(turn_result.same);
             Object.freeze(turn_result.plus);
             Object.freeze(turn_result);
@@ -4291,8 +4349,8 @@ class Turn_Results
     At(cell_index: Cell_Index):
         Turn_Result
     {
-        if (this.#turn_results[cell_index] == null) {
-            this.#turn_results[cell_index] = {
+        if (this.turn_results[cell_index] == null) {
+            this.turn_results[cell_index] = {
                 cell_index: cell_index,
                 direction: Direction_e._NONE_,
                 old_color: null,
@@ -4313,7 +4371,7 @@ class Turn_Results
             };
         }
 
-        return this.#turn_results[cell_index];
+        return this.turn_results[cell_index];
     }
 
     Steps():
@@ -4322,7 +4380,15 @@ class Turn_Results
         const results: Turn_Result_Steps = [];
 
         const step_hashmap: { [index: Step_Count]: Array<Turn_Result> } = {};
-        for (const turn_result of Object.values(this.#turn_results)) {
+        for (const turn_result of Object.values(this.turn_results)) {
+            // we defer calculating the step here because the combo recursion
+            // is asynchronous, and thus cannot be depended up to count the steps
+            // for us during evaluation.
+            turn_result.step = this.board.Step_Count(
+                this.origin_cell_index,
+                turn_result.cell_index,
+            );
+
             if (step_hashmap[turn_result.step] == null) {
                 step_hashmap[turn_result.step] = [];
             }
