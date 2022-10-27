@@ -42,7 +42,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     {
         super(props);
 
-        this.styles = this.Before_Life();
+        this.styles = Object.assign({}, this.Before_Life());
         this.body = null;
         this.is_alive = false;
         this.is_refreshing = true;

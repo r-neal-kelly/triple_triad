@@ -843,9 +843,95 @@ export class Menu_Options
 
 export class Options
 {
+    static Min_Player_Count():
+        Player_Count
+    {
+        return Rules.Min_Player_Count();
+    }
+
+    static Max_Player_Count():
+        Player_Count
+    {
+        return Rules.Max_Player_Count();
+    }
+
+    private static Player_Color_Pool():
+        Array<Color>
+    {
+        return ([
+            // Blue
+            new Color({
+                red: 64,
+                green: 64,
+                blue: 128,
+                alpha: 0.7,
+            }),
+            // Cyan
+            new Color({
+                red: 64,
+                green: 107,
+                blue: 128,
+                alpha: 0.7,
+            }),
+            // Teal
+            new Color({
+                red: 64,
+                green: 128,
+                blue: 107,
+                alpha: 0.7,
+            }),
+            // Green
+            new Color({
+                red: 64,
+                green: 128,
+                blue: 64,
+                alpha: 0.7,
+            }),
+            // Olive
+            new Color({
+                red: 107,
+                green: 128,
+                blue: 64,
+                alpha: 0.7,
+            }),
+            // Brown
+            new Color({
+                red: 128,
+                green: 107,
+                blue: 64,
+                alpha: 0.7,
+            }),
+            // Red
+            new Color({
+                red: 128,
+                green: 64,
+                blue: 64,
+                alpha: 0.7,
+            }),
+            // Violet
+            new Color({
+                red: 128,
+                green: 64,
+                blue: 107,
+                alpha: 0.7,
+            }),
+            // Purple
+            new Color({
+                red: 107,
+                green: 64,
+                blue: 128,
+                alpha: 0.7,
+            }),
+        ]);
+    }
+
     private rules: Rules;
 
     private use_small_board: boolean;
+
+    private player_color_pool: Array<Color>;
+    private player_colors: Array<Color>;
+    private player_color_pool_select_index: Color_Index;
 
     constructor(
         {
@@ -862,6 +948,15 @@ export class Options
         this.rules = rules.Clone();
 
         this.use_small_board = use_small_board;
+
+        this.player_color_pool = Options.Player_Color_Pool();
+        this.player_colors = [];
+        this.player_color_pool_select_index = 0;
+
+        Utils.Assert(rules.Player_Count() <= this.player_color_pool.length);
+        for (let idx = 0, end = rules.Player_Count(); idx < end; idx += 1) {
+            this.Increment_Player_Colors();
+        }
     }
 
     Rules():
@@ -874,6 +969,161 @@ export class Options
         boolean
     {
         return this.use_small_board;
+    }
+
+    Player_Count():
+        Player_Count
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+
+        return this.Rules().Player_Count();
+    }
+
+    Can_Decrement_Player_Count():
+        boolean
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+
+        return this.Rules().Can_Decrement_Player_Count();
+    }
+
+    Can_Increment_Player_Count():
+        boolean
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+
+        return this.Rules().Can_Increment_Player_Count();
+    }
+
+    Decrement_Player_Count():
+        void
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+        Utils.Assert(this.Can_Decrement_Player_Count());
+
+        this.Rules().Decrement_Player_Count();
+        this.Decrement_Player_Colors();
+    }
+
+    Increment_Player_Count():
+        void
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+        Utils.Assert(this.Can_Increment_Player_Count());
+
+        this.Rules().Increment_Player_Count();
+        this.Increment_Player_Colors();
+    }
+
+    private Decrement_Player_Colors():
+        void
+    {
+        this.player_color_pool.push(this.player_colors.pop() as Color);
+    }
+
+    private Increment_Player_Colors():
+        void
+    {
+        Utils.Assert(this.player_color_pool.length > 0);
+
+        const pool_index: Color_Index =
+            Utils.Random_Integer_Exclusive(0, this.player_color_pool.length);
+
+        this.player_colors.push(this.player_color_pool[pool_index]);
+        this.player_color_pool[pool_index] =
+            this.player_color_pool[this.player_color_pool.length - 1];
+        this.player_color_pool.pop();
+    }
+
+    Player_Color_Count():
+        Color_Count
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+
+        return this.player_colors.length;
+    }
+
+    Player_Color(player_color_index: Color_Index):
+        Color
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+        Utils.Assert(
+            player_color_index != null &&
+            player_color_index >= 0 &&
+            player_color_index < this.player_colors.length
+        );
+
+        return this.player_colors[player_color_index];
+    }
+
+    Player_Colors():
+        Array<Color>
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+
+        return Array.from(this.player_colors);
+    }
+
+    Select_Previous_Player_Color(player_color_index: Color_Index):
+        Color
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+        Utils.Assert(
+            player_color_index != null &&
+            player_color_index >= 0 &&
+            player_color_index < this.player_colors.length
+        );
+
+        if (this.player_color_pool.length > 0) {
+            if (
+                this.player_color_pool_select_index > this.player_color_pool.length ||
+                this.player_color_pool_select_index === 0
+            ) {
+                this.player_color_pool_select_index = this.player_color_pool.length;
+            }
+            this.player_color_pool_select_index -= 1;
+
+            const old_color: Color =
+                this.player_colors[player_color_index];
+            const new_color: Color =
+                this.player_color_pool[this.player_color_pool_select_index];
+
+            this.player_colors[player_color_index] = new_color;
+            this.player_color_pool[this.player_color_pool_select_index] = old_color;
+
+            return new_color;
+        } else {
+            return this.player_colors[player_color_index];
+        }
+    }
+
+    Select_Next_Player_Color(player_color_index: Color_Index):
+        Color
+    {
+        Utils.Assert(this.player_colors.length === this.Rules().Player_Count());
+        Utils.Assert(
+            player_color_index != null &&
+            player_color_index >= 0 &&
+            player_color_index < this.player_colors.length
+        );
+
+        if (this.player_color_pool.length > 0) {
+            this.player_color_pool_select_index += 1;
+            if (this.player_color_pool_select_index >= this.player_color_pool.length) {
+                this.player_color_pool_select_index = 0;
+            }
+            const old_color: Color =
+                this.player_colors[player_color_index];
+            const new_color: Color =
+                this.player_color_pool[this.player_color_pool_select_index];
+
+            this.player_colors[player_color_index] = new_color;
+            this.player_color_pool[this.player_color_pool_select_index] = old_color;
+
+            return new_color;
+        } else {
+            return this.player_colors[player_color_index];
+        }
     }
 }
 
@@ -1604,6 +1854,8 @@ export class Random_Color extends Color
     }
 }
 
+// I think another way to do this would be to a 3d space, select a non-changing radius
+// and just rotate around the plane using sin/cosin to get an equal distribution
 export class Unique_Random_Colors
 {
     #min_red: number;
@@ -2064,6 +2316,18 @@ export const DEFAULT_PLAYER_COUNT: Player_Count = 2;
 /* A selection of rules which an arena must abide by. */
 export class Rules
 {
+    static Min_Player_Count():
+        Player_Count
+    {
+        return MIN_PLAYER_COUNT;
+    }
+
+    static Max_Player_Count():
+        Player_Count
+    {
+        return MAX_PLAYER_COUNT;
+    }
+
     private static Can_Use_These_Counts(
         {
             row_count,

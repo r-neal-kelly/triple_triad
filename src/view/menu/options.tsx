@@ -7,6 +7,7 @@ import { Component, Component_Styles } from "../component";
 import { Button } from "../common/button";
 import { Toggle } from "../common/toggle";
 import { Counter } from "../common/counter";
+import { Color } from "../common/color";
 import { Menu } from "../menu";
 
 type Options_Props = {
@@ -17,9 +18,11 @@ type Options_Props = {
 
 export class Options extends Component<Options_Props>
 {
-    private player_counter: Player_Counter | null = null;
     private row_counter: Row_Counter | null = null;
     private column_counter: Column_Counter | null = null;
+    private player_counter: Player_Counter | null = null;
+    private player_colors: Array<null> =
+        new Array(this.Model().Data().Rules().Player_Count()).fill(null);
 
     private same_toggle: Same_Toggle | null = null;
     private plus_toggle: Plus_Toggle | null = null;
@@ -32,16 +35,6 @@ export class Options extends Component<Options_Props>
         Menu
     {
         return this.Parent();
-    }
-
-    Player_Counter():
-        Player_Counter
-    {
-        if (this.player_counter == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.player_counter;
-        }
     }
 
     Row_Counter():
@@ -61,6 +54,16 @@ export class Options extends Component<Options_Props>
             throw this.Error_Not_Rendered();
         } else {
             return this.column_counter;
+        }
+    }
+
+    Player_Counter():
+        Player_Counter
+    {
+        if (this.player_counter == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return this.player_counter;
         }
     }
 
@@ -121,8 +124,7 @@ export class Options extends Component<Options_Props>
             display: `grid`,
             gridTemplateColumns: `1fr 1fr`,
             gridTemplateRows: `1fr 1fr 1fr 1fr`,
-            columnGap: `3%`,
-            rowGap: `5%`,
+            gridGap: `3%`,
 
             width: `90%`,
             height: `90%`,
@@ -143,15 +145,9 @@ export class Options extends Component<Options_Props>
     {
         return (
             <div
+                className={`Options`}
                 style={this.Styles()}
             >
-                <Player_Counter
-                    ref={ref => this.player_counter = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
                 <Row_Counter
                     ref={ref => this.row_counter = ref}
 
@@ -161,6 +157,13 @@ export class Options extends Component<Options_Props>
                 />
                 <Column_Counter
                     ref={ref => this.column_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Player_Counter
+                    ref={ref => this.player_counter = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -208,83 +211,29 @@ export class Options extends Component<Options_Props>
     }
 }
 
-class Player_Counter extends Counter
+type Board_Options_Props = {
+    model: Model.Options;
+    parent: Options;
+    event_grid: Event.Grid;
+}
+
+class Board_Options extends Component<Board_Options_Props>
 {
-    override Text():
-        string
+    Options():
+        Options
     {
-        return `Players`;
-    }
-
-    override Count():
-        Integer
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Player_Count();
-    }
-
-    override Can_Decrement():
-        boolean
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Can_Decrement_Player_Count();
-    }
-
-    override Can_Increment():
-        boolean
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Can_Increment_Player_Count();
-    }
-
-    override CSS_Width():
-        string
-    {
-        return `90%`;
-    }
-
-    override CSS_Height():
-        string
-    {
-        return `90%`;
-    }
-
-    override CSS_Text_Size():
-        string
-    {
-        return `2.5em`;
-    }
-
-    override async On_Decrement(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Rules().Can_Decrement_Player_Count()) {
-                model.Data().Rules().Decrement_Player_Count();
-                await this.Parent().Refresh();
-            }
-        }
-    }
-
-    override async On_Increment(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Rules().Can_Increment_Player_Count()) {
-                model.Data().Rules().Increment_Player_Count();
-                await this.Parent().Refresh();
-            }
-        }
+        return this.Parent();
     }
 }
 
 class Row_Counter extends Counter
 {
+    override Name():
+        string
+    {
+        return `Row_Counter`;
+    }
+
     override Text():
         string
     {
@@ -330,7 +279,7 @@ class Row_Counter extends Counter
     override CSS_Text_Size():
         string
     {
-        return `2.5em`;
+        return `2em`;
     }
 
     override async On_Decrement(event: React.SyntheticEvent):
@@ -360,6 +309,12 @@ class Row_Counter extends Counter
 
 class Column_Counter extends Counter
 {
+    override Name():
+        string
+    {
+        return `Column_Counter`;
+    }
+
     override Text():
         string
     {
@@ -405,7 +360,7 @@ class Column_Counter extends Counter
     override CSS_Text_Size():
         string
     {
-        return `2.5em`;
+        return `2em`;
     }
 
     override async On_Decrement(event: React.SyntheticEvent):
@@ -433,8 +388,219 @@ class Column_Counter extends Counter
     }
 }
 
+type Player_Options_Props = {
+    model: Model.Options;
+    parent: Options;
+    event_grid: Event.Grid;
+}
+
+class Player_Options extends Component<Player_Options_Props>
+{
+    Options():
+        Options
+    {
+        return this.Parent();
+    }
+}
+
+class Player_Counter extends Counter
+{
+    override Name():
+        string
+    {
+        return `Player_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Players`;
+    }
+
+    override Count():
+        Integer
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Player_Count();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Can_Decrement_Player_Count();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        const model = this.Model() as Model.Menu_Options;
+
+        return model.Data().Can_Increment_Player_Count();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2em`;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Can_Decrement_Player_Count()) {
+                model.Data().Decrement_Player_Count();
+                await this.Parent().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model = this.Model() as Model.Menu_Options;
+            if (model.Data().Can_Increment_Player_Count()) {
+                model.Data().Increment_Player_Count();
+                await this.Parent().Refresh();
+            }
+        }
+    }
+}
+
+type Player_Colors_Props = {
+    model: Model.Options;
+    parent: Player_Options;
+    event_grid: Event.Grid;
+}
+
+class Player_Colors extends Component<Player_Colors_Props>
+{
+    Options():
+        Options
+    {
+        return this.Player_Options().Options();
+    }
+
+    Player_Options():
+        Player_Options
+    {
+        return this.Parent();
+    }
+}
+
+type Player_Color_Props = {
+    model: Model.Options;
+    parent: Player_Colors;
+    event_grid: Event.Grid;
+    index: Model.Player_Index;
+}
+
+class Player_Color extends Color<Player_Color_Props>
+{
+    Options():
+        Options
+    {
+        return this.Player_Colors().Player_Options().Options();
+    }
+
+    Player_Options():
+        Player_Options
+    {
+        return this.Player_Colors().Player_Options();
+    }
+
+    Player_Colors():
+        Player_Colors
+    {
+        return this.Parent();
+    }
+
+    Index():
+        Model.Player_Index
+    {
+        return this.props.index;
+    }
+
+    override Name():
+        string
+    {
+        return `Player_Color_${this.Index()}`;
+    }
+
+    override Color():
+        Model.Color
+    {
+        return this.Model().Player_Color(this.Index());
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `calc(100% / ${Model.Options.Max_Player_Count()})`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Button_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    override CSS_Button_Activated_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    override async On_Previous(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Select_Previous_Player_Color(this.Index());
+            await this.Refresh();
+        }
+    }
+
+    override async On_Next(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Select_Next_Player_Color(this.Index());
+            await this.Refresh();
+        }
+    }
+}
+
 class Same_Toggle extends Toggle
 {
+    override Name():
+        string
+    {
+        return `Same_Toggle`;
+    }
+
     override Text():
         string
     {
@@ -465,6 +631,12 @@ class Same_Toggle extends Toggle
         return `90%`;
     }
 
+    override CSS_Text_Size():
+        string
+    {
+        return `2em`;
+    }
+
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -477,6 +649,12 @@ class Same_Toggle extends Toggle
 
 class Plus_Toggle extends Toggle
 {
+    override Name():
+        string
+    {
+        return `Plus_Toggle`;
+    }
+
     override Text():
         string
     {
@@ -507,6 +685,12 @@ class Plus_Toggle extends Toggle
         return `90%`;
     }
 
+    override CSS_Text_Size():
+        string
+    {
+        return `2em`;
+    }
+
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -519,6 +703,12 @@ class Plus_Toggle extends Toggle
 
 class Wall_Toggle extends Toggle
 {
+    override Name():
+        string
+    {
+        return `Wall_Toggle`;
+    }
+
     override Text():
         string
     {
@@ -549,6 +739,12 @@ class Wall_Toggle extends Toggle
         return `90%`;
     }
 
+    override CSS_Text_Size():
+        string
+    {
+        return `2em`;
+    }
+
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -563,6 +759,12 @@ class Wall_Toggle extends Toggle
 
 class Combo_Toggle extends Toggle
 {
+    override Name():
+        string
+    {
+        return `Combo_Toggle`;
+    }
+
     override Text():
         string
     {
@@ -593,6 +795,12 @@ class Combo_Toggle extends Toggle
         return `90%`;
     }
 
+    override CSS_Text_Size():
+        string
+    {
+        return `2em`;
+    }
+
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -607,6 +815,12 @@ class Combo_Toggle extends Toggle
 
 class Back_Button extends Button
 {
+    override Name():
+        string
+    {
+        return `Back_Button`;
+    }
+
     override Text():
         string
     {
@@ -623,6 +837,18 @@ class Back_Button extends Button
         string
     {
         return `100%`;
+    }
+
+    override CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2em`;
     }
 
     override async On_Activate(event: React.SyntheticEvent):

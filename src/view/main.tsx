@@ -10,7 +10,7 @@ import { Component_Styles } from "./component";
 import { Menu } from "./menu"
 import { Exhibitions } from "../view";
 import { Arena } from "./arena";
-import { Results } from "../view";
+import { Results } from "./results";
 
 type Main_Props = {
     model: Model.Main;
@@ -229,7 +229,8 @@ export class Main extends Component<Main_Props>
         if (this.Is_Alive()) {
             const model: Model.Main = this.Model();
             const packs: Model.Packs = model.Packs();
-            const rules: Model.Rules = model.Menu().Options().Data().Rules();
+            const options: Model.Options = model.Menu().Options().Data();
+            const rules: Model.Rules = options.Rules();
 
             const selections: Array<Model.Selection> = [
                 new Model.Random_Selection({
@@ -260,11 +261,15 @@ export class Main extends Component<Main_Props>
                                 max_tier_index: 9,
                             }),
                         }),
-                        color: new Model.Color({
-                            red: 63,
-                            green: 127,
-                            blue: 63,
-                            alpha: 0.7,
+                        color: new Model.Random_Color({
+                            min_red: 31,
+                            max_red: 191,
+                            min_green: 31,
+                            max_green: 191,
+                            min_blue: 31,
+                            max_blue: 191,
+                            min_alpha: 0.7,
+                            max_alpha: 0.7,
                         }),
                         is_of_human: false,
                         card_count: rules.Selection_Card_Count(),

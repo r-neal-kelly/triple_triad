@@ -45,6 +45,12 @@ export class Counter extends Component<Counter_Props>
         }
     }
 
+    Name():
+        string
+    {
+        return `Counter`;
+    }
+
     Text():
         string
     {
@@ -174,6 +180,7 @@ export class Counter extends Component<Counter_Props>
     {
         return (
             <div
+                className={this.Name()}
                 style={this.Styles()}
             >
                 <Value

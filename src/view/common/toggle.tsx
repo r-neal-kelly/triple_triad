@@ -21,6 +21,12 @@ export class Toggle extends Component<Toggle_Props>
         }
     }
 
+    Name():
+        string
+    {
+        return `Toggle`;
+    }
+
     Text():
         string
     {
@@ -51,6 +57,12 @@ export class Toggle extends Component<Toggle_Props>
         return `100%`;
     }
 
+    CSS_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
     CSS_Untoggled_Background_Color():
         string
     {
@@ -61,6 +73,12 @@ export class Toggle extends Component<Toggle_Props>
         string
     {
         return `white`;
+    }
+
+    CSS_Untoggled_Text_Size():
+        string
+    {
+        return this.CSS_Text_Size();
     }
 
     CSS_Toggled_Background_Color():
@@ -75,6 +93,12 @@ export class Toggle extends Component<Toggle_Props>
         return `black`;
     }
 
+    CSS_Toggled_Text_Size():
+        string
+    {
+        return this.CSS_Text_Size();
+    }
+
     CSS_Disabled_Background_Color():
         string
     {
@@ -85,6 +109,12 @@ export class Toggle extends Component<Toggle_Props>
         string
     {
         return `white`;
+    }
+
+    CSS_Disabled_Text_Size():
+        string
+    {
+        return this.CSS_Text_Size();
     }
 
     Before_Life():
@@ -113,8 +143,6 @@ export class Toggle extends Component<Toggle_Props>
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
-
-            fontSize: `2.5em`,
         });
     }
 
@@ -125,19 +153,23 @@ export class Toggle extends Component<Toggle_Props>
             if (this.Is_Toggled()) {
                 this.Change_Style(`backgroundColor`, this.CSS_Toggled_Background_Color());
                 this.Change_Style(`color`, this.CSS_Toggled_Text_Color());
+                this.Change_Style(`fontSize`, this.CSS_Toggled_Text_Size());
             } else {
                 this.Change_Style(`backgroundColor`, this.CSS_Untoggled_Background_Color());
                 this.Change_Style(`color`, this.CSS_Untoggled_Text_Color());
+                this.Change_Style(`fontSize`, this.CSS_Untoggled_Text_Size());
             }
             this.Change_Style(`cursor`, `pointer`);
         } else {
             this.Change_Style(`backgroundColor`, this.CSS_Disabled_Background_Color());
             this.Change_Style(`color`, this.CSS_Disabled_Text_Color());
+            this.Change_Style(`fontSize`, this.CSS_Disabled_Text_Size());
             this.Change_Style(`cursor`, `default`);
         }
 
         return (
             <div
+                className={this.Name()}
                 style={this.Styles()}
             >
                 <div

@@ -1,7 +1,9 @@
 import * as Model from "../../model";
 
 import * as Event from "../event";
-import { Component, Component_Styles } from "../component";
+import { Component } from "../component";
+import { Component_Styles } from "../component";
+import { Button } from "../common/button";
 import { Menu } from "../menu";
 
 type Top_Props = {
@@ -202,180 +204,110 @@ class Buttons extends Component<Buttons_Props>
     }
 }
 
-type Button_Props = {
-    model: any;
-    parent: any;
-    event_grid: Event.Grid;
-}
-
-class Button extends Component<Button_Props>
-{
-    private cover: Button_Cover | null = null;
-
-    Cover():
-        Button_Cover
-    {
-        if (this.cover == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cover;
-        }
-    }
-
-    Text():
-        string
-    {
-        return ``;
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `40%`,
-            height: `100%`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            fontSize: `2.5em`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                style={this.Styles()}
-            >
-                <div>
-                    {this.Text()}
-                </div>
-                <Button_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-    }
-}
-
-type Button_Cover_Props = {
-    model: any;
-    parent: Button;
-    event_grid: Event.Grid;
-}
-
-class Button_Cover extends Component<Button_Cover_Props>
-{
-    Button():
-        Button
-    {
-        return this.Parent();
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `transparent`,
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                style={this.Styles()}
-                onClick={event => this.Parent().On_Click(event)}
-            >
-            </div>
-        );
-    }
-}
-
 class New_Game_Button extends Button
 {
-    Text():
+    override Name():
+        string
+    {
+        return `New_Game_Button`;
+    }
+
+    override Text():
         string
     {
         return `New Game`;
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `40%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2.5em`;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
-        this.Send({
-            name_affix: Event.START_NEW_GAME,
-            name_suffixes: [
-            ],
-            data: {
-            } as Event.Start_New_Game_Data,
-            is_atomic: true,
-        });
+        if (this.Is_Alive()) {
+            this.Send({
+                name_affix: Event.START_NEW_GAME,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Start_New_Game_Data,
+                is_atomic: true,
+            });
+        }
     }
 }
 
 class Options_Button extends Button
 {
-    Text():
+    override Name():
+        string
+    {
+        return `Options_Button`;
+    }
+
+    override Text():
         string
     {
         return `Options`;
     }
 
-    async On_Click(event: React.SyntheticEvent):
+    override CSS_Width():
+        string
+    {
+        return `40%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2.5em`;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
-        this.Send({
-            name_affix: Event.OPEN_OPTIONS_MENU,
-            name_suffixes: [
-            ],
-            data: {
-            } as Event.Open_Options_Menu_Data,
-            is_atomic: true,
-        });
+        if (this.Is_Alive()) {
+            this.Send({
+                name_affix: Event.OPEN_OPTIONS_MENU,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Open_Options_Menu_Data,
+                is_atomic: true,
+            });
+        }
     }
 }

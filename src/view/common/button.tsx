@@ -21,6 +21,12 @@ export class Button extends Component<Button_Props>
         }
     }
 
+    Name():
+        string
+    {
+        return `Button`;
+    }
+
     Text():
         string
     {
@@ -37,6 +43,18 @@ export class Button extends Component<Button_Props>
         string
     {
         return `100%`;
+    }
+
+    CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    CSS_Text_Size():
+        string
+    {
+        return `1em`;
     }
 
     Before_Life():
@@ -66,7 +84,8 @@ export class Button extends Component<Button_Props>
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
 
-            fontSize: `2.5em`,
+            color: this.CSS_Text_Color(),
+            fontSize: this.CSS_Text_Size(),
 
             cursor: `pointer`,
         });
@@ -77,9 +96,14 @@ export class Button extends Component<Button_Props>
     {
         return (
             <div
+                className={this.Name()}
                 style={this.Styles()}
             >
-                <div>
+                <div
+                    style={{
+                        color: `inherit`,
+                    }}
+                >
                     {this.Text()}
                 </div>
                 <Button_Cover
