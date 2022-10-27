@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDom from "react-dom";
 
+import { Index } from "../types";
 import { Wait } from "../utils";
 import * as Event from "../event";
 
@@ -11,7 +12,7 @@ export type Component_Styles = {
 /*
     Must be satisfied to inherit from Component.
 */
-interface Component_Props
+export interface Component_Props
 {
     model: any;
     parent: any;
@@ -214,6 +215,58 @@ export class Component<T extends Component_Props> extends React.Component<T>
             throw this.Error_Not_Rendered();
         } else {
             return this.body;
+        }
+    }
+
+    Try_Object<T>(
+        object: T | null,
+    ):
+        T
+    {
+        if (object == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            return object;
+        }
+    }
+
+    Try_Array<T>(
+        array: Array<T | null> | null,
+    ):
+        Array<T>
+    {
+        if (array == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            const elements: Array<T> = [];
+            for (const element of array) {
+                if (element == null) {
+                    throw this.Error_Not_Rendered();
+                } else {
+                    elements.push(element) as T;
+                }
+            }
+
+            return elements;
+        }
+    }
+
+    Try_Array_Index<T>(
+        array: Array<T | null> | null,
+        index: Index | null,
+    ):
+        T
+    {
+        if (array == null) {
+            throw this.Error_Not_Rendered();
+        } else {
+            if (index == null || index < 0 || index >= array.length) {
+                throw new Error(`index of ${index} is invalid.`);
+            } else if (array[index] == null) {
+                throw this.Error_Not_Rendered();
+            } else {
+                return array[index] as T;
+            }
         }
     }
 

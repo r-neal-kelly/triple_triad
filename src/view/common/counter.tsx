@@ -1,15 +1,15 @@
 import { Integer } from "../../types";
 
 import * as Event from "../event";
-import { Component, Component_Styles } from "../component";
+import { Component } from "../component";
+import { Component_Props } from "../component";
+import { Component_Styles } from "../component";
 
-type Counter_Props = {
-    model: any;
-    parent: any;
-    event_grid: Event.Grid;
+interface Counter_Props extends Component_Props
+{
 }
 
-export class Counter extends Component<Counter_Props>
+export class Counter<Props extends Counter_Props> extends Component<Props>
 {
     private value: Value | null = null;
     private decrementor: Decrementor | null = null;
@@ -221,14 +221,14 @@ export class Counter extends Component<Counter_Props>
 
 type Value_Props = {
     model: any;
-    parent: Counter;
+    parent: Counter<Counter_Props>;
     event_grid: Event.Grid;
 }
 
 class Value extends Component<Value_Props>
 {
     Counter():
-        Counter
+        Counter<Counter_Props>
     {
         return this.Parent();
     }
@@ -256,7 +256,7 @@ class Value extends Component<Value_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter = this.Counter();
+        const counter: Counter<Counter_Props> = this.Counter();
 
         return (
             <div
@@ -270,7 +270,7 @@ class Value extends Component<Value_Props>
 
 type Decrementor_Props = {
     model: any;
-    parent: Counter;
+    parent: Counter<Counter_Props>;
     event_grid: Event.Grid;
 }
 
@@ -279,7 +279,7 @@ class Decrementor extends Component<Decrementor_Props>
     private cover: Decrementor_Cover | null = null;
 
     Counter():
-        Counter
+        Counter<Counter_Props>
     {
         return this.Parent();
     }
@@ -329,7 +329,7 @@ class Decrementor extends Component<Decrementor_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter = this.Parent();
+        const counter: Counter<Counter_Props> = this.Parent();
 
         if (counter.Can_Decrement()) {
             this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
@@ -374,7 +374,7 @@ type Decrementor_Cover_Props = {
 class Decrementor_Cover extends Component<Decrementor_Cover_Props>
 {
     Counter():
-        Counter
+        Counter<Counter_Props>
     {
         return this.Decrementor().Counter();
     }
@@ -407,7 +407,7 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter = this.Counter();
+        const counter: Counter<Counter_Props> = this.Counter();
 
         if (counter.Can_Decrement()) {
             this.Change_Style(`cursor`, `pointer`);
@@ -427,7 +427,7 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
 
 type Incrementor_Props = {
     model: any;
-    parent: Counter;
+    parent: Counter<Counter_Props>;
     event_grid: Event.Grid;
 }
 
@@ -436,7 +436,7 @@ class Incrementor extends Component<Incrementor_Props>
     private cover: Incrementor_Cover | null = null;
 
     Counter():
-        Counter
+        Counter<Counter_Props>
     {
         return this.Parent();
     }
@@ -486,7 +486,7 @@ class Incrementor extends Component<Incrementor_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter = this.Parent();
+        const counter: Counter<Counter_Props> = this.Parent();
 
         if (counter.Can_Increment()) {
             this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
@@ -531,7 +531,7 @@ type Incrementor_Cover_Props = {
 class Incrementor_Cover extends Component<Incrementor_Cover_Props>
 {
     Counter():
-        Counter
+        Counter<Counter_Props>
     {
         return this.Incrementor().Counter();
     }
@@ -564,7 +564,7 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter = this.Counter();
+        const counter: Counter<Counter_Props> = this.Counter();
 
         if (counter.Can_Increment()) {
             this.Change_Style(`cursor`, `pointer`);

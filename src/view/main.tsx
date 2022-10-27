@@ -241,17 +241,12 @@ export class Main extends Component<Main_Props>
                             max_tier_index: 9,
                         }),
                     }),
-                    color: new Model.Color({
-                        red: 63,
-                        green: 63,
-                        blue: 127,
-                        alpha: 0.7,
-                    }),
+                    color: options.Player_Color(0),
                     is_of_human: true,
                     card_count: rules.Selection_Card_Count(),
                 }),
             ];
-            for (let idx = 0, end = rules.Player_Count() - 1; idx < end; idx += 1) {
+            for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
                 selections.push(
                     new Model.Random_Selection({
                         collection: new Model.Collection({
@@ -261,16 +256,7 @@ export class Main extends Component<Main_Props>
                                 max_tier_index: 9,
                             }),
                         }),
-                        color: new Model.Random_Color({
-                            min_red: 31,
-                            max_red: 191,
-                            min_green: 31,
-                            max_green: 191,
-                            min_blue: 31,
-                            max_blue: 191,
-                            min_alpha: 0.7,
-                            max_alpha: 0.7,
-                        }),
+                        color: options.Player_Color(idx),
                         is_of_human: false,
                         card_count: rules.Selection_Card_Count(),
                     }),

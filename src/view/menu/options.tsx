@@ -18,17 +18,8 @@ type Options_Props = {
 
 export class Options extends Component<Options_Props>
 {
-    private row_counter: Row_Counter | null = null;
-    private column_counter: Column_Counter | null = null;
-    private player_counter: Player_Counter | null = null;
-    private player_colors: Array<null> =
-        new Array(this.Model().Data().Rules().Player_Count()).fill(null);
-
-    private same_toggle: Same_Toggle | null = null;
-    private plus_toggle: Plus_Toggle | null = null;
-    private wall_toggle: Wall_Toggle | null = null;
-    private combo_toggle: Combo_Toggle | null = null;
-
+    private player_options: Player_Options | null = null;
+    private board_options: Board_Options | null = null;
     private back_button: Back_Button | null = null;
 
     Menu():
@@ -37,84 +28,22 @@ export class Options extends Component<Options_Props>
         return this.Parent();
     }
 
-    Row_Counter():
-        Row_Counter
+    Player_Options():
+        Player_Options
     {
-        if (this.row_counter == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.row_counter;
-        }
+        return this.Try_Object(this.player_options);
     }
 
-    Column_Counter():
-        Column_Counter
+    Board_Options():
+        Board_Options
     {
-        if (this.column_counter == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.column_counter;
-        }
-    }
-
-    Player_Counter():
-        Player_Counter
-    {
-        if (this.player_counter == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.player_counter;
-        }
-    }
-
-    Same_Toggle():
-        Same_Toggle
-    {
-        if (this.same_toggle == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.same_toggle;
-        }
-    }
-
-    Plus_Toggle():
-        Plus_Toggle
-    {
-        if (this.plus_toggle == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.plus_toggle;
-        }
-    }
-
-    Wall_Toggle():
-        Wall_Toggle
-    {
-        if (this.wall_toggle == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.wall_toggle;
-        }
-    }
-
-    Combo_Toggle():
-        Combo_Toggle
-    {
-        if (this.combo_toggle == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.combo_toggle;
-        }
+        return this.Try_Object(this.board_options);
     }
 
     Back_Button():
         Back_Button
     {
-        if (this.back_button == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.back_button;
-        }
+        return this.Try_Object(this.back_button);
     }
 
     Before_Life():
@@ -122,14 +51,14 @@ export class Options extends Component<Options_Props>
     {
         return ({
             display: `grid`,
-            gridTemplateColumns: `1fr 1fr`,
-            gridTemplateRows: `1fr 1fr 1fr 1fr`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `4fr 5fr 1fr`,
             gridGap: `3%`,
 
             width: `90%`,
             height: `90%`,
             margin: `0`,
-            padding: `3%`,
+            padding: `3vmin`,
 
             borderWidth: `0.6vmin`,
             borderRadius: `0`,
@@ -137,6 +66,8 @@ export class Options extends Component<Options_Props>
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: `rgba(0, 0, 0, 0.8)`,
+
+            fontSize: `1.8em`,
         });
     }
 
@@ -148,54 +79,17 @@ export class Options extends Component<Options_Props>
                 className={`Options`}
                 style={this.Styles()}
             >
-                <Row_Counter
-                    ref={ref => this.row_counter = ref}
+                <Player_Options
+                    ref={ref => this.player_options = ref}
 
-                    model={this.Model()}
+                    model={this.Model().Data()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <Column_Counter
-                    ref={ref => this.column_counter = ref}
+                <Board_Options
+                    ref={ref => this.board_options = ref}
 
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Player_Counter
-                    ref={ref => this.player_counter = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <div>
-                </div>
-                <Same_Toggle
-                    ref={ref => this.same_toggle = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Plus_Toggle
-                    ref={ref => this.plus_toggle = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Wall_Toggle
-                    ref={ref => this.wall_toggle = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Combo_Toggle
-                    ref={ref => this.combo_toggle = ref}
-
-                    model={this.Model()}
+                    model={this.Model().Data()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
@@ -211,183 +105,6 @@ export class Options extends Component<Options_Props>
     }
 }
 
-type Board_Options_Props = {
-    model: Model.Options;
-    parent: Options;
-    event_grid: Event.Grid;
-}
-
-class Board_Options extends Component<Board_Options_Props>
-{
-    Options():
-        Options
-    {
-        return this.Parent();
-    }
-}
-
-class Row_Counter extends Counter
-{
-    override Name():
-        string
-    {
-        return `Row_Counter`;
-    }
-
-    override Text():
-        string
-    {
-        return `Rows`;
-    }
-
-    override Count():
-        Integer
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Row_Count();
-    }
-
-    override Can_Decrement():
-        boolean
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Can_Decrement_Row_Count();
-    }
-
-    override Can_Increment():
-        boolean
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Can_Increment_Row_Count();
-    }
-
-    override CSS_Width():
-        string
-    {
-        return `90%`;
-    }
-
-    override CSS_Height():
-        string
-    {
-        return `90%`;
-    }
-
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
-    override async On_Decrement(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Rules().Can_Decrement_Row_Count()) {
-                model.Data().Rules().Decrement_Row_Count();
-                await this.Parent().Refresh();
-            }
-        }
-    }
-
-    override async On_Increment(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Rules().Can_Increment_Row_Count()) {
-                model.Data().Rules().Increment_Row_Count();
-                await this.Parent().Refresh();
-            }
-        }
-    }
-}
-
-class Column_Counter extends Counter
-{
-    override Name():
-        string
-    {
-        return `Column_Counter`;
-    }
-
-    override Text():
-        string
-    {
-        return `Columns`;
-    }
-
-    override Count():
-        Integer
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Column_Count();
-    }
-
-    override Can_Decrement():
-        boolean
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Can_Decrement_Column_Count();
-    }
-
-    override Can_Increment():
-        boolean
-    {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Rules().Can_Increment_Column_Count();
-    }
-
-    override CSS_Width():
-        string
-    {
-        return `90%`;
-    }
-
-    override CSS_Height():
-        string
-    {
-        return `90%`;
-    }
-
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
-    override async On_Decrement(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Rules().Can_Decrement_Column_Count()) {
-                model.Data().Rules().Decrement_Column_Count();
-                await this.Parent().Refresh();
-            }
-        }
-    }
-
-    override async On_Increment(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Rules().Can_Increment_Column_Count()) {
-                model.Data().Rules().Increment_Column_Count();
-                await this.Parent().Refresh();
-            }
-        }
-    }
-}
-
 type Player_Options_Props = {
     model: Model.Options;
     parent: Options;
@@ -396,15 +113,92 @@ type Player_Options_Props = {
 
 class Player_Options extends Component<Player_Options_Props>
 {
+    private player_counter: Player_Counter | null = null;
+    private player_colors: Player_Colors | null = null;
+
     Options():
         Options
     {
         return this.Parent();
     }
+
+    Player_Counter():
+        Player_Counter
+    {
+        return this.Try_Object(this.player_counter);
+    }
+
+    Player_Colors():
+        Player_Colors
+    {
+        return this.Try_Object(this.player_colors);
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
+            gridGap: `3%`,
+
+            width: `100%`,
+            height: `100%`,
+            margin: `0`,
+            padding: `0`,
+
+            backgroundColor: `transparent`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Player_Options`}
+                style={this.Styles()}
+            >
+                <Player_Counter
+                    ref={ref => this.player_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Player_Colors
+                    ref={ref => this.player_colors = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
 }
 
-class Player_Counter extends Counter
+type Player_Counter_Props = {
+    model: Model.Options;
+    parent: Player_Options;
+    event_grid: Event.Grid;
+}
+
+class Player_Counter extends Counter<Player_Counter_Props>
 {
+    Options():
+        Options
+    {
+        return this.Player_Options().Options();
+    }
+
+    Player_Options():
+        Player_Options
+    {
+        return this.Parent();
+    }
+
     override Name():
         string
     {
@@ -420,31 +214,25 @@ class Player_Counter extends Counter
     override Count():
         Integer
     {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Player_Count();
+        return this.Model().Player_Count();
     }
 
     override Can_Decrement():
         boolean
     {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Can_Decrement_Player_Count();
+        return this.Model().Can_Decrement_Player_Count();
     }
 
     override Can_Increment():
         boolean
     {
-        const model = this.Model() as Model.Menu_Options;
-
-        return model.Data().Can_Increment_Player_Count();
+        return this.Model().Can_Increment_Player_Count();
     }
 
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `40%`;
     }
 
     override CSS_Height():
@@ -453,20 +241,14 @@ class Player_Counter extends Counter
         return `90%`;
     }
 
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
     override async On_Decrement(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Can_Decrement_Player_Count()) {
-                model.Data().Decrement_Player_Count();
-                await this.Parent().Refresh();
+            const model: Model.Options = this.Model();
+            if (model.Can_Decrement_Player_Count()) {
+                model.Decrement_Player_Count();
+                await this.Options().Refresh();
             }
         }
     }
@@ -475,10 +257,10 @@ class Player_Counter extends Counter
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const model = this.Model() as Model.Menu_Options;
-            if (model.Data().Can_Increment_Player_Count()) {
-                model.Data().Increment_Player_Count();
-                await this.Parent().Refresh();
+            const model: Model.Options = this.Model();
+            if (model.Can_Increment_Player_Count()) {
+                model.Increment_Player_Count();
+                await this.Options().Refresh();
             }
         }
     }
@@ -492,6 +274,9 @@ type Player_Colors_Props = {
 
 class Player_Colors extends Component<Player_Colors_Props>
 {
+    private player_colors: Array<Player_Color | null> =
+        new Array(this.Model().Player_Count()).fill(null);
+
     Options():
         Options
     {
@@ -502,6 +287,69 @@ class Player_Colors extends Component<Player_Colors_Props>
         Player_Options
     {
         return this.Parent();
+    }
+
+    Player_Color(player_color_index: Model.Color_Index):
+        Player_Color
+    {
+        return this.Try_Array_Index(this.player_colors, player_color_index);
+    }
+
+    Player_Colors():
+        Array<Player_Color>
+    {
+        return this.Try_Array(this.player_colors);
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `row`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+            height: `100%`,
+            margin: `0`,
+            padding: `0`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Options = this.Model();
+        const player_color_count: Model.Color_Count = model.Player_Color_Count();
+
+        return (
+            <div
+                className={`Player_Colors`}
+                style={this.Styles()}
+            >
+                {
+                    Array(player_color_count).fill(null).map((
+                        _,
+                        player_color_index: Model.Color_Index
+                    ):
+                        JSX.Element =>
+                    {
+                        return (
+                            <Player_Color
+                                key={player_color_index}
+                                ref={ref => this.player_colors[player_color_index] = ref}
+
+                                model={model}
+                                parent={this}
+                                event_grid={this.Event_Grid()}
+                                index={player_color_index}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
     }
 }
 
@@ -562,39 +410,343 @@ class Player_Color extends Color<Player_Color_Props>
         return `100%`;
     }
 
-    override CSS_Button_Text_Size():
-        string
-    {
-        return `1em`;
-    }
-
-    override CSS_Button_Activated_Text_Size():
-        string
-    {
-        return `1em`;
-    }
-
-    override async On_Previous(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            this.Model().Select_Previous_Player_Color(this.Index());
-            await this.Refresh();
-        }
-    }
-
-    override async On_Next(event: React.SyntheticEvent):
+    override async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
             this.Model().Select_Next_Player_Color(this.Index());
-            await this.Refresh();
+            await this.Options().Refresh();
         }
     }
 }
 
-class Same_Toggle extends Toggle
+type Board_Options_Props = {
+    model: Model.Options;
+    parent: Options;
+    event_grid: Event.Grid;
+}
+
+class Board_Options extends Component<Board_Options_Props>
 {
+    private row_counter: Row_Counter | null = null;
+    private column_counter: Column_Counter | null = null;
+    private same_toggle: Same_Toggle | null = null;
+    private plus_toggle: Plus_Toggle | null = null;
+    private wall_toggle: Wall_Toggle | null = null;
+    private combo_toggle: Combo_Toggle | null = null;
+
+    Options():
+        Options
+    {
+        return this.Parent();
+    }
+
+    Row_Counter():
+        Row_Counter
+    {
+        return this.Try_Object(this.row_counter);
+    }
+
+    Column_Counter():
+        Column_Counter
+    {
+        return this.Try_Object(this.column_counter);
+    }
+
+    Same_Toggle():
+        Same_Toggle
+    {
+        return this.Try_Object(this.same_toggle);
+    }
+
+    Plus_Toggle():
+        Plus_Toggle
+    {
+        return this.Try_Object(this.plus_toggle);
+    }
+
+    Wall_Toggle():
+        Wall_Toggle
+    {
+        return this.Try_Object(this.wall_toggle);
+    }
+
+    Combo_Toggle():
+        Combo_Toggle
+    {
+        return this.Try_Object(this.combo_toggle);
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr 1fr`,
+            gridTemplateRows: `1fr 1fr 1fr`,
+            gridGap: `3%`,
+
+            width: `100%`,
+            height: `100%`,
+            margin: `0`,
+            padding: `0`,
+
+            backgroundColor: `transparent`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Options = this.Model();
+        const event_grid: Event.Grid = this.Event_Grid();
+
+        return (
+            <div
+                className={`Board_Options`}
+                style={this.Styles()}
+            >
+                <Row_Counter
+                    ref={ref => this.row_counter = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Column_Counter
+                    ref={ref => this.column_counter = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Same_Toggle
+                    ref={ref => this.same_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Plus_Toggle
+                    ref={ref => this.plus_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Wall_Toggle
+                    ref={ref => this.wall_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Combo_Toggle
+                    ref={ref => this.combo_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+            </div>
+        );
+    }
+}
+
+type Row_Counter_Props = {
+    model: Model.Options;
+    parent: Board_Options;
+    event_grid: Event.Grid;
+}
+
+class Row_Counter extends Counter<Row_Counter_Props>
+{
+    Options():
+        Options
+    {
+        return this.Board_Options().Options();
+    }
+
+    Board_Options():
+        Board_Options
+    {
+        return this.Parent();
+    }
+
+    override Name():
+        string
+    {
+        return `Row_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Rows`;
+    }
+
+    override Count():
+        Integer
+    {
+        return this.Model().Rules().Row_Count();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        return this.Model().Rules().Can_Decrement_Row_Count();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        return this.Model().Rules().Can_Increment_Row_Count();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Rules().Can_Decrement_Row_Count()) {
+                model.Rules().Decrement_Row_Count();
+                await this.Options().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Rules().Can_Increment_Row_Count()) {
+                model.Rules().Increment_Row_Count();
+                await this.Options().Refresh();
+            }
+        }
+    }
+}
+
+type Column_Counter_Props = {
+    model: Model.Options;
+    parent: Board_Options;
+    event_grid: Event.Grid;
+}
+
+class Column_Counter extends Counter<Column_Counter_Props>
+{
+    Options():
+        Options
+    {
+        return this.Board_Options().Options();
+    }
+
+    Board_Options():
+        Board_Options
+    {
+        return this.Parent();
+    }
+
+    override Name():
+        string
+    {
+        return `Column_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Columns`;
+    }
+
+    override Count():
+        Integer
+    {
+        return this.Model().Rules().Column_Count();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        return this.Model().Rules().Can_Decrement_Column_Count();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        return this.Model().Rules().Can_Increment_Column_Count();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Rules().Can_Decrement_Column_Count()) {
+                model.Rules().Decrement_Column_Count();
+                await this.Options().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Rules().Can_Increment_Column_Count()) {
+                model.Rules().Increment_Column_Count();
+                await this.Options().Refresh();
+            }
+        }
+    }
+}
+
+type Same_Toggle_Props = {
+    model: Model.Options;
+    parent: Board_Options;
+    event_grid: Event.Grid;
+}
+
+class Same_Toggle extends Toggle<Same_Toggle_Props>
+{
+    Options():
+        Options
+    {
+        return this.Board_Options().Options();
+    }
+
+    Board_Options():
+        Board_Options
+    {
+        return this.Parent();
+    }
+
     override Name():
         string
     {
@@ -610,13 +762,13 @@ class Same_Toggle extends Toggle
     override Is_Toggled():
         boolean
     {
-        return this.Model().Data().Rules().Same();
+        return this.Model().Rules().Same();
     }
 
     override Is_Enabled():
         boolean
     {
-        return this.Model().Data().Rules().Can_Toggle_Same();
+        return this.Model().Rules().Can_Toggle_Same();
     }
 
     override CSS_Width():
@@ -631,24 +783,36 @@ class Same_Toggle extends Toggle
         return `90%`;
     }
 
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.Model().Data().Rules().Toggle_Same();
-            await this.Parent().Refresh();
+            this.Model().Rules().Toggle_Same();
+            await this.Options().Refresh();
         }
     }
 }
 
-class Plus_Toggle extends Toggle
+type Plus_Toggle_Props = {
+    model: Model.Options;
+    parent: Board_Options;
+    event_grid: Event.Grid;
+}
+
+class Plus_Toggle extends Toggle<Plus_Toggle_Props>
 {
+    Options():
+        Options
+    {
+        return this.Board_Options().Options();
+    }
+
+    Board_Options():
+        Board_Options
+    {
+        return this.Parent();
+    }
+
     override Name():
         string
     {
@@ -664,13 +828,13 @@ class Plus_Toggle extends Toggle
     override Is_Toggled():
         boolean
     {
-        return this.Model().Data().Rules().Plus();
+        return this.Model().Rules().Plus();
     }
 
     override Is_Enabled():
         boolean
     {
-        return this.Model().Data().Rules().Can_Toggle_Plus();
+        return this.Model().Rules().Can_Toggle_Plus();
     }
 
     override CSS_Width():
@@ -685,24 +849,36 @@ class Plus_Toggle extends Toggle
         return `90%`;
     }
 
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.Model().Data().Rules().Toggle_Plus();
-            await this.Parent().Refresh();
+            this.Model().Rules().Toggle_Plus();
+            await this.Options().Refresh();
         }
     }
 }
 
-class Wall_Toggle extends Toggle
+type Wall_Toggle_Props = {
+    model: Model.Options;
+    parent: Board_Options;
+    event_grid: Event.Grid;
+}
+
+class Wall_Toggle extends Toggle<Wall_Toggle_Props>
 {
+    Options():
+        Options
+    {
+        return this.Board_Options().Options();
+    }
+
+    Board_Options():
+        Board_Options
+    {
+        return this.Parent();
+    }
+
     override Name():
         string
     {
@@ -718,13 +894,13 @@ class Wall_Toggle extends Toggle
     override Is_Toggled():
         boolean
     {
-        return this.Model().Data().Rules().Wall();
+        return this.Model().Rules().Wall();
     }
 
     override Is_Enabled():
         boolean
     {
-        return this.Model().Data().Rules().Can_Toggle_Wall();
+        return this.Model().Rules().Can_Toggle_Wall();
     }
 
     override CSS_Width():
@@ -739,26 +915,38 @@ class Wall_Toggle extends Toggle
         return `90%`;
     }
 
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
             if (this.Is_Enabled()) {
-                this.Model().Data().Rules().Toggle_Wall();
-                await this.Parent().Refresh();
+                this.Model().Rules().Toggle_Wall();
+                await this.Options().Refresh();
             }
         }
     }
 }
 
-class Combo_Toggle extends Toggle
+type Combo_Toggle_Props = {
+    model: Model.Options;
+    parent: Board_Options;
+    event_grid: Event.Grid;
+}
+
+class Combo_Toggle extends Toggle<Combo_Toggle_Props>
 {
+    Options():
+        Options
+    {
+        return this.Board_Options().Options();
+    }
+
+    Board_Options():
+        Board_Options
+    {
+        return this.Parent();
+    }
+
     override Name():
         string
     {
@@ -774,13 +962,13 @@ class Combo_Toggle extends Toggle
     override Is_Toggled():
         boolean
     {
-        return this.Model().Data().Rules().Combo();
+        return this.Model().Rules().Combo();
     }
 
     override Is_Enabled():
         boolean
     {
-        return this.Model().Data().Rules().Can_Toggle_Combo();
+        return this.Model().Rules().Can_Toggle_Combo();
     }
 
     override CSS_Width():
@@ -795,19 +983,13 @@ class Combo_Toggle extends Toggle
         return `90%`;
     }
 
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
-    }
-
     override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
             if (this.Is_Enabled()) {
-                this.Model().Data().Rules().Toggle_Combo();
-                await this.Parent().Refresh();
+                this.Model().Rules().Toggle_Combo();
+                await this.Options().Refresh();
             }
         }
     }
@@ -815,6 +997,12 @@ class Combo_Toggle extends Toggle
 
 class Back_Button extends Button
 {
+    Options():
+        Options
+    {
+        return this.Parent();
+    }
+
     override Name():
         string
     {
@@ -843,12 +1031,6 @@ class Back_Button extends Button
         string
     {
         return `white`;
-    }
-
-    override CSS_Text_Size():
-        string
-    {
-        return `2em`;
     }
 
     override async On_Activate(event: React.SyntheticEvent):

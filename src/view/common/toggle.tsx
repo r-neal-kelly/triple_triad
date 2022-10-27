@@ -1,13 +1,13 @@
 import * as Event from "../event";
-import { Component, Component_Styles } from "../component";
+import { Component } from "../component";
+import { Component_Props } from "../component";
+import { Component_Styles } from "../component";
 
-type Toggle_Props = {
-    model: any;
-    parent: any;
-    event_grid: Event.Grid;
+interface Toggle_Props extends Component_Props
+{
 }
 
-export class Toggle extends Component<Toggle_Props>
+export class Toggle<Props extends Toggle_Props> extends Component<Props>
 {
     private cover: Toggle_Cover | null = null;
 
@@ -198,14 +198,14 @@ export class Toggle extends Component<Toggle_Props>
 
 type Toggle_Cover_Props = {
     model: any;
-    parent: Toggle;
+    parent: Toggle<Toggle_Props>;
     event_grid: Event.Grid;
 }
 
 class Toggle_Cover extends Component<Toggle_Cover_Props>
 {
     Toggle():
-        Toggle
+        Toggle<Toggle_Props>
     {
         return this.Parent();
     }
