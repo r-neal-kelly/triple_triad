@@ -63,7 +63,10 @@ export class Player_Group extends Component<Player_Group_Props>
         );
         this.Change_Style(
             `width`,
-            `calc(${arena.CSS_Player_Width()} * ${column_count})`,
+            `calc(
+                ${arena.CSS_Player_Width()} * ${column_count} +
+                (${arena.CSS_Player_Width()} - ${arena.CSS_Card_Width()})
+            )`,
         );
         this.Change_Style(
             `height`,
@@ -71,7 +74,9 @@ export class Player_Group extends Component<Player_Group_Props>
         );
         this.Change_Style(
             `padding`,
-            `0 calc((${arena.CSS_Player_Width()} - ${arena.CSS_Card_Width()}) / 2)`,
+            `0 calc(
+                (${arena.CSS_Player_Width()} - ${arena.CSS_Card_Width()}) / 2
+            )`,
         );
 
         const players: Array<JSX.Element> = Array(player_count).fill(null).map((
