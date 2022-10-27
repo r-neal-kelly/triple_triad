@@ -14,6 +14,7 @@ import { Component } from "./view/component";
 import { Component_Styles } from "./view/component";
 import { Main } from "./view/main";
 import { Arena } from "./view/arena";
+import { Player_Group } from "./view/player_group";
 
 const PLAYER_STAKE_HEIGHT_MULTIPLIER: number = 0.48;
 const PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER: number = 0.7;
@@ -273,7 +274,7 @@ export class Exhibition extends Component<Exhibition_Props>
 
 type Player_Props = {
     model: Model.Player;
-    parent: Arena;
+    parent: Player_Group;
     event_grid: Event.Grid;
 }
 
@@ -284,6 +285,12 @@ export class Player extends Component<Player_Props>
 
     Arena():
         Arena
+    {
+        return this.Group().Arena();
+    }
+
+    Group():
+        Player_Group
     {
         return this.Parent();
     }
@@ -320,6 +327,12 @@ export class Player extends Component<Player_Props>
         return this.Arena().CSS_Player_Width();
     }
 
+    CSS_Height():
+        string
+    {
+        return this.Arena().CSS_Player_Height();
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -329,7 +342,7 @@ export class Player extends Component<Player_Props>
             alignItems: `center`,
 
             width: this.CSS_Width(),
-            height: `100%`,
+            height: this.CSS_Height(),
 
             position: `relative`,
         });
@@ -1553,7 +1566,7 @@ class Board_Cell extends Component<Board_Cell_Props>
                 this.Change_Style(`cursor`, `default`);
             }
             if (this.Index() === cell_index) {
-                this.current_color = this.Arena().Player(player_index).Model().Color();
+                this.current_color = this.Arena().Model().Player(player_index).Color();
             }
         }
     }

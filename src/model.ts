@@ -11,7 +11,9 @@ import { URL_Path } from "./types";
 import * as Utils from "./utils";
 
 import { Arena } from "./model/arena";
+
 export { Arena } from "./model/arena";
+export { Player_Group } from "./model/player_group";
 
 /* Various aliases to assist reading comprehension. */
 type Pack_Name =
@@ -57,6 +59,12 @@ export type Player_Count =
     Count;
 
 export type Player_Index =
+    Index;
+
+export type Player_Group_Count =
+    Count;
+
+export type Player_Group_Index =
     Index;
 
 export type Stake_Count =
@@ -2302,15 +2310,15 @@ export class Scores
 }
 
 export const MIN_ROW_COUNT: Row_Count = 2;
-export const MAX_ROW_COUNT: Row_Count = 16;
+export const MAX_ROW_COUNT: Row_Count = 9;
 export const DEFAULT_ROW_COUNT: Row_Count = 3;
 
 export const MIN_COLUMN_COUNT: Row_Count = 2;
-export const MAX_COLUMN_COUNT: Row_Count = 16;
+export const MAX_COLUMN_COUNT: Row_Count = 9;
 export const DEFAULT_COLUMN_COUNT: Row_Count = 3;
 
 export const MIN_PLAYER_COUNT: Player_Count = 2;
-export const MAX_PLAYER_COUNT: Player_Count = 8;
+export const MAX_PLAYER_COUNT: Player_Count = 9;
 export const DEFAULT_PLAYER_COUNT: Player_Count = 2;
 
 /* A selection of rules which an arena must abide by. */

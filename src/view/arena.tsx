@@ -9,7 +9,7 @@ import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Main } from "./main";
 import { Exhibition } from "../view";
-import { Player } from "../view";
+import { Player_Group } from "./player_group";
 import { Board } from "../view";
 
 class Arena_Card_Images
@@ -61,6 +61,9 @@ class Arena_Card_Images
     }
 }
 
+const PLAYER_GROUP_COUNT: Model.Player_Group_Count = 2;
+const PLAYER_GROUP_DIRECTION: Model.Direction_e = Model.Direction_e.RIGHT;
+
 type Arena_Props = {
     model: Model.Arena;
     parent: Main | Exhibition;
@@ -69,46 +72,35 @@ type Arena_Props = {
 
 export class Arena extends Component<Arena_Props>
 {
-    private players: Array<Player | null> = new Array(this.Model().Player_Count()).fill(null);
+    private player_groups: Array<Player_Group | null> =
+        new Array(PLAYER_GROUP_COUNT).fill(null);
     private board: Board | null = null;
 
-    private card_images: Arena_Card_Images = new Arena_Card_Images(this.Model());
+    private card_images: Arena_Card_Images =
+        new Arena_Card_Images(this.Model());
 
-    Player(player_index: Model.Player_Index):
-        Player
+    Player_Group(player_group_index: Model.Player_Group_Index):
+        Player_Group
     {
-        if (player_index < 0 || player_index >= this.players.length) {
-            throw new Error(`'player_index' ${player_index} is invalid.`);
-        } else if (this.players[player_index] == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.players[player_index] as Player;
-        }
+        return this.Try_Array_Index(this.player_groups, player_group_index);
     }
 
-    Players():
-        Array<Player>
+    Player_Groups():
+        Array<Player_Group>
     {
-        const players: Array<Player> = [];
-        for (const player of this.players) {
-            if (player == null) {
-                throw this.Error_Not_Rendered();
-            } else {
-                players.push(player);
-            }
-        }
-
-        return players;
+        return this.Try_Array(this.player_groups);
     }
 
     Board():
         Board
     {
-        if (this.board == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.board;
-        }
+        return this.Try_Object(this.board);
+    }
+
+    Card_Images():
+        Arena_Card_Images
+    {
+        return this.card_images;
     }
 
     CSS_Card_Width():
@@ -133,12 +125,12 @@ export class Arena extends Component<Arena_Props>
             calc(
                 (
                     ${this.CSS_Board_Cells_Height()} -
-            (${this.CSS_Board_Cells_Padding()} * 2) -
-            (${this.CSS_Board_Cells_Grid_Gap()} * ${row_count - 1})
+                    (${this.CSS_Board_Cells_Padding()} * 2) -
+                    (${this.CSS_Board_Cells_Grid_Gap()} * ${row_count - 1})
                 ) /
                 ${row_count}
             )
-`;
+        `;
     }
 
     CSS_Bumper_Height():
@@ -151,6 +143,12 @@ export class Arena extends Component<Arena_Props>
         string
     {
         return `calc(${this.CSS_Card_Width()} * 1.07)`;
+    }
+
+    CSS_Player_Height():
+        string
+    {
+        return `100%`;
     }
 
     CSS_Board_Cells_Height():
@@ -195,83 +193,36 @@ export class Arena extends Component<Arena_Props>
         JSX.Element | null
     {
         const model: Model.Arena = this.Model();
-        const player_count: number = model.Player_Count();
-        const left_player_count: number = Math.floor(player_count / 2);
-        const right_player_count: number = player_count - left_player_count;
+        const player_groups: Array<Model.Player_Group> =
+            model.Player_Groups(PLAYER_GROUP_COUNT, PLAYER_GROUP_DIRECTION);
+        Assert(PLAYER_GROUP_COUNT === 2);
 
         return (
             <div
                 className={`Arena`}
                 style={this.Styles()}
             >
-                <div
-                    className={`Player_Grid`}
-                    style={{
-                        display: `grid`,
-                        gridTemplateColumns: `repeat(${left_player_count}, 1fr)`,
-                        gridTemplateRows: `auto`,
-                        gridGap: `0 0`,
+                <Player_Group
+                    ref={ref => this.player_groups[0] = ref}
 
-                        height: `100% `,
-                        padding: `0 calc((${this.CSS_Player_Width()} - ${this.CSS_Card_Width()}) / 2)`,
-                    }}
-                >
-                    {
-                        Array(left_player_count).fill(null).map((_, index: Model.Player_Index) =>
-                        {
-                            const player_index: Model.Player_Index = index + 0;
-
-                            return (
-                                <Player
-                                    key={`player_${player_index} `}
-                                    ref={ref => this.players[player_index] = ref}
-
-                                    model={model.Player(player_index)}
-                                    parent={this}
-                                    event_grid={this.Event_Grid()}
-                                />
-                            );
-                        })
-                    }
-                </div>
+                    model={player_groups[0]}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
                 <Board
-                    key={`board`}
                     ref={ref => this.board = ref}
 
                     model={model.Board()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <div
-                    className={`Player_Grid`}
-                    style={{
-                        display: `grid`,
-                        gridTemplateColumns: `repeat(${right_player_count}, 1fr)`,
-                        gridTemplateRows: `auto`,
-                        gridGap: `0 0`,
+                <Player_Group
+                    ref={ref => this.player_groups[1] = ref}
 
-                        height: `100% `,
-                        padding: `0 calc((${this.CSS_Player_Width()} - ${this.CSS_Card_Width()}) / 2)`,
-                    }}
-                >
-                    {
-                        Array(right_player_count).fill(null).map((_, index: Model.Player_Index) =>
-                        {
-                            const player_index: Model.Player_Index = index + left_player_count;
-
-                            return (
-                                <Player
-                                    key={`player_${player_index} `}
-                                    ref={ref => this.players[player_index] = ref}
-
-                                    model={model.Player(player_index)}
-                                    parent={this}
-                                    event_grid={this.Event_Grid()}
-                                />
-                            );
-                        })
-                    }
-                </div>
+                    model={player_groups[1]}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
             </div>
         );
     }

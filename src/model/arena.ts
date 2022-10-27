@@ -6,14 +6,17 @@ import { URL_Path } from "../types";
 import { Assert } from "../utils";
 import { Random_Boolean } from "../utils";
 
+import { Direction_e } from "../model";
 import { Rules } from "../model";
 import { Selection } from "../model";
 import { Player } from "../model";
 import { Player_Count } from "../model";
 import { Player_Index } from "../model";
 import { Player_Name } from "../model";
+import { Player_Group_Count } from "../model";
 import { Human_Player } from "../model";
 import { Computer_Player } from "../model";
+import { Player_Group } from "./player_group";
 import { Board } from "../model";
 import { Scores } from "../model";
 
@@ -21,13 +24,11 @@ export type Arena_ID = ID;
 export type Arena_Turn_Count = Count;
 export type Arena_Turn_Index = Index;
 
-let last_arena_id: Arena_ID = 0;
-function Next_Arena_ID():
+let arena_id: Arena_ID = 0;
+function New_Arena_ID():
     Arena_ID
 {
-    last_arena_id += 1;
-
-    return last_arena_id;
+    return arena_id++;
 }
 
 /* An instance of a game including the rules, the board, the players, their collections, selections, and stakes. */
@@ -66,7 +67,7 @@ export class Arena
             this.rules = rules.Clone();
             this.selections = Array.from(selections);
 
-            this.id = Next_Arena_ID();
+            this.id = New_Arena_ID();
 
             let human_count: Count = 0;
             let computer_count: Count = 0;
@@ -163,6 +164,85 @@ export class Arena
         Array<Player>
     {
         return Array.from(this.players);
+    }
+
+    Player_Groups(
+        player_group_count: Player_Group_Count,
+        put_remainder_on: Direction_e,
+    ):
+        Array<Player_Group>
+    {
+        const player_count: Player_Count = this.Player_Count();
+
+        player_group_count = Math.floor(player_group_count);
+        Assert(
+            player_group_count > 0 &&
+            player_group_count <= player_count
+        );
+        Assert(
+            put_remainder_on === Direction_e.LEFT ||
+            put_remainder_on === Direction_e.TOP ||
+            put_remainder_on === Direction_e.RIGHT ||
+            put_remainder_on === Direction_e.BOTTOM
+        );
+
+        const remainder: Player_Count = player_count % player_group_count;
+        const group_player_count: Player_Count = (player_count - remainder) / player_group_count;
+        const groups: Array<Player_Group> = new Array(player_group_count).fill(null);
+
+        let remainder_left: Player_Count = remainder;
+        if (
+            put_remainder_on === Direction_e.LEFT ||
+            put_remainder_on === Direction_e.TOP
+        ) {
+            for (let idx = 0, player_idx = 0, end = player_group_count; idx < end;) {
+                let player_count: Player_Count = group_player_count;
+                let is_runt: boolean;
+                if (remainder_left > 0) {
+                    player_count += 1;
+                    remainder_left -= 1;
+                    is_runt = false;
+                } else {
+                    is_runt = remainder > 0;
+                }
+
+                groups[idx] = new Player_Group({
+                    arena: this,
+                    is_runt: is_runt,
+                    relative_to: put_remainder_on,
+                    from_index: player_idx,
+                    count: player_count,
+                });
+
+                idx += 1;
+                player_idx += player_count;
+            }
+        } else {
+            for (let idx = player_group_count, player_idx = player_count, end = 0; idx > end;) {
+                let player_count: Player_Count = group_player_count;
+                let is_runt: boolean;
+                if (remainder_left > 0) {
+                    player_count += 1;
+                    remainder_left -= 1;
+                    is_runt = false;
+                } else {
+                    is_runt = remainder > 0;
+                }
+
+                idx -= 1;
+                player_idx -= player_count;
+
+                groups[idx] = new Player_Group({
+                    arena: this,
+                    is_runt: is_runt,
+                    relative_to: put_remainder_on,
+                    from_index: player_idx,
+                    count: player_count,
+                });
+            }
+        }
+
+        return groups;
     }
 
     Current_Player_Index():
