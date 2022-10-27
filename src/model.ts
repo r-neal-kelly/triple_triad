@@ -3521,6 +3521,7 @@ export class Board
     async #Evaluate_Cell(
         cell_index: Cell_Index,
         turn_results: Turn_Results,
+        evaluated_origin_cell: boolean = false,
     ):
         Promise<void>
     {
@@ -3845,7 +3846,7 @@ export class Board
         }
 
         if (this.Rules().Combo()) {
-            if (center_turn_result.step > 0) {
+            if (evaluated_origin_cell) {
                 if (left_claimed || top_claimed || right_claimed || bottom_claimed) {
                     center_turn_result.combo = true;
                 }
@@ -3866,7 +3867,7 @@ export class Board
             }
 
             for (const cell_index_to_combo of cell_indices_to_combo) {
-                await this.#Evaluate_Cell(cell_index_to_combo, turn_results);
+                await this.#Evaluate_Cell(cell_index_to_combo, turn_results, true);
             }
         }
     }
