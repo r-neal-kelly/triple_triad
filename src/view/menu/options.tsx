@@ -3,11 +3,11 @@ import { Integer } from "../../types";
 import * as Model from "../../model";
 
 import * as Event from "../event";
-import { Component, Component_Styles } from "../component";
+import { Component } from "../component";
+import { Component_Styles } from "../component";
 import { Button } from "../common/button";
 import { Toggle } from "../common/toggle";
 import { Counter } from "../common/counter";
-import { Color } from "../common/color";
 import { Menu } from "../menu";
 
 type Options_Props = {
@@ -360,7 +360,7 @@ type Player_Color_Props = {
     index: Model.Player_Index;
 }
 
-class Player_Color extends Color<Player_Color_Props>
+class Player_Color extends Component<Player_Color_Props>
 {
     Options():
         Options
@@ -386,31 +386,88 @@ class Player_Color extends Color<Player_Color_Props>
         return this.props.index;
     }
 
-    override Name():
+    Name():
         string
     {
         return `Player_Color_${this.Index()}`;
     }
 
-    override Color():
+    Color():
         Model.Color
     {
         return this.Model().Player_Color(this.Index());
     }
 
-    override CSS_Width():
+    CSS_Width():
         string
     {
         return `calc(100% / ${Model.Options.Max_Player_Count()})`;
     }
 
-    override CSS_Height():
+    CSS_Height():
         string
     {
         return `100%`;
     }
 
-    override async On_Activate(event: React.SyntheticEvent):
+    Before_Life():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `row`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            margin: `0`,
+            padding: `0`,
+
+            position: `relative`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            cursor: `pointer`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const color: Model.Color = this.Color();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+        this.Change_Style(
+            `backgroundColor`,
+            `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`,
+        );
+
+        return (
+            <div
+                className={this.Name()}
+                style={this.Styles()}
+                onClick={event => this.On_Activate(event)}
+            >
+            </div>
+        );
+    }
+
+    async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
