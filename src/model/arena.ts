@@ -6,7 +6,6 @@ import { URL_Path } from "../types";
 import { Assert } from "../utils";
 import { Random_Boolean } from "../utils";
 
-import { Card } from "../model";
 import { Rules } from "../model";
 import { Selection } from "../model";
 import { Player } from "../model";
