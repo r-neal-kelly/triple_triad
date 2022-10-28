@@ -3,7 +3,11 @@ import ReactDom from "react-dom";
 
 import { Integer } from "../types";
 import { Index } from "../types";
+import { Name } from "../types";
+
+import { Assert } from "../utils";
 import { Wait } from "../utils";
+
 import * as Event from "../event";
 
 export type Component_ID = Integer;
@@ -291,5 +295,42 @@ export class Component<T extends Component_Props> extends React.Component<T>
         Error
     {
         return new Error(`Component is not rendered.`);
+    }
+
+    async Animate(
+        {
+            animation_name,
+            duration_in_milliseconds,
+            css_iteration_count = `infinite`,
+            css_timing_function = `ease`,
+            css_direction = `normal`,
+            css_fill_mode = `none`,
+        }: {
+            animation_name: Name,
+            duration_in_milliseconds: Integer,
+            css_iteration_count?: string,
+            css_timing_function?: string,
+            css_direction?: string,
+            css_fill_mode?: string,
+        },
+    ):
+        Promise<void>
+    {
+        Assert(this.Is_Alive());
+
+        this.Change_Style(`animationName`, animation_name);
+        this.Change_Style(`animationDuration`, `${duration_in_milliseconds}ms`);
+        this.Change_Style(`animationIterationCount`, css_iteration_count);
+        this.Change_Style(`animationTimingFunction`, css_timing_function);
+        this.Change_Style(`animationDirection`, css_direction);
+        this.Change_Style(`animationFillMode`, css_fill_mode);
+
+        await Wait(duration_in_milliseconds);
+    }
+
+    Deanimate():
+        void
+    {
+        this.Change_Style(`animationName`, ``);
     }
 }

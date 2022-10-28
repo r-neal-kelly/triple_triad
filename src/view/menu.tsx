@@ -152,17 +152,19 @@ export class Menu extends Component<Menu_Props>
     ):
         void
     {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
+        if (this.Is_Alive()) {
+            this.Change_Style(`width`, this.CSS_Width());
+            this.Change_Style(`height`, this.CSS_Height());
 
-        this.Send({
-            name_affix: `${Event.RESIZE}_${this.ID()}`,
-            data: {
-                width,
-                height,
-            } as Event.Resize_Data,
-            is_atomic: false,
-        });
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width,
+                    height,
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async On_Open_Top_Menu():

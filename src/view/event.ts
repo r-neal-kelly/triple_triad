@@ -24,7 +24,7 @@ export const RESIZE: Event.Name_Affix = `Resize`;
 
 export const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
 export const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
-export const SWITCH_EXHIBITION: Event.Name_Affix = `Switch_Exhibition`;
+export const SWITCH_EXHIBITIONS: Event.Name_Affix = `Switch_Exhibitions`;
 
 export const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
 export const REMATCH_GAME: Event.Name_Affix = `Rematch_Game`;
@@ -44,8 +44,20 @@ export const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 // that would mean changing how the event grid adds the event instance to the data.
 // simple, just have these inherit from a base Event.Data type
 export type Resize_Data = {
-    width: Float,
-    height: Float,
+    width: Float;
+    height: Float;
+}
+
+export type Start_Exhibitions_Data = {
+    exhibition: Model.Exhibition;
+}
+
+export type Stop_Exhibitions_Data = {
+}
+
+export type Switch_Exhibitions_Data = {
+    previous_exhibition: Model.Exhibition;
+    next_exhibition: Model.Exhibition;
 }
 
 export type Start_New_Game_Data = {
@@ -61,11 +73,6 @@ export type Open_Top_Menu_Data = {
 }
 
 export type Open_Options_Menu_Data = {
-}
-
-export type Switch_Exhibition_Data = {
-    previous: Model.Exhibition,
-    next: Model.Exhibition,
 }
 
 export type Game_Start_Data = {

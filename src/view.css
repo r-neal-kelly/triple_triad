@@ -60,6 +60,26 @@ body {
     }
 }
 
+@keyframes Exhibition_Fade_In {
+    0% {
+        opacity: 0%;
+    }
+
+    100% {
+        opacity: 100%;
+    }
+}
+
+@keyframes Exhibition_Fade_Out {
+    0% {
+        opacity: 100%;
+    }
+
+    100% {
+        opacity: 0%;
+    }
+}
+
 @keyframes Board_Cell_Left_To_Right {
     0% {
         background-position: left;

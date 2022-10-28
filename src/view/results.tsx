@@ -456,31 +456,27 @@ class Buttons extends Component<Buttons_Props>
     {
         const model: Model.Scores = this.Model();
 
-        if (this.Arena().Model().Has_Human_Players()) {
-            return (
-                <div
-                    className={`Buttons`}
-                    style={this.Styles()}
-                >
-                    <Rematch_Button
-                        ref={ref => this.rematch_button = ref}
+        return (
+            <div
+                className={`Buttons`}
+                style={this.Styles()}
+            >
+                <Rematch_Button
+                    ref={ref => this.rematch_button = ref}
 
-                        model={model}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                    <Exit_Button
-                        ref={ref => this.exit_button = ref}
+                    model={model}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Exit_Button
+                    ref={ref => this.exit_button = ref}
 
-                        model={model}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
+                    model={model}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
     }
 }
 

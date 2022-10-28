@@ -1,5 +1,6 @@
 import { Float } from "../types";
 
+import { Assert } from "../utils";
 import { Wait } from "../utils";
 
 import * as Model from "../model";
@@ -118,7 +119,6 @@ export class Main extends Component<Main_Props>
                     style={this.Styles()}
                 >
                     <Menu
-                        key={`menu`}
                         ref={ref => this.menu = ref}
 
                         model={model.Menu()}
@@ -126,7 +126,6 @@ export class Main extends Component<Main_Props>
                         event_grid={this.Event_Grid()}
                     />
                     <Exhibitions
-                        key={`exhibitions`}
                         ref={ref => this.exhibitions = ref}
 
                         model={this.Model()}
@@ -152,7 +151,7 @@ export class Main extends Component<Main_Props>
                         event_grid={this.Event_Grid()}
                     />
                     <Results
-                        key={`results`}
+                        key={`results_${arena.ID()}`}
                         ref={ref => this.results = ref}
 
                         model={arena}
@@ -167,7 +166,19 @@ export class Main extends Component<Main_Props>
     On_Life():
         Event.Listener_Info[]
     {
+        const model: Model.Main = this.Model();
+
         this.resize_observer.observe(this.Parent());
+
+        this.Send({
+            name_affix: Event.START_EXHIBITIONS,
+            name_suffixes: [
+            ],
+            data: {
+                exhibition: model.Current_Exhibition(),
+            } as Event.Start_Exhibitions_Data,
+            is_atomic: true,
+        });
 
         this.While_Alive();
 
@@ -190,23 +201,25 @@ export class Main extends Component<Main_Props>
     On_Resize():
         void
     {
-        const rect: DOMRect = this.Parent().getBoundingClientRect();
-        if (this.current_width !== rect.width || this.current_height !== rect.height) {
-            this.current_width = rect.width;
-            this.current_height = rect.height;
+        if (this.Is_Alive()) {
+            const rect: DOMRect = this.Parent().getBoundingClientRect();
+            if (this.current_width !== rect.width || this.current_height !== rect.height) {
+                this.current_width = rect.width;
+                this.current_height = rect.height;
 
-            // Our event system is way faster than react's, so we go
-            // ahead and do preliminary updates then call refresh.
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.current_width,
-                    height: this.current_height,
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
+                // Our event system is way faster than react's, so we go
+                // ahead and do preliminary updates then call refresh.
+                this.Send({
+                    name_affix: `${Event.RESIZE}_${this.ID()}`,
+                    data: {
+                        width: this.current_width,
+                        height: this.current_height,
+                    } as Event.Resize_Data,
+                    is_atomic: false,
+                });
 
-            this.Refresh();
+                this.Refresh();
+            }
         }
     }
 
@@ -216,8 +229,28 @@ export class Main extends Component<Main_Props>
         while (true) {
             await Wait(5000);
             if (this.Is_Alive()) {
-                this.Model().Change_Current_Exhibition();
-                await this.Refresh();
+                const model: Model.Main = this.Model();
+
+                if (model.Isnt_In_Game()) {
+                    const previous_exhibition: Model.Exhibition =
+                        model.Current_Exhibition() as Model.Exhibition;
+                    this.Model().Change_Current_Exhibition();
+                    const next_exhibition: Model.Exhibition =
+                        model.Current_Exhibition() as Model.Exhibition;
+                    Assert(previous_exhibition != null);
+                    Assert(next_exhibition != null);
+
+                    await this.Send({
+                        name_affix: Event.SWITCH_EXHIBITIONS,
+                        name_suffixes: [
+                        ],
+                        data: {
+                            previous_exhibition,
+                            next_exhibition,
+                        } as Event.Switch_Exhibitions_Data,
+                        is_atomic: true,
+                    });
+                }
             } else {
                 return;
             }
@@ -231,27 +264,22 @@ export class Main extends Component<Main_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const model: Model.Main = this.Model();
-            const packs: Model.Packs = model.Packs();
-            const options: Model.Options = model.Menu().Options().Data();
-            const rules: Model.Rules = options.Rules();
+            await this.Send({
+                name_affix: Event.STOP_EXHIBITIONS,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Stop_Exhibitions_Data,
+                is_atomic: true,
+            });
 
-            const selections: Array<Model.Selection> = [
-                new Model.Random_Selection({
-                    collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle({
-                            pack: packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 9,
-                        }),
-                    }),
-                    color: options.Player_Color(0),
-                    is_of_human: true,
-                    card_count: rules.Selection_Card_Count(),
-                }),
-            ];
-            for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
-                selections.push(
+            if (this.Is_Alive()) {
+                const model: Model.Main = this.Model();
+                const packs: Model.Packs = model.Packs();
+                const options: Model.Options = model.Menu().Options().Data();
+                const rules: Model.Rules = options.Rules();
+
+                const selections: Array<Model.Selection> = [
                     new Model.Random_Selection({
                         collection: new Model.Collection({
                             default_shuffle: new Model.Shuffle({
@@ -260,16 +288,32 @@ export class Main extends Component<Main_Props>
                                 max_tier_index: 9,
                             }),
                         }),
-                        color: options.Player_Color(idx),
-                        is_of_human: false,
+                        color: options.Player_Color(0),
+                        is_of_human: true,
                         card_count: rules.Selection_Card_Count(),
                     }),
-                );
+                ];
+                for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
+                    selections.push(
+                        new Model.Random_Selection({
+                            collection: new Model.Collection({
+                                default_shuffle: new Model.Shuffle({
+                                    pack: packs.Pack(`Cats`),
+                                    min_tier_index: 0,
+                                    max_tier_index: 9,
+                                }),
+                            }),
+                            color: options.Player_Color(idx),
+                            is_of_human: false,
+                            card_count: rules.Selection_Card_Count(),
+                        }),
+                    );
+                }
+
+                model.New_Game(selections);
+
+                await this.Refresh();
             }
-
-            model.New_Game(selections);
-
-            await this.Refresh();
         }
     }
 
@@ -300,6 +344,22 @@ export class Main extends Component<Main_Props>
             model.Exit_Game();
 
             await this.Refresh();
+
+            if (this.Is_Alive()) {
+                const exhibition: Model.Exhibition =
+                    model.Current_Exhibition() as Model.Exhibition;
+                Assert(exhibition != null);
+
+                await this.Send({
+                    name_affix: Event.START_EXHIBITIONS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        exhibition: model.Current_Exhibition(),
+                    } as Event.Start_Exhibitions_Data,
+                    is_atomic: true,
+                });
+            }
         }
     }
 

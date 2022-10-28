@@ -44,38 +44,25 @@ export class Exhibitions extends Component<Exhibitions_Props>
     Exhibition(exhibition_index: Model.Exhibition_Index):
         Exhibition
     {
-        if (exhibition_index == null || exhibition_index < 0 || exhibition_index >= this.exhibitions.length) {
-            throw new Error(`'exhibition_index' ${exhibition_index} is invalid.`);
-        } else if (this.exhibitions[exhibition_index] == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.exhibitions[exhibition_index] as Exhibition;
-        }
+        return this.Try_Array_Index(this.exhibitions, exhibition_index);
     }
 
     Exhibitions():
         Array<Exhibition>
     {
-        const exhibitions: Array<Exhibition> = [];
-        for (const exhibition of this.exhibitions) {
-            if (exhibition == null) {
-                throw this.Error_Not_Rendered();
-            } else {
-                exhibitions.push(exhibition);
-            }
-        }
-
-        return exhibitions;
+        return this.Try_Array(this.exhibitions);
     }
 
     Exhibition_Event_Grid(exhibition_index: Model.Exhibition_Index):
         Event.Grid
     {
-        if (exhibition_index == null || exhibition_index < 0 || exhibition_index >= this.exhibitions.length) {
-            throw new Error(`'exhibition_index' ${exhibition_index} is invalid.`);
-        } else {
-            return this.exhibition_event_grids[exhibition_index] as Event.Grid;
-        }
+        return this.Try_Array_Index(this.exhibition_event_grids, exhibition_index);
+    }
+
+    Exhibition_Event_Grids():
+        Array<Event.Grid>
+    {
+        return this.Try_Array(this.exhibition_event_grids);
     }
 
     Width():
@@ -106,12 +93,14 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Component_Styles
     {
         return ({
+            display: `none`,
+
             position: `absolute`,
             left: `0`,
             top: `0`,
             zIndex: `0`,
 
-            filter: `blur(0.1vmin)`, // I'm not sure, maybe doing pixels would be best?
+            filter: `blur(0.1vmin)`,
         });
     }
 
@@ -130,7 +119,11 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 style={this.Styles()}
             >
                 {
-                    Array(exhibition_count).fill(null).map((_, exhibition_index: Model.Exhibition_Index) =>
+                    Array(exhibition_count).fill(null).map((
+                        _: null,
+                        exhibition_index: Model.Exhibition_Index,
+                    ):
+                        JSX.Element =>
                     {
                         return (
                             <Exhibition
@@ -156,6 +149,18 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
                 event_handler: this.On_Resize,
             },
+            {
+                event_name: new Event.Name(Event.ON, Event.START_EXHIBITIONS),
+                event_handler: this.On_Start_Exhibitions,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.STOP_EXHIBITIONS),
+                event_handler: this.On_Stop_Exhibitions,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.SWITCH_EXHIBITIONS),
+                event_handler: this.On_Switch_Exhibitions,
+            },
         ];
     }
 
@@ -167,17 +172,103 @@ export class Exhibitions extends Component<Exhibitions_Props>
     ):
         void
     {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
+        if (this.Is_Alive()) {
+            this.Change_Style(`width`, this.CSS_Width());
+            this.Change_Style(`height`, this.CSS_Height());
 
-        this.Send({
-            name_affix: `${Event.RESIZE}_${this.ID()}`,
-            data: {
-                width,
-                height,
-            } as Event.Resize_Data,
-            is_atomic: false,
-        });
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width,
+                    height,
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
+    }
+
+    async On_Start_Exhibitions(
+        {
+            exhibition,
+        }: Event.Start_Exhibitions_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Change_Style(`display`, ``);
+            await this.Animate({
+                animation_name: `Exhibition_Fade_In`,
+                duration_in_milliseconds: 2000,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                css_fill_mode: `forward`,
+            });
+            this.Deanimate();
+        }
+    }
+
+    async On_Stop_Exhibitions(
+        {
+        }: Event.Stop_Exhibitions_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Animate({
+                animation_name: `Exhibition_Fade_Out`,
+                duration_in_milliseconds: 2000,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                css_fill_mode: `forward`,
+            });
+            this.Deanimate();
+            this.Change_Style(`display`, `none`);
+        }
+    }
+
+    async On_Switch_Exhibitions(
+        {
+            previous_exhibition,
+            next_exhibition,
+        }: Event.Switch_Exhibitions_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const previous: Exhibition = this.Exhibition(previous_exhibition.Index());
+            const next: Exhibition = this.Exhibition(next_exhibition.Index());
+
+            // we can do several cool different transitions,
+            // including fade-outs and swipes in various directions
+            if (true) {
+                next.Change_Style(`display`, ``);
+                await Promise.all([
+                    previous.Animate({
+                        animation_name: `Exhibition_Fade_Out`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forward`,
+                    }),
+                    next.Animate({
+                        animation_name: `Exhibition_Fade_In`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forward`,
+                    }),
+                ]);
+                previous.Change_Style(`display`, `none`);
+
+                previous.Deanimate();
+                next.Deanimate();
+
+                await Promise.all([
+                    previous.Refresh(),
+                    next.Refresh(),
+                ]);
+            }
+        }
     }
 }
 
