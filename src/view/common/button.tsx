@@ -1,24 +1,20 @@
 import * as Event from "../event";
-import { Component, Component_Styles } from "../component";
+import { Component } from "../component";
+import { Component_Props } from "../component";
+import { Component_Styles } from "../component";
 
-type Button_Props = {
-    model: any;
-    parent: any;
-    event_grid: Event.Grid;
+interface Button_Props extends Component_Props
+{
 }
 
-export class Button extends Component<Button_Props>
+export class Button<Props extends Button_Props> extends Component<Props>
 {
     private cover: Button_Cover | null = null;
 
     Cover():
         Button_Cover
     {
-        if (this.cover == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cover;
-        }
+        return this.Try_Object(this.cover);
     }
 
     Name():
@@ -100,6 +96,7 @@ export class Button extends Component<Button_Props>
                 style={this.Styles()}
             >
                 <div
+                    className={`Button_Text`}
                     style={{
                         color: `inherit`,
                     }}
@@ -125,14 +122,14 @@ export class Button extends Component<Button_Props>
 
 type Button_Cover_Props = {
     model: any;
-    parent: Button;
+    parent: Button<Button_Props>;
     event_grid: Event.Grid;
 }
 
 class Button_Cover extends Component<Button_Cover_Props>
 {
     Button():
-        Button
+        Button<Button_Props>
     {
         return this.Parent();
     }
@@ -163,6 +160,7 @@ class Button_Cover extends Component<Button_Cover_Props>
     {
         return (
             <div
+                className={`Button_Cover`}
                 style={this.Styles()}
                 onClick={event => this.Parent().On_Activate(event)}
             >

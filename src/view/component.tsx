@@ -47,21 +47,18 @@ export interface Component_Props
 */
 export class Component<T extends Component_Props> extends React.Component<T>
 {
-    private id: Component_ID;
-    private styles: Component_Styles;
-    private body: HTMLElement | null;
-    private is_alive: boolean;
-    private is_refreshing: boolean;
+    private id: Component_ID = New_Component_ID();
+    private styles: Component_Styles = {};
+    private stylesheet: HTMLStyleElement | null = null;
+    private body: HTMLElement | null = null;
+    private is_alive: boolean = false;
+    private is_refreshing: boolean = true;
 
     constructor(props: T)
     {
         super(props);
 
-        this.id = New_Component_ID();
         this.styles = Object.assign({}, this.Before_Life());
-        this.body = null;
-        this.is_alive = false;
-        this.is_refreshing = true;
     }
 
     render():
@@ -139,6 +136,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
         this.On_Death();
         this.Event_Grid().Remove(this);
 
+        if (this.stylesheet != null && this.stylesheet.parentElement != null) {
+            this.stylesheet.parentElement.removeChild(this.stylesheet);
+        }
+
+        this.stylesheet = null;
         this.body = null;
         this.is_alive = false;
     }
@@ -178,12 +180,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return !this.is_alive;
     }
 
-    ID():
-        Component_ID
-    {
-        return this.id;
-    }
-
     Model():
         typeof this.props.model
     {
@@ -202,16 +198,22 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return this.props.event_grid;
     }
 
-    Styles():
-        Component_Styles
+    ID():
+        Component_ID
     {
-        return Object.assign({}, this.styles);
+        return this.id;
     }
 
     Style(style_name_in_camel_case: string):
         string
     {
         return this.styles[style_name_in_camel_case];
+    }
+
+    Styles():
+        Component_Styles
+    {
+        return Object.assign({}, this.styles);
     }
 
     Change_Style(style_name_in_camel_case: string, style_value: string):
@@ -223,6 +225,26 @@ export class Component<T extends Component_Props> extends React.Component<T>
         }
     }
 
+    Maybe_Stylesheet():
+        HTMLStyleElement | null
+    {
+        return this.stylesheet;
+    }
+
+    Some_Stylesheet():
+        HTMLStyleElement
+    {
+        if (this.stylesheet == null) {
+            this.stylesheet = document.createElement(`style`);
+            document.head.appendChild(this.stylesheet);
+        }
+        Assert(this.stylesheet != null);
+        Assert(this.stylesheet.parentElement === document.head);
+        Assert(this.stylesheet.sheet != null);
+
+        return this.stylesheet;
+    }
+
     Maybe_Element():
         HTMLElement | null
     {
@@ -232,11 +254,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     Some_Element():
         HTMLElement
     {
-        if (this.body == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.body;
-        }
+        return this.Try_Object(this.body);
     }
 
     Try_Object<T>(
@@ -297,6 +315,44 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return new Error(`Component is not rendered.`);
     }
 
+    Change_Animation(
+        {
+            animation_name,
+            animation_body,
+        }: {
+            animation_name: Name,
+            animation_body: string,
+        },
+    ):
+        void
+    {
+        const sheet: CSSStyleSheet =
+            this.Some_Stylesheet().sheet as CSSStyleSheet;
+        Assert(sheet != null);
+        const full_animation_name: string =
+            `${animation_name}_${this.ID()}`;
+        const animation_header: string =
+            `@keyframes ${full_animation_name} `;
+        const animation_header_regex: RegExp =
+            new RegExp(animation_header, ``);
+
+        for (let idx = 0, end = sheet.cssRules.length; idx < end; idx += 1) {
+            const css_rule: CSSRule = sheet.cssRules.item(idx) as CSSRule;
+            Assert(css_rule != null);
+            if (animation_header_regex.test(css_rule.cssText)) {
+                sheet.deleteRule(idx);
+                break;
+            }
+        }
+
+        sheet.insertRule(
+            `${animation_header}{
+                ${animation_body}
+            }`,
+            sheet.cssRules.length,
+        );
+    }
+
     async Animate(
         {
             animation_name,
@@ -318,7 +374,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     {
         Assert(this.Is_Alive());
 
-        this.Change_Style(`animationName`, animation_name);
+        this.Change_Style(`animationName`, `${animation_name}_${this.ID()}`);
         this.Change_Style(`animationDuration`, `${duration_in_milliseconds}ms`);
         this.Change_Style(`animationIterationCount`, css_iteration_count);
         this.Change_Style(`animationTimingFunction`, css_timing_function);

@@ -480,7 +480,13 @@ class Buttons extends Component<Buttons_Props>
     }
 }
 
-class Rematch_Button extends Button
+type Rematch_Button_Props = {
+    model: Model.Scores;
+    parent: Buttons;
+    event_grid: Event.Grid;
+}
+
+class Rematch_Button extends Button<Rematch_Button_Props>
 {
     override Name():
         string
@@ -534,7 +540,13 @@ class Rematch_Button extends Button
     }
 }
 
-class Exit_Button extends Button
+type Exit_Button_Props = {
+    model: Model.Scores;
+    parent: Buttons;
+    event_grid: Event.Grid;
+}
+
+class Exit_Button extends Button<Exit_Button_Props>
 {
     override Name():
         string

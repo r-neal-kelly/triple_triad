@@ -92,6 +92,32 @@ export class Exhibitions extends Component<Exhibitions_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+            
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Fade_Out`,
+            animation_body: `
+                0% {
+                    opacity: 100%;
+                }
+            
+                100% {
+                    opacity: 0%;
+                }
+            `,
+        });
+
         return ({
             display: `none`,
 
@@ -197,7 +223,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
             await this.Animate({
-                animation_name: `Exhibition_Fade_In`,
+                animation_name: `Fade_In`,
                 duration_in_milliseconds: 2000,
                 css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
@@ -215,7 +241,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             await this.Animate({
-                animation_name: `Exhibition_Fade_Out`,
+                animation_name: `Fade_Out`,
                 duration_in_milliseconds: 2000,
                 css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
@@ -244,14 +270,14 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 next.Change_Style(`display`, ``);
                 await Promise.all([
                     previous.Animate({
-                        animation_name: `Exhibition_Fade_Out`,
+                        animation_name: `Fade_Out`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         css_fill_mode: `forward`,
                     }),
                     next.Animate({
-                        animation_name: `Exhibition_Fade_In`,
+                        animation_name: `Fade_In`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
@@ -301,6 +327,32 @@ export class Exhibition extends Component<Exhibition_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+            
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Fade_Out`,
+            animation_body: `
+                0% {
+                    opacity: 100%;
+                }
+            
+                100% {
+                    opacity: 0%;
+                }
+            `,
+        });
+
         return ({
             display: `none`,
 

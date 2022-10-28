@@ -1052,7 +1052,13 @@ class Combo_Toggle extends Toggle<Combo_Toggle_Props>
     }
 }
 
-class Back_Button extends Button
+type Back_Button_Props = {
+    model: Model.Menu_Options;
+    parent: Options;
+    event_grid: Event.Grid;
+}
+
+class Back_Button extends Button<Back_Button_Props>
 {
     Options():
         Options

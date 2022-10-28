@@ -204,7 +204,13 @@ class Buttons extends Component<Buttons_Props>
     }
 }
 
-class New_Game_Button extends Button
+type New_Game_Button_Props = {
+    model: Model.Menu_Top;
+    parent: Buttons;
+    event_grid: Event.Grid;
+}
+
+class New_Game_Button extends Button<New_Game_Button_Props>
 {
     override Name():
         string
@@ -258,7 +264,13 @@ class New_Game_Button extends Button
     }
 }
 
-class Options_Button extends Button
+type Options_Button_Props = {
+    model: Model.Menu_Top;
+    parent: Buttons;
+    event_grid: Event.Grid;
+}
+
+class Options_Button extends Button<Options_Button_Props>
 {
     override Name():
         string
