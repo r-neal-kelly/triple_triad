@@ -1,6 +1,8 @@
 # Triple Triad
 
-A card game based on [Triple Triad](https://finalfantasy.fandom.com/wiki/Triple_Triad_(Final_Fantasy_VIII)) from Final Fantasy VIII.
+This is a single player card game based on [Triple Triad](https://finalfantasy.fandom.com/wiki/Triple_Triad_(Final_Fantasy_VIII)) from Final Fantasy VIII. It's available for online play:
+
+**[Play Online](https://r-neal-kelly.github.io/triple_triad/)**
 
 ## Features
 * Play with a **unique cat-themed card pack** containing both cats large and small
@@ -13,12 +15,12 @@ A card game based on [Triple Triad](https://finalfantasy.fandom.com/wiki/Triple_
 * Players place one card per turn, alternating until the board is full of cards.
 * Each player's stack of cards comes with a **unique color**.
 * The goal is to turn other cards into your color!
-* Whoever has the **most cards** at the end of the match wins.
+* Whoever has the **most cards** at the end of the match **wins**.
 * If the top two players have the same amount of cards, the match ends in a **draw**.
-* Each card has **4 numbers** located in the top-left face of the card. In addition to numbers 1 through 9, the letter A represents the number 10.
+* Each card has **4 numbers** located in the top-left of the card. The numbers can be 1 through 9 or the letter A, which represents the number 10.
 * There is one number for **each side** of the card, i.e. left, top, right, and bottom.
 * When you place a card next to another card, it will change into your color if your card has a **higher number** on the touching side.
-* You can change multiple cards in one turn, one for each side. When playing with the **optional rules**, even more cards can be changed in a single turn!
+* You can change multiple cards in one turn, one for each side. With the **optional rules**, even more cards can be taken in a single turn!
 
 ## Optional Rules
 
@@ -29,7 +31,7 @@ The same rule applies when **2 or more** sides of your card are the **same** as 
 The plus rule applies when **2 or more** sides of your card and your opponents' adjacent cards **add up to the same sum**. You get to take **each card that does**!
 
 ### Wall
-The wall rule causes the **edge of the board** to equate to A, which will count as **1 of the 2** needed sides to trigger the same and plus rule!
+The wall rule causes the **edge of the board** to equate to A, which will count as **1 of the 2** needed sides to trigger the same or plus rule!
 
 ### Combo
-The combo rule applies **after same or plus** and triggers each taken card as if you had **just placed it on the board**, allowing for a **chain**. The change can **continue** if another same or plus rule applies and ends whenver it doesn't. With this rule, it's possible to **take the entire board**!
+The combo rule applies **after a same or plus** and makes each taken card act as if you had **just placed it on the board**, allowing for a **chain**. The chain can **continue** if another same or plus rule occurs. With this rule, it's possible to **take the entire board** in one turn!
