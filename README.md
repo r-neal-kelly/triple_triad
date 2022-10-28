@@ -1,12 +1,9 @@
 # Triple Triad
 
-This is a single player card game based on [Triple Triad](https://finalfantasy.fandom.com/wiki/Triple_Triad_(Final_Fantasy_VIII)) from Final Fantasy VIII. It's available for online play:
-
-<center style="font-size: 1.7em">
+This is a single player card game based on [Triple Triad](https://finalfantasy.fandom.com/wiki/Triple_Triad_(Final_Fantasy_VIII)) from Final Fantasy VIII. It's available for online play.
 
 **[Play Online](https://r-neal-kelly.github.io/triple_triad/)**
-
-</center>
+===============================================================
 
 ## Features
 * Play with a **unique cat-themed card pack** containing both cats large and small
