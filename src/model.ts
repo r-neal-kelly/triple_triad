@@ -3560,7 +3560,7 @@ export class Board
         let bottom_combos: boolean = false;
 
         if (this.Rules().Same()) {
-            const sames: { [index: Card_Number]: Array<Cell_Index | Wall> } = {};
+            const sames: Array<Cell_Index | Wall> = [];
 
             // first we get all instances of where same can occur, to cache
             // what cards can be claimed, and if the rule has enough counts, including wall
@@ -3600,43 +3600,29 @@ export class Board
                 if (cell instanceof Cell && cell.Is_Occupied() && cell.Claimant() !== center_player) {
                     const card: Card = cell.Stake().Card();
                     if (center_card_value === cell_card_value(card)) {
-                        if (sames[center_card_value] == null) {
-                            sames[center_card_value] = [];
-                        }
-                        sames[center_card_value].push(index as Cell_Index);
+                        sames.push(index as Cell_Index);
                     }
                 } else if (cell instanceof Wall && this.Rules().Wall()) {
                     if (center_card_value === 10) {
-                        if (sames[center_card_value] == null) {
-                            sames[center_card_value] = [];
-                        }
-                        sames[center_card_value].push(index as Wall);
+                        sames.push(index as Wall);
                     }
                 }
             }
 
-            // we remove any that does not include 2 or more indices, which satisfies the rules.
-            // we also remove any that would result in no additional claims, i.e. if it just matches walls.
-            const same_array: Array<Array<Cell_Index | Wall>> = Object.values(sames).filter(function (
-                same: Array<Cell_Index | Wall>,
-            ):
-                boolean
-            {
-                if (same.length >= 2) {
-                    for (const index of same) {
-                        if (index instanceof Wall === false) {
-                            return true;
-                        }
+            // we need to have 2 or more indices to satisfy the rules.
+            // we also can't proceed if there would be no additional claims, i.e. if there are just walls in here.
+            let may_proceed = false;
+            if (sames.length >= 2) {
+                for (const index of sames) {
+                    if (index instanceof Wall === false) {
+                        may_proceed = true;
+                        break;
                     }
-
-                    return false;
-                } else {
-                    return false;
                 }
-            });
+            }
 
-            for (const same of same_array) {
-                for (const index of same) {
+            if (may_proceed) {
+                for (const index of sames) {
                     if (index === left_index) {
                         if (index instanceof Wall === false) {
                             left_claimed = true;
