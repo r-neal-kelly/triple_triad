@@ -53,6 +53,19 @@ export class Results extends Component<Results_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+            
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
@@ -67,11 +80,6 @@ export class Results extends Component<Results_Props>
             zIndex: `1`,
 
             backgroundColor: `rgba(0, 0, 0, 0.5)`,
-
-            animationName: `Results_Fade_In`,
-            animationDuration: `2000ms`,
-            animationTimingFunction: `ease-in-out`,
-            animationIterationCount: `1`,
         });
     }
 
@@ -114,6 +122,14 @@ export class Results extends Component<Results_Props>
     On_Life():
         Event.Listener_Info[]
     {
+        this.Animate({
+            animation_name: `Fade_In`,
+            duration_in_milliseconds: 2000,
+            css_iteration_count: `1`,
+            css_timing_function: `ease-in-out`,
+            css_direction: `normal`,
+        });
+
         return ([
             {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
@@ -195,6 +211,19 @@ class Banner extends Component<Banner_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Move_In`,
+            animation_body: `
+                0% {
+                    left: -100%;
+                }
+            
+                100% {
+                    left: 0;
+                }
+            `,
+        });
+
         return ({
             display: `flex`,
             flexDirection: `column`,
@@ -204,14 +233,11 @@ class Banner extends Component<Banner_Props>
             width: `100%`,
             height: `100%`,
 
+            position: `relative`,
+
             borderWidth: `0.6vmin 0`,
             borderStyle: `solid`,
             borderColor: `#00000080`,
-
-            animationName: `Results_Banner_Move_In`,
-            animationDuration: `2000ms`,
-            animationTimingFunction: `ease-in-out`,
-            animationIterationCount: `1`,
         });
     }
 
@@ -251,6 +277,21 @@ class Banner extends Component<Banner_Props>
                 </div>
             );
         }
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        this.Animate({
+            animation_name: `Move_In`,
+            duration_in_milliseconds: 2000,
+            css_iteration_count: `1`,
+            css_timing_function: `ease-in-out`,
+            css_direction: `normal`,
+        });
+
+        return [
+        ];
     }
 }
 

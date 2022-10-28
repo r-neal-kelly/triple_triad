@@ -234,6 +234,8 @@ export class Component<T extends Component_Props> extends React.Component<T>
     Some_Stylesheet():
         HTMLStyleElement
     {
+        // we could also try getting the parent's stylesheet
+        // if we find we are making too many style elements
         if (this.stylesheet == null) {
             this.stylesheet = document.createElement(`style`);
             document.head.appendChild(this.stylesheet);
