@@ -5,7 +5,6 @@ import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Button } from "../common/button";
 import { Menu } from "../menu";
-import { Listener_Info } from "../../event";
 
 type Top_Props = {
     model: Model.Menu_Top;
@@ -39,6 +38,26 @@ export class Top extends Component<Top_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Fade_And_Move_Out`,
+            animation_body: `
+                0% {
+                    opacity: 100%;
+                    left: 0;
+                }
+
+                50% {
+                    opacity: 100%;
+                    left: 0;
+                }
+            
+                100% {
+                    opacity: 0%;
+                    left: -100%;
+                }
+            `,
+        });
+
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
@@ -47,6 +66,8 @@ export class Top extends Component<Top_Props>
 
             width: `100%`,
             height: `100%`,
+
+            position: `relative`,
 
             backgroundColor: `transparent`,
         });
@@ -76,6 +97,34 @@ export class Top extends Component<Top_Props>
                 />
             </div>
         );
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return ([
+            {
+                event_name: new Event.Name(Event.ON, Event.CLOSE_MENUS),
+                event_handler: this.On_Close_Menus,
+            },
+        ]);
+    }
+
+    async On_Close_Menus(
+        {
+        }: Event.Close_Menus_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Animate({
+                animation_name: `Fade_And_Move_Out`,
+                duration_in_milliseconds: 2000,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                css_fill_mode: `forward`,
+            });
+        }
     }
 }
 
@@ -223,7 +272,7 @@ class Title_Text extends Component<Title_Text_Props>
     }
 
     On_Life():
-        Listener_Info[]
+        Event.Listener_Info[]
     {
         this.Animate({
             animation_name: `Flash`,

@@ -172,6 +172,19 @@ export class Arena extends Component<Arena_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
         return ({
             display: `flex`,
             flexDirection: `row`,
@@ -236,15 +249,16 @@ export class Arena extends Component<Arena_Props>
             Promise<void>
         {
             await this.card_images.Load();
-
-            this.Send({
-                name_affix: Event.GAME_START,
-                name_suffixes: [
-                ],
-                data: {
-                } as Event.Game_Start_Data,
-                is_atomic: true,
-            });
+            if (this.Is_Alive()) {
+                this.Send({
+                    name_affix: Event.GAME_START,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Game_Start_Data,
+                    is_atomic: true,
+                });
+            }
         }).bind(this)();
 
         return ([
@@ -269,17 +283,26 @@ export class Arena extends Component<Arena_Props>
             const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
 
             this.Change_Style(`visibility`, `visible`);
-
-            this.Send({
-                name_affix: Event.PLAYER_START_TURN,
-                name_suffixes: [
-                    current_player_index.toString(),
-                ],
-                data: {
-                    player_index: current_player_index,
-                } as Event.Player_Start_Turn_Data,
-                is_atomic: true,
+            await this.Animate({
+                animation_name: `Fade_In`,
+                duration_in_milliseconds: 2000,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                css_fill_mode: `forward`,
             });
+
+            if (this.Is_Alive()) {
+                this.Send({
+                    name_affix: Event.PLAYER_START_TURN,
+                    name_suffixes: [
+                        current_player_index.toString(),
+                    ],
+                    data: {
+                        player_index: current_player_index,
+                    } as Event.Player_Start_Turn_Data,
+                    is_atomic: true,
+                });
+            }
         }
     }
 

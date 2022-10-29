@@ -335,6 +335,15 @@ export class Main extends Component<Main_Props>
 
                 model.New_Game(selections);
 
+                await this.Send({
+                    name_affix: Event.CLOSE_MENUS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Close_Menus_Data,
+                    is_atomic: true,
+                });
+
                 await this.Refresh();
             }
         }
