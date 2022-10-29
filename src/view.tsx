@@ -2,10 +2,12 @@ import "./view.css";
 
 import React from "react";
 
+import { Index } from "./types";
 import { Float } from "./types";
 
 import { Assert } from "./utils";
 import { Wait } from "./utils";
+import { Random_Integer_Exclusive } from "./utils";
 
 import * as Model from "./model";
 
@@ -34,6 +36,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         new Array(this.Model().Exhibition_Count()).fill(null);
     private exhibition_event_grids: Array<Event.Grid> =
         Array.from(new Array(this.Model().Exhibition_Count()).fill(null).map(() => new Event.Grid()));
+    private last_animation_method_index: Index = Number.MAX_SAFE_INTEGER;
 
     Main():
         Main
@@ -125,6 +128,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
             left: `0`,
             top: `0`,
             zIndex: `0`,
+
+            overflowX: `hidden`,
+            overflowY: `hidden`,
 
             filter: `blur(0.1vmin)`,
         });
@@ -264,26 +270,84 @@ export class Exhibitions extends Component<Exhibitions_Props>
             const previous: Exhibition = this.Exhibition(previous_exhibition.Index());
             const next: Exhibition = this.Exhibition(next_exhibition.Index());
 
-            // we can do several cool different transitions,
+            // we do several cool different transitions,
             // including fade-outs and swipes in various directions
-            if (true) {
-                next.Change_Style(`display`, ``);
-                await Promise.all([
+            const methods: Array<() => Promise<[void, void]>> = [
+                () => Promise.all([
                     previous.Animate({
-                        animation_name: `Fade_Out`,
+                        animation_name: `Exit_Right`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forward`,
+                        css_fill_mode: `forwards`,
                     }),
                     next.Animate({
-                        animation_name: `Fade_In`,
+                        animation_name: `Enter_Left`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forward`,
+                        css_fill_mode: `forwards`,
                     }),
-                ]);
+                ]),
+                () => Promise.all([
+                    previous.Animate({
+                        animation_name: `Exit_Bottom`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forwards`,
+                    }),
+                    next.Animate({
+                        animation_name: `Enter_Top`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forwards`,
+                    }),
+                ]),
+                () => Promise.all([
+                    previous.Animate({
+                        animation_name: `Exit_Left`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forwards`,
+                    }),
+                    next.Animate({
+                        animation_name: `Enter_Right`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forwards`,
+                    }),
+                ]),
+                () => Promise.all([
+                    previous.Animate({
+                        animation_name: `Exit_Top`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forwards`,
+                    }),
+                    next.Animate({
+                        animation_name: `Enter_Bottom`,
+                        duration_in_milliseconds: 2000,
+                        css_iteration_count: `1`,
+                        css_timing_function: `ease-in-out`,
+                        css_fill_mode: `forwards`,
+                    }),
+                ]),
+            ];
+
+            let method_index: Index = this.last_animation_method_index;
+            while (method_index === this.last_animation_method_index) {
+                method_index = Random_Integer_Exclusive(0, methods.length);
+            }
+            this.last_animation_method_index = method_index;
+
+            next.Change_Style(`display`, ``);
+            await methods[method_index]();
+            if (this.Is_Alive()) {
                 previous.Change_Style(`display`, `none`);
 
                 previous.Deanimate();
@@ -353,6 +417,126 @@ export class Exhibition extends Component<Exhibition_Props>
             `,
         });
 
+        this.Change_Animation({
+            animation_name: `Enter_Left`,
+            animation_body: `
+                0% {
+                    left: -100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Top`,
+            animation_body: `
+                0% {
+                    top: -100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Right`,
+            animation_body: `
+                0% {
+                    left: 100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Bottom`,
+            animation_body: `
+                0% {
+                    top: 100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Left`,
+            animation_body: `
+                0% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    left: -100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Top`,
+            animation_body: `
+                0% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    top: -100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Right`,
+            animation_body: `
+                0% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    left: 100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Bottom`,
+            animation_body: `
+                0% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    top: 100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
         return ({
             display: `none`,
 
@@ -363,6 +547,7 @@ export class Exhibition extends Component<Exhibition_Props>
             left: `0`,
             top: `0`,
             zIndex: `0`,
+            opacity: `100%`,
         });
     }
 
@@ -406,11 +591,10 @@ export class Exhibition extends Component<Exhibition_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await Wait(5000);
-            if (this.Is_Alive()) {
-                this.Model().Regenerate();
-                await this.Refresh();
-            }
+            // we don't refresh so there is no sudden jump
+            // in the middle of all of the animations going on.
+            // the refresh will come when it is next chosen
+            this.Model().Regenerate();
         }
     }
 }

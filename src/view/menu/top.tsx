@@ -248,6 +248,12 @@ class New_Game_Button extends Button<New_Game_Button_Props>
         return `2.5em`;
     }
 
+    override CSS_Activated_Text_Size():
+        string
+    {
+        return `1.5em`;
+    }
+
     override async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -306,6 +312,12 @@ class Options_Button extends Button<Options_Button_Props>
         string
     {
         return `2.5em`;
+    }
+
+    override CSS_Activated_Text_Size():
+        string
+    {
+        return `1.5em`;
     }
 
     override async On_Activate(event: React.SyntheticEvent):
