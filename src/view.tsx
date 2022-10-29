@@ -36,7 +36,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
         new Array(this.Model().Exhibition_Count()).fill(null);
     private exhibition_event_grids: Array<Event.Grid> =
         Array.from(new Array(this.Model().Exhibition_Count()).fill(null).map(() => new Event.Grid()));
-    private last_animation_method_index: Index = Number.MAX_SAFE_INTEGER;
+
+    private is_switching: boolean = false;
+    private last_switch_method_index: Index = Number.MAX_SAFE_INTEGER;
 
     Main():
         Main
@@ -66,6 +68,12 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Array<Event.Grid>
     {
         return this.Try_Array(this.exhibition_event_grids);
+    }
+
+    Is_Switching():
+        boolean
+    {
+        return this.is_switching;
     }
 
     Width():
@@ -266,6 +274,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
     ):
         Promise<void>
     {
+        this.is_switching = true;
+
         if (this.Is_Alive()) {
             const previous: Exhibition = this.Exhibition(previous_exhibition.Index());
             const next: Exhibition = this.Exhibition(next_exhibition.Index());
@@ -339,11 +349,11 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 ]),
             ];
 
-            let method_index: Index = this.last_animation_method_index;
-            while (method_index === this.last_animation_method_index) {
+            let method_index: Index = this.last_switch_method_index;
+            while (method_index === this.last_switch_method_index) {
                 method_index = Random_Integer_Exclusive(0, methods.length);
             }
-            this.last_animation_method_index = method_index;
+            this.last_switch_method_index = method_index;
 
             next.Change_Style(`display`, ``);
             await methods[method_index]();
@@ -359,6 +369,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 ]);
             }
         }
+
+        this.is_switching = false;
     }
 }
 
@@ -591,10 +603,20 @@ export class Exhibition extends Component<Exhibition_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            // we don't refresh so there is no sudden jump
-            // in the middle of all of the animations going on.
-            // the refresh will come when it is next chosen
-            this.Model().Regenerate();
+            while (
+                // this makes me think we may want an Is_Animating() on component
+                this.Exhibitions().Is_Switching() ||
+                this.Model().Is_Visible()
+            ) {
+                await Wait(100);
+                if (this.Is_Dead()) {
+                    break;
+                }
+            }
+            if (this.Is_Alive()) {
+                this.Model().Regenerate();
+                await this.Refresh();
+            }
         }
     }
 }
