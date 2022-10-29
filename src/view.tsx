@@ -139,8 +139,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
             overflowX: `hidden`,
             overflowY: `hidden`,
-
-            filter: `blur(0.1vmin)`,
         });
     }
 

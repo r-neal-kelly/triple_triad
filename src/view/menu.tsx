@@ -77,7 +77,7 @@ export class Menu extends Component<Menu_Props>
             top: `0`,
             zIndex: `1`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
+            backgroundColor: `rgba(0, 0, 0, 0.4)`,
         });
     }
 
@@ -93,6 +93,7 @@ export class Menu extends Component<Menu_Props>
         if (current_menu === Model.Menu_e.TOP) {
             return (
                 <div
+                    className={`Menu`}
                     style={this.Styles()}
                 >
                     <Top

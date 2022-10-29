@@ -5,6 +5,7 @@ import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Button } from "../common/button";
 import { Menu } from "../menu";
+import { Listener_Info } from "../../event";
 
 type Top_Props = {
     model: Model.Menu_Top;
@@ -26,21 +27,13 @@ export class Top extends Component<Top_Props>
     Title():
         Title
     {
-        if (this.title == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.title;
-        }
+        return this.Try_Object(this.title);
     }
 
     Buttons():
         Buttons
     {
-        if (this.buttons == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.buttons;
-        }
+        return this.Try_Object(this.buttons);
     }
 
     Before_Life():
@@ -64,6 +57,7 @@ export class Top extends Component<Top_Props>
     {
         return (
             <div
+                className={`Top`}
                 style={this.Styles()}
             >
                 <Title
@@ -93,10 +87,18 @@ type Title_Props = {
 
 class Title extends Component<Title_Props>
 {
+    private text: Title_Text | null = null;
+
     Top():
         Top
     {
         return this.Parent();
+    }
+
+    Text():
+        Title_Text
+    {
+        return this.Try_Object(this.text);
     }
 
     Before_Life():
@@ -106,9 +108,13 @@ class Title extends Component<Title_Props>
             display: `flex`,
             flexDirection: `column`,
             justifyContent: `center`,
+            alignItems: `center`,
 
             width: `100%`,
             height: `100%`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
 
             fontSize: `5em`,
         });
@@ -119,11 +125,113 @@ class Title extends Component<Title_Props>
     {
         return (
             <div
+                className={`Title`}
                 style={this.Styles()}
             >
-                <div>{`Triple Triad`}</div>
+                <Title_Text
+                    ref={ref => this.text = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
             </div>
         );
+    }
+}
+
+type Title_Text_Props = {
+    model: Model.Menu_Top;
+    parent: Title;
+    event_grid: Event.Grid;
+}
+
+class Title_Text extends Component<Title_Text_Props>
+{
+    Title():
+        Title
+    {
+        return this.Parent();
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        this.Change_Animation({
+            animation_name: `Flash`,
+            animation_body: `
+                0% {
+                    background-position: right;
+                    color: rgba(255, 255, 255, 0.0);
+                }
+
+                20% {
+                    color: rgba(255, 255, 255, 0.0);
+                }
+
+                100% {
+                    background-position: left;
+                    color: rgba(255, 255, 255, 1.0);
+                }
+            `,
+        });
+
+        return ({
+            width: `80%`,
+            height: `fit-content`,
+
+            padding: `1% 0`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.8vmin`,
+            borderRadius: `100%`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundImage: `linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.9),
+                rgba(0, 0, 0, 0.8),
+                rgba(0, 0, 0, 0.7),
+                rgba(0, 0, 0, 0.6),
+                rgba(0, 0, 0, 0.5),
+                rgba(128, 128, 128, 0.4),
+                rgba(0, 0, 0, 0.3),
+                rgba(0, 0, 0, 0.2),
+                rgba(0, 0, 0, 0.1)
+            )`,
+            backgroundSize: `1000% 100%`,
+            backgroundPosition: `left`,
+
+            color: `white`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Title_Text`}
+                style={this.Styles()}
+            >
+                {`Triple Triad`}
+            </div>
+        );
+    }
+
+    On_Life():
+        Listener_Info[]
+    {
+        this.Animate({
+            animation_name: `Flash`,
+            duration_in_milliseconds: 4000,
+            css_iteration_count: `1`,
+        });
+
+        return [];
     }
 }
 
@@ -147,21 +255,13 @@ class Buttons extends Component<Buttons_Props>
     New_Game():
         New_Game_Button
     {
-        if (this.new_game == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.new_game;
-        }
+        return this.Try_Object(this.new_game);
     }
 
     Options():
         Options_Button
     {
-        if (this.options == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.options;
-        }
+        return this.Try_Object(this.options);
     }
 
     Before_Life():
@@ -175,6 +275,9 @@ class Buttons extends Component<Buttons_Props>
 
             width: `100%`,
             height: `100%`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
         });
     }
 
@@ -183,6 +286,7 @@ class Buttons extends Component<Buttons_Props>
     {
         return (
             <div
+                className={`Buttons`}
                 style={this.Styles()}
             >
                 <New_Game_Button
