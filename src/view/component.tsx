@@ -58,6 +58,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     private id: Component_ID = New_Component_ID();
     private styles: Component_Styles = {};
     private stylesheet: HTMLStyleElement | null = null;
+    private stylesheet_selectors: { [index: Name]: Index } = {};
     private body: HTMLElement | null = null;
     private is_alive: boolean = false;
     private is_refreshing: boolean = true;
@@ -351,29 +352,22 @@ export class Component<T extends Component_Props> extends React.Component<T>
         Assert(sheet != null);
         const full_animation_name: string =
             `${animation_name}_${this.ID()}`;
-        const animation_header: string =
+        const animation_selector: string =
             `@keyframes ${full_animation_name}`;
 
-        // this is incredibly inefficient and doesn't even seem to work
-        // replace it with a hashmap tracking indices, and then just delete
-        // and insert the rule again
-        /*
-        for (let idx = 0, end = sheet.cssRules.length; idx < end; idx += 1) {
-            const css_rule: CSSRule = sheet.cssRules.item(idx) as CSSRule;
-            Assert(css_rule != null);
-            if (animation_header_regex.test(css_rule.cssText)) {
-                sheet.deleteRule(idx);
-                console.log("w");
-                break;
-            }
+        let rule_index: Index;
+        if (this.stylesheet_selectors[animation_selector] != null) {
+            rule_index = this.stylesheet_selectors[animation_selector];
+            sheet.deleteRule(rule_index);
+        } else {
+            rule_index = sheet.cssRules.length;
         }
-        */
-
+        this.stylesheet_selectors[animation_selector] = rule_index;
         sheet.insertRule(
-            `${animation_header} {
+            `${animation_selector} {
                 ${animation_body}
             }`,
-            sheet.cssRules.length,
+            rule_index,
         );
     }
 

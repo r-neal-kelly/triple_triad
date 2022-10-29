@@ -129,13 +129,13 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
         return `white`;
     }
 
-    CSS_Triggered_Background_Color():
+    CSS_Activated_Enabled_Background_Color():
         string
     {
         return `rgba(255, 255, 255, 0.7)`;
     }
 
-    CSS_Triggered_Text_Color():
+    CSS_Activated_Enabled_Text_Color():
         string
     {
         return `black`;
@@ -294,6 +294,51 @@ class Decrementor extends Component<Decrementor_Props>
         }
     }
 
+    Update_Animations():
+        void
+    {
+        const counter: Counter<Counter_Props> = this.Parent();
+
+        this.Change_Animation({
+            animation_name: `Activate_Enabled`,
+            animation_body: `
+                0% {
+                    background-color: ${counter.CSS_Enabled_Background_Color()};
+                    color: ${counter.CSS_Enabled_Text_Color()};
+                }
+            
+                50% {
+                    background-color: ${counter.CSS_Activated_Enabled_Background_Color()};
+                    color: ${counter.CSS_Activated_Enabled_Text_Color()};
+                }
+
+                100% {
+                    background-color: ${counter.CSS_Enabled_Background_Color()};
+                    color: ${counter.CSS_Enabled_Text_Color()};
+                }
+            `,
+        });
+    }
+
+    Update_Styles():
+        void
+    {
+        const counter: Counter<Counter_Props> = this.Parent();
+
+        this.Change_Style(`width`, this.Counter().CSS_Button_Width());
+        this.Change_Style(`height`, this.Counter().CSS_Button_Height());
+
+        if (counter.Can_Decrement()) {
+            this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
+            this.Change_Style(`color`, counter.CSS_Enabled_Text_Color());
+            this.Change_Style(`cursor`, `pointer`);
+        } else {
+            this.Change_Style(`backgroundColor`, counter.CSS_Disabled_Background_Color());
+            this.Change_Style(`color`, counter.CSS_Disabled_Text_Color());
+            this.Change_Style(`cursor`, `default`);
+        }
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -302,9 +347,6 @@ class Decrementor extends Component<Decrementor_Props>
             flexDirection: `column`,
             justifyContent: `center`,
             alignItems: `center`,
-
-            width: this.Counter().CSS_Button_Width(),
-            height: this.Counter().CSS_Button_Height(),
 
             position: `relative`,
 
@@ -329,17 +371,8 @@ class Decrementor extends Component<Decrementor_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter<Counter_Props> = this.Parent();
-
-        if (counter.Can_Decrement()) {
-            this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Enabled_Text_Color());
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`backgroundColor`, counter.CSS_Disabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Disabled_Text_Color());
-            this.Change_Style(`cursor`, `default`);
-        }
+        this.Update_Animations();
+        this.Update_Styles();
 
         return (
             <div
@@ -418,10 +451,34 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
         return (
             <div
                 style={this.Styles()}
-                onClick={event => counter.On_Decrement(event)}
+                onClick={event => this.On_Decrement(event)}
             >
             </div>
         );
+    }
+
+    async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
+        if (counter.Is_Alive() && counter.Can_Decrement()) {
+            const decrementor: Decrementor = this.Decrementor();
+            if (decrementor.Is_Alive()) {
+                decrementor.Update_Animations();
+                await decrementor.Animate({
+                    animation_name: `Activate_Enabled`,
+                    duration_in_milliseconds: 200,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease`,
+                    css_direction: `normal`,
+                    css_fill_mode: `both`,
+                });
+                if (counter.Is_Alive() && decrementor.Is_Alive()) {
+                    decrementor.Deanimate();
+                    counter.On_Decrement(event);
+                }
+            }
+        }
     }
 }
 
@@ -451,6 +508,51 @@ class Incrementor extends Component<Incrementor_Props>
         }
     }
 
+    Update_Animations():
+        void
+    {
+        const counter: Counter<Counter_Props> = this.Parent();
+
+        this.Change_Animation({
+            animation_name: `Activate_Enabled`,
+            animation_body: `
+                0% {
+                    background-color: ${counter.CSS_Enabled_Background_Color()};
+                    color: ${counter.CSS_Enabled_Text_Color()};
+                }
+            
+                50% {
+                    background-color: ${counter.CSS_Activated_Enabled_Background_Color()};
+                    color: ${counter.CSS_Activated_Enabled_Text_Color()};
+                }
+
+                100% {
+                    background-color: ${counter.CSS_Enabled_Background_Color()};
+                    color: ${counter.CSS_Enabled_Text_Color()};
+                }
+            `,
+        });
+    }
+
+    Update_Styles():
+        void
+    {
+        const counter: Counter<Counter_Props> = this.Parent();
+
+        this.Change_Style(`width`, this.Counter().CSS_Button_Width());
+        this.Change_Style(`height`, this.Counter().CSS_Button_Height());
+
+        if (counter.Can_Increment()) {
+            this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
+            this.Change_Style(`color`, counter.CSS_Enabled_Text_Color());
+            this.Change_Style(`cursor`, `pointer`);
+        } else {
+            this.Change_Style(`backgroundColor`, counter.CSS_Disabled_Background_Color());
+            this.Change_Style(`color`, counter.CSS_Disabled_Text_Color());
+            this.Change_Style(`cursor`, `default`);
+        }
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -459,9 +561,6 @@ class Incrementor extends Component<Incrementor_Props>
             flexDirection: `column`,
             justifyContent: `center`,
             alignItems: `center`,
-
-            width: this.Counter().CSS_Button_Width(),
-            height: this.Counter().CSS_Button_Height(),
 
             position: `relative`,
 
@@ -486,17 +585,8 @@ class Incrementor extends Component<Incrementor_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const counter: Counter<Counter_Props> = this.Parent();
-
-        if (counter.Can_Increment()) {
-            this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Enabled_Text_Color());
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`backgroundColor`, counter.CSS_Disabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Disabled_Text_Color());
-            this.Change_Style(`cursor`, `default`);
-        }
+        this.Update_Animations();
+        this.Update_Styles();
 
         return (
             <div
@@ -575,9 +665,33 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
         return (
             <div
                 style={this.Styles()}
-                onClick={event => counter.On_Increment(event)}
+                onClick={event => this.On_Increment(event)}
             >
             </div>
         );
+    }
+
+    async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
+        if (counter.Is_Alive() && counter.Can_Increment()) {
+            const incrementor: Incrementor = this.Incrementor();
+            if (incrementor.Is_Alive()) {
+                incrementor.Update_Animations();
+                await incrementor.Animate({
+                    animation_name: `Activate_Enabled`,
+                    duration_in_milliseconds: 200,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease`,
+                    css_direction: `normal`,
+                    css_fill_mode: `both`,
+                });
+                if (counter.Is_Alive() && incrementor.Is_Alive()) {
+                    incrementor.Deanimate();
+                    counter.On_Increment(event);
+                }
+            }
+        }
     }
 }

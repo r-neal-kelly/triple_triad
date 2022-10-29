@@ -53,6 +53,67 @@ export class Button<Props extends Button_Props> extends Component<Props>
         return `1em`;
     }
 
+    CSS_Background_Color():
+        string
+    {
+        return `rgba(0, 0, 0, 0.7)`;
+    }
+
+    CSS_Activated_Text_Color():
+        string
+    {
+        return `black`;
+    }
+
+    CSS_Activated_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    CSS_Activated_Background_Color():
+        string
+    {
+        return `rgba(255, 255, 255, 0.7)`;
+    }
+
+    Update_Animations():
+        void
+    {
+        this.Change_Animation({
+            animation_name: `Activate`,
+            animation_body: `
+                0% {
+                    background-color: ${this.CSS_Background_Color()};
+                    color: ${this.CSS_Text_Color()};
+                    font-size: ${this.CSS_Text_Size()};
+                }
+            
+                50% {
+                    background-color: ${this.CSS_Activated_Background_Color()};
+                    color: ${this.CSS_Activated_Text_Color()};
+                    font-size: ${this.CSS_Activated_Text_Size()};
+                }
+
+                100% {
+                    background-color: ${this.CSS_Background_Color()};
+                    color: ${this.CSS_Text_Color()};
+                    font-size: ${this.CSS_Text_Size()};
+                }
+            `,
+        });
+    }
+
+    Update_Styles():
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+        this.Change_Style(`backgroundColor`, this.CSS_Background_Color());
+        this.Change_Style(`color`, this.CSS_Text_Color());
+        this.Change_Style(`fontSize`, this.CSS_Text_Size());
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -61,9 +122,6 @@ export class Button<Props extends Button_Props> extends Component<Props>
             flexDirection: `column`,
             justifyContent: `center`,
             alignItems: `center`,
-
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
 
             position: `relative`,
 
@@ -75,13 +133,9 @@ export class Button<Props extends Button_Props> extends Component<Props>
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.7)`,
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
-
-            color: this.CSS_Text_Color(),
-            fontSize: this.CSS_Text_Size(),
 
             cursor: `pointer`,
         });
@@ -90,6 +144,9 @@ export class Button<Props extends Button_Props> extends Component<Props>
     On_Refresh():
         JSX.Element | null
     {
+        this.Update_Animations();
+        this.Update_Styles();
+
         return (
             <div
                 className={this.Name()}
@@ -162,9 +219,30 @@ class Button_Cover extends Component<Button_Cover_Props>
             <div
                 className={`Button_Cover`}
                 style={this.Styles()}
-                onClick={event => this.Parent().On_Activate(event)}
+                onClick={event => this.On_Activate(event)}
             >
             </div>
         );
+    }
+
+    async On_Activate(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        const button: Button<Button_Props> = this.Parent();
+        if (button.Is_Alive()) {
+            button.Update_Animations();
+            await button.Animate({
+                animation_name: `Activate`,
+                duration_in_milliseconds: 300,
+                css_iteration_count: `1`,
+                css_timing_function: `ease`,
+                css_direction: `normal`,
+                css_fill_mode: `both`,
+            });
+            if (button.Is_Alive()) {
+                button.Deanimate();
+                button.On_Activate(event);
+            }
+        }
     }
 }
