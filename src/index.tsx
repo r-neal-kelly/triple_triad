@@ -10,8 +10,9 @@ if (root_element == null) {
 } else {
     ReactDOM_Client.createRoot(root_element).render(
         <Main
+            root={root_element}
             model={new Model.Main({})}
-            parent={root_element}
+            parent={null}
             event_grid={new Event.Grid()}
         />
     );

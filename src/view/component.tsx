@@ -47,6 +47,14 @@ export interface Component_Props
 */
 export class Component<T extends Component_Props> extends React.Component<T>
 {
+    // we need to add a Children() function that gets all child components,
+    // a Parent() function to get parent component or null to replace the prop
+    // a Parent_Element() function to get the dom parent or null
+    // and likewise a Children_Elements() to get the dom children.
+    // what we'll do is use ReactDom to find the component and try to cache
+    // at least the parent, which can't be removed without first destroying
+    // its children components. now I think we might be able to do that
+    // for children too, but I need to think it through
     private id: Component_ID = New_Component_ID();
     private styles: Component_Styles = {};
     private stylesheet: HTMLStyleElement | null = null;
@@ -132,6 +140,14 @@ export class Component<T extends Component_Props> extends React.Component<T>
         while (this.is_refreshing) {
             await Wait(1);
         }
+
+        // we really should wait until we know all children
+        // are completely dead, but because there's no built
+        // in way to get children like unto the dom, we skip for now.
+        // but in the future, what we can do to get children is
+        // get the element, nab the children from the dom, and
+        // try to get a component for each, and then we don't need
+        // to worry about the rest.
 
         this.On_Death();
         this.Event_Grid().Remove(this);
@@ -234,9 +250,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
     Some_Stylesheet():
         HTMLStyleElement
     {
-        // we could also try getting the parent's stylesheet
-        // if we find we are making too many style elements
         if (this.stylesheet == null) {
+            // it's actually less efficient trying to store
+            // rules on one stylesheet, and so we have one
+            // stylesheet per live component. naturally
+            // it's deleted upon death
             this.stylesheet = document.createElement(`style`);
             document.head.appendChild(this.stylesheet);
         }
@@ -334,21 +352,25 @@ export class Component<T extends Component_Props> extends React.Component<T>
         const full_animation_name: string =
             `${animation_name}_${this.ID()}`;
         const animation_header: string =
-            `@keyframes ${full_animation_name} `;
-        const animation_header_regex: RegExp =
-            new RegExp(animation_header, ``);
+            `@keyframes ${full_animation_name}`;
 
+        // this is incredibly inefficient and doesn't even seem to work
+        // replace it with a hashmap tracking indices, and then just delete
+        // and insert the rule again
+        /*
         for (let idx = 0, end = sheet.cssRules.length; idx < end; idx += 1) {
             const css_rule: CSSRule = sheet.cssRules.item(idx) as CSSRule;
             Assert(css_rule != null);
             if (animation_header_regex.test(css_rule.cssText)) {
                 sheet.deleteRule(idx);
+                console.log("w");
                 break;
             }
         }
+        */
 
         sheet.insertRule(
-            `${animation_header}{
+            `${animation_header} {
                 ${animation_body}
             }`,
             sheet.cssRules.length,

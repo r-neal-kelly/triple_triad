@@ -14,8 +14,9 @@ import { Arena } from "./arena";
 import { Results } from "./results";
 
 type Main_Props = {
+    root: HTMLElement;
     model: Model.Main;
-    parent: HTMLElement;
+    parent: null;
     event_grid: Event.Grid;
 }
 
@@ -34,10 +35,16 @@ export class Main extends Component<Main_Props>
     {
         super(props);
 
-        const rect: DOMRect = this.Parent().getBoundingClientRect();
+        const rect: DOMRect = this.Root().getBoundingClientRect();
         this.current_width = rect.width;
         this.current_height = rect.height;
         this.resize_observer = new ResizeObserver((this.On_Resize.bind(this)));
+    }
+
+    Root():
+        HTMLElement
+    {
+        return this.Try_Object(this.props.root);
     }
 
     Menu():
@@ -91,13 +98,21 @@ export class Main extends Component<Main_Props>
     Before_Life():
         Component_Styles
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+            
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
         return ({
             position: `relative`,
-
-            animationName: `Main_Fade_In`,
-            animationDuration: `5000ms`,
-            animationTimingFunction: `ease-in-out`,
-            animationIterationCount: `1`,
         });
     }
 
@@ -168,7 +183,7 @@ export class Main extends Component<Main_Props>
     {
         const model: Model.Main = this.Model();
 
-        this.resize_observer.observe(this.Parent());
+        this.resize_observer.observe(this.Root());
 
         this.Send({
             name_affix: Event.START_EXHIBITIONS,
@@ -178,6 +193,14 @@ export class Main extends Component<Main_Props>
                 exhibition: model.Current_Exhibition(),
             } as Event.Start_Exhibitions_Data,
             is_atomic: true,
+        });
+
+        this.Animate({
+            animation_name: `Fade_In`,
+            duration_in_milliseconds: 5000,
+            css_iteration_count: `1`,
+            css_timing_function: `ease-in-out`,
+            css_fill_mode: `forward`,
         });
 
         this.While_Alive();
@@ -202,7 +225,7 @@ export class Main extends Component<Main_Props>
         void
     {
         if (this.Is_Alive()) {
-            const rect: DOMRect = this.Parent().getBoundingClientRect();
+            const rect: DOMRect = this.Root().getBoundingClientRect();
             if (this.current_width !== rect.width || this.current_height !== rect.height) {
                 this.current_width = rect.width;
                 this.current_height = rect.height;

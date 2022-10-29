@@ -1028,6 +1028,31 @@ class Player_Stake extends Component<Player_Stake_Props>
     {
         const arena: Arena = this.Arena();
 
+        this.Change_Animation({
+            animation_name: `Twinkle`,
+            animation_body: `
+                0% {
+                    border-color: white;
+                }
+            
+                25% {
+                    border-color: black;
+                }
+            
+                50% {
+                    border-color: white;
+                }
+            
+                75% {
+                    border-color: black;
+                }
+            
+                100% {
+                    border-color: white;
+                }
+            `,
+        });
+
         return ({
             display: `flex`,
             flexDirection: `column`,
@@ -1169,20 +1194,15 @@ class Player_Stake extends Component<Player_Stake_Props>
     {
         if (this.Is_Alive()) {
             if (stake_index === this.Index()) {
-                this.Change_Style(`animationName`, `Player_Stake_Twinkle`);
-                this.Change_Style(`animationDuration`, `${500}ms`);
-                this.Change_Style(`animationTimingFunction`, `ease-in-out`);
-                this.Change_Style(`animationIterationCount`, `1`);
-                this.Change_Style(`animationDirection`, `normal`);
+                await this.Animate({
+                    animation_name: `Twinkle`,
+                    duration_in_milliseconds: 500,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease-in-out`,
+                });
 
-                await Wait(500);
                 if (this.Is_Alive()) {
-                    this.Change_Style(`animationName`, ``);
-                    this.Change_Style(`animationDuration`, ``);
-                    this.Change_Style(`animationTimingFunction`, ``);
-                    this.Change_Style(`animationIterationCount`, ``);
-                    this.Change_Style(`animationDirection`, ``);
-
+                    this.Deanimate();
                     await Wait(100);
                 }
             }
@@ -1537,6 +1557,71 @@ class Board_Cell extends Component<Board_Cell_Props>
     {
         const arena: Arena = this.Arena();
 
+        this.Change_Animation({
+            animation_name: `Left_To_Right`,
+            animation_body: `
+                0% {
+                    background-position: left;
+                }
+            
+                100% {
+                    background-position: right;
+                }
+            `,
+        });
+        this.Change_Animation({
+            animation_name: `Top_To_Bottom`,
+            animation_body: `
+                0% {
+                    background-position: top;
+                }
+            
+                100% {
+                    background-position: bottom;
+                }
+            `,
+        });
+        this.Change_Animation({
+            animation_name: `Right_To_Left`,
+            animation_body: `
+                0% {
+                    background-position: right;
+                }
+            
+                100% {
+                    background-position: left;
+                }
+            `,
+        });
+        this.Change_Animation({
+            animation_name: `Bottom_To_Top`,
+            animation_body: `
+                0% {
+                    background-position: bottom;
+                }
+            
+                100% {
+                    background-position: top;
+                }
+            `,
+        });
+        this.Change_Animation({
+            animation_name: `Flash`,
+            animation_body: `
+                0% {
+                    border-color: black;
+                }
+            
+                50% {
+                    border-color: white;
+                }
+            
+                100% {
+                    border-color: black;
+                }
+            `,
+        });
+
         return ({
             display: `grid`,
             gridTemplateColumns: `4fr 3fr 4fr 3fr 4fr`,
@@ -1728,9 +1813,23 @@ class Board_Cell extends Component<Board_Cell_Props>
                 const old_color: Model.Color = turn_result.old_color;
                 const new_color: Model.Color = model.Color();
                 const old_background_color: string =
-                    `rgba(${old_color.Red()}, ${old_color.Green()}, ${old_color.Blue()}, ${old_color.Alpha()})`;
+                    `rgba(
+                        ${old_color.Red()},
+                        ${old_color.Green()},
+                        ${old_color.Blue()},
+                        ${old_color.Alpha()}
+                    )`;
                 const new_background_color: string =
-                    `rgba(${new_color.Red()}, ${new_color.Green()}, ${new_color.Blue()}, ${new_color.Alpha()})`;
+                    `rgba(
+                        ${new_color.Red()},
+                        ${new_color.Green()},
+                        ${new_color.Blue()},
+                        ${new_color.Alpha()}
+                    )`;
+                const animation_duration: number =
+                    Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
+
+                this.current_color = old_color;
 
                 let background_size: string = ``;
                 let from_position: string = ``;
@@ -1740,28 +1839,23 @@ class Board_Cell extends Component<Board_Cell_Props>
                     background_size = `1000% 100%`;
                     from_position = `left`;
                     to_position = `right`;
-                    animation_name = `Board_Cell_Left_To_Right`;
+                    animation_name = `Left_To_Right`;
                 } else if (turn_result.direction === Model.Direction_e.TOP) {
                     background_size = `100% 1000%`;
                     from_position = `top`;
                     to_position = `bottom`;
-                    animation_name = `Board_Cell_Top_To_Bottom`;
+                    animation_name = `Top_To_Bottom`;
                 } else if (turn_result.direction === Model.Direction_e.RIGHT) {
                     background_size = `1000% 100%`;
                     from_position = `right`;
                     to_position = `left`;
-                    animation_name = `Board_Cell_Right_To_Left`;
+                    animation_name = `Right_To_Left`;
                 } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
                     background_size = `100% 1000%`;
                     from_position = `bottom`;
                     to_position = `top`;
-                    animation_name = `Board_Cell_Bottom_To_Top`;
+                    animation_name = `Bottom_To_Top`;
                 }
-
-                const animation_duration: number =
-                    Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
-
-                this.current_color = old_color;
 
                 this.Change_Style(
                     `backgroundColor`,
@@ -1769,7 +1863,11 @@ class Board_Cell extends Component<Board_Cell_Props>
                 );
                 this.Change_Style(
                     `backgroundImage`,
-                    `linear-gradient(to ${to_position}, ${old_background_color}, ${new_background_color})`,
+                    `linear-gradient(
+                        to ${to_position},
+                        ${old_background_color},
+                        ${new_background_color}
+                    )`,
                 );
                 this.Change_Style(
                     `backgroundSize`,
@@ -1779,40 +1877,32 @@ class Board_Cell extends Component<Board_Cell_Props>
                     `backgroundPosition`,
                     from_position,
                 )
-                this.Change_Style(`animationName`, animation_name);
-                this.Change_Style(`animationDuration`, `${animation_duration}ms`);
-                this.Change_Style(`animationTimingFunction`, `ease-in-out`);
-                this.Change_Style(`animationIterationCount`, `1`);
-                this.Change_Style(`animationDirection`, `normal`);
 
-                await Wait(animation_duration);
+                await this.Animate({
+                    animation_name: animation_name,
+                    duration_in_milliseconds: animation_duration,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease-in-out`,
+                });
                 if (this.Is_Alive()) {
                     this.current_color = new_color;
 
                     this.Change_Style(`backgroundColor`, new_background_color);
                     this.Change_Style(`backgroundImage`, ``);
                     this.Change_Style(`backgroundSize`, `100% 100%`);
-                    this.Change_Style(`animationName`, ``);
-                    this.Change_Style(`animationDuration`, ``);
-                    this.Change_Style(`animationTimingFunction`, ``);
-                    this.Change_Style(`animationIterationCount`, ``);
-                    this.Change_Style(`animationDirection`, ``);
+
+                    this.Deanimate();
 
                     await Wait(200);
                     if (this.Is_Alive()) {
-                        this.Change_Style(`animationName`, `Board_Cell_Flash`);
-                        this.Change_Style(`animationDuration`, `${300}ms`);
-                        this.Change_Style(`animationTimingFunction`, `ease-in`);
-                        this.Change_Style(`animationIterationCount`, `1`);
-                        this.Change_Style(`animationDirection`, `normal`);
-
-                        await Wait(300);
+                        await this.Animate({
+                            animation_name: `Flash`,
+                            duration_in_milliseconds: 300,
+                            css_iteration_count: `1`,
+                            css_timing_function: `ease-in`,
+                        });
                         if (this.Is_Alive()) {
-                            this.Change_Style(`animationName`, ``);
-                            this.Change_Style(`animationDuration`, ``);
-                            this.Change_Style(`animationTimingFunction`, ``);
-                            this.Change_Style(`animationIterationCount`, ``);
-                            this.Change_Style(`animationDirection`, ``);
+                            this.Deanimate();
 
                             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
                         }
