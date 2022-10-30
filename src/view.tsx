@@ -100,8 +100,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
         return `${this.Height()}px`;
     }
 
-    Before_Life():
-        Component_Styles
+    Refresh_Animations():
+        void
     {
         this.Change_Animation({
             animation_name: `Fade_In`,
@@ -128,6 +128,19 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 }
             `,
         });
+    }
+
+    Refresh_Styles():
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        this.Refresh_Animations();
 
         return ({
             display: `none`,
@@ -148,8 +161,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         const model: Model.Main = this.Model();
         const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
 
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
+        this.Refresh_Styles();
 
         return (
             <div
@@ -211,8 +223,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         void
     {
         if (this.Is_Alive()) {
-            this.Change_Style(`width`, this.CSS_Width());
-            this.Change_Style(`height`, this.CSS_Height());
+            this.Refresh_Styles();
 
             this.Send({
                 name_affix: `${Event.RESIZE}_${this.ID()}`,
@@ -1029,8 +1040,6 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     Before_Life():
         Component_Styles
     {
-        const arena: Arena = this.Arena();
-
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
@@ -1269,8 +1278,6 @@ class Player_Hand extends Component<Player_Hand_Props>
     Before_Life():
         Component_Styles
     {
-        const arena: Arena = this.Arena();
-
         return ({
             position: `relative`,
 
@@ -2125,8 +2132,6 @@ class Board_Cell extends Component<Board_Cell_Props>
     Before_Life():
         Component_Styles
     {
-        const arena: Arena = this.Arena();
-
         this.Change_Animation({
             animation_name: `Left_To_Right`,
             animation_body: `
