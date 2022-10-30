@@ -728,6 +728,8 @@ export class Main
     {
         this.current_arena = null;
 
+        this.Menu().Open_Top();
+
         const exhibition_count: Exhibition_Count = this.exhibitions.length;
         this.exhibitions = [];
         for (let idx = 0, end = exhibition_count; idx < end; idx += 1) {
@@ -787,9 +789,8 @@ export class Menu
     Open_Top():
         void
     {
-        Utils.Assert(this.current_menu !== Menu_e.TOP);
-
         this.current_menu = Menu_e.TOP;
+        this.Top().Open();
     }
 
     Open_Options():
@@ -804,6 +805,7 @@ export class Menu
 export class Menu_Top
 {
     private menu: Menu;
+    private is_open: boolean;
 
     constructor(
         {
@@ -814,12 +816,31 @@ export class Menu_Top
     )
     {
         this.menu = menu;
+        this.is_open = true;
     }
 
     Menu():
         Menu
     {
         return this.menu;
+    }
+
+    Is_Open():
+        boolean
+    {
+        return this.is_open;
+    }
+
+    Open():
+        void
+    {
+        this.is_open = true;
+    }
+
+    Close():
+        void
+    {
+        this.is_open = false;
     }
 }
 

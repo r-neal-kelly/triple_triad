@@ -10,8 +10,7 @@ import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Menu } from "./menu"
 import { Exhibitions } from "../view";
-import { Arena } from "./arena";
-import { Results } from "./results";
+import { Game } from "./game";
 
 type Main_Props = {
     root: HTMLElement;
@@ -24,8 +23,7 @@ export class Main extends Component<Main_Props>
 {
     private menu: Menu | null = null;
     private exhibitions: Exhibitions | null = null;
-    private arena: Arena | null = null;
-    private results: Results | null = null;
+    private game: Game | null = null;
 
     private current_width: Float;
     private current_height: Float;
@@ -59,16 +57,10 @@ export class Main extends Component<Main_Props>
         return this.Try_Object(this.exhibitions);
     }
 
-    Arena():
-        Arena
+    Game():
+        Game
     {
-        return this.Try_Object(this.arena);
-    }
-
-    Results():
-        Results
-    {
-        return this.Try_Object(this.results);
+        return this.Try_Object(this.game);
     }
 
     Width():
@@ -160,17 +152,9 @@ export class Main extends Component<Main_Props>
                     className={`Main`}
                     style={this.Styles()}
                 >
-                    <Arena
-                        key={`arena_${arena.ID()}`}
-                        ref={ref => this.arena = ref}
-
-                        model={arena}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                    <Results
-                        key={`results_${arena.ID()}`}
-                        ref={ref => this.results = ref}
+                    <Game
+                        key={`game_${arena.ID()}`}
+                        ref={ref => this.game = ref}
 
                         model={arena}
                         parent={this}

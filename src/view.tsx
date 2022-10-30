@@ -15,6 +15,7 @@ import * as Event from "./view/event";
 import { Component } from "./view/component";
 import { Component_Styles } from "./view/component";
 import { Main } from "./view/main";
+import { Game } from "./view/game";
 import { Arena } from "./view/arena";
 import { Player_Group } from "./view/player_group";
 
@@ -391,7 +392,7 @@ type Exhibition_Props = {
 
 export class Exhibition extends Component<Exhibition_Props>
 {
-    private arena: Arena | null = null;
+    private game: Game | null = null;
 
     Exhibitions():
         Exhibitions
@@ -399,14 +400,10 @@ export class Exhibition extends Component<Exhibition_Props>
         return this.Parent();
     }
 
-    Arena():
-        Arena
+    Game():
+        Game
     {
-        if (this.arena == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.arena;
-        }
+        return this.Try_Object(this.game);
     }
 
     Width():
@@ -597,9 +594,9 @@ export class Exhibition extends Component<Exhibition_Props>
                 className={`Exhibition`}
                 style={this.Styles()}
             >
-                <Arena
-                    key={`arena_${arena.ID()}`}
-                    ref={ref => this.arena = ref}
+                <Game
+                    key={`game_${arena.ID()}`}
+                    ref={ref => this.game = ref}
 
                     model={arena}
                     parent={this}

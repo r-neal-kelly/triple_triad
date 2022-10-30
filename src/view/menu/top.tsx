@@ -35,6 +35,16 @@ export class Top extends Component<Top_Props>
         return this.Try_Object(this.buttons);
     }
 
+    Refresh_Styles():
+        void
+    {
+        if (this.Model().Is_Open()) {
+            this.Change_Style(`display`, `grid`);
+        } else {
+            this.Change_Style(`display`, `none`);
+        }
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -59,7 +69,6 @@ export class Top extends Component<Top_Props>
         });
 
         return ({
-            display: `grid`,
             gridTemplateColumns: `1fr`,
             gridTemplateRows: `45% 55%`,
             rowGap: `0`,
@@ -76,6 +85,8 @@ export class Top extends Component<Top_Props>
     On_Refresh():
         JSX.Element | null
     {
+        this.Refresh_Styles();
+
         return (
             <div
                 className={`Top`}
@@ -117,6 +128,7 @@ export class Top extends Component<Top_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
+            this.Model().Close();
             await this.Animate({
                 animation_name: `Fade_And_Move_Out`,
                 duration_in_milliseconds: 750,

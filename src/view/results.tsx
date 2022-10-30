@@ -1,15 +1,17 @@
-import * as Model from "../model"
+import { Float } from "../types";
+
+import * as Model from "../model";
 
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Button } from "./common/button";
-import { Main } from "./main";
+import { Game } from "./game";
 import { Arena } from "./arena";
 
 type Results_Props = {
     model: Model.Arena;
-    parent: Main;
+    parent: Game;
     event_grid: Event.Grid;
 }
 
@@ -18,8 +20,8 @@ export class Results extends Component<Results_Props>
     private banner: Banner | null = null;
     private buttons: Buttons | null = null;
 
-    Main():
-        Main
+    Game():
+        Game
     {
         return this.Parent();
     }
@@ -27,27 +29,50 @@ export class Results extends Component<Results_Props>
     Arena():
         Arena
     {
-        return this.Main().Arena();
+        return this.Game().Arena();
     }
 
     Banner():
         Banner
     {
-        if (this.banner == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.banner;
-        }
+        return this.Try_Object(this.banner);
     }
 
     Buttons():
         Buttons
     {
-        if (this.buttons == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.buttons;
-        }
+        return this.Try_Object(this.buttons);
+    }
+
+    Width():
+        Float
+    {
+        return this.Game().Measurements().Results_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Game().Measurements().Results_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
     }
 
     Before_Life():
@@ -71,9 +96,6 @@ export class Results extends Component<Results_Props>
             gridTemplateColumns: `1fr`,
             gridTemplateRows: `25% 50% 25%`,
 
-            width: `100%`,
-            height: `100%`,
-
             position: `absolute`,
             left: `0`,
             top: `0`,
@@ -88,7 +110,9 @@ export class Results extends Component<Results_Props>
     {
         const model: Model.Arena = this.Model();
 
-        if (model.Is_Game_Over()) {
+        this.Refresh_Styles();
+
+        if (model.Is_Game_Over() && !this.Game().Is_Exhibition()) {
             const scores: Model.Scores = model.Final_Scores();
 
             return (
@@ -132,6 +156,10 @@ export class Results extends Component<Results_Props>
 
         return ([
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
                 event_handler: this.On_Game_Start,
             },
@@ -140,6 +168,26 @@ export class Results extends Component<Results_Props>
                 event_handler: this.On_Game_Stop,
             },
         ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async On_Game_Start(
