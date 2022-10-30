@@ -101,6 +101,8 @@ export class Results extends Component<Results_Props>
             top: `0`,
             zIndex: `1`,
 
+            overflowY: `hidden`,
+
             backgroundColor: `rgba(0, 0, 0, 0.5)`,
         });
     }

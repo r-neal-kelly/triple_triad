@@ -107,7 +107,6 @@ export class Main extends Component<Main_Props>
             position: `relative`,
 
             overflowX: `hidden`,
-            overflowY: `hidden`,
         });
     }
 
