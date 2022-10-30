@@ -136,6 +136,9 @@ export class Top extends Component<Top_Props>
                 css_timing_function: `ease-in-out`,
                 css_fill_mode: `forward`,
             });
+            if (this.Is_Alive()) {
+                this.Refresh_Styles();
+            }
         }
     }
 }
