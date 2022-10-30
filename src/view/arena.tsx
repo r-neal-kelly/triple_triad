@@ -1,6 +1,8 @@
+import { Float } from "../types";
 import { URL_Path } from "../types";
 
 import { Assert } from "../utils";
+import { Percent } from "../utils";
 
 import * as Model from "../model"
 
@@ -103,70 +105,174 @@ export class Arena extends Component<Arena_Props>
         return this.card_images;
     }
 
-    CSS_Card_Width():
-        string
+    // we'll eventually cache all these values for efficiency.
+    // i also want it to find if the scroll bar is visible and what size
+    Width():
+        Float
     {
-        return `calc(${this.CSS_Card_Height()} * 4 / 5)`
+        return this.Parent().Width();
     }
 
-    CSS_Card_Height():
-        string
+    Height():
+        Float
     {
-        // I would actually like to get the width and height of the root element,
-        // which should exist at all times, and just use that to derive all
-        // measurements. that way we can size it depending on the actual container
-        // instead of the viewport or anything else. we might even decide here
-        // if we need to go by the width, when they size of the players would be
-        // bigger than the root width. so we go with whichever is bigger. Or maybe
-        // we can figure how to always go by width?
-        const row_count: Model.Row_Count = this.Model().Rules().Row_Count();
-
-        return `
-            calc(
-                (
-                    ${this.CSS_Board_Cells_Height()} -
-                    (${this.CSS_Board_Cells_Padding()} * 2) -
-                    (${this.CSS_Board_Cells_Grid_Gap()} * ${row_count - 1})
-                ) /
-                ${row_count}
-            )
-        `;
+        return this.Parent().Height();
     }
 
-    CSS_Bumper_Height():
-        string
+    private Card_Width():
+        Float
     {
-        return `8vmin`;
+        return Percent(80, this.Card_Height());
     }
 
-    CSS_Player_Width():
-        string
+    private Card_Height():
+        Float
     {
-        return `calc(${this.CSS_Card_Width()} * 1.07)`;
+        const row_count: Model.Row_Count =
+            this.Model().Rules().Row_Count();
+
+        return (
+            (
+                this.Board_Cells_Height() -
+                (this.Board_Cells_Padding() * 2) -
+                (this.Board_Cells_Grid_Gap() * (row_count - 1))
+            ) /
+            row_count
+        );
     }
 
-    CSS_Player_Height():
-        string
+    Board_Width():
+        Float
     {
-        return `100%`;
+        const column_count: Model.Column_Count =
+            this.Model().Rules().Column_Count();
+
+        return (
+            (this.Board_Cells_Padding() * 2) +
+            (this.Board_Cells_Grid_Gap() * (column_count - 1)) +
+            (this.Card_Width() * column_count)
+        );
     }
 
-    CSS_Board_Cells_Height():
-        string
+    Board_Height():
+        Float
     {
-        return `calc(100vmin - ${this.CSS_Bumper_Height()})`;
+        return this.Height();
     }
 
-    CSS_Board_Cells_Padding():
-        string
+    Board_Bumper_Width():
+        Float
     {
-        return `2vmin`;
+        return this.Board_Width();
     }
 
-    CSS_Board_Cells_Grid_Gap():
+    Board_Bumper_Height():
+        Float
+    {
+        return Percent(8, this.Board_Height());
+    }
+
+    Board_Cells_Width():
+        Float
+    {
+        return this.Board_Width();
+    }
+
+    Board_Cells_Height():
+        Float
+    {
+        return this.Board_Height() - this.Board_Bumper_Height();
+    }
+
+    Board_Cells_Padding():
+        Float
+    {
+        return Percent(2, this.Height());
+    }
+
+    Board_Cells_Grid_Gap():
+        Float
+    {
+        return Percent(0.5, this.Height());
+    }
+
+    Board_Cell_Width():
+        Float
+    {
+        return this.Card_Width();
+    }
+
+    Board_Cell_Height():
+        Float
+    {
+        return this.Card_Height();
+    }
+
+    Player_Width():
+        Float
+    {
+        return this.Card_Width() * 1.07;
+    }
+
+    Player_Height():
+        Float
+    {
+        return this.Height();
+    }
+
+    Player_Bumper_Width():
+        Float
+    {
+        return this.Card_Width();
+    }
+
+    Player_Bumper_Height():
+        Float
+    {
+        return this.Board_Bumper_Height();
+    }
+
+    Player_Hand_Width():
+        Float
+    {
+        return this.Card_Width();
+    }
+
+    Player_Hand_Height():
+        Float
+    {
+        return this.Board_Cells_Height();
+    }
+
+    Player_Stake_Width():
+        Float
+    {
+        return this.Card_Width();
+    }
+
+    Player_Stake_Height():
+        Float
+    {
+        return this.Card_Height();
+    }
+
+    CSS_Width():
         string
     {
-        return `0.5vmin`;
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
     }
 
     Before_Life():
@@ -190,13 +296,13 @@ export class Arena extends Component<Arena_Props>
             flexDirection: `row`,
             justifyContent: `center`,
 
-            width: `100%`,
-            height: `100%`,
-
             position: `absolute`,
             left: `0`,
             top: `0`,
             zIndex: `0`,
+
+            overflowX: `hidden`, // will be `auto`
+            overflowY: `hidden`,
 
             visibility: `hidden`,
         });
@@ -209,6 +315,8 @@ export class Arena extends Component<Arena_Props>
         const player_groups: Array<Model.Player_Group> =
             model.Player_Groups(PLAYER_GROUP_COUNT, PLAYER_GROUP_DIRECTION);
         Assert(PLAYER_GROUP_COUNT === 2);
+
+        this.Refresh_Styles();
 
         return (
             <div
@@ -263,6 +371,10 @@ export class Arena extends Component<Arena_Props>
 
         return ([
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
                 event_handler: this.On_Game_Start,
             },
@@ -271,6 +383,26 @@ export class Arena extends Component<Arena_Props>
                 event_handler: this.On_Player_Stop_Turn,
             },
         ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async On_Game_Start(

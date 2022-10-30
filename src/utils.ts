@@ -104,3 +104,9 @@ export function Is_Even_Integer(
 {
     return (integer & 1) === 0;
 }
+
+export function Percent(percent: Float, of: Float):
+    Float
+{
+    return percent * of / 100;
+}

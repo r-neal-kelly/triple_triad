@@ -113,6 +113,9 @@ export class Main extends Component<Main_Props>
 
         return ({
             position: `relative`,
+
+            overflowX: `hidden`,
+            overflowY: `hidden`,
         });
     }
 

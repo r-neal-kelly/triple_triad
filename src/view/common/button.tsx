@@ -77,7 +77,7 @@ export class Button<Props extends Button_Props> extends Component<Props>
         return `rgba(255, 255, 255, 0.7)`;
     }
 
-    Update_Animations():
+    Refresh_Animations():
         void
     {
         this.Change_Animation({
@@ -104,7 +104,7 @@ export class Button<Props extends Button_Props> extends Component<Props>
         });
     }
 
-    Update_Styles():
+    Refresh_Styles():
         void
     {
         this.Change_Style(`width`, this.CSS_Width());
@@ -144,8 +144,8 @@ export class Button<Props extends Button_Props> extends Component<Props>
     On_Refresh():
         JSX.Element | null
     {
-        this.Update_Animations();
-        this.Update_Styles();
+        this.Refresh_Animations();
+        this.Refresh_Styles();
 
         return (
             <div
@@ -230,7 +230,7 @@ class Button_Cover extends Component<Button_Cover_Props>
     {
         const button: Button<Button_Props> = this.Parent();
         if (button.Is_Alive()) {
-            button.Update_Animations();
+            button.Refresh_Animations();
             await button.Animate({
                 animation_name: `Activate`,
                 duration_in_milliseconds: 300,

@@ -398,6 +398,18 @@ export class Exhibition extends Component<Exhibition_Props>
         }
     }
 
+    Width():
+        Float
+    {
+        return this.Parent().Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Parent().Height();
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -645,21 +657,13 @@ export class Player extends Component<Player_Props>
     Bumper():
         Player_Bumper
     {
-        if (this.bumper == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.bumper;
-        }
+        return this.Try_Object(this.bumper);
     }
 
     Hand():
         Player_Hand
     {
-        if (this.hand == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.hand;
-        }
+        return this.Try_Object(this.hand);
     }
 
     Index():
@@ -668,16 +672,56 @@ export class Player extends Component<Player_Props>
         return this.Model().Index();
     }
 
+    Width():
+        Float
+    {
+        return this.Arena().Player_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Player_Height();
+    }
+
     CSS_Width():
         string
     {
-        return this.Arena().CSS_Player_Width();
+        return `${this.Width()}px`;
     }
 
     CSS_Height():
         string
     {
-        return this.Arena().CSS_Player_Height();
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const model: Model.Player = this.Model();
+        const color: Model.Color = this.Model().Color();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        // Highlight the player to indicate it's their turn.
+        if (model.Is_On_Turn()) {
+            this.Change_Style(
+                `backgroundColor`,
+                `rgba(
+            ${color.Red()},
+            ${color.Green()},
+            ${color.Blue()},
+            ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
+        )`,
+            );
+        } else {
+            this.Change_Style(
+                `backgroundColor`,
+                `transparent`,
+            );
+        }
     }
 
     Before_Life():
@@ -687,9 +731,6 @@ export class Player extends Component<Player_Props>
             display: `flex`,
             flexDirection: `column`,
             alignItems: `center`,
-
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
 
             position: `relative`,
         });
@@ -701,25 +742,8 @@ export class Player extends Component<Player_Props>
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
         const index: Model.Player_Index = this.Index();
-        const color: Model.Color = this.Model().Color();
 
-        // Highlight the player to indicate it's their turn.
-        if (model.Is_On_Turn()) {
-            this.Change_Style(
-                `backgroundColor`,
-                `rgba(
-                    ${color.Red()},
-                    ${color.Green()},
-                    ${color.Blue()},
-                    ${color.Alpha() * PLAYER_ALPHA_HIGHLIGHT_MULTIPLIER}
-                )`,
-            );
-        } else {
-            this.Change_Style(
-                `backgroundColor`,
-                `transparent`,
-            );
-        }
+        this.Refresh_Styles();
 
         return (
             <div
@@ -753,6 +777,10 @@ export class Player extends Component<Player_Props>
 
         return ([
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.PLAYER_START_TURN, player_index.toString()),
                 event_handler: this.On_This_Player_Start_Turn,
             },
@@ -773,6 +801,26 @@ export class Player extends Component<Player_Props>
                 event_handler: this.On_Game_Stop,
             },
         ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async On_This_Player_Start_Turn(
@@ -912,21 +960,13 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     Name():
         Player_Name
     {
-        if (this.name == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.name;
-        }
+        return this.Try_Object(this.name);
     }
 
     Score():
         Player_Score
     {
-        if (this.score == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.score;
-        }
+        return this.Try_Object(this.score);
     }
 
     Index():
@@ -935,28 +975,38 @@ class Player_Bumper extends Component<Player_Bumper_Props>
         return this.Model().Index();
     }
 
-    Before_Life():
-        Component_Styles
+    Width():
+        Float
     {
-        const arena: Arena = this.Arena();
-
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr`,
-
-            width: arena.CSS_Card_Width(),
-            height: arena.CSS_Bumper_Height(),
-        });
+        return this.Arena().Player_Bumper_Width();
     }
 
-    On_Refresh():
-        JSX.Element | null
+    Height():
+        Float
+    {
+        return this.Arena().Player_Bumper_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
     {
         const model: Model.Player = this.Model();
-        const event_grid: Event.Grid = this.Event_Grid();
-        const index: Model.Player_Index = this.Index();
         const color: Model.Color = this.Model().Color();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
 
         if (model.Arena().Is_Game_Over()) {
             this.Change_Style(
@@ -974,6 +1024,28 @@ class Player_Bumper extends Component<Player_Bumper_Props>
                 `transparent`,
             );
         }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Player = this.Model();
+        const event_grid: Event.Grid = this.Event_Grid();
+        const index: Model.Player_Index = this.Index();
+
+        this.Refresh_Styles();
 
         return (
             <div
@@ -998,6 +1070,37 @@ class Player_Bumper extends Component<Player_Bumper_Props>
                 />
             </div>
         );
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return ([
+            {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+        ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 }
 
@@ -1099,7 +1202,8 @@ type Player_Hand_Props = {
 
 class Player_Hand extends Component<Player_Hand_Props>
 {
-    private stakes: Array<Player_Stake | null> = new Array(this.Model().Stake_Count()).fill(null);
+    private stakes: Array<Player_Stake | null> =
+        new Array(this.Model().Stake_Count()).fill(null);
 
     Arena():
         Arena
@@ -1116,34 +1220,50 @@ class Player_Hand extends Component<Player_Hand_Props>
     Stake(stake_index: Model.Stake_Index):
         Player_Stake
     {
-        if (stake_index < 0 || stake_index >= this.stakes.length) {
-            throw new Error(`'stake_index' of ${stake_index} is invalid.`);
-        } else if (this.stakes[stake_index] == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.stakes[stake_index] as Player_Stake;
-        }
+        return this.Try_Array_Index(this.stakes, stake_index);
     }
 
     Stakes():
         Array<Player_Stake>
     {
-        const stakes: Array<Player_Stake> = [];
-        for (const stake of this.stakes) {
-            if (stake == null) {
-                throw this.Error_Not_Rendered();
-            } else {
-                stakes.push(stake);
-            }
-        }
-
-        return stakes;
+        return this.Try_Array(this.stakes);
     }
 
     Index():
         Model.Player_Index
     {
         return this.Model().Index();
+    }
+
+    Width():
+        Float
+    {
+        return this.Arena().Player_Hand_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Player_Hand_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
     }
 
     Before_Life():
@@ -1154,8 +1274,6 @@ class Player_Hand extends Component<Player_Hand_Props>
         return ({
             position: `relative`,
 
-            width: arena.CSS_Card_Width(),
-            height: arena.CSS_Board_Cells_Height(),
             overflowX: `hidden`,
             overflowY: `auto`,
 
@@ -1167,6 +1285,8 @@ class Player_Hand extends Component<Player_Hand_Props>
         JSX.Element | null
     {
         const stake_count: Model.Stake_Count = this.Model().Stake_Count();
+
+        this.Refresh_Styles();
 
         return (
             <div
@@ -1191,6 +1311,37 @@ class Player_Hand extends Component<Player_Hand_Props>
                 }
             </div>
         );
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return ([
+            {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+        ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 }
 
@@ -1227,11 +1378,77 @@ class Player_Stake extends Component<Player_Stake_Props>
         return this.props.index;
     }
 
+    Width():
+        Float
+    {
+        return this.Arena().Player_Stake_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Player_Stake_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const model: Model.Stake = this.Model();
+        const color: Model.Color = model.Color();
+        const is_of_human: boolean = this.Model().Is_Of_Human();
+        const is_selectable: boolean = this.Model().Is_Selectable();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        if (model.Is_Selected()) {
+            this.Change_Style(`border`, `0.15vmin solid white`);
+        } else {
+            this.Change_Style(`border`, `0.15vmin solid black`);
+        }
+
+        this.Change_Style(
+            `backgroundColor`,
+            `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`,
+        );
+
+        this.Change_Style(
+            `top`,
+            `calc(
+                ${this.CSS_Height()} *
+                ${PLAYER_STAKE_HEIGHT_MULTIPLIER} *
+                ${this.Index()}
+            )`,
+        );
+        this.Change_Style(`zIndex`, `${this.Index()}`);
+
+        if (is_of_human && is_selectable) {
+            this.Change_Style(`cursor`, `pointer`);
+        } else {
+            this.Change_Style(`cursor`, `default`);
+        }
+    }
+
     Before_Life():
         Component_Styles
     {
-        const arena: Arena = this.Arena();
-
         this.Change_Animation({
             animation_name: `Twinkle`,
             animation_body: `
@@ -1263,9 +1480,6 @@ class Player_Stake extends Component<Player_Stake_Props>
             justifyContent: `center`,
             alignItems: `center`,
 
-            width: arena.CSS_Card_Width(),
-            height: arena.CSS_Card_Height(),
-
             position: `absolute`,
             left: `0`,
             top: `0`,
@@ -1277,43 +1491,11 @@ class Player_Stake extends Component<Player_Stake_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const arena: Arena = this.Arena();
         const model: Model.Stake = this.Model();
-        const color: Model.Color = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
-        if (model.Is_Selected()) {
-            this.Change_Style(`border`, `0.15vmin solid white`);
-        } else {
-            this.Change_Style(`border`, `0.15vmin solid black`);
-        }
-
-        this.Change_Style(
-            `backgroundColor`,
-            `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
-                ${color.Alpha()}
-            )`,
-        );
-
-        this.Change_Style(
-            `top`,
-            `calc(
-                ${arena.CSS_Card_Height()} *
-                ${PLAYER_STAKE_HEIGHT_MULTIPLIER} *
-                ${this.Index()}
-            )`,
-        );
-        this.Change_Style(`zIndex`, `${this.Index()}`);
-
-        if (is_of_human && is_selectable) {
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`cursor`, `default`);
-        }
+        this.Refresh_Styles();
 
         return (
             <div
@@ -1383,10 +1565,34 @@ class Player_Stake extends Component<Player_Stake_Props>
 
         return ([
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.Before_This_Player_Place_Stake,
             },
         ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async Before_This_Player_Place_Stake(
@@ -1434,41 +1640,71 @@ export class Board extends Component<Board_Props>
     Bumper():
         Board_Bumper
     {
-        if (this.bumper == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.bumper;
-        }
+        return this.Try_Object(this.bumper);
     }
 
     Cells():
         Board_Cells
     {
-        if (this.cells == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cells;
-        }
+        return this.Try_Object(this.cells);
+    }
+
+    Width():
+        Float
+    {
+        return this.Arena().Board_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Board_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const arena: Arena = this.Arena();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        this.Change_Style(
+            `gridTemplateRows`,
+            `${arena.Board_Bumper_Height()}px ${arena.Board_Cells_Height()}px`,
+        );
+
+        this.Change_Style(
+            `backgroundImage`,
+            `url("img/boards/pexels-fwstudio-172296.jpg")`,
+        );
     }
 
     Before_Life():
         Component_Styles
     {
-        const arena: Arena = this.Arena();
-
         return ({
             display: `grid`,
             gridTemplateColumns: `auto`,
-            gridTemplateRows: `${arena.CSS_Bumper_Height()} ${arena.CSS_Board_Cells_Height()}`,
-
-            height: `100%`,
         });
     }
 
     On_Refresh():
         JSX.Element | null
     {
-        this.Change_Style(`backgroundImage`, `url("img/boards/pexels-fwstudio-172296.jpg")`);
+        this.Refresh_Styles();
 
         return (
             <div
@@ -1500,10 +1736,34 @@ export class Board extends Component<Board_Props>
     {
         return ([
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE),
                 event_handler: this.On_Player_Place_Stake,
             },
         ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async On_Player_Place_Stake(
@@ -1578,12 +1838,6 @@ class Board_Bumper extends Component<Board_Bumper_Props>
         return this.Parent();
     }
 
-    CSS_Height():
-        string
-    {
-        return this.Arena().CSS_Bumper_Height();
-    }
-
     Before_Life():
         Component_Styles
     {
@@ -1631,69 +1885,91 @@ class Board_Cells extends Component<Board_Cells_Props>
     Cell(cell_index: Model.Cell_Index):
         Board_Cell
     {
-        if (cell_index < 0 || cell_index >= this.cells.length) {
-            throw new Error(`'cell_index' of ${cell_index} is invalid.`);
-        } else if (this.cells[cell_index] == null) {
-            throw this.Error_Not_Rendered();
-        } else {
-            return this.cells[cell_index] as Board_Cell;
-        }
+        return this.Try_Array_Index(this.cells, cell_index);
     }
 
     Cells():
         Array<Board_Cell>
     {
-        const cells: Array<Board_Cell> = [];
-        for (const cell of this.cells) {
-            if (cell == null) {
-                throw this.Error_Not_Rendered();
-            } else {
-                cells.push(cell);
-            }
-        }
+        return this.Try_Array(this.cells);
+    }
 
-        return cells;
+    Width():
+        Float
+    {
+        return this.Arena().Board_Cells_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Board_Cells_Height();
+    }
+
+    Padding():
+        Float
+    {
+        return this.Arena().Board_Cells_Padding();
+    }
+
+    Grid_Gap():
+        Float
+    {
+        return this.Arena().Board_Cells_Grid_Gap();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
     }
 
     CSS_Height():
         string
     {
-        return this.Arena().CSS_Board_Cells_Height();
+        return `${this.Height()}px`;
     }
 
     CSS_Padding():
         string
     {
-        return this.Arena().CSS_Board_Cells_Padding();
+        return `${this.Padding()}px`;
     }
 
     CSS_Grid_Gap():
         string
     {
-        return this.Arena().CSS_Board_Cells_Grid_Gap();
+        return `${this.Grid_Gap()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const rules: Model.Rules = this.Model().Rules();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        this.Change_Style(`gridTemplateColumns`, `repeat(${rules.Column_Count()}, 1fr)`);
+        this.Change_Style(`gridTemplateRows`, `repeat(${rules.Row_Count()}, 1fr)`);
+
+        this.Change_Style(`padding`, this.CSS_Padding());
+        this.Change_Style(`gridGap`, this.CSS_Grid_Gap());
     }
 
     Before_Life():
         Component_Styles
     {
-        const rules: Model.Rules = this.Model().Rules();
-        const grid_gap: string = this.CSS_Grid_Gap();
-
         return ({
             display: `grid`,
-            gridTemplateColumns: `repeat(${rules.Column_Count()}, 1fr)`,
-            gridTemplateRows: `repeat(${rules.Row_Count()}, 1fr)`,
-            gridGap: `${grid_gap} ${grid_gap}`,
-
-            width: `100%`,
-            height: `100%`,
-            padding: this.CSS_Padding(),
         });
     }
 
     On_Refresh():
         JSX.Element | null
     {
+        this.Refresh_Styles();
+
         return (
             <div
                 className={`Board_Cells`}
@@ -1717,6 +1993,37 @@ class Board_Cells extends Component<Board_Cells_Props>
                 }
             </div>
         );
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return ([
+            {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+        ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 }
 
@@ -1754,6 +2061,65 @@ class Board_Cell extends Component<Board_Cell_Props>
         Model.Cell_Index
     {
         return this.props.index;
+    }
+
+    Width():
+        Float
+    {
+        return this.Arena().Board_Cell_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Board_Cell_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const model = this.Model()();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        if (model.Is_Empty()) {
+            const is_on_human_turn: boolean =
+                this.Board().Model().Is_On_Human_Turn();
+            const is_selectable: boolean =
+                this.Board().Model().Is_Cell_Selectable(this.Index());
+
+            if (is_on_human_turn && is_selectable) {
+                this.Change_Style('cursor', `pointer`);
+            } else {
+                this.Change_Style('cursor', `default`);
+            }
+        } else {
+            const color: Model.Color = this.current_color as Model.Color;
+            Assert(color != null);
+
+            this.Change_Style(
+                `backgroundColor`,
+                `rgba(
+                    ${color.Red()},
+                    ${color.Green()},
+                    ${color.Blue()},
+                    ${color.Alpha()}
+                )`,
+            );
+        }
     }
 
     Before_Life():
@@ -1832,9 +2198,6 @@ class Board_Cell extends Component<Board_Cell_Props>
             gridTemplateRows: `4fr 3fr 4fr 3fr 4fr`,
             columnGap: `5%`,
 
-            width: arena.CSS_Card_Width(),
-            height: arena.CSS_Card_Height(),
-
             border: `0.3vmin solid #00000080`,
 
             cursor: `default`,
@@ -1846,16 +2209,9 @@ class Board_Cell extends Component<Board_Cell_Props>
     {
         const model = this.Model()();
 
+        this.Refresh_Styles();
+
         if (model.Is_Empty()) {
-            const is_on_human_turn: boolean = this.Board().Model().Is_On_Human_Turn();
-            const is_selectable: boolean = this.Board().Model().Is_Cell_Selectable(this.Index());
-
-            if (is_on_human_turn && is_selectable) {
-                this.Change_Style('cursor', `pointer`);
-            } else {
-                this.Change_Style('cursor', `default`);
-            }
-
             return (
                 <div
                     className={`Board_Cell`}
@@ -1865,20 +2221,6 @@ class Board_Cell extends Component<Board_Cell_Props>
                 </div>
             );
         } else {
-            Assert(this.current_color != null);
-
-            const color: Model.Color = this.current_color as Model.Color;
-
-            this.Change_Style(
-                `backgroundColor`,
-                `rgba(
-                    ${color.Red()},
-                    ${color.Green()},
-                    ${color.Blue()},
-                    ${color.Alpha()}
-                )`,
-            );
-
             return (
                 <div
                     className={`Board_Cell`}
@@ -1953,6 +2295,10 @@ class Board_Cell extends Component<Board_Cell_Props>
 
         return ([
             {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
                 event_name: new Event.Name(Event.AFTER, Event.PLAYER_SELECT_STAKE),
                 event_handler: this.After_Player_Select_Stake,
             },
@@ -1965,6 +2311,26 @@ class Board_Cell extends Component<Board_Cell_Props>
                 event_handler: this.On_Board_Change_This_Cell,
             },
         ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     async After_Player_Select_Stake(

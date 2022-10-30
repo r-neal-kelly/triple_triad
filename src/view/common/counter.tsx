@@ -294,7 +294,7 @@ class Decrementor extends Component<Decrementor_Props>
         }
     }
 
-    Update_Animations():
+    Refresh_Animations():
         void
     {
         const counter: Counter<Counter_Props> = this.Parent();
@@ -320,7 +320,7 @@ class Decrementor extends Component<Decrementor_Props>
         });
     }
 
-    Update_Styles():
+    Refresh_Styles():
         void
     {
         const counter: Counter<Counter_Props> = this.Parent();
@@ -371,8 +371,8 @@ class Decrementor extends Component<Decrementor_Props>
     On_Refresh():
         JSX.Element | null
     {
-        this.Update_Animations();
-        this.Update_Styles();
+        this.Refresh_Animations();
+        this.Refresh_Styles();
 
         return (
             <div
@@ -464,7 +464,7 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
         if (counter.Is_Alive() && counter.Can_Decrement()) {
             const decrementor: Decrementor = this.Decrementor();
             if (decrementor.Is_Alive()) {
-                decrementor.Update_Animations();
+                decrementor.Refresh_Animations();
                 await decrementor.Animate({
                     animation_name: `Activate_Enabled`,
                     duration_in_milliseconds: 200,
@@ -508,7 +508,7 @@ class Incrementor extends Component<Incrementor_Props>
         }
     }
 
-    Update_Animations():
+    Refresh_Animations():
         void
     {
         const counter: Counter<Counter_Props> = this.Parent();
@@ -534,7 +534,7 @@ class Incrementor extends Component<Incrementor_Props>
         });
     }
 
-    Update_Styles():
+    Refresh_Styles():
         void
     {
         const counter: Counter<Counter_Props> = this.Parent();
@@ -585,8 +585,8 @@ class Incrementor extends Component<Incrementor_Props>
     On_Refresh():
         JSX.Element | null
     {
-        this.Update_Animations();
-        this.Update_Styles();
+        this.Refresh_Animations();
+        this.Refresh_Styles();
 
         return (
             <div
@@ -678,7 +678,7 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
         if (counter.Is_Alive() && counter.Can_Increment()) {
             const incrementor: Incrementor = this.Incrementor();
             if (incrementor.Is_Alive()) {
-                incrementor.Update_Animations();
+                incrementor.Refresh_Animations();
                 await incrementor.Animate({
                     animation_name: `Activate_Enabled`,
                     duration_in_milliseconds: 200,

@@ -1,4 +1,6 @@
-import * as Model from "../model"
+import { Float } from "../types";
+
+import * as Model from "../model";
 
 import * as Event from "./event";
 import { Component } from "./component";
@@ -35,6 +37,67 @@ export class Player_Group extends Component<Player_Group_Props>
         return this.Try_Array(this.players);
     }
 
+    Width():
+        Float
+    {
+        const model: Model.Player_Group = this.Model();
+        const column_count: Model.Column_Count = model.Is_Runt() ?
+            model.Player_Count() + 1 :
+            model.Player_Count();
+
+        return (this.Arena().Player_Width() * column_count) + (this.Padding() * 2);
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Player_Height();
+    }
+
+    Padding():
+        Float
+    {
+        const arena: Arena = this.Arena();
+
+        return (arena.Player_Width() - arena.Player_Hand_Width()) / 2;
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    CSS_Padding():
+        string
+    {
+        return `${this.Padding()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const model: Model.Player_Group = this.Model();
+        const is_runt: boolean = model.Is_Runt();
+        const player_count: Model.Player_Count = model.Player_Count();
+        const column_count: Model.Column_Count = is_runt ?
+            player_count + 1 :
+            player_count;
+
+        this.Change_Style(`gridTemplateColumns`, `repeat(${column_count}, 1fr)`);
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        this.Change_Style(`padding`, this.CSS_Padding());
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -48,37 +111,10 @@ export class Player_Group extends Component<Player_Group_Props>
     On_Refresh():
         JSX.Element | null
     {
-        const arena: Arena = this.Arena();
         const model: Model.Player_Group = this.Model();
         const is_runt: boolean = model.Is_Runt();
         const relative_to: Model.Direction_e = model.Relative_To();
         const player_count: Model.Player_Count = model.Player_Count();
-        const column_count: Model.Column_Count = is_runt ?
-            player_count + 1 :
-            player_count;
-
-        this.Change_Style(
-            `gridTemplateColumns`,
-            `repeat(${column_count}, 1fr)`,
-        );
-        this.Change_Style(
-            `width`,
-            `calc(
-                ${arena.CSS_Player_Width()} * ${column_count} +
-                (${arena.CSS_Player_Width()} - ${arena.CSS_Card_Width()})
-            )`,
-        );
-        this.Change_Style(
-            `height`,
-            arena.CSS_Player_Height(),
-        );
-        this.Change_Style(
-            `padding`,
-            `0 calc(
-                (${arena.CSS_Player_Width()} - ${arena.CSS_Card_Width()}) / 2
-            )`,
-        );
-
         const players: Array<JSX.Element> = Array(player_count).fill(null).map((
             _,
             group_player_index: Model.Player_Index,
@@ -97,13 +133,16 @@ export class Player_Group extends Component<Player_Group_Props>
             );
         });
 
+        this.Refresh_Styles();
+
         if (is_runt) {
+            const arena: Arena = this.Arena();
             const empty_player_column: JSX.Element =
                 <div
                     className={`Player_Empty`}
                     style={{
-                        width: arena.CSS_Player_Width(),
-                        height: arena.CSS_Player_Height(),
+                        width: `${arena.Player_Width()}px`,
+                        height: `${arena.Player_Height()}px`,
                     }}
                 >
                 </div>;
@@ -141,6 +180,37 @@ export class Player_Group extends Component<Player_Group_Props>
                     {players}
                 </div>
             );
+        }
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        return ([
+            {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+        ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
         }
     }
 }
