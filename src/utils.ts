@@ -110,3 +110,31 @@ export function Percent(percent: Float, of: Float):
 {
     return percent * of / 100;
 }
+
+let x_scrollbar_height: Float | null = null;
+export function X_Scrollbar_Height():
+    Float
+{
+    if (x_scrollbar_height == null) {
+        const outer: HTMLElement = document.createElement(`div`);
+        outer.style.width = `100%`;
+        outer.style.height = `100%`;
+        outer.style.zIndex = `-1`;
+        outer.style.overflowX = `scroll`;
+        outer.style.visibility = `hidden`;
+
+        const inner: HTMLElement = document.createElement(`div`);
+        inner.style.width = `200%`;
+        inner.style.height = `100%`;
+        inner.style.overflowX = `hidden`;
+
+        outer.appendChild(inner);
+        document.body.appendChild(outer);
+
+        x_scrollbar_height = outer.offsetHeight - inner.offsetHeight;
+
+        document.body.removeChild(outer);
+    }
+
+    return x_scrollbar_height as Float;
+}

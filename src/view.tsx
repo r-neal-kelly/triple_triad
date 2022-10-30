@@ -686,13 +686,13 @@ export class Player extends Component<Player_Props>
     Width():
         Float
     {
-        return this.Arena().Player_Width();
+        return this.Arena().Measurements().Player_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Player_Height();
+        return this.Arena().Measurements().Player_Height();
     }
 
     CSS_Width():
@@ -989,13 +989,13 @@ class Player_Bumper extends Component<Player_Bumper_Props>
     Width():
         Float
     {
-        return this.Arena().Player_Bumper_Width();
+        return this.Arena().Measurements().Player_Bumper_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Player_Bumper_Height();
+        return this.Arena().Measurements().Player_Bumper_Height();
     }
 
     CSS_Width():
@@ -1247,13 +1247,13 @@ class Player_Hand extends Component<Player_Hand_Props>
     Width():
         Float
     {
-        return this.Arena().Player_Hand_Width();
+        return this.Arena().Measurements().Player_Hand_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Player_Hand_Height();
+        return this.Arena().Measurements().Player_Hand_Height();
     }
 
     CSS_Width():
@@ -1388,13 +1388,13 @@ class Player_Stake extends Component<Player_Stake_Props>
     Width():
         Float
     {
-        return this.Arena().Player_Stake_Width();
+        return this.Arena().Measurements().Player_Stake_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Player_Stake_Height();
+        return this.Arena().Measurements().Player_Stake_Height();
     }
 
     CSS_Width():
@@ -1659,13 +1659,13 @@ export class Board extends Component<Board_Props>
     Width():
         Float
     {
-        return this.Arena().Board_Width();
+        return this.Arena().Measurements().Board_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Board_Height();
+        return this.Arena().Measurements().Board_Height();
     }
 
     CSS_Width():
@@ -1690,7 +1690,10 @@ export class Board extends Component<Board_Props>
 
         this.Change_Style(
             `gridTemplateRows`,
-            `${arena.Board_Bumper_Height()}px ${arena.Board_Cells_Height()}px`,
+            `
+                ${arena.Measurements().Board_Bumper_Height()}px 
+                ${arena.Measurements().Board_Cells_Height()}px
+            `,
         );
 
         this.Change_Style(
@@ -1904,25 +1907,25 @@ class Board_Cells extends Component<Board_Cells_Props>
     Width():
         Float
     {
-        return this.Arena().Board_Cells_Width();
+        return this.Arena().Measurements().Board_Cells_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Board_Cells_Height();
+        return this.Arena().Measurements().Board_Cells_Height();
     }
 
     Padding():
         Float
     {
-        return this.Arena().Board_Cells_Padding();
+        return this.Arena().Measurements().Board_Cells_Padding();
     }
 
     Grid_Gap():
         Float
     {
-        return this.Arena().Board_Cells_Grid_Gap();
+        return this.Arena().Measurements().Board_Cells_Grid_Gap();
     }
 
     CSS_Width():
@@ -2073,13 +2076,13 @@ class Board_Cell extends Component<Board_Cell_Props>
     Width():
         Float
     {
-        return this.Arena().Board_Cell_Width();
+        return this.Arena().Measurements().Board_Cell_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Board_Cell_Height();
+        return this.Arena().Measurements().Board_Cell_Height();
     }
 
     CSS_Width():

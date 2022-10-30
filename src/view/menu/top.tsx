@@ -119,7 +119,7 @@ export class Top extends Component<Top_Props>
         if (this.Is_Alive()) {
             await this.Animate({
                 animation_name: `Fade_And_Move_Out`,
-                duration_in_milliseconds: 2000,
+                duration_in_milliseconds: 750,
                 css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
                 css_fill_mode: `forward`,

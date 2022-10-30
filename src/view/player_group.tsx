@@ -40,26 +40,19 @@ export class Player_Group extends Component<Player_Group_Props>
     Width():
         Float
     {
-        const model: Model.Player_Group = this.Model();
-        const column_count: Model.Column_Count = model.Is_Runt() ?
-            model.Player_Count() + 1 :
-            model.Player_Count();
-
-        return (this.Arena().Player_Width() * column_count) + (this.Padding() * 2);
+        return this.Arena().Measurements().Player_Group_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Player_Height();
+        return this.Arena().Measurements().Player_Group_Height();
     }
 
     Padding():
         Float
     {
-        const arena: Arena = this.Arena();
-
-        return (arena.Player_Width() - arena.Player_Hand_Width()) / 2;
+        return this.Arena().Measurements().Player_Group_Padding();
     }
 
     CSS_Width():
@@ -95,7 +88,7 @@ export class Player_Group extends Component<Player_Group_Props>
         this.Change_Style(`width`, this.CSS_Width());
         this.Change_Style(`height`, this.CSS_Height());
 
-        this.Change_Style(`padding`, this.CSS_Padding());
+        this.Change_Style(`padding`, `0 ${this.CSS_Padding()}`);
     }
 
     Before_Life():
@@ -141,8 +134,8 @@ export class Player_Group extends Component<Player_Group_Props>
                 <div
                     className={`Player_Empty`}
                     style={{
-                        width: `${arena.Player_Width()}px`,
-                        height: `${arena.Player_Height()}px`,
+                        width: `${arena.Measurements().Player_Width()}px`,
+                        height: `${arena.Measurements().Player_Height()}px`,
                     }}
                 >
                 </div>;
