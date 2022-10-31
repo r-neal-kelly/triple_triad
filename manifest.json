@@ -1,6 +1,7 @@
 {
     "short_name": "Triple Triad",
     "name": "Triple Triad",
+    "author": "Neal Raulerson, aka r-neal-kelly",
     "icons": [],
     "start_url": ".",
     "display": "fullscreen",
