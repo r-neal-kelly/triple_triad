@@ -52,7 +52,7 @@ export class Options extends Component<Options_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `4fr 5fr 1fr`,
+            gridTemplateRows: `4fr 5fr 1.5fr`,
             gridGap: `3%`,
 
             width: `90%`,
