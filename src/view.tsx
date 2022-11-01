@@ -1204,6 +1204,15 @@ class Player_Score extends Component<Player_Score_Props>
             </div>
         );
     }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        const player_index: Model.Player_Index = this.Index();
+
+        return ([
+        ]);
+    }
 }
 
 type Player_Hand_Props = {

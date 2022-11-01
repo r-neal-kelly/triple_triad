@@ -47,7 +47,7 @@ export class Help extends Component<Help_Props>
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.8)`,
+            backgroundColor: `rgba(0, 0, 0, 0.95)`,
 
             fontSize: `1.8em`,
         });
