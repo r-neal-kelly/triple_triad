@@ -9,6 +9,7 @@ import { Component, Component_Styles } from "./component";
 import { Main } from "./main";
 import { Top } from "./menu/top";
 import { Options } from "./menu/options";
+import { Help } from "./menu/help";
 
 type Menu_Props = {
     model: Model.Menu;
@@ -20,6 +21,7 @@ export class Menu extends Component<Menu_Props>
 {
     private top: Top | null = null;
     private options: Options | null = null;
+    private help: Help | null = null;
 
     Main():
         Main
@@ -37,6 +39,12 @@ export class Menu extends Component<Menu_Props>
         Options
     {
         return this.Try_Object(this.options);
+    }
+
+    Help():
+        Help
+    {
+        return this.Try_Object(this.help);
     }
 
     Width():
@@ -108,12 +116,28 @@ export class Menu extends Component<Menu_Props>
         } else if (current_menu === Model.Menu_e.OPTIONS) {
             return (
                 <div
+                    className={`Menu`}
                     style={this.Styles()}
                 >
                     <Options
                         ref={ref => this.options = ref}
 
                         model={this.Model().Options()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else if (current_menu === Model.Menu_e.HELP) {
+            return (
+                <div
+                    className={`Menu`}
+                    style={this.Styles()}
+                >
+                    <Help
+                        ref={ref => this.help = ref}
+
+                        model={this.Model().Help()}
                         parent={this}
                         event_grid={this.Event_Grid()}
                     />
@@ -141,6 +165,10 @@ export class Menu extends Component<Menu_Props>
             {
                 event_name: new Event.Name(Event.ON, Event.OPEN_OPTIONS_MENU),
                 event_handler: this.On_Open_Options_Menu,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.OPEN_HELP_MENU),
+                event_handler: this.On_Open_Help_Menu,
             },
         ];
     }
@@ -183,6 +211,16 @@ export class Menu extends Component<Menu_Props>
     {
         if (this.Is_Alive()) {
             this.Model().Open_Options();
+
+            await this.Refresh();
+        }
+    }
+
+    async On_Open_Help_Menu():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Open_Help();
 
             await this.Refresh();
         }

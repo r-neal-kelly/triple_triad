@@ -70,7 +70,7 @@ export class Top extends Component<Top_Props>
 
         return ({
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `45% 55%`,
+            gridTemplateRows: `40% 55%`,
             rowGap: `0`,
 
             width: `100%`,
@@ -134,10 +134,14 @@ export class Top extends Component<Top_Props>
                 duration_in_milliseconds: 750,
                 css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
-                css_fill_mode: `forward`,
+                //css_fill_mode: `forward`,
             });
             if (this.Is_Alive()) {
-                this.Refresh_Styles();
+                // having troubles with the menu flicking in view
+                // sometimes, when it should be completely invisible.
+                this.Change_Style(`display`, `none`);
+                this.Change_Style(`visibility`, `hidden`);
+                this.Change_Style(`left`, `-100%`);
             }
         }
     }
@@ -309,6 +313,7 @@ class Buttons extends Component<Buttons_Props>
 {
     private new_game: New_Game_Button | null = null;
     private options: Options_Button | null = null;
+    private help: Help_Button | null = null;
 
     Top():
         Top
@@ -328,6 +333,12 @@ class Buttons extends Component<Buttons_Props>
         return this.Try_Object(this.options);
     }
 
+    Help():
+        Help_Button
+    {
+        return this.Try_Object(this.help);
+    }
+
     Before_Life():
         Component_Styles
     {
@@ -335,10 +346,11 @@ class Buttons extends Component<Buttons_Props>
             display: `grid`,
             gridTemplateColumns: `1fr`,
             gridTemplateRows: `1fr 1fr 1fr`,
-            rowGap: `5%`,
+            rowGap: `3%`,
 
             width: `100%`,
             height: `100%`,
+            padding: `3%`,
 
             alignSelf: `center`,
             justifySelf: `center`,
@@ -362,6 +374,13 @@ class Buttons extends Component<Buttons_Props>
                 />
                 <Options_Button
                     ref={ref => this.options = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Help_Button
+                    ref={ref => this.help = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -498,6 +517,72 @@ class Options_Button extends Button<Options_Button_Props>
                 ],
                 data: {
                 } as Event.Open_Options_Menu_Data,
+                is_atomic: true,
+            });
+        }
+    }
+}
+
+type Help_Button_Props = {
+    model: Model.Menu_Top;
+    parent: Buttons;
+    event_grid: Event.Grid;
+}
+
+class Help_Button extends Button<Help_Button_Props>
+{
+    override Name():
+        string
+    {
+        return `Help_Button`;
+    }
+
+    override Text():
+        string
+    {
+        return `Help`;
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `40%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `2.5em`;
+    }
+
+    override CSS_Activated_Text_Size():
+        string
+    {
+        return `1.5em`;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Send({
+                name_affix: Event.OPEN_HELP_MENU,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Open_Help_Menu_Data,
                 is_atomic: true,
             });
         }

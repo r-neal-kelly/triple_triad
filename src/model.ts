@@ -746,6 +746,7 @@ export class Menu
 {
     private top: Menu_Top;
     private options: Menu_Options;
+    private help: Menu_Help;
 
     private current_menu: Menu_e;
 
@@ -764,6 +765,9 @@ export class Menu
             menu: this,
             options,
         });
+        this.help = new Menu_Help({
+            menu: this,
+        });
 
         this.current_menu = Menu_e.TOP;
     }
@@ -778,6 +782,12 @@ export class Menu
         Menu_Options
     {
         return this.options;
+    }
+
+    Help():
+        Menu_Help
+    {
+        return this.help;
     }
 
     Current_Menu():
@@ -799,6 +809,14 @@ export class Menu
         Utils.Assert(this.current_menu === Menu_e.TOP);
 
         this.current_menu = Menu_e.OPTIONS;
+    }
+
+    Open_Help():
+        void
+    {
+        Utils.Assert(this.current_menu === Menu_e.TOP);
+
+        this.current_menu = Menu_e.HELP;
     }
 }
 
@@ -1159,6 +1177,28 @@ export class Options
         } else {
             return this.player_colors[player_color_index];
         }
+    }
+}
+
+export class Menu_Help
+{
+    private menu: Menu;
+
+    constructor(
+        {
+            menu,
+        }: {
+            menu: Menu,
+        },
+    )
+    {
+        this.menu = menu;
+    }
+
+    Menu():
+        Menu
+    {
+        return this.menu;
     }
 }
 
