@@ -70,8 +70,8 @@ export class Top extends Component<Top_Props>
 
         return ({
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `40% 55%`,
-            rowGap: `0`,
+            gridTemplateRows: `40% 60%`,
+            rowGap: `0%`,
 
             width: `100%`,
             height: `100%`,
@@ -347,11 +347,11 @@ class Buttons extends Component<Buttons_Props>
             display: `grid`,
             gridTemplateColumns: `1fr`,
             gridTemplateRows: `1fr 1fr 1fr`,
-            rowGap: `3%`,
+            rowGap: `4%`,
 
             width: `100%`,
             height: `100%`,
-            padding: `3%`,
+            padding: `2%`,
 
             alignSelf: `center`,
             justifySelf: `center`,
