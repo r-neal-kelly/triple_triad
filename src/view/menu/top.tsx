@@ -274,6 +274,7 @@ class Title_Text extends Component<Title_Text_Props>
             backgroundPosition: `left`,
 
             color: `white`,
+            textAlign: `center`,
         });
     }
 

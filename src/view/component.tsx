@@ -67,7 +67,22 @@ export class Component<T extends Component_Props> extends React.Component<T>
     {
         super(props);
 
-        this.styles = Object.assign({}, this.Before_Life());
+        this.styles = Object.assign({
+            boxSizing: `border-box`,
+
+            margin: `0`,
+            padding: `0`,
+
+            backgroundColor: `transparent`,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            WebkitUserSelect: `none`,
+            MozUserSelect: `none`,
+            msUserSelect: `none`,
+            userSelect: `none`,
+        }, this.Before_Life());
     }
 
     render():

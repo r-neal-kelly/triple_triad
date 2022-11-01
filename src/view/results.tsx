@@ -387,6 +387,8 @@ class Winner extends Component<Winner_Props>
                 ${color.Alpha()}
             )`,
 
+            color: `white`,
+            textAlign: `center`,
             fontSize: `6vmin`,
         });
     }
@@ -443,6 +445,8 @@ class Draws extends Component<Draws_Props>
 
             backgroundImage: ``,
 
+            color: `white`,
+            textAlign: `center`,
             fontSize: `6vmin`,
         });
     }

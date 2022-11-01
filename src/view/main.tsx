@@ -107,6 +107,8 @@ export class Main extends Component<Main_Props>
             position: `relative`,
 
             overflowX: `hidden`,
+
+            fontSize: `2.8vmin`,
         });
     }
 

@@ -1136,6 +1136,9 @@ class Player_Name extends Component<Player_Name_Props>
         return ({
             width: `100%`,
             height: `100%`,
+
+            color: `white`,
+            textAlign: `center`,
         });
     }
 
@@ -1181,6 +1184,9 @@ class Player_Score extends Component<Player_Score_Props>
         return ({
             width: `100%`,
             height: `100%`,
+
+            color: `white`,
+            textAlign: `center`,
         });
     }
 
