@@ -2590,6 +2590,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                                     backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
                                     borderRadius: `30%`,
+
+                                    color: `white`,
+                                    textAlign: `center`,
                                 }}
                             >
                                 <div>COMBO</div>
@@ -2619,6 +2622,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
                                 borderRadius: `50%`,
+
+                                color: `white`,
+                                textAlign: `center`,
                             },
                         ],
                         [
@@ -2643,6 +2649,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
                                 borderRadius: `50%`,
+
+                                color: `white`,
+                                textAlign: `center`,
                             },
                         ],
                         [
@@ -2667,6 +2676,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
                                 borderRadius: `50%`,
+
+                                color: `white`,
+                                textAlign: `center`,
                             },
                         ],
                         [
@@ -2691,6 +2703,9 @@ class Board_Cell extends Component<Board_Cell_Props>
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
                                 borderRadius: `50%`,
+
+                                color: `white`,
+                                textAlign: `center`,
                             },
                         ],
                     ] as Array<
