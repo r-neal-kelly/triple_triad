@@ -9,7 +9,7 @@ import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Main } from "./main";
-import { Exhibition } from "../view";
+import { Exhibition } from "./exhibition";
 import { Arena } from "./arena";
 import { Results } from "./results";
 

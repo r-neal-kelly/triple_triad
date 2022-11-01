@@ -9,7 +9,7 @@ import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Menu } from "./menu"
-import { Exhibitions } from "../view";
+import { Exhibitions } from "./exhibitions";
 import { Game } from "./game";
 
 type Main_Props = {

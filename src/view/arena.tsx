@@ -10,7 +10,7 @@ import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Game } from "./game";
 import { Game_Measurements } from "./game";
-import { Player_Group } from "./player_group";
+import { Group as Player_Group } from "./player/group";
 import { Board } from "../view";
 
 class Arena_Card_Images

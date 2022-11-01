@@ -1,20 +1,20 @@
-import { Float } from "../types";
+import { Float } from "../../types";
 
-import * as Model from "../model";
+import * as Model from "../../model";
 
-import * as Event from "./event";
-import { Component } from "./component";
-import { Component_Styles } from "./component";
-import { Arena } from "./arena";
-import { Player } from "../view";
+import * as Event from "../event";
+import { Component } from "../component";
+import { Component_Styles } from "../component";
+import { Arena } from "../arena";
+import { Player } from "../player";
 
-type Player_Group_Props = {
+type Group_Props = {
     model: Model.Player_Group;
     parent: Arena;
     event_grid: Event.Grid;
 }
 
-export class Player_Group extends Component<Player_Group_Props>
+export class Group extends Component<Group_Props>
 {
     private players: Array<Player | null> =
         new Array(this.Model().Player_Count()).fill(null);
@@ -146,7 +146,7 @@ export class Player_Group extends Component<Player_Group_Props>
             ) {
                 return (
                     <div
-                        className={`Player_Group`}
+                        className={`Group`}
                         style={this.Styles()}
                     >
                         {players}
@@ -156,7 +156,7 @@ export class Player_Group extends Component<Player_Group_Props>
             } else {
                 return (
                     <div
-                        className={`Player_Group`}
+                        className={`Group`}
                         style={this.Styles()}
                     >
                         {empty_player_column}
@@ -167,7 +167,7 @@ export class Player_Group extends Component<Player_Group_Props>
         } else {
             return (
                 <div
-                    className={`Player_Group`}
+                    className={`Group`}
                     style={this.Styles()}
                 >
                     {players}

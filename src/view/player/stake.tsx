@@ -1,0 +1,294 @@
+
+import { Float } from "../../types";
+
+import { Wait } from "../../utils";
+
+import * as Model from "../../model";
+
+import * as Event from "../event";
+import { Component } from "../component";
+import { Component_Styles } from "../component";
+import { Arena } from "../arena";
+import { Player } from "../player";
+import { Hand } from "./hand";
+
+type Stake_Props = {
+    model: Model.Stake;
+    parent: Hand;
+    event_grid: Event.Grid;
+    index: Model.Stake_Index;
+}
+
+export class Stake extends Component<Stake_Props>
+{
+    static Height_Multiplier():
+        Float
+    {
+        return 0.48;
+    }
+
+    Arena():
+        Arena
+    {
+        return this.Player().Arena();
+    }
+
+    Player():
+        Player
+    {
+        return this.Player_Hand().Player();
+    }
+
+    Player_Hand():
+        Hand
+    {
+        return this.Parent();
+    }
+
+    Index():
+        Model.Stake_Index
+    {
+        return this.props.index;
+    }
+
+    Width():
+        Float
+    {
+        return this.Arena().Measurements().Player_Stake_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Arena().Measurements().Player_Stake_Height();
+    }
+
+    CSS_Width():
+        string
+    {
+        return `${this.Width()}px`;
+    }
+
+    CSS_Height():
+        string
+    {
+        return `${this.Height()}px`;
+    }
+
+    Refresh_Styles():
+        void
+    {
+        const model: Model.Stake = this.Model();
+        const color: Model.Color = model.Color();
+        const is_of_human: boolean = this.Model().Is_Of_Human();
+        const is_selectable: boolean = this.Model().Is_Selectable();
+
+        this.Change_Style(`width`, this.CSS_Width());
+        this.Change_Style(`height`, this.CSS_Height());
+
+        if (model.Is_Selected()) {
+            this.Change_Style(`border`, `0.15vmin solid white`);
+        } else {
+            this.Change_Style(`border`, `0.15vmin solid black`);
+        }
+
+        this.Change_Style(
+            `backgroundColor`,
+            `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`,
+        );
+
+        this.Change_Style(
+            `top`,
+            `calc(
+                ${this.CSS_Height()} *
+                ${Stake.Height_Multiplier()} *
+                ${this.Index()}
+            )`,
+        );
+        this.Change_Style(`zIndex`, `${this.Index()}`);
+
+        if (is_of_human && is_selectable) {
+            this.Change_Style(`cursor`, `pointer`);
+        } else {
+            this.Change_Style(`cursor`, `default`);
+        }
+    }
+
+    Before_Life():
+        Component_Styles
+    {
+        this.Change_Animation({
+            animation_name: `Twinkle`,
+            animation_body: `
+                0% {
+                    border-color: white;
+                }
+            
+                25% {
+                    border-color: black;
+                }
+            
+                50% {
+                    border-color: white;
+                }
+            
+                75% {
+                    border-color: black;
+                }
+            
+                100% {
+                    border-color: white;
+                }
+            `,
+        });
+
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+
+            cursor: `default`,
+        });
+    }
+
+    On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Stake = this.Model();
+        const is_of_human: boolean = this.Model().Is_Of_Human();
+        const is_selectable: boolean = this.Model().Is_Selectable();
+
+        this.Refresh_Styles();
+
+        return (
+            <div
+                className={`Stake`}
+                style={this.Styles()}
+                onClick={
+                    is_of_human && is_selectable ?
+                        event => this.On_Click(event) :
+                        () => { }
+                }
+            >
+                <img
+                    style={{
+                        width: `90%`,
+                        height: `90%`,
+
+                        cursor: is_of_human && is_selectable ?
+                            `pointer` :
+                            `default`,
+                    }}
+                    src={model.Card().Image()}
+                    alt={``}
+                />
+            </div>
+        );
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            event.stopPropagation();
+
+            const arena: Model.Arena = this.Model().Arena();
+            if (arena.Is_Input_Enabled()) {
+                arena.Disable_Input();
+
+                if (this.Model().Is_On_Player()) {
+                    const player: Model.Player = this.Model().Origin();
+                    if (player.Is_On_Turn()) {
+                        const player_index: Model.Player_Index = player.Index();
+                        const stake_index: Model.Stake_Index = this.Index();
+
+                        await this.Send({
+                            name_affix: Event.PLAYER_SELECT_STAKE,
+                            name_suffixes: [
+                                player_index.toString(),
+                            ],
+                            data: {
+                                player_index,
+                                stake_index,
+                            } as Event.Player_Select_Stake_Data,
+                            is_atomic: true,
+                        });
+                    }
+                }
+
+                arena.Enable_Input();
+            }
+        }
+    }
+
+    On_Life():
+        Event.Listener_Info[]
+    {
+        const player_index: Model.Player_Index = this.Player().Index();
+
+        return ([
+            {
+                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                event_handler: this.On_Resize,
+            },
+            {
+                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.Before_This_Player_Place_Stake,
+            },
+        ]);
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Refresh_Styles();
+
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: this.Width(),
+                    height: this.Height(),
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
+    }
+
+    async Before_This_Player_Place_Stake(
+        {
+            stake_index,
+        }: Event.Player_Place_Stake_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            if (stake_index === this.Index()) {
+                await this.Animate({
+                    animation_name: `Twinkle`,
+                    duration_in_milliseconds: 500,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease-in-out`,
+                });
+
+                if (this.Is_Alive()) {
+                    this.Deanimate();
+                    await Wait(100);
+                }
+            }
+        }
+    }
+}
