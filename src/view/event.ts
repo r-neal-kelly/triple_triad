@@ -40,6 +40,7 @@ export const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
 export const PLAYER_STOP_TURN: Event.Name_Affix = `Player_Stop_Turn`;
 export const PLAYER_SELECT_STAKE: Event.Name_Affix = `Player_Select_Stake`;
 export const PLAYER_PLACE_STAKE: Event.Name_Affix = `Player_Place_Stake`;
+export const PLAYER_CHANGE_SCORE: Event.Name_Affix = `Player_Change_Score`;
 export const BOARD_CHANGE_CELL: Event.Name_Affix = `Board_Change_Cell`;
 
 // might want to turn these into full classes so that the sender has to fill out the info properly.
@@ -107,6 +108,11 @@ export type Player_Place_Stake_Data = {
     player_index: Model.Player_Index;
     stake_index: Model.Stake_Index;
     cell_index: Model.Cell_Index;
+}
+
+export type Player_Change_Score_Data = {
+    player_index: Model.Player_Index;
+    score_delta: Model.Score_Delta;
 }
 
 export type Board_Change_Cell_Data = {

@@ -797,10 +797,6 @@ export class Player extends Component<Player_Props>
                 event_handler: this.On_This_Player_Select_Stake,
             },
             {
-                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
-                event_handler: this.On_This_Player_Place_Stake,
-            },
-            {
                 event_name: new Event.Name(Event.ON, Event.PLAYER_STOP_TURN, player_index.toString()),
                 event_handler: this.On_This_Player_Stop_Turn,
             },
@@ -904,17 +900,6 @@ export class Player extends Component<Player_Props>
     {
         if (this.Is_Alive()) {
             this.Model().Select_Stake(stake_index);
-            await this.Refresh();
-        }
-    }
-
-    async On_This_Player_Place_Stake(
-        {
-        }: Event.Player_Place_Stake_Data,
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
             await this.Refresh();
         }
     }
@@ -1211,7 +1196,26 @@ class Player_Score extends Component<Player_Score_Props>
         const player_index: Model.Player_Index = this.Index();
 
         return ([
+            {
+                event_name: new Event.Name(Event.ON, Event.PLAYER_CHANGE_SCORE, player_index.toString()),
+                event_handler: this.On_This_Player_Change_Score,
+            },
         ]);
+    }
+
+    async On_This_Player_Change_Score(
+        {
+            score_delta,
+        }: Event.Player_Change_Score_Data
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const element: HTMLElement =
+                this.Some_Element();
+            element.textContent =
+                (parseInt(element.textContent as string) + score_delta).toString();
+        }
     }
 }
 
@@ -1335,10 +1339,16 @@ class Player_Hand extends Component<Player_Hand_Props>
     On_Life():
         Event.Listener_Info[]
     {
+        const player_index: Model.Player_Index = this.Model().Index();
+
         return ([
             {
                 event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
                 event_handler: this.On_Resize,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.On_This_Player_Place_Stake,
             },
         ]);
     }
@@ -1360,6 +1370,17 @@ class Player_Hand extends Component<Player_Hand_Props>
                 } as Event.Resize_Data,
                 is_atomic: false,
             });
+        }
+    }
+
+    async On_This_Player_Place_Stake(
+        {
+        }: Event.Player_Place_Stake_Data
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Refresh();
         }
     }
 }
@@ -2399,8 +2420,8 @@ class Board_Cell extends Component<Board_Cell_Props>
         if (this.Is_Alive()) {
             const model: Model.Cell = this.Model()();
 
-            if (turn_result.old_color != null) {
-                const old_color: Model.Color = turn_result.old_color;
+            if (turn_result.old_claimant != null) {
+                const old_color: Model.Color = turn_result.old_claimant.Color();
                 const new_color: Model.Color = model.Color();
                 const old_background_color: string =
                     `rgba(
@@ -2485,12 +2506,40 @@ class Board_Cell extends Component<Board_Cell_Props>
 
                     await Wait(200);
                     if (this.Is_Alive()) {
-                        await this.Animate({
-                            animation_name: `Flash`,
-                            duration_in_milliseconds: 300,
-                            css_iteration_count: `1`,
-                            css_timing_function: `ease-in`,
-                        });
+                        const old_claimant: Model.Player = turn_result.old_claimant;
+                        const new_claimant: Model.Player = model.Claimant();
+                        const old_claimant_index: Model.Player_Index = old_claimant.Index();
+                        const new_claimant_index: Model.Player_Index = new_claimant.Index();
+                        await Promise.all([
+                            this.Send({
+                                name_affix: Event.PLAYER_CHANGE_SCORE,
+                                name_suffixes: [
+                                    old_claimant_index.toString(),
+                                ],
+                                data: {
+                                    player_index: old_claimant_index,
+                                    score_delta: -1,
+                                } as Event.Player_Change_Score_Data,
+                                is_atomic: false,
+                            }),
+                            this.Send({
+                                name_affix: Event.PLAYER_CHANGE_SCORE,
+                                name_suffixes: [
+                                    new_claimant_index.toString(),
+                                ],
+                                data: {
+                                    player_index: new_claimant_index,
+                                    score_delta: 1,
+                                } as Event.Player_Change_Score_Data,
+                                is_atomic: false,
+                            }),
+                            this.Animate({
+                                animation_name: `Flash`,
+                                duration_in_milliseconds: 300,
+                                css_iteration_count: `1`,
+                                css_timing_function: `ease-in`,
+                            })
+                        ]);
                         if (this.Is_Alive()) {
                             this.Deanimate();
 

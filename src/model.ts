@@ -1,5 +1,6 @@
-import cats_pack_json from "./packs/cats.json"
+import cats_pack_json from "./packs/cats.json";
 
+import { Integer } from "./types";
 import { Count } from "./types";
 import { Index } from "./types";
 import { Delta } from "./types";
@@ -116,7 +117,10 @@ export type Defense_Count =
     number;
 
 export type Score =
-    number;
+    Integer;
+
+export type Score_Delta =
+    Delta;
 
 export type Exhibition_Count =
     Count;
@@ -3853,7 +3857,7 @@ export class Board
 
             const left_turn_result: Turn_Result = turn_results.At(left_index as Cell_Index);
             left_turn_result.direction = Direction_e.LEFT;
-            left_turn_result.old_color = (left_cell as Cell).Color();
+            left_turn_result.old_claimant = (left_cell as Cell).Claimant();
         }
         if (top_claimed) {
             this.#cells[top_index as Cell_Index] = new Cell(
@@ -3865,7 +3869,7 @@ export class Board
 
             const top_turn_result: Turn_Result = turn_results.At(top_index as Cell_Index);
             top_turn_result.direction = Direction_e.TOP;
-            top_turn_result.old_color = (top_cell as Cell).Color();
+            top_turn_result.old_claimant = (top_cell as Cell).Claimant();
         }
         if (right_claimed) {
             this.#cells[right_index as Cell_Index] = new Cell(
@@ -3877,7 +3881,7 @@ export class Board
 
             const right_turn_result: Turn_Result = turn_results.At(right_index as Cell_Index);
             right_turn_result.direction = Direction_e.RIGHT;
-            right_turn_result.old_color = (right_cell as Cell).Color();
+            right_turn_result.old_claimant = (right_cell as Cell).Claimant();
         }
         if (bottom_claimed) {
             this.#cells[bottom_index as Cell_Index] = new Cell(
@@ -3889,7 +3893,7 @@ export class Board
 
             const bottom_turn_result: Turn_Result = turn_results.At(bottom_index as Cell_Index);
             bottom_turn_result.direction = Direction_e.BOTTOM;
-            bottom_turn_result.old_color = (bottom_cell as Cell).Color();
+            bottom_turn_result.old_claimant = (bottom_cell as Cell).Claimant();
         }
 
         if (this.Rules().Combo()) {
@@ -4401,7 +4405,7 @@ class Turn_Results
             this.turn_results[cell_index] = {
                 cell_index: cell_index,
                 direction: Direction_e._NONE_,
-                old_color: null,
+                old_claimant: null,
                 step: 0,
                 same: {
                     left: false,
@@ -4462,7 +4466,7 @@ export type Turn_Result_Steps =
 export type Turn_Result = {
     cell_index: Cell_Index,
     direction: Direction_e,
-    old_color: Color | null,
+    old_claimant: Player | null,
     step: Step_Count,
     same: {
         left: boolean,
