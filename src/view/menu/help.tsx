@@ -69,6 +69,7 @@ export class Help extends Component<Help_Props>
                         color: `white`,
                         textAlign: `start`,
                         fontSize: `0.85em`,
+                        lineHeight: `150%`,
                     }}
                 >
                     <h2>
