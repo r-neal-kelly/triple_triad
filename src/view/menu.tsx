@@ -1,7 +1,5 @@
 import { Float } from "../types";
 
-import { Assert } from "../utils";
-
 import * as Model from "../model";
 
 import * as Event from "./event";
@@ -22,6 +20,8 @@ export class Menu extends Component<Menu_Props>
     private top: Top | null = null;
     private options: Options | null = null;
     private help: Help | null = null;
+
+    private is_disabled: boolean = false;
 
     Main():
         Main
@@ -72,7 +72,7 @@ export class Menu extends Component<Menu_Props>
     }
 
     override On_Refresh():
-        JSX.Element
+        JSX.Element | null
     {
         const model: Model.Menu = this.Model();
         const current_menu: Model.Menu_e = model.Current_Menu();
@@ -120,9 +120,12 @@ export class Menu extends Component<Menu_Props>
                 </div>
             );
         } else {
-            Assert(false);
-
-            return <div></div>;
+            return (
+                <div
+                    className={`Menu`}
+                >
+                </div>
+            );
         }
     }
 
@@ -163,13 +166,17 @@ export class Menu extends Component<Menu_Props>
                 event_name: new Event.Name(Event.ON, Event.OPEN_HELP_MENU),
                 event_handler: this.On_Open_Help_Menu,
             },
+            {
+                event_name: new Event.Name(Event.ON, Event.DISABLE_MENUS),
+                event_handler: this.On_Disable_Menus,
+            },
         ];
     }
 
     async On_Open_Top_Menu():
         Promise<void>
     {
-        if (this.Is_Alive()) {
+        if (this.Is_Alive() && !this.is_disabled) {
             this.Model().Open_Top();
 
             await this.Refresh();
@@ -179,7 +186,7 @@ export class Menu extends Component<Menu_Props>
     async On_Open_Options_Menu():
         Promise<void>
     {
-        if (this.Is_Alive()) {
+        if (this.Is_Alive() && !this.is_disabled) {
             this.Model().Open_Options();
 
             await this.Refresh();
@@ -189,10 +196,16 @@ export class Menu extends Component<Menu_Props>
     async On_Open_Help_Menu():
         Promise<void>
     {
-        if (this.Is_Alive()) {
+        if (this.Is_Alive() && !this.is_disabled) {
             this.Model().Open_Help();
 
             await this.Refresh();
         }
+    }
+
+    async On_Disable_Menus():
+        Promise<void>
+    {
+        this.is_disabled = true;
     }
 }

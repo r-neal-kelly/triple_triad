@@ -63,17 +63,8 @@ export class Top extends Component<Top_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Menu_Top = this.Model();
-
-        let display: string;
-        if (model.Is_Open()) {
-            display = `grid`;
-        } else {
-            display = `none`;
-        }
-
         return ({
-            display: display,
+            display: `grid`,
             gridTemplateColumns: `1fr`,
             gridTemplateRows: `40% 60%`,
             rowGap: `0%`,
@@ -125,20 +116,15 @@ export class Top extends Component<Top_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.Model().Close();
             await this.Animate({
                 animation_name: `Fade_And_Move_Out`,
                 duration_in_milliseconds: 750,
                 css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
-                //css_fill_mode: `forward`,
+                css_fill_mode: `forwards`,
             });
             if (this.Is_Alive()) {
-                // having troubles with the menu flicking in view
-                // sometimes, when it should be completely invisible.
-                this.Change_Style(`display`, `none`);
-                this.Change_Style(`visibility`, `hidden`);
-                this.Change_Style(`left`, `-100%`);
+                this.Deanimate();
             }
         }
     }

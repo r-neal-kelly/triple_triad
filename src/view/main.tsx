@@ -281,22 +281,27 @@ export class Main extends Component<Main_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Send({
-                name_affix: Event.STOP_EXHIBITIONS,
-                name_suffixes: [
-                ],
-                data: {
-                } as Event.Stop_Exhibitions_Data,
-                is_atomic: true,
-            });
+            const model: Model.Main = this.Model();
+            const packs: Model.Packs = model.Packs();
+            const options: Model.Options = model.Menu().Options().Data();
+            const rules: Model.Rules = options.Rules();
 
-            if (this.Is_Alive()) {
-                const model: Model.Main = this.Model();
-                const packs: Model.Packs = model.Packs();
-                const options: Model.Options = model.Menu().Options().Data();
-                const rules: Model.Rules = options.Rules();
-
-                const selections: Array<Model.Selection> = [
+            const selections: Array<Model.Selection> = [
+                new Model.Random_Selection({
+                    collection: new Model.Collection({
+                        default_shuffle: new Model.Shuffle({
+                            pack: packs.Pack(`Cats`),
+                            min_tier_index: 0,
+                            max_tier_index: 9,
+                        }),
+                    }),
+                    color: options.Player_Color(0),
+                    is_of_human: true,
+                    card_count: rules.Selection_Card_Count(),
+                }),
+            ];
+            for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
+                selections.push(
                     new Model.Random_Selection({
                         collection: new Model.Collection({
                             default_shuffle: new Model.Shuffle({
@@ -305,40 +310,45 @@ export class Main extends Component<Main_Props>
                                 max_tier_index: 9,
                             }),
                         }),
-                        color: options.Player_Color(0),
-                        is_of_human: true,
+                        color: options.Player_Color(idx),
+                        is_of_human: false,
                         card_count: rules.Selection_Card_Count(),
                     }),
-                ];
-                for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
-                    selections.push(
-                        new Model.Random_Selection({
-                            collection: new Model.Collection({
-                                default_shuffle: new Model.Shuffle({
-                                    pack: packs.Pack(`Cats`),
-                                    min_tier_index: 0,
-                                    max_tier_index: 9,
-                                }),
-                            }),
-                            color: options.Player_Color(idx),
-                            is_of_human: false,
-                            card_count: rules.Selection_Card_Count(),
-                        }),
-                    );
-                }
+                );
+            }
 
-                model.New_Game(selections);
+            model.New_Game(selections);
 
+            await this.Send({
+                name_affix: Event.DISABLE_MENUS,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Disable_Menus_Data,
+                is_atomic: true,
+            });
+            if (this.Is_Alive()) {
                 await this.Send({
-                    name_affix: Event.CLOSE_MENUS,
+                    name_affix: Event.STOP_EXHIBITIONS,
                     name_suffixes: [
                     ],
                     data: {
-                    } as Event.Close_Menus_Data,
+                    } as Event.Stop_Exhibitions_Data,
                     is_atomic: true,
                 });
-
-                await this.Refresh();
+                if (this.Is_Alive()) {
+                    await this.Send({
+                        name_affix: Event.CLOSE_MENUS,
+                        name_suffixes: [
+                        ],
+                        data: {
+                        } as Event.Close_Menus_Data,
+                        is_atomic: true,
+                    });
+                    if (this.Is_Alive()) {
+                        await this.Refresh();
+                    }
+                }
             }
         }
     }

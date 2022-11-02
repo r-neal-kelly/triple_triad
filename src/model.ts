@@ -804,7 +804,6 @@ export class Menu
         void
     {
         this.current_menu = Menu_e.TOP;
-        this.Top().Open();
     }
 
     Open_Options():
@@ -827,7 +826,6 @@ export class Menu
 export class Menu_Top
 {
     private menu: Menu;
-    private is_open: boolean;
 
     constructor(
         {
@@ -838,31 +836,12 @@ export class Menu_Top
     )
     {
         this.menu = menu;
-        this.is_open = true;
     }
 
     Menu():
         Menu
     {
         return this.menu;
-    }
-
-    Is_Open():
-        boolean
-    {
-        return this.is_open;
-    }
-
-    Open():
-        void
-    {
-        this.is_open = true;
-    }
-
-    Close():
-        void
-    {
-        this.is_open = false;
     }
 }
 
