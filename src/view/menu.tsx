@@ -71,38 +71,16 @@ export class Menu extends Component<Menu_Props>
         return `${this.Height()}px`;
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.4)`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element
     {
         const model: Model.Menu = this.Model();
         const current_menu: Model.Menu_e = model.Current_Menu();
 
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
         if (current_menu === Model.Menu_e.TOP) {
             return (
                 <div
                     className={`Menu`}
-                    style={this.Styles()}
                 >
                     <Top
                         ref={ref => this.top = ref}
@@ -117,7 +95,6 @@ export class Menu extends Component<Menu_Props>
             return (
                 <div
                     className={`Menu`}
-                    style={this.Styles()}
                 >
                     <Options
                         ref={ref => this.options = ref}
@@ -132,7 +109,6 @@ export class Menu extends Component<Menu_Props>
             return (
                 <div
                     className={`Menu`}
-                    style={this.Styles()}
                 >
                     <Help
                         ref={ref => this.help = ref}
@@ -150,14 +126,31 @@ export class Menu extends Component<Menu_Props>
         }
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `1`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.4)`,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
         return [
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
             {
                 event_name: new Event.Name(Event.ON, Event.OPEN_TOP_MENU),
                 event_handler: this.On_Open_Top_Menu,
@@ -171,29 +164,6 @@ export class Menu extends Component<Menu_Props>
                 event_handler: this.On_Open_Help_Menu,
             },
         ];
-    }
-
-    On_Resize(
-        {
-            width,
-            height,
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Change_Style(`width`, this.CSS_Width());
-            this.Change_Style(`height`, this.CSS_Height());
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width,
-                    height,
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
     }
 
     async On_Open_Top_Menu():

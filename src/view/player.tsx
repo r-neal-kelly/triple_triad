@@ -90,59 +90,16 @@ export class Player extends Component<Player_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const model: Model.Player = this.Model();
-        const color: Model.Color = this.Model().Color();
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        // Highlight the player to indicate it's their turn.
-        if (model.Is_On_Turn()) {
-            this.Change_Style(
-                `backgroundColor`,
-                `rgba(
-            ${color.Red()},
-            ${color.Green()},
-            ${color.Blue()},
-            ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
-        )`,
-            );
-        } else {
-            this.Change_Style(
-                `backgroundColor`,
-                `transparent`,
-            );
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            alignItems: `center`,
-
-            position: `relative`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
         const index: Model.Player_Index = this.Index();
 
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Player`}
-                style={this.Styles()}
             >
                 <Bumper
                     key={`bumper_${index}`}
@@ -164,16 +121,44 @@ export class Player extends Component<Player_Props>
         );
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        const model: Model.Player = this.Model();
+        const color: Model.Color = this.Model().Color();
+
+        let background_color: string;
+        if (model.Is_On_Turn()) {
+            background_color = `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
+            )`;
+        } else {
+            background_color = `transparent`;
+        }
+
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            alignItems: `center`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `relative`,
+
+            backgroundColor: background_color,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Index();
 
         return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
             {
                 event_name: new Event.Name(Event.ON, Event.PLAYER_START_TURN, player_index.toString()),
                 event_handler: this.On_This_Player_Start_Turn,
@@ -191,26 +176,6 @@ export class Player extends Component<Player_Props>
                 event_handler: this.On_Game_Stop,
             },
         ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
     }
 
     async On_This_Player_Start_Turn(

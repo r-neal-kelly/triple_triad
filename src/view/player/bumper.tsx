@@ -75,56 +75,16 @@ export class Bumper extends Component<Bumper_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const model: Model.Player = this.Model();
-        const color: Model.Color = this.Model().Color();
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        if (model.Arena().Is_Game_Over()) {
-            this.Change_Style(
-                `backgroundColor`,
-                `rgba(
-                    ${color.Red()},
-                    ${color.Green()},
-                    ${color.Blue()},
-                    ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
-                )`
-            );
-        } else {
-            this.Change_Style(
-                `backgroundColor`,
-                `transparent`,
-            );
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Player = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
         const index: Model.Player_Index = this.Index();
 
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Bumper`}
-                style={this.Styles()}
             >
                 <Name
                     key={`name_${index}`}
@@ -146,34 +106,33 @@ export class Bumper extends Component<Bumper_Props>
         );
     }
 
-    On_Life():
-        Event.Listener_Info[]
+    override On_Restyle():
+        Component_Styles
     {
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-        ]);
-    }
+        const model: Model.Player = this.Model();
+        const color: Model.Color = this.Model().Color();
 
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
+        let background_color: string;
+        if (model.Arena().Is_Game_Over()) {
+            background_color = `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
+            )`;
+        } else {
+            background_color = `transparent`;
         }
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            backgroundColor: background_color,
+        });
     }
 }

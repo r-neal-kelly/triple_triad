@@ -25,7 +25,21 @@ export class Name extends Component<Name_Props>
         return this.Model().Index();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Name`}
+            >
+                {
+                    this.Model().Name()
+                }
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
@@ -35,20 +49,5 @@ export class Name extends Component<Name_Props>
             color: `white`,
             textAlign: `center`,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Name`}
-                style={this.Styles()}
-            >
-                {
-                    this.Model().Name()
-                }
-            </div>
-        );
     }
 }

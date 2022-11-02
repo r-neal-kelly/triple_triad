@@ -141,7 +141,39 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
         return `black`;
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={this.Name()}
+            >
+                <Value
+                    ref={ref => this.value = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Decrementor
+                    ref={ref => this.decrementor = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Incrementor
+                    ref={ref => this.incrementor = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
@@ -175,39 +207,6 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
         });
     }
 
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={this.Name()}
-                style={this.Styles()}
-            >
-                <Value
-                    ref={ref => this.value = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Decrementor
-                    ref={ref => this.decrementor = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Incrementor
-                    ref={ref => this.incrementor = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-
     async On_Decrement(event: React.SyntheticEvent):
         Promise<void>
     {
@@ -233,7 +232,21 @@ class Value extends Component<Value_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
+
+        return (
+            <div
+                className={`Value`}
+            >
+                {`${counter.Text()}: ${counter.Count()}`}
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
@@ -251,20 +264,6 @@ class Value extends Component<Value_Props>
             color: `inherit`,
             fontSize: `inherit`,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const counter: Counter<Counter_Props> = this.Counter();
-
-        return (
-            <div
-                style={this.Styles()}
-            >
-                {`${counter.Text()}: ${counter.Count()}`}
-            </div>
-        );
     }
 }
 
@@ -294,10 +293,85 @@ class Decrementor extends Component<Decrementor_Props>
         }
     }
 
-    Refresh_Animations():
-        void
+    override On_Refresh():
+        JSX.Element | null
     {
-        const counter: Counter<Counter_Props> = this.Parent();
+        return (
+            <div
+                className={`Decrementor`}
+            >
+                <div
+                    style={{
+                        color: `inherit`,
+                        fontSize: `inherit`,
+                    }}
+                >
+                    {`-`}
+                </div>
+                <Decrementor_Cover
+                    ref={ref => this.cover = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
+
+        let background_color: string;
+        let color: string;
+        let cursor: string;
+        if (counter.Can_Decrement()) {
+            background_color = counter.CSS_Enabled_Background_Color();
+            color = counter.CSS_Enabled_Text_Color();
+            cursor = `pointer`;
+        } else {
+            background_color = counter.CSS_Disabled_Background_Color();
+            color = counter.CSS_Disabled_Text_Color();
+            cursor = `default`;
+        }
+
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: counter.CSS_Button_Width(),
+            height: counter.CSS_Button_Height(),
+
+            position: `relative`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `100%`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: background_color,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            color: color,
+            fontSize: `inherit`,
+
+            cursor: cursor,
+        });
+    }
+
+    override On_Life():
+        Array<Event.Listener_Info>
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
 
         this.Change_Animation({
             animation_name: `Activate_Enabled`,
@@ -318,83 +392,8 @@ class Decrementor extends Component<Decrementor_Props>
                 }
             `,
         });
-    }
 
-    Refresh_Styles():
-        void
-    {
-        const counter: Counter<Counter_Props> = this.Parent();
-
-        this.Change_Style(`width`, this.Counter().CSS_Button_Width());
-        this.Change_Style(`height`, this.Counter().CSS_Button_Height());
-
-        if (counter.Can_Decrement()) {
-            this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Enabled_Text_Color());
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`backgroundColor`, counter.CSS_Disabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Disabled_Text_Color());
-            this.Change_Style(`cursor`, `default`);
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `100%`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: 'transparent',
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            color: `inherit`,
-            fontSize: `inherit`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        this.Refresh_Animations();
-        this.Refresh_Styles();
-
-        return (
-            <div
-                style={this.Styles()}
-            >
-                <div
-                    style={{
-                        color: `inherit`,
-                        fontSize: `inherit`,
-                    }}
-                >
-                    {`-`}
-                </div>
-                <Decrementor_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
+        return [];
     }
 }
 
@@ -418,9 +417,30 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Decrementor_Cover`}
+                onClick={event => this.On_Decrement(event)}
+            >
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
+        const counter: Counter<Counter_Props> = this.Counter();
+
+        let cursor: string;
+        if (counter.Can_Decrement()) {
+            cursor = `pointer`;
+        } else {
+            cursor = `default`;
+        }
+
         return ({
             width: `100%`,
             height: `100%`,
@@ -434,27 +454,9 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
+
+            cursor: cursor,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const counter: Counter<Counter_Props> = this.Counter();
-
-        if (counter.Can_Decrement()) {
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`cursor`, `default`);
-        }
-
-        return (
-            <div
-                style={this.Styles()}
-                onClick={event => this.On_Decrement(event)}
-            >
-            </div>
-        );
     }
 
     async On_Decrement(event: React.SyntheticEvent):
@@ -464,7 +466,6 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
         if (counter.Is_Alive() && counter.Can_Decrement()) {
             const decrementor: Decrementor = this.Decrementor();
             if (decrementor.Is_Alive()) {
-                decrementor.Refresh_Animations();
                 await decrementor.Animate({
                     animation_name: `Activate_Enabled`,
                     duration_in_milliseconds: 200,
@@ -508,10 +509,85 @@ class Incrementor extends Component<Incrementor_Props>
         }
     }
 
-    Refresh_Animations():
-        void
+    override On_Refresh():
+        JSX.Element | null
     {
-        const counter: Counter<Counter_Props> = this.Parent();
+        return (
+            <div
+                className={`Incrementor`}
+            >
+                <div
+                    style={{
+                        color: `inherit`,
+                        fontSize: `inherit`,
+                    }}
+                >
+                    {`+`}
+                </div>
+                <Incrementor_Cover
+                    ref={ref => this.cover = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
+
+        let background_color: string;
+        let color: string;
+        let cursor: string;
+        if (counter.Can_Increment()) {
+            background_color = counter.CSS_Enabled_Background_Color();
+            color = counter.CSS_Enabled_Text_Color();
+            cursor = `pointer`;
+        } else {
+            background_color = counter.CSS_Disabled_Background_Color();
+            color = counter.CSS_Disabled_Text_Color();
+            cursor = `default`;
+        }
+
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: counter.CSS_Button_Width(),
+            height: counter.CSS_Button_Height(),
+
+            position: `relative`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `100%`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: background_color,
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            color: color,
+            fontSize: `inherit`,
+
+            cursor: cursor,
+        });
+    }
+
+    override On_Life():
+        Array<Event.Listener_Info>
+    {
+        const counter: Counter<Counter_Props> = this.Counter();
 
         this.Change_Animation({
             animation_name: `Activate_Enabled`,
@@ -532,83 +608,8 @@ class Incrementor extends Component<Incrementor_Props>
                 }
             `,
         });
-    }
 
-    Refresh_Styles():
-        void
-    {
-        const counter: Counter<Counter_Props> = this.Parent();
-
-        this.Change_Style(`width`, this.Counter().CSS_Button_Width());
-        this.Change_Style(`height`, this.Counter().CSS_Button_Height());
-
-        if (counter.Can_Increment()) {
-            this.Change_Style(`backgroundColor`, counter.CSS_Enabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Enabled_Text_Color());
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`backgroundColor`, counter.CSS_Disabled_Background_Color());
-            this.Change_Style(`color`, counter.CSS_Disabled_Text_Color());
-            this.Change_Style(`cursor`, `default`);
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `100%`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: 'transparent',
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            color: `inherit`,
-            fontSize: `inherit`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        this.Refresh_Animations();
-        this.Refresh_Styles();
-
-        return (
-            <div
-                style={this.Styles()}
-            >
-                <div
-                    style={{
-                        color: `inherit`,
-                        fontSize: `inherit`,
-                    }}
-                >
-                    {`+`}
-                </div>
-                <Incrementor_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
+        return [];
     }
 }
 
@@ -632,9 +633,30 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Incrementor_Cover`}
+                onClick={event => this.On_Increment(event)}
+            >
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
+        const counter: Counter<Counter_Props> = this.Counter();
+
+        let cursor: string;
+        if (counter.Can_Increment()) {
+            cursor = `pointer`;
+        } else {
+            cursor = `default`;
+        }
+
         return ({
             width: `100%`,
             height: `100%`,
@@ -648,27 +670,9 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
+
+            cursor: cursor,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const counter: Counter<Counter_Props> = this.Counter();
-
-        if (counter.Can_Increment()) {
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`cursor`, `default`);
-        }
-
-        return (
-            <div
-                style={this.Styles()}
-                onClick={event => this.On_Increment(event)}
-            >
-            </div>
-        );
     }
 
     async On_Increment(event: React.SyntheticEvent):
@@ -678,7 +682,6 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
         if (counter.Is_Alive() && counter.Can_Increment()) {
             const incrementor: Incrementor = this.Incrementor();
             if (incrementor.Is_Alive()) {
-                incrementor.Refresh_Animations();
                 await incrementor.Animate({
                     animation_name: `Activate_Enabled`,
                     duration_in_milliseconds: 200,

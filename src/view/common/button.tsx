@@ -77,9 +77,70 @@ export class Button<Props extends Button_Props> extends Component<Props>
         return `rgba(255, 255, 255, 0.7)`;
     }
 
-    Refresh_Animations():
-        void
+    override On_Refresh():
+        JSX.Element | null
     {
+        return (
+            <div
+                className={this.Name()}
+            >
+                <div
+                    className={`Button_Text`}
+                    style={{
+                        color: `inherit`,
+                    }}
+                >
+                    {this.Text()}
+                </div>
+                <Button_Cover
+                    ref={ref => this.cover = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `relative`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: this.CSS_Background_Color(),
+            backgroundRepeat: `no-repeat`,
+            backgroundPosition: `center`,
+            backgroundSize: `100% 100%`,
+
+            color: this.CSS_Text_Color(),
+            fontSize: this.CSS_Text_Size(),
+
+            cursor: `pointer`,
+        });
+    }
+
+    override On_Life():
+        Array<Event.Listener_Info>
+    {
+        // we'll eventually make these CSS variables that we can more efficiently change
         this.Change_Animation({
             animation_name: `Activate`,
             animation_body: `
@@ -102,73 +163,8 @@ export class Button<Props extends Button_Props> extends Component<Props>
                 }
             `,
         });
-    }
 
-    Refresh_Styles():
-        void
-    {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-        this.Change_Style(`backgroundColor`, this.CSS_Background_Color());
-        this.Change_Style(`color`, this.CSS_Text_Color());
-        this.Change_Style(`fontSize`, this.CSS_Text_Size());
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            position: `relative`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundRepeat: `no-repeat`,
-            backgroundPosition: `center`,
-            backgroundSize: `100% 100%`,
-
-            cursor: `pointer`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        this.Refresh_Animations();
-        this.Refresh_Styles();
-
-        return (
-            <div
-                className={this.Name()}
-                style={this.Styles()}
-            >
-                <div
-                    className={`Button_Text`}
-                    style={{
-                        color: `inherit`,
-                    }}
-                >
-                    {this.Text()}
-                </div>
-                <Button_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
+        return [];
     }
 
     async On_Activate(event: React.SyntheticEvent):
@@ -191,7 +187,19 @@ class Button_Cover extends Component<Button_Cover_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Button_Cover`}
+                onClick={event => this.On_Activate(event)}
+            >
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
@@ -212,25 +220,11 @@ class Button_Cover extends Component<Button_Cover_Props>
         });
     }
 
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Button_Cover`}
-                style={this.Styles()}
-                onClick={event => this.On_Activate(event)}
-            >
-            </div>
-        );
-    }
-
     async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
         const button: Button<Button_Props> = this.Parent();
         if (button.Is_Alive()) {
-            button.Refresh_Animations();
             await button.Animate({
                 animation_name: `Activate`,
                 duration_in_milliseconds: 300,

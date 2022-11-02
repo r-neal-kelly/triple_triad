@@ -8,7 +8,7 @@ import { Name } from "../types";
 import { Assert } from "../utils";
 import { Wait } from "../utils";
 
-import * as Event from "../event";
+import * as Event from "./event";
 
 export type Component_ID = Integer;
 let component_id = 0;
@@ -36,11 +36,15 @@ export interface Component_Props
     A simplification of the React Life-Cycle.
 
     Method Overrides/Event Handlers in the Life-Cycle:
-        1.) Before_Life
-        2.) On_Refresh
+        1.) On_Refresh
+        2.) On_Restyle
         3.) On_Life
             while (Refresh) {
                 On_Refresh
+                On_Restyle
+            } ||
+            while (Restyle) {
+                On_Restyle
             }
         4.) On_Death
     Each of these methods can be overridden by a derived class.
@@ -82,7 +86,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
             MozUserSelect: `none`,
             msUserSelect: `none`,
             userSelect: `none`,
-        }, this.Before_Life());
+        });
     }
 
     render():
@@ -95,6 +99,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
         void
     {
         this.body = ReactDom.findDOMNode(this) as HTMLElement;
+        this.Restyle();
         this.is_refreshing = false;
     }
 
@@ -116,11 +121,32 @@ export class Component<T extends Component_Props> extends React.Component<T>
     {
         this.is_alive = true;
 
+        const listeners: Array<Event.Listener_Info> = this.On_Life();
+        if (this.Parent() != null) {
+            listeners.push(
+                {
+                    event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
+                    event_handler: this.On_Resize,
+                },
+            );
+        }
+
         this.Event_Grid().Add(this);
-        this.Event_Grid().Add_Many_Listeners(this, this.On_Life());
+        this.Event_Grid().Add_Many_Listeners(this, listeners);
     }
 
-    async Refresh(after_milliseconds: number = 0):
+    Restyle():
+        void
+    {
+        this.styles = Object.assign(this.styles, this.On_Restyle());
+        if (this.body != null) {
+            for (const [key, value] of Object.entries(this.styles)) {
+                (this.body.style as any)[key] = value;
+            }
+        }
+    }
+
+    async Refresh(after_milliseconds: Integer = 0):
         Promise<boolean>
     {
         if (after_milliseconds > 0) {
@@ -183,14 +209,14 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return null;
     }
 
-    Before_Life():
+    On_Restyle():
         Component_Styles
     {
         return {};
     }
 
     On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         return [];
     }
@@ -198,6 +224,27 @@ export class Component<T extends Component_Props> extends React.Component<T>
     On_Death():
         void
     {
+    }
+
+    On_Resize(
+        {
+        }: Event.Resize_Data,
+    ):
+        void
+    {
+        if (this.Is_Alive()) {
+            this.Restyle();
+
+            // eventually we should be able to just iterate async over cached children
+            this.Send({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: 0,
+                    height: 0,
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
+        }
     }
 
     Is_Alive():
@@ -242,7 +289,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return this.styles[style_name_in_camel_case];
     }
 
-    Styles():
+    private Styles():
         Component_Styles
     {
         return Object.assign({}, this.styles);

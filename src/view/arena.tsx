@@ -144,53 +144,7 @@ export class Arena extends Component<Arena_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        if (this.Measurements().Has_X_Scrollbar()) {
-            this.Change_Style(`overflowX`, `scroll`);
-            this.Change_Style(`justifyContent`, `start`);
-        } else {
-            this.Change_Style(`overflowX`, `hidden`);
-            this.Change_Style(`justifyContent`, `center`);
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
-        return ({
-            display: `flex`,
-            flexDirection: `row`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `0`,
-
-            overflowY: `hidden`,
-
-            visibility: `hidden`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Arena = this.Model();
@@ -198,12 +152,9 @@ export class Arena extends Component<Arena_Props>
             model.Player_Groups(Game.Player_Group_Count(), Game.Player_Group_Direction());
         Assert(Game.Player_Group_Count() === 2);
 
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Arena`}
-                style={this.Styles()}
             >
                 <Player_Group
                     ref={ref => this.player_groups[0] = ref}
@@ -230,14 +181,59 @@ export class Arena extends Component<Arena_Props>
         );
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        let justify_content: string;
+        let overflow_x: string;
+        if (this.Measurements().Has_X_Scrollbar()) {
+            justify_content = `start`;
+            overflow_x = `scroll`;
+        } else {
+            justify_content = `center`;
+            overflow_x = `hidden`;
+        }
+
+        return ({
+            display: `flex`,
+            flexDirection: `row`,
+            justifyContent: justify_content,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `0`,
+
+            overflowX: overflow_x,
+            overflowY: `hidden`,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
         (async function (
             this: Arena,
         ):
             Promise<void>
         {
+            this.Change_Style(`visibility`, `hidden`);
             await this.card_images.Load();
             if (this.Is_Alive()) {
                 this.Send({
@@ -253,10 +249,6 @@ export class Arena extends Component<Arena_Props>
 
         return ([
             {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-            {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
                 event_handler: this.On_Game_Start,
             },
@@ -265,26 +257,6 @@ export class Arena extends Component<Arena_Props>
                 event_handler: this.On_Player_Stop_Turn,
             },
         ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
     }
 
     async On_Game_Start(

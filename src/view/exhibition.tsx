@@ -44,8 +44,54 @@ export class Exhibition extends Component<Exhibition_Props>
         return this.Parent().Height();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Exhibition = this.Model();
+        const arena: Model.Arena = model.Arena();
+
+        return (
+            <div
+                className={`Exhibition`}
+            >
+                <Game
+                    key={`game_${arena.ID()}`}
+                    ref={ref => this.game = ref}
+
+                    model={arena}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
+    {
+        let display: string;
+        if (this.Model().Is_Visible()) {
+            display = ``;
+        } else {
+            display = `none`;
+        }
+
+        return ({
+            display: display,
+
+            width: `100%`,
+            height: `100%`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `0`,
+            opacity: `100%`,
+        });
+    }
+
+    override On_Life():
+        Event.Listener_Info[]
     {
         this.Change_Animation({
             animation_name: `Fade_In`,
@@ -193,48 +239,6 @@ export class Exhibition extends Component<Exhibition_Props>
             `,
         });
 
-        return ({
-            display: `none`,
-
-            width: `100%`,
-            height: `100%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `0`,
-            opacity: `100%`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const model: Model.Exhibition = this.Model();
-        const arena: Model.Arena = model.Arena();
-
-        this.Change_Style(`display`, this.Model().Is_Visible() ? `` : `none`);
-
-        return (
-            <div
-                className={`Exhibition`}
-                style={this.Styles()}
-            >
-                <Game
-                    key={`game_${arena.ID()}`}
-                    ref={ref => this.game = ref}
-
-                    model={arena}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
         return ([
             {
                 event_name: new Event.Name(Event.AFTER, Event.GAME_STOP),

@@ -457,46 +457,14 @@ export class Game extends Component<Game_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const model: Model.Arena = this.Model();
-
-        this.measurements = new Game_Measurements({
-            may_have_x_scrollbar: !this.is_exhibition,
-            parent_width: this.Parent().Width(),
-            parent_height: this.Parent().Height(),
-            row_count: model.Rules().Row_Count(),
-            column_count: model.Rules().Column_Count(),
-            player_count: model.Rules().Player_Count(),
-        });
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            position: `relative`,
-
-            overflowX: `hidden`,
-            overflowY: `hidden`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Arena = this.Model();
 
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Game`}
-                style={this.Styles()}
             >
                 <Arena
                     ref={ref => this.arena = ref}
@@ -516,34 +484,28 @@ export class Game extends Component<Game_Props>
         );
     }
 
-    On_Life():
-        Event.Listener_Info[]
+    override On_Restyle():
+        Component_Styles
     {
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-        ]);
-    }
+        const model: Model.Arena = this.Model();
 
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
+        this.measurements = new Game_Measurements({
+            may_have_x_scrollbar: !this.is_exhibition,
+            parent_width: this.Parent().Width(),
+            parent_height: this.Parent().Height(),
+            row_count: model.Rules().Row_Count(),
+            column_count: model.Rules().Column_Count(),
+            player_count: model.Rules().Player_Count(),
+        });
 
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
+        return ({
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `relative`,
+
+            overflowX: `hidden`,
+            overflowY: `hidden`,
+        });
     }
 }

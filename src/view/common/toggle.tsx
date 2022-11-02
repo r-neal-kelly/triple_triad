@@ -117,9 +117,56 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
         return this.CSS_Text_Size();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={this.Name()}
+            >
+                <div
+                    style={{
+                        color: `inherit`,
+                    }}
+                >
+                    {this.Text()}
+                </div>
+                <Toggle_Cover
+                    ref={ref => this.cover = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
+        let background_color: string;
+        let color: string;
+        let font_size: string;
+        let cursor: string;
+        if (this.Is_Enabled()) {
+            if (this.Is_Toggled()) {
+                background_color = this.CSS_Toggled_Background_Color();
+                color = this.CSS_Toggled_Text_Color();
+                font_size = this.CSS_Toggled_Text_Size();
+            } else {
+                background_color = this.CSS_Untoggled_Background_Color();
+                color = this.CSS_Untoggled_Text_Color();
+                font_size = this.CSS_Untoggled_Text_Size();
+            }
+            cursor = `pointer`;
+        } else {
+            background_color = this.CSS_Disabled_Background_Color();
+            color = this.CSS_Disabled_Text_Color();
+            font_size = this.CSS_Disabled_Text_Size();
+            cursor = `default`;
+        }
+
         return ({
             display: `flex`,
             flexDirection: `column`,
@@ -139,55 +186,16 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
-            backgroundColor: 'transparent',
+            backgroundColor: background_color,
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
+
+            color: color,
+            fontSize: font_size,
+
+            cursor: cursor,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        if (this.Is_Enabled()) {
-            if (this.Is_Toggled()) {
-                this.Change_Style(`backgroundColor`, this.CSS_Toggled_Background_Color());
-                this.Change_Style(`color`, this.CSS_Toggled_Text_Color());
-                this.Change_Style(`fontSize`, this.CSS_Toggled_Text_Size());
-            } else {
-                this.Change_Style(`backgroundColor`, this.CSS_Untoggled_Background_Color());
-                this.Change_Style(`color`, this.CSS_Untoggled_Text_Color());
-                this.Change_Style(`fontSize`, this.CSS_Untoggled_Text_Size());
-            }
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`backgroundColor`, this.CSS_Disabled_Background_Color());
-            this.Change_Style(`color`, this.CSS_Disabled_Text_Color());
-            this.Change_Style(`fontSize`, this.CSS_Disabled_Text_Size());
-            this.Change_Style(`cursor`, `default`);
-        }
-
-        return (
-            <div
-                className={this.Name()}
-                style={this.Styles()}
-            >
-                <div
-                    style={{
-                        color: `inherit`,
-                    }}
-                >
-                    {this.Text()}
-                </div>
-                <Toggle_Cover
-                    ref={ref => this.cover = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
     }
 
     async On_Toggle(event: React.SyntheticEvent):
@@ -210,9 +218,30 @@ class Toggle_Cover extends Component<Toggle_Cover_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Toggle_Cover`}
+                onClick={event => this.Parent().On_Toggle(event)}
+            >
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
+        const toggle: Toggle<Toggle_Props> = this.Toggle();
+
+        let cursor: string;
+        if (toggle.Is_Enabled()) {
+            cursor = `pointer`;
+        } else {
+            cursor = `default`;
+        }
+
         return ({
             width: `100%`,
             height: `100%`,
@@ -226,24 +255,8 @@ class Toggle_Cover extends Component<Toggle_Cover_Props>
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
+
+            cursor: cursor,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        if (this.Toggle().Is_Enabled()) {
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`cursor`, `default`);
-        }
-
-        return (
-            <div
-                style={this.Styles()}
-                onClick={event => this.Parent().On_Toggle(event)}
-            >
-            </div>
-        );
     }
 }

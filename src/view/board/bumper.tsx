@@ -26,24 +26,23 @@ export class Bumper extends Component<Bumper_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Bumper`}
+            >
+            </div >
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
             width: `100%`,
             height: `100%`,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Bumper`}
-                style={this.Styles()}
-            >
-            </div >
-        );
     }
 }

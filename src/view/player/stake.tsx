@@ -75,53 +75,96 @@ export class Stake extends Component<Stake_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Stake = this.Model();
+        const is_of_human: boolean = this.Model().Is_Of_Human();
+        const is_selectable: boolean = this.Model().Is_Selectable();
+
+        return (
+            <div
+                className={`Stake`}
+                onClick={
+                    is_of_human && is_selectable ?
+                        event => this.On_Click(event) :
+                        () => { }
+                }
+            >
+                <img
+                    style={{
+                        width: `90%`,
+                        height: `90%`,
+
+                        cursor: is_of_human && is_selectable ?
+                            `pointer` :
+                            `default`,
+                    }}
+                    src={model.Card().Image()}
+                    alt={``}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
+        Component_Styles
     {
         const model: Model.Stake = this.Model();
         const color: Model.Color = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
+        let border: string;
         if (model.Is_Selected()) {
-            this.Change_Style(`border`, `0.15vmin solid white`);
+            border = `0.15vmin solid white`;
         } else {
-            this.Change_Style(`border`, `0.15vmin solid black`);
+            border = `0.15vmin solid black`;
         }
 
-        this.Change_Style(
-            `backgroundColor`,
-            `rgba(
+        let cursor: string;
+        if (is_of_human && is_selectable) {
+            cursor = `pointer`;
+        } else {
+            cursor = `default`;
+        }
+
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `absolute`,
+            left: `0`,
+            top: `calc(
+                ${this.CSS_Height()} *
+                ${Stake.Height_Multiplier()} *
+                ${this.Index()}
+            )`,
+            zIndex: `${this.Index()}`,
+
+            backgroundColor: `rgba(
                 ${color.Red()},
                 ${color.Green()},
                 ${color.Blue()},
                 ${color.Alpha()}
             )`,
-        );
 
-        this.Change_Style(
-            `top`,
-            `calc(
-                ${this.CSS_Height()} *
-                ${Stake.Height_Multiplier()} *
-                ${this.Index()}
-            )`,
-        );
-        this.Change_Style(`zIndex`, `${this.Index()}`);
+            border: border,
 
-        if (is_of_human && is_selectable) {
-            this.Change_Style(`cursor`, `pointer`);
-        } else {
-            this.Change_Style(`cursor`, `default`);
-        }
+            cursor: cursor,
+        });
     }
 
-    Before_Life():
-        Component_Styles
+    override On_Life():
+        Event.Listener_Info[]
     {
+        const player_index: Model.Player_Index = this.Player().Index();
+
         this.Change_Animation({
             animation_name: `Twinkle`,
             animation_body: `
@@ -147,53 +190,12 @@ export class Stake extends Component<Stake_Props>
             `,
         });
 
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-
-            cursor: `default`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const model: Model.Stake = this.Model();
-        const is_of_human: boolean = this.Model().Is_Of_Human();
-        const is_selectable: boolean = this.Model().Is_Selectable();
-
-        this.Refresh_Styles();
-
-        return (
-            <div
-                className={`Stake`}
-                style={this.Styles()}
-                onClick={
-                    is_of_human && is_selectable ?
-                        event => this.On_Click(event) :
-                        () => { }
-                }
-            >
-                <img
-                    style={{
-                        width: `90%`,
-                        height: `90%`,
-
-                        cursor: is_of_human && is_selectable ?
-                            `pointer` :
-                            `default`,
-                    }}
-                    src={model.Card().Image()}
-                    alt={``}
-                />
-            </div>
-        );
+        return ([
+            {
+                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
+                event_handler: this.Before_This_Player_Place_Stake,
+            },
+        ]);
     }
 
     async On_Click(event: React.SyntheticEvent):
@@ -228,43 +230,6 @@ export class Stake extends Component<Stake_Props>
 
                 arena.Enable_Input();
             }
-        }
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        const player_index: Model.Player_Index = this.Player().Index();
-
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-            {
-                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
-                event_handler: this.Before_This_Player_Place_Stake,
-            },
-        ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
         }
     }
 

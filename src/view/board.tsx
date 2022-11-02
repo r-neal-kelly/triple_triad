@@ -62,46 +62,12 @@ export class Board extends Component<Board_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const arena: Arena = this.Arena();
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        this.Change_Style(
-            `gridTemplateRows`,
-            `
-                ${arena.Measurements().Board_Bumper_Height()}px 
-                ${arena.Measurements().Board_Cells_Height()}px
-            `,
-        );
-
-        this.Change_Style(
-            `backgroundImage`,
-            `url("img/boards/pexels-fwstudio-172296.jpg")`,
-        );
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `auto`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Board`}
-                style={this.Styles()}
             >
                 <Bumper
                     key={`board_bumper`}
@@ -123,39 +89,35 @@ export class Board extends Component<Board_Props>
         );
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        const arena: Arena = this.Arena();
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `auto`,
+            gridTemplateRows: `
+                ${arena.Measurements().Board_Bumper_Height()}px 
+                ${arena.Measurements().Board_Cells_Height()}px
+            `,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            backgroundImage: `url("img/boards/pexels-fwstudio-172296.jpg")`,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
         return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
             {
                 event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE),
                 event_handler: this.On_Player_Place_Stake,
             },
         ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
     }
 
     async On_Player_Place_Stake(

@@ -87,32 +87,7 @@ export class Main extends Component<Main_Props>
         return `${this.Height()}px`;
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-            
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
-        return ({
-            position: `relative`,
-
-            overflowX: `hidden`,
-
-            fontSize: `2.8vmin`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         // we create an exhibition match between computers for the background of main
@@ -120,14 +95,10 @@ export class Main extends Component<Main_Props>
 
         const model: Model.Main = this.Model();
 
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
         if (model.Isnt_In_Game()) {
             return (
                 <div
                     className={`Main`}
-                    style={this.Styles()}
                 >
                     <Menu
                         ref={ref => this.menu = ref}
@@ -151,7 +122,6 @@ export class Main extends Component<Main_Props>
             return (
                 <div
                     className={`Main`}
-                    style={this.Styles()}
                 >
                     <Game
                         key={`game_${arena.ID()}`}
@@ -166,12 +136,40 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `relative`,
+
+            overflowX: `hidden`,
+
+            fontSize: `2.8vmin`,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
         const model: Model.Main = this.Model();
 
         this.resize_observer.observe(this.Root());
+
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+            
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
 
         this.Send({
             name_affix: Event.START_EXHIBITIONS,
@@ -209,7 +207,7 @@ export class Main extends Component<Main_Props>
         ];
     }
 
-    On_Resize():
+    override On_Resize():
         void
     {
         if (this.Is_Alive()) {
@@ -218,20 +216,28 @@ export class Main extends Component<Main_Props>
                 this.current_width = rect.width;
                 this.current_height = rect.height;
 
-                // Our event system is way faster than react's, so we go
-                // ahead and do preliminary updates then call refresh.
+                // Our event system is way faster than react's
+                // so we avoid a full refresh
+                this.Restyle();
+
                 this.Send({
                     name_affix: `${Event.RESIZE}_${this.ID()}`,
                     data: {
-                        width: this.current_width,
-                        height: this.current_height,
+                        width: this.Width(),
+                        height: this.Height(),
                     } as Event.Resize_Data,
                     is_atomic: false,
                 });
-
-                this.Refresh();
             }
         }
+    }
+
+    override On_Death():
+        void
+    {
+        this.resize_observer.disconnect();
+        this.current_height = 0;
+        this.current_width = 0;
     }
 
     async While_Alive():
@@ -381,13 +387,5 @@ export class Main extends Component<Main_Props>
                 });
             }
         }
-    }
-
-    On_Death():
-        void
-    {
-        this.resize_observer.disconnect();
-        this.current_height = 0;
-        this.current_width = 0;
     }
 }

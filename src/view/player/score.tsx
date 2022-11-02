@@ -25,7 +25,21 @@ export class Score extends Component<Score_Props>
         return this.Model().Index();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Score`}
+            >
+                {
+                    this.Model().Score()
+                }
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
@@ -37,22 +51,7 @@ export class Score extends Component<Score_Props>
         });
     }
 
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Score`}
-                style={this.Styles()}
-            >
-                {
-                    this.Model().Score()
-                }
-            </div>
-        );
-    }
-
-    On_Life():
+    override On_Life():
         Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Index();

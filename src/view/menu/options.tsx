@@ -46,38 +46,12 @@ export class Options extends Component<Options_Props>
         return this.Try_Object(this.back_button);
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `4fr 5fr 1.5fr`,
-            gridGap: `3%`,
-
-            width: `90%`,
-            height: `90%`,
-            margin: `0`,
-            padding: `3vmin`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.8)`,
-
-            fontSize: `1.8em`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Options`}
-                style={this.Styles()}
             >
                 <Player_Options
                     ref={ref => this.player_options = ref}
@@ -102,6 +76,31 @@ export class Options extends Component<Options_Props>
                 />
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `4fr 5fr 1.5fr`,
+            gridGap: `3%`,
+
+            width: `90%`,
+            height: `90%`,
+            margin: `0`,
+            padding: `3vmin`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.8)`,
+
+            fontSize: `1.8em`,
+        });
     }
 }
 
@@ -134,31 +133,12 @@ class Player_Options extends Component<Player_Options_Props>
         return this.Try_Object(this.player_colors);
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr`,
-            gridGap: `3%`,
-
-            width: `100%`,
-            height: `100%`,
-            margin: `0`,
-            padding: `0`,
-
-            backgroundColor: `transparent`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Player_Options`}
-                style={this.Styles()}
             >
                 <Player_Counter
                     ref={ref => this.player_counter = ref}
@@ -176,6 +156,24 @@ class Player_Options extends Component<Player_Options_Props>
                 />
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
+            gridGap: `3%`,
+
+            width: `100%`,
+            height: `100%`,
+            margin: `0`,
+            padding: `0`,
+
+            backgroundColor: `transparent`,
+        });
     }
 }
 
@@ -301,23 +299,7 @@ class Player_Colors extends Component<Player_Colors_Props>
         return this.Try_Array(this.player_colors);
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `flex`,
-            flexDirection: `row`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `100%`,
-            height: `100%`,
-            margin: `0`,
-            padding: `0`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Options = this.Model();
@@ -326,7 +308,6 @@ class Player_Colors extends Component<Player_Colors_Props>
         return (
             <div
                 className={`Player_Colors`}
-                style={this.Styles()}
             >
                 {
                     Array(player_color_count).fill(null).map((
@@ -350,6 +331,22 @@ class Player_Colors extends Component<Player_Colors_Props>
                 }
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `row`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+            height: `100%`,
+            margin: `0`,
+            padding: `0`,
+        });
     }
 }
 
@@ -410,15 +407,31 @@ class Player_Color extends Component<Player_Color_Props>
         return `100%`;
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={this.Name()}
+                onClick={event => this.On_Activate(event)}
+            >
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
+        const color: Model.Color = this.Color();
+
         return ({
             display: `flex`,
             flexDirection: `row`,
             justifyContent: `center`,
             alignItems: `center`,
 
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
             margin: `0`,
             padding: `0`,
 
@@ -432,39 +445,18 @@ class Player_Color extends Component<Player_Color_Props>
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
+            backgroundColor: `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`,
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
 
             cursor: `pointer`,
         });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const color: Model.Color = this.Color();
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-        this.Change_Style(
-            `backgroundColor`,
-            `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
-                ${color.Alpha()}
-            )`,
-        );
-
-        return (
-            <div
-                className={this.Name()}
-                style={this.Styles()}
-                onClick={event => this.On_Activate(event)}
-            >
-            </div>
-        );
     }
 
     async On_Activate(event: React.SyntheticEvent):
@@ -534,25 +526,7 @@ class Board_Options extends Component<Board_Options_Props>
         return this.Try_Object(this.combo_toggle);
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr 1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
-            gridGap: `3%`,
-
-            width: `100%`,
-            height: `100%`,
-            margin: `0`,
-            padding: `0`,
-
-            backgroundColor: `transparent`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Options = this.Model();
@@ -561,7 +535,6 @@ class Board_Options extends Component<Board_Options_Props>
         return (
             <div
                 className={`Board_Options`}
-                style={this.Styles()}
             >
                 <Row_Counter
                     ref={ref => this.row_counter = ref}
@@ -607,6 +580,24 @@ class Board_Options extends Component<Board_Options_Props>
                 />
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr 1fr`,
+            gridTemplateRows: `1fr 1fr 1fr`,
+            gridGap: `3%`,
+
+            width: `100%`,
+            height: `100%`,
+            margin: `0`,
+            padding: `0`,
+
+            backgroundColor: `transparent`,
+        });
     }
 }
 

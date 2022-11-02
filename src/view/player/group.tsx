@@ -73,35 +73,7 @@ export class Group extends Component<Group_Props>
         return `${this.Padding()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const model: Model.Player_Group = this.Model();
-        const is_runt: boolean = model.Is_Runt();
-        const player_count: Model.Player_Count = model.Player_Count();
-        const column_count: Model.Column_Count = is_runt ?
-            player_count + 1 :
-            player_count;
-
-        this.Change_Style(`gridTemplateColumns`, `repeat(${column_count}, 1fr)`);
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        this.Change_Style(`padding`, `0 ${this.CSS_Padding()}`);
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateRows: `1fr`,
-            gridGap: `0 0`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Player_Group = this.Model();
@@ -126,8 +98,6 @@ export class Group extends Component<Group_Props>
             );
         });
 
-        this.Refresh_Styles();
-
         if (is_runt) {
             const arena: Arena = this.Arena();
             const empty_player_column: JSX.Element =
@@ -147,7 +117,6 @@ export class Group extends Component<Group_Props>
                 return (
                     <div
                         className={`Group`}
-                        style={this.Styles()}
                     >
                         {players}
                         {empty_player_column}
@@ -157,7 +126,6 @@ export class Group extends Component<Group_Props>
                 return (
                     <div
                         className={`Group`}
-                        style={this.Styles()}
                     >
                         {empty_player_column}
                         {players}
@@ -168,7 +136,6 @@ export class Group extends Component<Group_Props>
             return (
                 <div
                     className={`Group`}
-                    style={this.Styles()}
                 >
                     {players}
                 </div>
@@ -176,34 +143,25 @@ export class Group extends Component<Group_Props>
         }
     }
 
-    On_Life():
-        Event.Listener_Info[]
+    override On_Restyle():
+        Component_Styles
     {
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-        ]);
-    }
+        const model: Model.Player_Group = this.Model();
+        const is_runt: boolean = model.Is_Runt();
+        const player_count: Model.Player_Count = model.Player_Count();
+        const column_count: Model.Column_Count = is_runt ?
+            player_count + 1 :
+            player_count;
 
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `repeat(${column_count}, 1fr)`,
+            gridTemplateRows: `1fr`,
+            gridGap: `0 0`,
 
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+            padding: `0 ${this.CSS_Padding()}`,
+        });
     }
 }

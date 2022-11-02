@@ -68,51 +68,10 @@ export class Results extends Component<Results_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-            
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `25% 50% 25%`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `1`,
-
-            overflowY: `hidden`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.5)`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Arena = this.Model();
-
-        this.Refresh_Styles();
 
         if (model.Is_Game_Over() && !this.Game().Is_Exhibition()) {
             const scores: Model.Scores = model.Final_Scores();
@@ -120,7 +79,6 @@ export class Results extends Component<Results_Props>
             return (
                 <div
                     className={`Results`}
-                    style={this.Styles()}
                 >
                     <div>
                     </div>
@@ -145,9 +103,44 @@ export class Results extends Component<Results_Props>
         }
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `25% 50% 25%`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `1`,
+
+            overflowY: `hidden`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.5)`,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+            
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
         this.Animate({
             animation_name: `Fade_In`,
             duration_in_milliseconds: 2000,
@@ -158,10 +151,6 @@ export class Results extends Component<Results_Props>
 
         return ([
             {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-            {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
                 event_handler: this.On_Game_Start,
             },
@@ -170,26 +159,6 @@ export class Results extends Component<Results_Props>
                 event_handler: this.On_Game_Stop,
             },
         ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
     }
 
     async On_Game_Start(
@@ -258,22 +227,45 @@ class Banner extends Component<Banner_Props>
         }
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Scores = this.Model();
+
+        if (model.Has_Winner()) {
+            return (
+                <div
+                    className={`Banner`}
+                >
+                    <Winner
+                        ref={ref => this.winner = ref}
+
+                        model={model.Winner()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else {
+            return (
+                <div
+                    className={`Banner`}
+                >
+                    <Draws
+                        ref={ref => this.draws = ref}
+
+                        model={model.Draws()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        }
+    }
+
+    override On_Restyle():
         Component_Styles
     {
-        this.Change_Animation({
-            animation_name: `Move_In`,
-            animation_body: `
-                0% {
-                    left: -100%;
-                }
-            
-                100% {
-                    left: 0;
-                }
-            `,
-        });
-
         return ({
             display: `flex`,
             flexDirection: `column`,
@@ -291,47 +283,22 @@ class Banner extends Component<Banner_Props>
         });
     }
 
-    On_Refresh():
-        JSX.Element | null
-    {
-        const model: Model.Scores = this.Model();
-
-        if (model.Has_Winner()) {
-            return (
-                <div
-                    className={`Banner`}
-                    style={this.Styles()}
-                >
-                    <Winner
-                        ref={ref => this.winner = ref}
-
-                        model={model.Winner()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else {
-            return (
-                <div
-                    className={`Banner`}
-                    style={this.Styles()}
-                >
-                    <Draws
-                        ref={ref => this.draws = ref}
-
-                        model={model.Draws()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        }
-    }
-
-    On_Life():
+    override On_Life():
         Event.Listener_Info[]
     {
+        this.Change_Animation({
+            animation_name: `Move_In`,
+            animation_body: `
+                0% {
+                    left: -100%;
+                }
+            
+                100% {
+                    left: 0;
+                }
+            `,
+        });
+
         this.Animate({
             animation_name: `Move_In`,
             duration_in_milliseconds: 2000,
@@ -365,7 +332,23 @@ class Winner extends Component<Winner_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Player_And_Score = this.Model();
+
+        return (
+            <div
+                className={`Winner`}
+            >
+                <div>
+                    {`${model.player.Name()} Wins!`}
+                </div>
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         const model: Model.Player_And_Score = this.Model();
@@ -392,23 +375,6 @@ class Winner extends Component<Winner_Props>
             fontSize: `6vmin`,
         });
     }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const model: Model.Player_And_Score = this.Model();
-
-        return (
-            <div
-                className={`Winner`}
-                style={this.Styles()}
-            >
-                <div>
-                    {`${model.player.Name()} Wins!`}
-                </div>
-            </div>
-        );
-    }
 }
 
 type Draws_Props = {
@@ -431,28 +397,22 @@ class Draws extends Component<Draws_Props>
         return this.Parent();
     }
 
-    Before_Life():
-        Component_Styles
+    override On_Refresh():
+        JSX.Element | null
     {
-        return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
-            width: `100%`,
-            height: `100%`,
-
-            backgroundImage: ``,
-
-            color: `white`,
-            textAlign: `center`,
-            fontSize: `6vmin`,
-        });
+        return (
+            <div
+                className={`Draws`}
+            >
+                <div>
+                    {`Draw`}
+                </div>
+            </div>
+        );
     }
 
-    On_Refresh():
-        JSX.Element | null
+    override On_Restyle():
+        Component_Styles
     {
         const model: Array<Model.Player_And_Score> = this.Model();
         const color_stop_percent: number = 100 / model.length;
@@ -468,21 +428,21 @@ class Draws extends Component<Draws_Props>
             return `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()}) ${color_stop}`;
         }).join(`, `);
 
-        this.Change_Style(
-            `backgroundImage`,
-            `linear-gradient(to right, ${linear_gradient_colors})`,
-        );
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
 
-        return (
-            <div
-                className={`Draws`}
-                style={this.Styles()}
-            >
-                <div>
-                    {`Draw`}
-                </div>
-            </div>
-        );
+            width: `100%`,
+            height: `100%`,
+
+            backgroundImage: `linear-gradient(to right, ${linear_gradient_colors})`,
+
+            color: `white`,
+            textAlign: `center`,
+            fontSize: `6vmin`,
+        });
     }
 }
 
@@ -529,24 +489,7 @@ class Buttons extends Component<Buttons_Props>
         }
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr 1fr`,
-            gridTemplateRows: `1fr`,
-            gridGap: `5%`,
-
-            width: `100%`,
-            height: `100%`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model: Model.Scores = this.Model();
@@ -554,7 +497,6 @@ class Buttons extends Component<Buttons_Props>
         return (
             <div
                 className={`Buttons`}
-                style={this.Styles()}
             >
                 <Rematch_Button
                     ref={ref => this.rematch_button = ref}
@@ -572,6 +514,23 @@ class Buttons extends Component<Buttons_Props>
                 />
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr 1fr`,
+            gridTemplateRows: `1fr`,
+            gridGap: `5%`,
+
+            width: `100%`,
+            height: `100%`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+        });
     }
 }
 

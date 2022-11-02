@@ -35,18 +35,60 @@ export class Top extends Component<Top_Props>
         return this.Try_Object(this.buttons);
     }
 
-    Refresh_Styles():
-        void
+    override On_Refresh():
+        JSX.Element | null
     {
-        if (this.Model().Is_Open()) {
-            this.Change_Style(`display`, `grid`);
-        } else {
-            this.Change_Style(`display`, `none`);
-        }
+        return (
+            <div
+                className={`Top`}
+            >
+                <Title
+                    ref={ref => this.title = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Buttons
+                    ref={ref => this.buttons = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
     }
 
-    Before_Life():
+    override On_Restyle():
         Component_Styles
+    {
+        const model: Model.Menu_Top = this.Model();
+
+        let display: string;
+        if (model.Is_Open()) {
+            display = `grid`;
+        } else {
+            display = `none`;
+        }
+
+        return ({
+            display: display,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `40% 60%`,
+            rowGap: `0%`,
+
+            width: `100%`,
+            height: `100%`,
+
+            position: `relative`,
+
+            backgroundColor: `transparent`,
+        });
+    }
+
+    override On_Life():
+        Event.Listener_Info[]
     {
         this.Change_Animation({
             animation_name: `Fade_And_Move_Out`,
@@ -68,51 +110,6 @@ export class Top extends Component<Top_Props>
             `,
         });
 
-        return ({
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `40% 60%`,
-            rowGap: `0%`,
-
-            width: `100%`,
-            height: `100%`,
-
-            position: `relative`,
-
-            backgroundColor: `transparent`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        this.Refresh_Styles();
-
-        return (
-            <div
-                className={`Top`}
-                style={this.Styles()}
-            >
-                <Title
-                    ref={ref => this.title = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-                <Buttons
-                    ref={ref => this.buttons = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
         return ([
             {
                 event_name: new Event.Name(Event.ON, Event.CLOSE_MENUS),
@@ -169,7 +166,25 @@ class Title extends Component<Title_Props>
         return this.Try_Object(this.text);
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Title`}
+            >
+                <Title_Text
+                    ref={ref => this.text = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
         return ({
@@ -187,25 +202,6 @@ class Title extends Component<Title_Props>
             fontSize: `5em`,
         });
     }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Title`}
-                style={this.Styles()}
-            >
-                <Title_Text
-                    ref={ref => this.text = ref}
-
-                    model={this.Model()}
-                    parent={this}
-                    event_grid={this.Event_Grid()}
-                />
-            </div>
-        );
-    }
 }
 
 type Title_Text_Props = {
@@ -222,28 +218,21 @@ class Title_Text extends Component<Title_Text_Props>
         return this.Parent();
     }
 
-    Before_Life():
+    override On_Refresh():
+        JSX.Element | null
+    {
+        return (
+            <div
+                className={`Title_Text`}
+            >
+                {`Triple Triad`}
+            </div>
+        );
+    }
+
+    override On_Restyle():
         Component_Styles
     {
-        this.Change_Animation({
-            animation_name: `Flash`,
-            animation_body: `
-                0% {
-                    background-position: right;
-                    color: rgba(255, 255, 255, 0.0);
-                }
-
-                20% {
-                    color: rgba(255, 255, 255, 0.0);
-                }
-
-                100% {
-                    background-position: left;
-                    color: rgba(255, 255, 255, 1.0);
-                }
-            `,
-        });
-
         return ({
             width: `80%`,
             height: `fit-content`,
@@ -278,22 +267,28 @@ class Title_Text extends Component<Title_Text_Props>
         });
     }
 
-    On_Refresh():
-        JSX.Element | null
-    {
-        return (
-            <div
-                className={`Title_Text`}
-                style={this.Styles()}
-            >
-                {`Triple Triad`}
-            </div>
-        );
-    }
-
-    On_Life():
+    override On_Life():
         Event.Listener_Info[]
     {
+        this.Change_Animation({
+            animation_name: `Flash`,
+            animation_body: `
+                0% {
+                    background-position: right;
+                    color: rgba(255, 255, 255, 0.0);
+                }
+
+                20% {
+                    color: rgba(255, 255, 255, 0.0);
+                }
+
+                100% {
+                    background-position: left;
+                    color: rgba(255, 255, 255, 1.0);
+                }
+            `,
+        });
+
         this.Animate({
             animation_name: `Flash`,
             duration_in_milliseconds: 4000,
@@ -340,31 +335,12 @@ class Buttons extends Component<Buttons_Props>
         return this.Try_Object(this.help);
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
-            rowGap: `4%`,
-
-            width: `100%`,
-            height: `100%`,
-            padding: `2%`,
-
-            alignSelf: `center`,
-            justifySelf: `center`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Buttons`}
-                style={this.Styles()}
             >
                 <New_Game_Button
                     ref={ref => this.new_game = ref}
@@ -389,6 +365,24 @@ class Buttons extends Component<Buttons_Props>
                 />
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr 1fr`,
+            rowGap: `4%`,
+
+            width: `100%`,
+            height: `100%`,
+            padding: `2%`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+        });
     }
 }
 

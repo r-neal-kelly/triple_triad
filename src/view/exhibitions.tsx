@@ -87,8 +87,58 @@ export class Exhibitions extends Component<Exhibitions_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Animations():
-        void
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Main = this.Model();
+        const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
+
+        return (
+            <div
+                className={`Exhibitions`}
+            >
+                {
+                    Array(exhibition_count).fill(null).map((
+                        _: null,
+                        exhibition_index: Model.Exhibition_Index,
+                    ):
+                        JSX.Element =>
+                    {
+                        return (
+                            <Exhibition
+                                key={`exhibition_${exhibition_index}`}
+                                ref={ref => this.exhibitions[exhibition_index] = ref}
+
+                                model={model.Exhibition(exhibition_index)}
+                                parent={this}
+                                event_grid={this.Exhibition_Event_Grid(exhibition_index)}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `0`,
+
+            overflowX: `hidden`,
+            overflowY: `hidden`,
+        });
+    }
+
+    override On_Life():
+        Event.Listener_Info[]
     {
         this.Change_Animation({
             animation_name: `Fade_In`,
@@ -115,77 +165,10 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 }
             `,
         });
-    }
 
-    Refresh_Styles():
-        void
-    {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-    }
+        this.Change_Style(`display`, `none`);
 
-    Before_Life():
-        Component_Styles
-    {
-        this.Refresh_Animations();
-
-        return ({
-            display: `none`,
-
-            position: `absolute`,
-            left: `0`,
-            top: `0`,
-            zIndex: `0`,
-
-            overflowX: `hidden`,
-            overflowY: `hidden`,
-        });
-    }
-
-    On_Refresh():
-        JSX.Element | null
-    {
-        const model: Model.Main = this.Model();
-        const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
-
-        this.Refresh_Styles();
-
-        return (
-            <div
-                className={`Exhibitions`}
-                style={this.Styles()}
-            >
-                {
-                    Array(exhibition_count).fill(null).map((
-                        _: null,
-                        exhibition_index: Model.Exhibition_Index,
-                    ):
-                        JSX.Element =>
-                    {
-                        return (
-                            <Exhibition
-                                key={`exhibition_${exhibition_index}`}
-                                ref={ref => this.exhibitions[exhibition_index] = ref}
-
-                                model={model.Exhibition(exhibition_index)}
-                                parent={this}
-                                event_grid={this.Exhibition_Event_Grid(exhibition_index)}
-                            />
-                        );
-                    })
-                }
-            </div>
-        );
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
         return [
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
             {
                 event_name: new Event.Name(Event.ON, Event.START_EXHIBITIONS),
                 event_handler: this.On_Start_Exhibitions,
@@ -201,25 +184,34 @@ export class Exhibitions extends Component<Exhibitions_Props>
         ];
     }
 
-    On_Resize(
+    override On_Resize(
         {
-            width,
-            height,
-        }: Event.Resize_Data,
+        }: Event.Resize_Data
     ):
         void
     {
         if (this.Is_Alive()) {
-            this.Refresh_Styles();
+            this.Restyle();
 
             this.Send({
                 name_affix: `${Event.RESIZE}_${this.ID()}`,
                 data: {
-                    width,
-                    height,
+                    width: 0,
+                    height: 0,
                 } as Event.Resize_Data,
                 is_atomic: false,
             });
+
+            for (const exhibition_event_grid of this.exhibition_event_grids) {
+                exhibition_event_grid.Send_Event({
+                    name_affix: `${Event.RESIZE}_${this.ID()}`,
+                    data: {
+                        width: 0,
+                        height: 0,
+                    } as Event.Resize_Data,
+                    is_atomic: false,
+                });
+            }
         }
     }
 

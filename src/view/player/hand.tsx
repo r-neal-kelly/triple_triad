@@ -74,37 +74,14 @@ export class Hand extends Component<Hand_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            position: `relative`,
-
-            overflowX: `hidden`,
-            overflowY: `auto`,
-
-            scrollbarWidth: `none`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const stake_count: Model.Stake_Count = this.Model().Stake_Count();
 
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Hand`}
-                style={this.Styles()}
             >
                 {
                     Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
@@ -126,41 +103,33 @@ export class Hand extends Component<Hand_Props>
         );
     }
 
-    On_Life():
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            position: `relative`,
+
+            overflowX: `hidden`,
+            overflowY: `auto`,
+
+            scrollbarWidth: `none`,
+        });
+    }
+
+    override On_Life():
         Event.Listener_Info[]
     {
         const player_index: Model.Player_Index = this.Model().Index();
 
         return ([
             {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-            {
                 event_name: new Event.Name(Event.ON, Event.PLAYER_PLACE_STAKE, player_index.toString()),
                 event_handler: this.On_This_Player_Place_Stake,
             },
         ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
     }
 
     async On_This_Player_Place_Stake(

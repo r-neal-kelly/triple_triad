@@ -75,133 +75,15 @@ export class Cell extends Component<Cell_Props>
         return `${this.Height()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const model = this.Model()();
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        if (model.Is_Empty()) {
-            const is_on_human_turn: boolean =
-                this.Board().Model().Is_On_Human_Turn();
-            const is_selectable: boolean =
-                this.Board().Model().Is_Cell_Selectable(this.Index());
-
-            if (is_on_human_turn && is_selectable) {
-                this.Change_Style('cursor', `pointer`);
-            } else {
-                this.Change_Style('cursor', `default`);
-            }
-        } else {
-            const color: Model.Color = this.current_color as Model.Color;
-            Assert(color != null);
-
-            this.Change_Style(
-                `backgroundColor`,
-                `rgba(
-                    ${color.Red()},
-                    ${color.Green()},
-                    ${color.Blue()},
-                    ${color.Alpha()}
-                )`,
-            );
-        }
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        this.Change_Animation({
-            animation_name: `Left_To_Right`,
-            animation_body: `
-                0% {
-                    background-position: left;
-                }
-            
-                100% {
-                    background-position: right;
-                }
-            `,
-        });
-        this.Change_Animation({
-            animation_name: `Top_To_Bottom`,
-            animation_body: `
-                0% {
-                    background-position: top;
-                }
-            
-                100% {
-                    background-position: bottom;
-                }
-            `,
-        });
-        this.Change_Animation({
-            animation_name: `Right_To_Left`,
-            animation_body: `
-                0% {
-                    background-position: right;
-                }
-            
-                100% {
-                    background-position: left;
-                }
-            `,
-        });
-        this.Change_Animation({
-            animation_name: `Bottom_To_Top`,
-            animation_body: `
-                0% {
-                    background-position: bottom;
-                }
-            
-                100% {
-                    background-position: top;
-                }
-            `,
-        });
-        this.Change_Animation({
-            animation_name: `Flash`,
-            animation_body: `
-                0% {
-                    border-color: black;
-                }
-            
-                50% {
-                    border-color: white;
-                }
-            
-                100% {
-                    border-color: black;
-                }
-            `,
-        });
-
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `4fr 3fr 4fr 3fr 4fr`,
-            gridTemplateRows: `4fr 3fr 4fr 3fr 4fr`,
-            columnGap: `5%`,
-
-            border: `0.3vmin solid #00000080`,
-
-            cursor: `default`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         const model = this.Model()();
-
-        this.Refresh_Styles();
 
         if (model.Is_Empty()) {
             return (
                 <div
                     className={`Board_Cell`}
-                    style={this.Styles()}
                     onClick={event => this.On_Click(event)}
                 >
                 </div>
@@ -210,7 +92,6 @@ export class Cell extends Component<Cell_Props>
             return (
                 <div
                     className={`Board_Cell`}
-                    style={this.Styles()}
                 >
                     <img
                         className={`Board_Cell_Card`}
@@ -235,6 +116,146 @@ export class Cell extends Component<Cell_Props>
                 </div>
             );
         }
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const model = this.Model()();
+        const board_model = this.Board().Model();
+
+        let background_color: string;
+        let cursor: string;
+        if (model.Is_Empty()) {
+            background_color = `transparent`;
+
+            if (
+                board_model.Is_On_Human_Turn() &&
+                board_model.Is_Cell_Selectable(this.Index())
+            ) {
+                cursor = `pointer`;
+            } else {
+                cursor = `default`;
+            }
+        } else {
+            const color: Model.Color = this.current_color as Model.Color;
+            Assert(color != null);
+
+            background_color = `rgba(
+                ${color.Red()},
+                ${color.Green()},
+                ${color.Blue()},
+                ${color.Alpha()}
+            )`;
+
+            cursor = `default`;
+        }
+
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `4fr 3fr 4fr 3fr 4fr`,
+            gridTemplateRows: `4fr 3fr 4fr 3fr 4fr`,
+            columnGap: `5%`,
+
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+
+            border: `0.3vmin solid #00000080`,
+
+            backgroundColor: background_color,
+
+            cursor: cursor,
+        });
+    }
+
+    override On_Life():
+        Event.Listener_Info[]
+    {
+        const cell_index: Model.Cell_Index = this.Index();
+
+        this.Change_Animation({
+            animation_name: `Left_To_Right`,
+            animation_body: `
+                0% {
+                    background-position: left;
+                }
+            
+                100% {
+                    background-position: right;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Top_To_Bottom`,
+            animation_body: `
+                0% {
+                    background-position: top;
+                }
+            
+                100% {
+                    background-position: bottom;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Right_To_Left`,
+            animation_body: `
+                0% {
+                    background-position: right;
+                }
+            
+                100% {
+                    background-position: left;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Bottom_To_Top`,
+            animation_body: `
+                0% {
+                    background-position: bottom;
+                }
+            
+                100% {
+                    background-position: top;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Flash`,
+            animation_body: `
+                0% {
+                    border-color: black;
+                }
+            
+                50% {
+                    border-color: white;
+                }
+            
+                100% {
+                    border-color: black;
+                }
+            `,
+        });
+
+        return ([
+            {
+                event_name: new Event.Name(Event.AFTER, Event.PLAYER_SELECT_STAKE),
+                event_handler: this.After_Player_Select_Stake,
+            },
+            {
+                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE),
+                event_handler: this.Before_Player_Place_Stake,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.BOARD_CHANGE_CELL, cell_index.toString()),
+                event_handler: this.On_Board_Change_This_Cell,
+            },
+        ]);
     }
 
     async On_Click(event: React.SyntheticEvent):
@@ -271,51 +292,6 @@ export class Cell extends Component<Cell_Props>
 
                 arena.Enable_Input();
             }
-        }
-    }
-
-    On_Life():
-        Event.Listener_Info[]
-    {
-        const cell_index: Model.Cell_Index = this.Index();
-
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-            {
-                event_name: new Event.Name(Event.AFTER, Event.PLAYER_SELECT_STAKE),
-                event_handler: this.After_Player_Select_Stake,
-            },
-            {
-                event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE),
-                event_handler: this.Before_Player_Place_Stake,
-            },
-            {
-                event_name: new Event.Name(Event.ON, Event.BOARD_CHANGE_CELL, cell_index.toString()),
-                event_handler: this.On_Board_Change_This_Cell,
-            },
-        ]);
-    }
-
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
-
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
         }
     }
 

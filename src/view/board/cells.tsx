@@ -91,38 +91,12 @@ export class Cells extends Component<Cells_Props>
         return `${this.Grid_Gap()}px`;
     }
 
-    Refresh_Styles():
-        void
-    {
-        const rules: Model.Rules = this.Model().Rules();
-
-        this.Change_Style(`width`, this.CSS_Width());
-        this.Change_Style(`height`, this.CSS_Height());
-
-        this.Change_Style(`gridTemplateColumns`, `repeat(${rules.Column_Count()}, 1fr)`);
-        this.Change_Style(`gridTemplateRows`, `repeat(${rules.Row_Count()}, 1fr)`);
-
-        this.Change_Style(`padding`, this.CSS_Padding());
-        this.Change_Style(`gridGap`, this.CSS_Grid_Gap());
-    }
-
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
-        this.Refresh_Styles();
-
         return (
             <div
                 className={`Cells`}
-                style={this.Styles()}
             >
                 {
                     Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
@@ -144,34 +118,20 @@ export class Cells extends Component<Cells_Props>
         );
     }
 
-    On_Life():
-        Event.Listener_Info[]
+    override On_Restyle():
+        Component_Styles
     {
-        return ([
-            {
-                event_name: new Event.Name(Event.ON, `${Event.RESIZE}_${this.Parent().ID()}`),
-                event_handler: this.On_Resize,
-            },
-        ]);
-    }
+        const rules: Model.Rules = this.Model().Rules();
 
-    On_Resize(
-        {
-        }: Event.Resize_Data,
-    ):
-        void
-    {
-        if (this.Is_Alive()) {
-            this.Refresh_Styles();
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `repeat(${rules.Column_Count()}, 1fr)`,
+            gridTemplateRows: `repeat(${rules.Row_Count()}, 1fr)`,
+            gridGap: this.CSS_Grid_Gap(),
 
-            this.Send({
-                name_affix: `${Event.RESIZE}_${this.ID()}`,
-                data: {
-                    width: this.Width(),
-                    height: this.Height(),
-                } as Event.Resize_Data,
-                is_atomic: false,
-            });
-        }
+            width: this.CSS_Width(),
+            height: this.CSS_Height(),
+            padding: this.CSS_Padding(),
+        });
     }
 }

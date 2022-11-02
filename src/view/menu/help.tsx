@@ -28,38 +28,12 @@ export class Help extends Component<Help_Props>
         return this.Try_Object(this.back_button);
     }
 
-    Before_Life():
-        Component_Styles
-    {
-        return ({
-            display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `9fr 1.5fr`,
-            gridGap: `3%`,
-
-            width: `90%`,
-            height: `90%`,
-            margin: `0`,
-            padding: `3vmin`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.95)`,
-
-            fontSize: `1.8em`,
-        });
-    }
-
-    On_Refresh():
+    override On_Refresh():
         JSX.Element | null
     {
         return (
             <div
                 className={`Help`}
-                style={this.Styles()}
             >
                 <div
                     className={`Info`}
@@ -126,6 +100,31 @@ export class Help extends Component<Help_Props>
                 />
             </div>
         );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `9fr 1.5fr`,
+            gridGap: `3%`,
+
+            width: `90%`,
+            height: `90%`,
+            margin: `0`,
+            padding: `3vmin`,
+
+            borderWidth: `0.6vmin`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.95)`,
+
+            fontSize: `1.8em`,
+        });
     }
 }
 
