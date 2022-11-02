@@ -1,3 +1,5 @@
+import "./index.css";
+
 import ReactDOM_Client from "react-dom/client";
 
 import * as Event from "./event";

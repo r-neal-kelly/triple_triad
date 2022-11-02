@@ -11,7 +11,7 @@ import { Component_Styles } from "./component";
 import { Game } from "./game";
 import { Game_Measurements } from "./game";
 import { Group as Player_Group } from "./player/group";
-import { Board } from "../view";
+import { Board } from "./board";
 
 class Arena_Card_Images
 {
