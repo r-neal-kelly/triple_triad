@@ -7,7 +7,7 @@ import { Arena } from "../arena";
 import { Board } from "../board";
 
 type Bumper_Props = {
-    model: Model.Board;
+    model: Model.Board.Instance;
     parent: Board;
     event_grid: Event.Grid;
 }

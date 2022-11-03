@@ -6,7 +6,7 @@ import { Component_Styles } from "../component";
 import { Bumper } from "./bumper";
 
 type Name_Props = {
-    model: Model.Player;
+    model: Model.Player.Instance;
     parent: Bumper;
     event_grid: Event.Grid;
 }
@@ -20,7 +20,7 @@ export class Name extends Component<Name_Props>
     }
 
     Index():
-        Model.Player_Index
+        Model.Player.Index
     {
         return this.Model().Index();
     }

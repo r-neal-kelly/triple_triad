@@ -16,15 +16,15 @@ const TURN_RESULT_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
 
 type Cell_Props = {
-    model: () => Model.Cell;
+    model: () => Model.Board.Cell.Instance;
     parent: Cells;
     event_grid: Event.Grid;
-    index: Model.Cell_Index;
+    index: Model.Board.Cell.Index;
 }
 
 export class Cell extends Component<Cell_Props>
 {
-    private current_color: Model.Color | null = null;
+    private current_color: Model.Color.Instance | null = null;
     private popups: Array<JSX.Element> | null = null;
 
     Arena():
@@ -46,7 +46,7 @@ export class Cell extends Component<Cell_Props>
     }
 
     Index():
-        Model.Cell_Index
+        Model.Board.Cell.Index
     {
         return this.props.index;
     }
@@ -138,7 +138,7 @@ export class Cell extends Component<Cell_Props>
                 cursor = `default`;
             }
         } else {
-            const color: Model.Color = this.current_color as Model.Color;
+            const color: Model.Color.Instance = this.current_color as Model.Color.Instance;
             Assert(color != null);
 
             background_color = `rgba(
@@ -171,7 +171,7 @@ export class Cell extends Component<Cell_Props>
     override On_Life():
         Event.Listener_Info[]
     {
-        const cell_index: Model.Cell_Index = this.Index();
+        const cell_index: Model.Board.Cell.Index = this.Index();
 
         this.Change_Animation({
             animation_name: `Left_To_Right`,
@@ -264,16 +264,16 @@ export class Cell extends Component<Cell_Props>
         if (this.Is_Alive()) {
             event.stopPropagation();
 
-            const arena: Model.Arena = this.Board().Model().Arena();
+            const arena: Model.Arena.Instance = this.Board().Model().Arena();
             if (arena.Is_On_Human_Turn() && arena.Is_Input_Enabled()) {
                 arena.Disable_Input();
 
                 if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
-                    const player_index: Model.Player_Index =
+                    const player_index: Model.Player.Index =
                         this.Board().Model().Current_Player_Index();
-                    const stake_index: Model.Stake_Index =
-                        this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake_Index;
-                    const cell_index: Model.Cell_Index =
+                    const stake_index: Model.Player.Stake.Index =
+                        this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Player.Stake.Index;
+                    const cell_index: Model.Board.Cell.Index =
                         this.Index();
 
                     await this.Send({
@@ -339,11 +339,11 @@ export class Cell extends Component<Cell_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const model: Model.Cell = this.Model()();
+            const model: Model.Board.Cell.Instance = this.Model()();
 
             if (turn_result.old_claimant != null) {
-                const old_color: Model.Color = turn_result.old_claimant.Color();
-                const new_color: Model.Color = model.Color();
+                const old_color: Model.Color.Instance = turn_result.old_claimant.Color();
+                const new_color: Model.Color.Instance = model.Color();
                 const old_background_color: string =
                     `rgba(
                         ${old_color.Red()},
@@ -367,22 +367,22 @@ export class Cell extends Component<Cell_Props>
                 let from_position: string = ``;
                 let to_position: string = ``;
                 let animation_name: string = ``;
-                if (turn_result.direction === Model.Direction_e.LEFT) {
+                if (turn_result.direction === Model.Enum.Direction.LEFT) {
                     background_size = `1000% 100%`;
                     from_position = `left`;
                     to_position = `right`;
                     animation_name = `Left_To_Right`;
-                } else if (turn_result.direction === Model.Direction_e.TOP) {
+                } else if (turn_result.direction === Model.Enum.Direction.TOP) {
                     background_size = `100% 1000%`;
                     from_position = `top`;
                     to_position = `bottom`;
                     animation_name = `Top_To_Bottom`;
-                } else if (turn_result.direction === Model.Direction_e.RIGHT) {
+                } else if (turn_result.direction === Model.Enum.Direction.RIGHT) {
                     background_size = `1000% 100%`;
                     from_position = `right`;
                     to_position = `left`;
                     animation_name = `Right_To_Left`;
-                } else if (turn_result.direction === Model.Direction_e.BOTTOM) {
+                } else if (turn_result.direction === Model.Enum.Direction.BOTTOM) {
                     background_size = `100% 1000%`;
                     from_position = `bottom`;
                     to_position = `top`;
@@ -427,10 +427,10 @@ export class Cell extends Component<Cell_Props>
 
                     await Wait(200);
                     if (this.Is_Alive()) {
-                        const old_claimant: Model.Player = turn_result.old_claimant;
-                        const new_claimant: Model.Player = model.Claimant();
-                        const old_claimant_index: Model.Player_Index = old_claimant.Index();
-                        const new_claimant_index: Model.Player_Index = new_claimant.Index();
+                        const old_claimant: Model.Player.Instance = turn_result.old_claimant;
+                        const new_claimant: Model.Player.Instance = model.Claimant();
+                        const old_claimant_index: Model.Player.Index = old_claimant.Index();
+                        const new_claimant_index: Model.Player.Index = new_claimant.Index();
                         await Promise.all([
                             this.Send({
                                 name_affix: Event.PLAYER_CHANGE_SCORE,

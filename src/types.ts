@@ -5,9 +5,9 @@ export type ID = Integer;
 
 export type Float = number;
 
-export type Delta = number;
-export type Min = number;
-export type Max = number;
+export type Delta = Integer | Float;
+export type Min = Integer | Float;
+export type Max = Integer | Float;
 
 export type Name = string;
 export type URL_Path = string;

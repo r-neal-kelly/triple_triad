@@ -1,16 +1,14 @@
-import { Direction_e } from "../model";
-import { Arena } from "./arena";
-import { Player } from "../model";
-import { Player_Count } from "../model";
-import { Player_Index } from "../model";
+import * as Enum from "../../enum";
+import * as Arena from "../../arena";
+import * as Player from "../../player";
 
-export class Player_Group
+export class Instance
 {
-    private arena: Arena;
+    private arena: Arena.Instance;
     private is_runt: boolean;
-    private relative_to: Direction_e;
-    private from_index: Player_Index;
-    private count: Player_Count;
+    private relative_to: Enum.Direction;
+    private from_index: Player.Index;
+    private count: Player.Count;
 
     constructor(
         {
@@ -20,11 +18,11 @@ export class Player_Group
             from_index,
             count,
         }: {
-            arena: Arena,
+            arena: Arena.Instance,
             is_runt: boolean,
-            relative_to: Direction_e,
-            from_index: Player_Index,
-            count: Player_Count,
+            relative_to: Enum.Direction,
+            from_index: Player.Index,
+            count: Player.Count,
         },
     )
     {
@@ -36,7 +34,7 @@ export class Player_Group
     }
 
     Arena():
-        Arena
+        Arena.Instance
     {
         return this.arena;
     }
@@ -48,25 +46,25 @@ export class Player_Group
     }
 
     Relative_To():
-        Direction_e
+        Enum.Direction
     {
         return this.relative_to;
     }
 
     From_Player_Index():
-        Player_Index
+        Player.Index
     {
         return this.from_index;
     }
 
     Player_Count():
-        Player_Count
+        Player.Count
     {
         return this.count;
     }
 
-    Player(group_player_index: Player_Index):
-        Player
+    Player(group_player_index: Player.Index):
+        Player.Instance
     {
         if (
             group_player_index == null ||

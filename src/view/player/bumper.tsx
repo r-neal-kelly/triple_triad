@@ -11,7 +11,7 @@ import { Name } from "./name";
 import { Score } from "./score";
 
 type Bumper_Props = {
-    model: Model.Player;
+    model: Model.Player.Instance;
     parent: Player;
     event_grid: Event.Grid;
 }
@@ -46,7 +46,7 @@ export class Bumper extends Component<Bumper_Props>
     }
 
     Index():
-        Model.Player_Index
+        Model.Player.Index
     {
         return this.Model().Index();
     }
@@ -78,9 +78,9 @@ export class Bumper extends Component<Bumper_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Player = this.Model();
+        const model: Model.Player.Instance = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
-        const index: Model.Player_Index = this.Index();
+        const index: Model.Player.Index = this.Index();
 
         return (
             <div
@@ -109,8 +109,8 @@ export class Bumper extends Component<Bumper_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Player = this.Model();
-        const color: Model.Color = this.Model().Color();
+        const model: Model.Player.Instance = this.Model();
+        const color: Model.Color.Instance = this.Model().Color();
 
         let background_color: string;
         if (model.Arena().Is_Game_Over()) {

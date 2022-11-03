@@ -6,7 +6,7 @@ import { Component_Styles } from "../component";
 import { Bumper } from "./bumper";
 
 type Score_Props = {
-    model: Model.Player;
+    model: Model.Player.Instance;
     parent: Bumper;
     event_grid: Event.Grid;
 }
@@ -20,7 +20,7 @@ export class Score extends Component<Score_Props>
     }
 
     Index():
-        Model.Player_Index
+        Model.Player.Index
     {
         return this.Model().Index();
     }
@@ -54,7 +54,7 @@ export class Score extends Component<Score_Props>
     override On_Life():
         Event.Listener_Info[]
     {
-        const player_index: Model.Player_Index = this.Index();
+        const player_index: Model.Player.Index = this.Index();
 
         return ([
             {

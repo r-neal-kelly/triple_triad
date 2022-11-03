@@ -13,10 +13,10 @@ import { Player } from "../player";
 import { Hand } from "./hand";
 
 type Stake_Props = {
-    model: Model.Stake;
+    model: Model.Player.Stake.Instance;
     parent: Hand;
     event_grid: Event.Grid;
-    index: Model.Stake_Index;
+    index: Model.Player.Stake.Index;
 }
 
 export class Stake extends Component<Stake_Props>
@@ -46,7 +46,7 @@ export class Stake extends Component<Stake_Props>
     }
 
     Index():
-        Model.Stake_Index
+        Model.Player.Stake.Index
     {
         return this.props.index;
     }
@@ -78,7 +78,7 @@ export class Stake extends Component<Stake_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Stake = this.Model();
+        const model: Model.Player.Stake.Instance = this.Model();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
@@ -110,8 +110,8 @@ export class Stake extends Component<Stake_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Stake = this.Model();
-        const color: Model.Color = model.Color();
+        const model: Model.Player.Stake.Instance = this.Model();
+        const color: Model.Color.Instance = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
@@ -163,7 +163,7 @@ export class Stake extends Component<Stake_Props>
     override On_Life():
         Event.Listener_Info[]
     {
-        const player_index: Model.Player_Index = this.Player().Index();
+        const player_index: Model.Player.Index = this.Player().Index();
 
         this.Change_Animation({
             animation_name: `Twinkle`,
@@ -204,15 +204,15 @@ export class Stake extends Component<Stake_Props>
         if (this.Is_Alive()) {
             event.stopPropagation();
 
-            const arena: Model.Arena = this.Model().Arena();
+            const arena: Model.Arena.Instance = this.Model().Arena();
             if (arena.Is_Input_Enabled()) {
                 arena.Disable_Input();
 
                 if (this.Model().Is_On_Player()) {
-                    const player: Model.Player = this.Model().Origin();
+                    const player: Model.Player.Instance = this.Model().Origin();
                     if (player.Is_On_Turn()) {
-                        const player_index: Model.Player_Index = player.Index();
-                        const stake_index: Model.Stake_Index = this.Index();
+                        const player_index: Model.Player.Index = player.Index();
+                        const stake_index: Model.Player.Stake.Index = this.Index();
 
                         await this.Send({
                             name_affix: Event.PLAYER_SELECT_STAKE,

@@ -7,7 +7,7 @@ import { Button } from "../common/button";
 import { Menu } from "../menu";
 
 type Help_Props = {
-    model: Model.Menu_Help;
+    model: Model.Menu.Help;
     parent: Menu;
     event_grid: Event.Grid;
 }
@@ -129,7 +129,7 @@ export class Help extends Component<Help_Props>
 }
 
 type Back_Button_Props = {
-    model: Model.Menu_Help;
+    model: Model.Menu.Help;
     parent: Help;
     event_grid: Event.Grid;
 }

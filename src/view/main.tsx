@@ -117,7 +117,7 @@ export class Main extends Component<Main_Props>
                 </div>
             );
         } else {
-            const arena: Model.Arena = model.Current_Arena() as Model.Arena;
+            const arena: Model.Arena.Instance = model.Current_Arena() as Model.Arena.Instance;
 
             return (
                 <div
@@ -249,11 +249,11 @@ export class Main extends Component<Main_Props>
                 const model: Model.Main = this.Model();
 
                 if (model.Isnt_In_Game()) {
-                    const previous_exhibition: Model.Exhibition =
-                        model.Current_Exhibition() as Model.Exhibition;
+                    const previous_exhibition: Model.Exhibition.Instance =
+                        model.Current_Exhibition() as Model.Exhibition.Instance;
                     this.Model().Change_Current_Exhibition();
-                    const next_exhibition: Model.Exhibition =
-                        model.Current_Exhibition() as Model.Exhibition;
+                    const next_exhibition: Model.Exhibition.Instance =
+                        model.Current_Exhibition() as Model.Exhibition.Instance;
                     Assert(previous_exhibition != null);
                     Assert(next_exhibition != null);
 
@@ -284,12 +284,12 @@ export class Main extends Component<Main_Props>
             const model: Model.Main = this.Model();
             const packs: Model.Packs = model.Packs();
             const options: Model.Options = model.Menu().Options().Data();
-            const rules: Model.Rules = options.Rules();
+            const rules: Model.Rules.Instance = options.Rules();
 
-            const selections: Array<Model.Selection> = [
-                new Model.Random_Selection({
+            const selections: Array<Model.Selection.Instance> = [
+                new Model.Selection.Random({
                     collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle({
+                        default_shuffle: new Model.Shuffle.Instance({
                             pack: packs.Pack(`Cats`),
                             min_tier_index: 0,
                             max_tier_index: 9,
@@ -302,9 +302,9 @@ export class Main extends Component<Main_Props>
             ];
             for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
                 selections.push(
-                    new Model.Random_Selection({
+                    new Model.Selection.Random({
                         collection: new Model.Collection({
-                            default_shuffle: new Model.Shuffle({
+                            default_shuffle: new Model.Shuffle.Instance({
                                 pack: packs.Pack(`Cats`),
                                 min_tier_index: 0,
                                 max_tier_index: 9,
@@ -382,8 +382,8 @@ export class Main extends Component<Main_Props>
             await this.Refresh();
 
             if (this.Is_Alive()) {
-                const exhibition: Model.Exhibition =
-                    model.Current_Exhibition() as Model.Exhibition;
+                const exhibition: Model.Exhibition.Instance =
+                    model.Current_Exhibition() as Model.Exhibition.Instance;
                 Assert(exhibition != null);
 
                 await this.Send({

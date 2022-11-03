@@ -10,7 +10,7 @@ import { Options } from "./menu/options";
 import { Help } from "./menu/help";
 
 type Menu_Props = {
-    model: Model.Menu;
+    model: Model.Menu.Instance;
     parent: Main;
     event_grid: Event.Grid;
 }
@@ -74,10 +74,10 @@ export class Menu extends Component<Menu_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Menu = this.Model();
-        const current_menu: Model.Menu_e = model.Current_Menu();
+        const model: Model.Menu.Instance = this.Model();
+        const current_menu: Model.Enum.Menu = model.Current_Menu();
 
-        if (current_menu === Model.Menu_e.TOP) {
+        if (current_menu === Model.Enum.Menu.TOP) {
             return (
                 <div
                     className={`Menu`}
@@ -91,7 +91,7 @@ export class Menu extends Component<Menu_Props>
                     />
                 </div>
             );
-        } else if (current_menu === Model.Menu_e.OPTIONS) {
+        } else if (current_menu === Model.Enum.Menu.OPTIONS) {
             return (
                 <div
                     className={`Menu`}
@@ -105,7 +105,7 @@ export class Menu extends Component<Menu_Props>
                     />
                 </div>
             );
-        } else if (current_menu === Model.Menu_e.HELP) {
+        } else if (current_menu === Model.Enum.Menu.HELP) {
             return (
                 <div
                     className={`Menu`}

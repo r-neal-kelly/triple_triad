@@ -53,15 +53,15 @@ export type Resize_Data = {
 }
 
 export type Start_Exhibitions_Data = {
-    exhibition: Model.Exhibition;
+    exhibition: Model.Exhibition.Instance;
 }
 
 export type Stop_Exhibitions_Data = {
 }
 
 export type Switch_Exhibitions_Data = {
-    previous_exhibition: Model.Exhibition;
-    next_exhibition: Model.Exhibition;
+    previous_exhibition: Model.Exhibition.Instance;
+    next_exhibition: Model.Exhibition.Instance;
 }
 
 export type Start_New_Game_Data = {
@@ -92,34 +92,34 @@ export type Game_Start_Data = {
 }
 
 export type Game_Stop_Data = {
-    scores: Model.Scores;
+    scores: Model.Player.Scores;
 }
 
 export type Player_Start_Turn_Data = {
-    player_index: Model.Player_Index;
+    player_index: Model.Player.Index;
 }
 
 export type Player_Stop_Turn_Data = {
-    player_index: Model.Player_Index;
+    player_index: Model.Player.Index;
 }
 
 export type Player_Select_Stake_Data = {
-    player_index: Model.Player_Index;
-    stake_index: Model.Stake_Index;
+    player_index: Model.Player.Index;
+    stake_index: Model.Player.Stake.Index;
 }
 
 export type Player_Place_Stake_Data = {
-    player_index: Model.Player_Index;
-    stake_index: Model.Stake_Index;
-    cell_index: Model.Cell_Index;
+    player_index: Model.Player.Index;
+    stake_index: Model.Player.Stake.Index;
+    cell_index: Model.Board.Cell.Index;
 }
 
 export type Player_Change_Score_Data = {
-    player_index: Model.Player_Index;
-    score_delta: Model.Score_Delta;
+    player_index: Model.Player.Index;
+    score_delta: Model.Player.Score.Delta;
 }
 
 export type Board_Change_Cell_Data = {
-    cell_index: Model.Cell_Index;
-    turn_result: Model.Turn_Result;
+    cell_index: Model.Board.Cell.Index;
+    turn_result: Model.Turn_Results.Step.Instance;
 }

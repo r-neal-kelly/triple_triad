@@ -10,7 +10,7 @@ import { Bumper } from "./board/bumper";
 import { Cells } from "./board/cells";
 
 type Board_Props = {
-    model: Model.Board;
+    model: Model.Board.Instance;
     parent: Arena;
     event_grid: Event.Grid;
 }
@@ -129,13 +129,13 @@ export class Board extends Component<Board_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const turn_result_steps: Model.Turn_Result_Steps =
+            const turn_result_steps: Model.Turn_Results.Steps =
                 await this.Model().Place_Current_Player_Selected_Stake(cell_index);
             if (this.Is_Alive()) {
                 for (const turn_result_step of turn_result_steps) {
                     await Promise.all(turn_result_step.map(async function (
                         this: Board,
-                        turn_result: Model.Turn_Result,
+                        turn_result: Model.Turn_Results.Step.Instance,
                     ):
                         Promise<void>
                     {

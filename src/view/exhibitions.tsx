@@ -33,7 +33,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         return this.Parent();
     }
 
-    Exhibition(exhibition_index: Model.Exhibition_Index):
+    Exhibition(exhibition_index: Model.Exhibition.Index):
         Exhibition
     {
         return this.Try_Array_Index(this.exhibitions, exhibition_index);
@@ -45,7 +45,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         return this.Try_Array(this.exhibitions);
     }
 
-    Exhibition_Event_Grid(exhibition_index: Model.Exhibition_Index):
+    Exhibition_Event_Grid(exhibition_index: Model.Exhibition.Index):
         Event.Grid
     {
         return this.Try_Array_Index(this.exhibition_event_grids, exhibition_index);
@@ -91,7 +91,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         JSX.Element | null
     {
         const model: Model.Main = this.Model();
-        const exhibition_count: Model.Exhibition_Count = model.Exhibition_Count();
+        const exhibition_count: Model.Exhibition.Count = model.Exhibition_Count();
 
         return (
             <div
@@ -100,7 +100,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 {
                     Array(exhibition_count).fill(null).map((
                         _: null,
-                        exhibition_index: Model.Exhibition_Index,
+                        exhibition_index: Model.Exhibition.Index,
                     ):
                         JSX.Element =>
                     {

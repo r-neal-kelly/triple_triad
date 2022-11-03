@@ -19,7 +19,7 @@ class Arena_Card_Images
     private elements: Array<HTMLImageElement>;
 
     constructor(
-        model: Model.Arena,
+        model: Model.Arena.Instance,
     )
     {
         this.images = model.Card_Images();
@@ -63,7 +63,7 @@ class Arena_Card_Images
 }
 
 type Arena_Props = {
-    model: Model.Arena;
+    model: Model.Arena.Instance;
     parent: Game;
     event_grid: Event.Grid;
 }
@@ -84,7 +84,7 @@ export class Arena extends Component<Arena_Props>
         return this.Parent();
     }
 
-    Player_Group(player_group_index: Model.Player_Group_Index):
+    Player_Group(player_group_index: Model.Player.Group.Index):
         Player_Group
     {
         return this.Try_Array_Index(this.player_groups, player_group_index);
@@ -147,8 +147,8 @@ export class Arena extends Component<Arena_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Arena = this.Model();
-        const player_groups: Array<Model.Player_Group> =
+        const model: Model.Arena.Instance = this.Model();
+        const player_groups: Array<Model.Player.Group.Instance> =
             model.Player_Groups(Game.Player_Group_Count(), Game.Player_Group_Direction());
         Assert(Game.Player_Group_Count() === 2);
 
@@ -266,7 +266,7 @@ export class Arena extends Component<Arena_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
+            const current_player_index: Model.Player.Index = this.Model().Current_Player_Index();
 
             this.Change_Style(`visibility`, `visible`);
             await this.Animate({
@@ -302,7 +302,7 @@ export class Arena extends Component<Arena_Props>
             this.Model().Next_Turn();
 
             if (this.Model().Is_Game_Over()) {
-                const scores: Model.Scores = this.Model().Final_Scores();
+                const scores: Model.Player.Scores = this.Model().Final_Scores();
 
                 this.Send({
                     name_affix: Event.GAME_STOP,
@@ -314,7 +314,7 @@ export class Arena extends Component<Arena_Props>
                     is_atomic: true,
                 });
             } else {
-                const current_player_index: Model.Player_Index = this.Model().Current_Player_Index();
+                const current_player_index: Model.Player.Index = this.Model().Current_Player_Index();
 
                 this.Send({
                     name_affix: Event.PLAYER_START_TURN,

@@ -10,7 +10,7 @@ import { Board } from "../board";
 import { Cell } from "./cell";
 
 type Cells_Props = {
-    model: Model.Board;
+    model: Model.Board.Instance;
     parent: Board;
     event_grid: Event.Grid;
 }
@@ -31,7 +31,7 @@ export class Cells extends Component<Cells_Props>
         return this.Parent();
     }
 
-    Cell(cell_index: Model.Cell_Index):
+    Cell(cell_index: Model.Board.Cell.Index):
         Cell
     {
         return this.Try_Array_Index(this.cells, cell_index);
@@ -99,7 +99,7 @@ export class Cells extends Component<Cells_Props>
                 className={`Cells`}
             >
                 {
-                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Cell_Index) =>
+                    Array(this.Model().Cell_Count()).fill(null).map((_, cell_index: Model.Board.Cell.Index) =>
                     {
                         return (
                             <Cell
@@ -121,7 +121,7 @@ export class Cells extends Component<Cells_Props>
     override On_Restyle():
         Component_Styles
     {
-        const rules: Model.Rules = this.Model().Rules();
+        const rules: Model.Rules.Instance = this.Model().Rules();
 
         return ({
             display: `grid`,

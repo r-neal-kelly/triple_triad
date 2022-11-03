@@ -13,8 +13,8 @@ import { Exhibition } from "./exhibition";
 import { Arena } from "./arena";
 import { Results } from "./results";
 
-const PLAYER_GROUP_COUNT: Model.Player_Group_Count = 2;
-const PLAYER_GROUP_DIRECTION: Model.Direction_e = Model.Direction_e.RIGHT;
+const PLAYER_GROUP_COUNT: Model.Player.Group.Count = 2;
+const PLAYER_GROUP_DIRECTION: Model.Enum.Direction = Model.Enum.Direction.RIGHT;
 
 export class Game_Measurements
 {
@@ -77,9 +77,9 @@ export class Game_Measurements
             may_have_x_scrollbar: boolean,
             parent_width: Float,
             parent_height: Float,
-            row_count: Model.Row_Count,
-            column_count: Model.Column_Count,
-            player_count: Model.Player_Count,
+            row_count: Model.Board.Row.Count,
+            column_count: Model.Board.Column.Count,
+            player_count: Model.Player.Count,
         },
     )
     {
@@ -113,9 +113,9 @@ export class Game_Measurements
     private Calculate(
         parent_width: Float,
         parent_height: Float,
-        row_count: Model.Row_Count,
-        column_count: Model.Column_Count,
-        player_count: Model.Player_Count,
+        row_count: Model.Board.Row.Count,
+        column_count: Model.Board.Column.Count,
+        player_count: Model.Player.Count,
     ):
         void
     {
@@ -374,7 +374,7 @@ export class Game_Measurements
 }
 
 type Game_Props = {
-    model: Model.Arena;
+    model: Model.Arena.Instance;
     parent: Main | Exhibition;
     event_grid: Event.Grid;
 }
@@ -398,13 +398,13 @@ export class Game extends Component<Game_Props>
         });
 
     static Player_Group_Count():
-        Model.Player_Group_Count
+        Model.Player.Group.Count
     {
         return PLAYER_GROUP_COUNT;
     }
 
     static Player_Group_Direction():
-        Model.Direction_e
+        Model.Enum.Direction
     {
         return PLAYER_GROUP_DIRECTION;
     }
@@ -460,7 +460,7 @@ export class Game extends Component<Game_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Arena = this.Model();
+        const model: Model.Arena.Instance = this.Model();
 
         return (
             <div
@@ -487,7 +487,7 @@ export class Game extends Component<Game_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Arena = this.Model();
+        const model: Model.Arena.Instance = this.Model();
 
         this.measurements = new Game_Measurements({
             may_have_x_scrollbar: !this.is_exhibition,

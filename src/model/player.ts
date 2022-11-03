@@ -1,0 +1,11 @@
+export { Instance } from "./player/instance";
+export type { Count } from "./player/count";
+export type { Index } from "./player/index";
+export type { Name } from "./player/name";
+export * as Group from "./player/group";
+export { Human } from "./player/human";
+export { Computer } from "./player/computer";
+export * as Stake from "./player/stake";
+export * as Claim from "./player/claim";
+export * as Score from "./player/score";
+export { Scores } from "./player/scores";

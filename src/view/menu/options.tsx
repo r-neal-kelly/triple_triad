@@ -11,7 +11,7 @@ import { Counter } from "../common/counter";
 import { Menu } from "../menu";
 
 type Options_Props = {
-    model: Model.Menu_Options;
+    model: Model.Menu.Options;
     parent: Menu;
     event_grid: Event.Grid;
 }
@@ -287,7 +287,7 @@ class Player_Colors extends Component<Player_Colors_Props>
         return this.Parent();
     }
 
-    Player_Color(player_color_index: Model.Color_Index):
+    Player_Color(player_color_index: Model.Color.Index):
         Player_Color
     {
         return this.Try_Array_Index(this.player_colors, player_color_index);
@@ -303,7 +303,7 @@ class Player_Colors extends Component<Player_Colors_Props>
         JSX.Element | null
     {
         const model: Model.Options = this.Model();
-        const player_color_count: Model.Color_Count = model.Player_Color_Count();
+        const player_color_count: Model.Color.Count = model.Player_Color_Count();
 
         return (
             <div
@@ -312,7 +312,7 @@ class Player_Colors extends Component<Player_Colors_Props>
                 {
                     Array(player_color_count).fill(null).map((
                         _,
-                        player_color_index: Model.Color_Index
+                        player_color_index: Model.Color.Index
                     ):
                         JSX.Element =>
                     {
@@ -354,7 +354,7 @@ type Player_Color_Props = {
     model: Model.Options;
     parent: Player_Colors;
     event_grid: Event.Grid;
-    index: Model.Player_Index;
+    index: Model.Player.Index;
 }
 
 class Player_Color extends Component<Player_Color_Props>
@@ -378,7 +378,7 @@ class Player_Color extends Component<Player_Color_Props>
     }
 
     Index():
-        Model.Player_Index
+        Model.Player.Index
     {
         return this.props.index;
     }
@@ -390,7 +390,7 @@ class Player_Color extends Component<Player_Color_Props>
     }
 
     Color():
-        Model.Color
+        Model.Color.Instance
     {
         return this.Model().Player_Color(this.Index());
     }
@@ -422,7 +422,7 @@ class Player_Color extends Component<Player_Color_Props>
     override On_Restyle():
         Component_Styles
     {
-        const color: Model.Color = this.Color();
+        const color: Model.Color.Instance = this.Color();
 
         return ({
             display: `flex`,
@@ -1044,7 +1044,7 @@ class Combo_Toggle extends Toggle<Combo_Toggle_Props>
 }
 
 type Back_Button_Props = {
-    model: Model.Menu_Options;
+    model: Model.Menu.Options;
     parent: Options;
     event_grid: Event.Grid;
 }

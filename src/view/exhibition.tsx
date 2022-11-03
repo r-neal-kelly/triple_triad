@@ -11,7 +11,7 @@ import { Exhibitions } from "./exhibitions";
 import { Game } from "./game";
 
 type Exhibition_Props = {
-    model: Model.Exhibition;
+    model: Model.Exhibition.Instance;
     parent: Exhibitions;
     event_grid: Event.Grid;
 }
@@ -47,8 +47,8 @@ export class Exhibition extends Component<Exhibition_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Exhibition = this.Model();
-        const arena: Model.Arena = model.Arena();
+        const model: Model.Exhibition.Instance = this.Model();
+        const arena: Model.Arena.Instance = model.Arena();
 
         return (
             <div

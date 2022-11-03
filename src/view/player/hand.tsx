@@ -10,7 +10,7 @@ import { Player } from "../player";
 import { Stake } from "./stake";
 
 type Hand_Props = {
-    model: Model.Player;
+    model: Model.Player.Instance;
     parent: Player;
     event_grid: Event.Grid;
 }
@@ -32,7 +32,7 @@ export class Hand extends Component<Hand_Props>
         return this.Parent();
     }
 
-    Stake(stake_index: Model.Stake_Index):
+    Stake(stake_index: Model.Player.Stake.Index):
         Stake
     {
         return this.Try_Array_Index(this.stakes, stake_index);
@@ -45,7 +45,7 @@ export class Hand extends Component<Hand_Props>
     }
 
     Index():
-        Model.Player_Index
+        Model.Player.Index
     {
         return this.Model().Index();
     }
@@ -77,14 +77,14 @@ export class Hand extends Component<Hand_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const stake_count: Model.Stake_Count = this.Model().Stake_Count();
+        const stake_count: Model.Player.Stake.Count = this.Model().Stake_Count();
 
         return (
             <div
                 className={`Hand`}
             >
                 {
-                    Array(stake_count).fill(null).map((_, stake_index: Model.Stake_Index) =>
+                    Array(stake_count).fill(null).map((_, stake_index: Model.Player.Stake.Index) =>
                     {
                         return (
                             <Stake
@@ -122,7 +122,7 @@ export class Hand extends Component<Hand_Props>
     override On_Life():
         Event.Listener_Info[]
     {
-        const player_index: Model.Player_Index = this.Model().Index();
+        const player_index: Model.Player.Index = this.Model().Index();
 
         return ([
             {

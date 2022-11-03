@@ -9,7 +9,7 @@ import { Arena } from "../arena";
 import { Player } from "../player";
 
 type Group_Props = {
-    model: Model.Player_Group;
+    model: Model.Player.Group.Instance;
     parent: Arena;
     event_grid: Event.Grid;
 }
@@ -25,7 +25,7 @@ export class Group extends Component<Group_Props>
         return this.Parent();
     }
 
-    Player(player_index: Model.Player_Index):
+    Player(player_index: Model.Player.Index):
         Player
     {
         return this.Try_Array_Index(this.players, player_index);
@@ -76,13 +76,13 @@ export class Group extends Component<Group_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Player_Group = this.Model();
+        const model: Model.Player.Group.Instance = this.Model();
         const is_runt: boolean = model.Is_Runt();
-        const relative_to: Model.Direction_e = model.Relative_To();
-        const player_count: Model.Player_Count = model.Player_Count();
+        const relative_to: Model.Enum.Direction = model.Relative_To();
+        const player_count: Model.Player.Count = model.Player_Count();
         const players: Array<JSX.Element> = Array(player_count).fill(null).map((
             _,
-            group_player_index: Model.Player_Index,
+            group_player_index: Model.Player.Index,
         ):
             JSX.Element =>
         {
@@ -111,8 +111,8 @@ export class Group extends Component<Group_Props>
                 </div>;
 
             if (
-                relative_to === Model.Direction_e.LEFT ||
-                relative_to === Model.Direction_e.TOP
+                relative_to === Model.Enum.Direction.LEFT ||
+                relative_to === Model.Enum.Direction.TOP
             ) {
                 return (
                     <div
@@ -146,10 +146,10 @@ export class Group extends Component<Group_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Player_Group = this.Model();
+        const model: Model.Player.Group.Instance = this.Model();
         const is_runt: boolean = model.Is_Runt();
-        const player_count: Model.Player_Count = model.Player_Count();
-        const column_count: Model.Column_Count = is_runt ?
+        const player_count: Model.Player.Count = model.Player_Count();
+        const column_count: Model.Board.Column.Count = is_runt ?
             player_count + 1 :
             player_count;
 

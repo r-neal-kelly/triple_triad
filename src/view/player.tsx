@@ -14,7 +14,7 @@ import { Bumper } from "./player/bumper";
 import { Hand } from "./player/hand";
 
 type Player_Props = {
-    model: Model.Player;
+    model: Model.Player.Instance;
     parent: Group;
     event_grid: Event.Grid;
 }
@@ -61,7 +61,7 @@ export class Player extends Component<Player_Props>
     }
 
     Index():
-        Model.Player_Index
+        Model.Player.Index
     {
         return this.Model().Index();
     }
@@ -93,9 +93,9 @@ export class Player extends Component<Player_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Player = this.Model();
+        const model: Model.Player.Instance = this.Model();
         const event_grid: Event.Grid = this.Event_Grid();
-        const index: Model.Player_Index = this.Index();
+        const index: Model.Player.Index = this.Index();
 
         return (
             <div
@@ -124,8 +124,8 @@ export class Player extends Component<Player_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Player = this.Model();
-        const color: Model.Color = this.Model().Color();
+        const model: Model.Player.Instance = this.Model();
+        const color: Model.Color.Instance = this.Model().Color();
 
         let background_color: string;
         if (model.Is_On_Turn()) {
@@ -156,7 +156,7 @@ export class Player extends Component<Player_Props>
     override On_Life():
         Event.Listener_Info[]
     {
-        const player_index: Model.Player_Index = this.Index();
+        const player_index: Model.Player.Index = this.Index();
 
         return ([
             {
@@ -191,8 +191,8 @@ export class Player extends Component<Player_Props>
             if (this.Is_Alive()) {
                 // We need to simulate the computer_player choosing a card
                 if (this.Model().Is_Computer()) {
-                    const computer_player: Model.Computer_Player =
-                        this.Model() as Model.Computer_Player;
+                    const computer_player: Model.Player.Computer =
+                        this.Model() as Model.Player.Computer;
                     const {
                         selection_indices,
                         cell_index,

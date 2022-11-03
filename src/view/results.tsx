@@ -10,7 +10,7 @@ import { Game } from "./game";
 import { Arena } from "./arena";
 
 type Results_Props = {
-    model: Model.Arena;
+    model: Model.Arena.Instance;
     parent: Game;
     event_grid: Event.Grid;
 }
@@ -71,10 +71,10 @@ export class Results extends Component<Results_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Arena = this.Model();
+        const model: Model.Arena.Instance = this.Model();
 
         if (model.Is_Game_Over() && !this.Game().Is_Exhibition()) {
-            const scores: Model.Scores = model.Final_Scores();
+            const scores: Model.Player.Scores = model.Final_Scores();
 
             return (
                 <div
@@ -185,7 +185,7 @@ export class Results extends Component<Results_Props>
 }
 
 type Banner_Props = {
-    model: Model.Scores;
+    model: Model.Player.Scores;
     parent: Results;
     event_grid: Event.Grid;
 }
@@ -230,7 +230,7 @@ class Banner extends Component<Banner_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Scores = this.Model();
+        const model: Model.Player.Scores = this.Model();
 
         if (model.Has_Winner()) {
             return (
@@ -313,7 +313,7 @@ class Banner extends Component<Banner_Props>
 }
 
 type Winner_Props = {
-    model: Model.Player_And_Score;
+    model: Model.Player_And_Score.Instance;
     parent: Banner;
     event_grid: Event.Grid;
 }
@@ -335,7 +335,7 @@ class Winner extends Component<Winner_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Player_And_Score = this.Model();
+        const model: Model.Player_And_Score.Instance = this.Model();
 
         return (
             <div
@@ -351,8 +351,8 @@ class Winner extends Component<Winner_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Player_And_Score = this.Model();
-        const color: Model.Color = model.player.Color();
+        const model: Model.Player_And_Score.Instance = this.Model();
+        const color: Model.Color.Instance = model.player.Color();
 
         return ({
             display: `flex`,
@@ -378,7 +378,7 @@ class Winner extends Component<Winner_Props>
 }
 
 type Draws_Props = {
-    model: Array<Model.Player_And_Score>;
+    model: Array<Model.Player_And_Score.Instance>;
     parent: Banner;
     event_grid: Event.Grid;
 }
@@ -414,15 +414,15 @@ class Draws extends Component<Draws_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Array<Model.Player_And_Score> = this.Model();
+        const model: Array<Model.Player_And_Score.Instance> = this.Model();
         const color_stop_percent: number = 100 / model.length;
         const linear_gradient_colors: string = model.map(function (
-            draw: Model.Player_And_Score,
-            index: Model.Player_Index,
+            draw: Model.Player_And_Score.Instance,
+            index: Model.Player.Index,
         ):
             string
         {
-            const color: Model.Color = draw.player.Color();
+            const color: Model.Color.Instance = draw.player.Color();
             const color_stop: string = `${index * color_stop_percent}% ${(index + 1) * color_stop_percent}%`;
 
             return `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()}) ${color_stop}`;
@@ -447,7 +447,7 @@ class Draws extends Component<Draws_Props>
 }
 
 type Buttons_Props = {
-    model: Model.Scores;
+    model: Model.Player.Scores;
     parent: Results;
     event_grid: Event.Grid;
 }
@@ -492,7 +492,7 @@ class Buttons extends Component<Buttons_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Scores = this.Model();
+        const model: Model.Player.Scores = this.Model();
 
         return (
             <div
@@ -535,7 +535,7 @@ class Buttons extends Component<Buttons_Props>
 }
 
 type Rematch_Button_Props = {
-    model: Model.Scores;
+    model: Model.Player.Scores;
     parent: Buttons;
     event_grid: Event.Grid;
 }
@@ -595,7 +595,7 @@ class Rematch_Button extends Button<Rematch_Button_Props>
 }
 
 type Exit_Button_Props = {
-    model: Model.Scores;
+    model: Model.Player.Scores;
     parent: Buttons;
     event_grid: Event.Grid;
 }

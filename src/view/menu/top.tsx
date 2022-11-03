@@ -7,7 +7,7 @@ import { Button } from "../common/button";
 import { Menu } from "../menu";
 
 type Top_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Menu;
     event_grid: Event.Grid;
 }
@@ -131,7 +131,7 @@ export class Top extends Component<Top_Props>
 }
 
 type Title_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Top;
     event_grid: Event.Grid;
 }
@@ -191,7 +191,7 @@ class Title extends Component<Title_Props>
 }
 
 type Title_Text_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Title;
     event_grid: Event.Grid;
 }
@@ -286,7 +286,7 @@ class Title_Text extends Component<Title_Text_Props>
 }
 
 type Buttons_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Top;
     event_grid: Event.Grid;
 }
@@ -373,7 +373,7 @@ class Buttons extends Component<Buttons_Props>
 }
 
 type New_Game_Button_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Buttons;
     event_grid: Event.Grid;
 }
@@ -439,7 +439,7 @@ class New_Game_Button extends Button<New_Game_Button_Props>
 }
 
 type Options_Button_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Buttons;
     event_grid: Event.Grid;
 }
@@ -505,7 +505,7 @@ class Options_Button extends Button<Options_Button_Props>
 }
 
 type Help_Button_Props = {
-    model: Model.Menu_Top;
+    model: Model.Menu.Top;
     parent: Buttons;
     event_grid: Event.Grid;
 }
