@@ -1,4 +1,4 @@
-import { Random_Boolean } from "../../utils";
+import { Assert, Random_Boolean } from "../../utils";
 import { Random_Integer_Inclusive } from "../../utils";
 
 import { Instance } from "./instance";
@@ -10,13 +10,13 @@ export class Random extends Instance
     constructor(
         {
             min_row_count = 3,
-            max_row_count = 6,
+            max_row_count = 9,
 
             min_column_count = 3,
-            max_column_count = 6,
+            max_column_count = 9,
 
             min_player_count = 2,
-            max_player_count = 8,
+            max_player_count = 9,
 
             allow_open = true,
             allow_same = true,
@@ -43,6 +43,8 @@ export class Random extends Instance
         },
     )
     {
+        Assert(min_row_count * min_column_count >= max_player_count);
+
         if (min_row_count < 0 || min_row_count > max_row_count) {
             throw new Error(
                 `min_row_count of ${min_row_count} is greater than max_row_count of ${max_row_count}.`

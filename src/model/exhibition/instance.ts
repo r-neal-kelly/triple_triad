@@ -66,8 +66,9 @@ export class Instance
         const random_rules: Rules.Random = new Rules.Random({});
 
         const random_colors: Color.Uniques = new Color.Uniques({
-            max_value: 191,
             color_count: random_rules.Player_Count(),
+            max_value: 192,
+            alpha: 0.7,
         });
 
         const random_selections: Array<Selection.Random> = [];

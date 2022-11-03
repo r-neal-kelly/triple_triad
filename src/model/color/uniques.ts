@@ -1,160 +1,118 @@
+import { Float, Min } from "../../types";
+
+import { Assert } from "../../utils";
 import { Random_Integer_Inclusive } from "../../utils";
 import { Random_Float_Inclusive } from "../../utils";
+import { Plot_Revolution } from "../../utils";
+
+import * as Enum from "../enum";
 
 import { Instance } from "./instance";
 import { Count } from "./count";
 import { Index } from "./index";
 import { Max } from "./max";
 
-// I think another way to do this would be to a 3d space, select a non-changing radius
-// and just rotate around the plane using sin/cosine to get an equal distribution
-function Plot(
-    radius: number,
-    point_count: number,
-    from_radians_z: number,
-    from_radians_x: number,
-):
-    Array<{
-        x: number,
-        y: number,
-        z: number,
-    }>
-{
-    const points: Array<{
-        x: number,
-        y: number,
-        z: number,
-    }> = [];
-
-    const interval: number = Math.PI * 2 / point_count;
-
-    for (let idx = 0, end = point_count; idx < end; idx += 1) {
-        points.push({
-            x: radius * Math.cos(from_radians_z) * Math.cos(from_radians_x),
-            y: radius * Math.sin(from_radians_z) * Math.cos(from_radians_x),
-            z: radius * Math.sin(from_radians_x),
-        });
-
-        from_radians_z += interval;
-        // it's better if we don't rotate on this axis for generating colors
-        //from_radians_x += interval;
-    }
-
-    return points;
-}
-
-function Generate_Colors(
-    max_value: number,
-    color_count: number,
-    from_radians_z: number,
-    from_radians_x: number,
-):
-    Array<Instance>
-{
-    const Round = (value: number) => value > 0.5 ? Math.ceil(value) : Math.floor(value);
-
-    const colors: Array<Instance> = [];
-
-    const radius: number = max_value / 2;
-    const points: Array<{
-        x: number,
-        y: number,
-        z: number,
-    }> = Plot(radius, color_count, from_radians_z, from_radians_x);
-
-    const method: number = Random_Integer_Inclusive(1, 3);
-    if (method === 1) {
-        for (const point of points) {
-            colors.push(new Instance({
-                red: Round(point.x + radius),
-                green: Round(point.y + radius),
-                blue: Round(point.z + radius),
-                alpha: 0.7,
-            }));
-        }
-    } else if (method === 2) {
-        for (const point of points) {
-            colors.push(new Instance({
-                red: Round(point.y + radius),
-                green: Round(point.z + radius),
-                blue: Round(point.x + radius),
-                alpha: 0.7,
-            }));
-        }
-    } else if (method === 3) {
-        for (const point of points) {
-            colors.push(new Instance({
-                red: Round(point.z + radius),
-                green: Round(point.x + radius),
-                blue: Round(point.y + radius),
-                alpha: 0.7,
-            }));
-        }
-    }
-
-    return colors;
-}
-
-function Generate_Random_Colors(
-    max_value: number,
-    color_count: number,
-):
-    Array<Instance>
-{
-    return Generate_Colors(
-        max_value,
-        color_count,
-        Random_Float_Inclusive(-(Math.PI * 2), Math.PI * 2),
-        // we need to limit this next value so that we get a good range of color
-        Random_Float_Inclusive(-0.5, 0.5),
-    );
-}
-
 export class Uniques
 {
-    private max_value: Max;
-    private color_count: Count;
+    static Min_Alpha():
+        Min
+    {
+        return 0.5;
+    }
+
+    static Max_Alpha():
+        Max
+    {
+        return 0.8;
+    }
+
     private colors: Array<Instance>;
+    private max_value: Max;
+    private alpha: Float;
+    private from_radians_z: Float;
+    private radians_x: Float;
+    private orientation: Enum.RGBA;
 
     constructor(
         {
             color_count,
-            max_value,
-
+            max_value = Random_Integer_Inclusive(32, 255),
+            alpha = Random_Float_Inclusive(Uniques.Min_Alpha(), Uniques.Max_Alpha()),
+            from_radians_z = Random_Float_Inclusive(-Math.PI, Math.PI),
+            radians_x = Random_Float_Inclusive(-0.5, 0.5),
+            orientation = Random_Integer_Inclusive(Enum.RGBA.RED, Enum.RGBA.BLUE),
         }: {
             color_count: Count,
-            max_value: Max,
+            max_value?: Max,
+            alpha?: Float,
+            from_radians_z?: Float,
+            radians_x?: Float,
+            orientation?: Enum.RGBA,
         },
     )
     {
-        if (color_count < 0) {
-            throw new Error(
-                `color_count of ${color_count} is less than 0.`
-            );
-        } else if (max_value < 0 || max_value > 255) {
-            throw new Error(
-                `max_value of ${max_value} is invalid.`
-            );
-        } else {
-            this.max_value = max_value;
-            this.color_count = color_count;
-            this.colors = Generate_Random_Colors(max_value, color_count);
+        Assert(max_value >= 0);
+        Assert(alpha >= Uniques.Min_Alpha() && alpha <= Uniques.Max_Alpha());
+        Assert(color_count >= 0);
+        Assert(orientation >= Enum.RGBA.RED && orientation <= Enum.RGBA.BLUE);
 
-            Object.freeze(this.colors);
-            Object.freeze(this);
+        this.colors = [];
+        this.max_value = max_value;
+        this.alpha = alpha;
+        this.from_radians_z = from_radians_z;
+        this.radians_x = radians_x;
+        this.orientation = orientation;
+
+        const radius: number = max_value / 2;
+        const points: Array<{
+            x: Float,
+            y: Float,
+            z: Float,
+        }> = Plot_Revolution({
+            radius: radius,
+            point_count: color_count,
+            from_radians_z: from_radians_z,
+            from_radians_x: radians_x,
+            to_radians_x: radians_x,
+        });
+
+        if (orientation === Enum.RGBA.RED) {
+            for (const point of points) {
+                this.colors.push(new Instance({
+                    red: Math.floor(point.x + radius),
+                    green: Math.floor(point.y + radius),
+                    blue: Math.floor(point.z + radius),
+                    alpha: alpha,
+                }));
+            }
+        } else if (orientation === Enum.RGBA.GREEN) {
+            for (const point of points) {
+                this.colors.push(new Instance({
+                    red: Math.floor(point.z + radius),
+                    green: Math.floor(point.x + radius),
+                    blue: Math.floor(point.y + radius),
+                    alpha: alpha,
+                }));
+            }
+        } else if (orientation === Enum.RGBA.BLUE) {
+            for (const point of points) {
+                this.colors.push(new Instance({
+                    red: Math.floor(point.y + radius),
+                    green: Math.floor(point.z + radius),
+                    blue: Math.floor(point.x + radius),
+                    alpha: alpha,
+                }));
+            }
         }
-    }
 
-    Max_Value():
-        Max
-    {
-        return this.max_value;
+        Object.freeze(this.colors);
+        Object.freeze(this);
     }
 
     Color_Count():
         Count
     {
-        return this.color_count;
+        return this.colors.length;
     }
 
     Color(color_index: Index):
@@ -171,5 +129,35 @@ export class Uniques
         Array<Instance>
     {
         return Array.from(this.colors);
+    }
+
+    Max_Value():
+        Max
+    {
+        return this.max_value;
+    }
+
+    Alpha():
+        Float
+    {
+        return this.alpha;
+    }
+
+    From_Radians_Z():
+        Float
+    {
+        return this.from_radians_z;
+    }
+
+    Radians_X():
+        Float
+    {
+        return this.radians_x;
+    }
+
+    Orientation():
+        Enum.RGBA
+    {
+        return this.orientation;
     }
 }

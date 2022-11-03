@@ -1,6 +1,7 @@
 import { Assert } from "../utils";
 import { Random_Integer_Exclusive } from "../utils";
 
+import * as Enum from "./enum";
 import * as Color from "./color";
 import * as Rules from "./rules";
 import * as Player from "./player";
@@ -17,142 +18,6 @@ export class Options
         Player.Count
     {
         return Rules.Instance.Max_Player_Count();
-    }
-
-    private static Player_Color_Pool():
-        Array<Color.Instance>
-    {
-        return ([
-            // Blue
-            new Color.Instance({
-                red: 64,
-                green: 64,
-                blue: 128,
-                alpha: 0.7,
-            }),
-            // Cyan
-            new Color.Instance({
-                red: 64,
-                green: 107,
-                blue: 128,
-                alpha: 0.7,
-            }),
-            // Teal
-            new Color.Instance({
-                red: 64,
-                green: 128,
-                blue: 107,
-                alpha: 0.7,
-            }),
-            // Green
-            new Color.Instance({
-                red: 64,
-                green: 128,
-                blue: 64,
-                alpha: 0.7,
-            }),
-            // Olive
-            new Color.Instance({
-                red: 107,
-                green: 128,
-                blue: 64,
-                alpha: 0.7,
-            }),
-            // Brown
-            new Color.Instance({
-                red: 128,
-                green: 107,
-                blue: 64,
-                alpha: 0.7,
-            }),
-            // Red
-            new Color.Instance({
-                red: 128,
-                green: 64,
-                blue: 64,
-                alpha: 0.7,
-            }),
-            // Violet
-            new Color.Instance({
-                red: 128,
-                green: 64,
-                blue: 107,
-                alpha: 0.7,
-            }),
-            // Purple
-            new Color.Instance({
-                red: 107,
-                green: 64,
-                blue: 128,
-                alpha: 0.7,
-            }),
-
-            /*
-            // Orange H 36, S 85, V 65
-            new Color.Instance({
-                red: 166,
-                green: 110,
-                blue: 25,
-                alpha: 0.7,
-            }),
-            // Gold H 56
-            new Color.Instance({
-                red: 166,
-                green: 157,
-                blue: 25,
-                alpha: 0.7,
-            }),
-            // Green H 114
-            new Color.Instance({
-                red: 37,
-                green: 166,
-                blue: 25,
-                alpha: 0.7,
-            }),
-            // Teal H 144
-            new Color.Instance({
-                red: 25,
-                green: 166,
-                blue: 79,
-                alpha: 0.7,
-            }),
-            // H 179
-            new Color.Instance({
-                red: 25,
-                green: 166,
-                blue: 164,
-                alpha: 0.7,
-            }),
-            // H 220
-            new Color.Instance({
-                red: 25,
-                green: 72,
-                blue: 166,
-                alpha: 0.7,
-            }),
-            // H 272
-            new Color.Instance({
-                red: 100,
-                green: 25,
-                blue: 166,
-                alpha: 0.7,
-            }),
-            // H 332
-            new Color.Instance({
-                red: 166,
-                green: 25,
-                blue: 91,
-                alpha: 0.7,
-            }),
-            // H 360
-            new Color.Instance({
-                red: 166,
-                green: 25,
-                blue: 25,
-                alpha: 0.7,
-            }),
-            */
-        ]);
     }
 
     private rules: Rules.Instance;
@@ -179,7 +44,14 @@ export class Options
 
         this.use_small_board = use_small_board;
 
-        this.player_color_pool = Options.Player_Color_Pool();
+        this.player_color_pool = new Color.Uniques({
+            color_count: 10,
+            max_value: 168,
+            alpha: 0.7,
+            from_radians_z: 1.5,
+            radians_x: 0.0,
+            orientation: Enum.RGBA.BLUE,
+        }).Colors();
         this.player_colors = [];
         this.player_color_pool_select_index = 0;
 
