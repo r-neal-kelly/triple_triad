@@ -6,7 +6,7 @@ import { Random_Integer_Inclusive } from "../../utils";
 import * as Board from "../board";
 
 import { Instance } from "./instance";
-import * as Stake from "./stake";
+import * as Stake from "../stake";
 
 export class Computer extends Instance
 {

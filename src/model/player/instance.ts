@@ -6,7 +6,7 @@ import * as Board from "../board";
 
 import { Index } from "./index";
 import { Name } from "./name";
-import * as Stake from "./stake";
+import * as Stake from "../stake";
 import * as Score from "./score";
 
 /* Contains stakes selected for a player. */

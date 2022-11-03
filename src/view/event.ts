@@ -105,12 +105,12 @@ export type Player_Stop_Turn_Data = {
 
 export type Player_Select_Stake_Data = {
     player_index: Model.Player.Index;
-    stake_index: Model.Player.Stake.Index;
+    stake_index: Model.Stake.Index;
 }
 
 export type Player_Place_Stake_Data = {
     player_index: Model.Player.Index;
-    stake_index: Model.Player.Stake.Index;
+    stake_index: Model.Stake.Index;
     cell_index: Model.Board.Cell.Index;
 }
 

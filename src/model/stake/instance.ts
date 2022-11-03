@@ -1,9 +1,9 @@
 
-import * as Card from "../../card";
-import * as Color from "../../color";
-import * as Arena from "../../arena";
-import * as Board from "../../board";
-import * as Player from "../../player";
+import * as Card from "../card";
+import * as Color from "../color";
+import * as Arena from "../arena";
+import * as Board from "../board";
+import * as Player from "../player";
 
 /*
     Contains a card either on a player or on the board, and its origin.

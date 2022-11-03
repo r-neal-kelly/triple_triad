@@ -271,8 +271,8 @@ export class Cell extends Component<Cell_Props>
                 if (this.Board().Model().Is_Cell_Selectable(this.Index())) {
                     const player_index: Model.Player.Index =
                         this.Board().Model().Current_Player_Index();
-                    const stake_index: Model.Player.Stake.Index =
-                        this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Player.Stake.Index;
+                    const stake_index: Model.Stake.Index =
+                        this.Arena().Model().Current_Player().Selected_Stake_Index() as Model.Stake.Index;
                     const cell_index: Model.Board.Cell.Index =
                         this.Index();
 

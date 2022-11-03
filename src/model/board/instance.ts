@@ -10,6 +10,7 @@ import * as Card from "../card";
 import * as Rules from "../rules";
 import * as Arena from "../arena";
 import * as Player from "../player";
+import * as Stake from "../stake";
 import * as Turn_Results from "../turn_results";
 
 import * as Row from "./row";
@@ -272,7 +273,7 @@ export class Instance
         }
     }
 
-    Defense_Of(stake: Player.Stake.Instance, in_cell_index: Cell.Index):
+    Defense_Of(stake: Stake.Instance, in_cell_index: Cell.Index):
         Defense.Instance
     {
         const card: Card.Instance = stake.Card();
@@ -367,14 +368,14 @@ export class Instance
                 throw new Error(`Claim already exists in cell_index ${cell_index}.`);
             } else {
                 const current_player: Player.Instance = this.Current_Player();
-                const selected_stake: Player.Stake.Instance = current_player.Remove_Selected_Stake();
+                const selected_stake: Stake.Instance = current_player.Remove_Selected_Stake();
 
                 return this.Private_Place_Stake(selected_stake, cell_index);
             }
         }
     }
 
-    async Place_Stake(stake: Player.Stake.Instance, cell_index: Cell.Index):
+    async Place_Stake(stake: Stake.Instance, cell_index: Cell.Index):
         Promise<Turn_Results.Steps>
     {
         if (this.Arena().Is_Game_Over()) {
@@ -388,7 +389,7 @@ export class Instance
         }
     }
 
-    private async Private_Place_Stake(stake: Player.Stake.Instance, cell_index: Cell.Index):
+    private async Private_Place_Stake(stake: Stake.Instance, cell_index: Cell.Index):
         Promise<Turn_Results.Steps>
     {
         this.cells[cell_index] = new Cell.Instance(
@@ -797,7 +798,7 @@ export class Instance
 
     async Choose_Stake_And_Cell(computer_player: Player.Computer):
         Promise<{
-            stake_index: Player.Stake.Index,
+            stake_index: Stake.Index,
             cell_index: Cell.Index,
         }>
     {
@@ -816,7 +817,7 @@ export class Instance
 
             Add(
                 claim_delta: Player.Claim.Delta,
-                stake_index: Player.Stake.Index,
+                stake_index: Stake.Index,
                 cell_index: Cell.Index,
             ):
                 void
@@ -889,7 +890,7 @@ export class Instance
 
         class Placements
         {
-            private stake_indices: Array<Player.Stake.Index>;
+            private stake_indices: Array<Stake.Index>;
             private cell_indices: Array<Cell.Index>;
 
             constructor()
@@ -899,7 +900,7 @@ export class Instance
             }
 
             Push(
-                stake_index: Player.Stake.Index,
+                stake_index: Stake.Index,
                 cell_index: Cell.Index,
             ):
                 void
@@ -916,7 +917,7 @@ export class Instance
 
             Random():
                 {
-                    stake_index: Player.Stake.Index,
+                    stake_index: Stake.Index,
                     cell_index: Cell.Index,
                 }
             {
@@ -937,7 +938,7 @@ export class Instance
 
                 let best_defense: number = 0;
                 for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
-                    const stake_index: Player.Stake.Index = this.stake_indices[idx];
+                    const stake_index: Stake.Index = this.stake_indices[idx];
                     const cell_index: Cell.Index = this.cell_indices[idx];
 
                     const defense = board.Defense_Of(player.Stake(stake_index), cell_index);
@@ -960,7 +961,7 @@ export class Instance
 
                 let worst_defense: number = Number.MAX_VALUE;
                 for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
-                    const stake_index: Player.Stake.Index = this.stake_indices[idx];
+                    const stake_index: Stake.Index = this.stake_indices[idx];
                     const cell_index: Cell.Index = this.cell_indices[idx];
 
                     const defense = board.Defense_Of(player.Stake(stake_index), cell_index);
@@ -983,7 +984,7 @@ export class Instance
 
                 let biggest_defense: number = -1;
                 for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
-                    const stake_index: Player.Stake.Index = this.stake_indices[idx];
+                    const stake_index: Stake.Index = this.stake_indices[idx];
                     const cell_index: Cell.Index = this.cell_indices[idx];
 
                     const defense_count = board.Defense_Count_Of(cell_index);
@@ -1006,7 +1007,7 @@ export class Instance
 
                 let smallest_defense: number = Number.MAX_VALUE;
                 for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
-                    const stake_index: Player.Stake.Index = this.stake_indices[idx];
+                    const stake_index: Stake.Index = this.stake_indices[idx];
                     const cell_index: Cell.Index = this.cell_indices[idx];
 
                     const defense_count = board.Defense_Count_Of(cell_index);
@@ -1029,7 +1030,7 @@ export class Instance
 
                 let most_value = 0;
                 for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
-                    const stake_index: Player.Stake.Index = this.stake_indices[idx];
+                    const stake_index: Stake.Index = this.stake_indices[idx];
                     const cell_index: Cell.Index = this.cell_indices[idx];
                     const card: Card.Instance = player.Stake(stake_index).Card();
 
@@ -1053,7 +1054,7 @@ export class Instance
 
                 let least_value = Number.MAX_VALUE;
                 for (let idx = 0, end = this.Count(); idx < end; idx += 1) {
-                    const stake_index: Player.Stake.Index = this.stake_indices[idx];
+                    const stake_index: Stake.Index = this.stake_indices[idx];
                     const cell_index: Cell.Index = this.cell_indices[idx];
                     const card: Card.Instance = player.Stake(stake_index).Card();
 

@@ -13,10 +13,10 @@ import { Player } from "../player";
 import { Hand } from "./hand";
 
 type Stake_Props = {
-    model: Model.Player.Stake.Instance;
+    model: Model.Stake.Instance;
     parent: Hand;
     event_grid: Event.Grid;
-    index: Model.Player.Stake.Index;
+    index: Model.Stake.Index;
 }
 
 export class Stake extends Component<Stake_Props>
@@ -46,7 +46,7 @@ export class Stake extends Component<Stake_Props>
     }
 
     Index():
-        Model.Player.Stake.Index
+        Model.Stake.Index
     {
         return this.props.index;
     }
@@ -78,7 +78,7 @@ export class Stake extends Component<Stake_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const model: Model.Player.Stake.Instance = this.Model();
+        const model: Model.Stake.Instance = this.Model();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
@@ -110,7 +110,7 @@ export class Stake extends Component<Stake_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Player.Stake.Instance = this.Model();
+        const model: Model.Stake.Instance = this.Model();
         const color: Model.Color.Instance = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
@@ -212,7 +212,7 @@ export class Stake extends Component<Stake_Props>
                     const player: Model.Player.Instance = this.Model().Origin();
                     if (player.Is_On_Turn()) {
                         const player_index: Model.Player.Index = player.Index();
-                        const stake_index: Model.Player.Stake.Index = this.Index();
+                        const stake_index: Model.Stake.Index = this.Index();
 
                         await this.Send({
                             name_affix: Event.PLAYER_SELECT_STAKE,

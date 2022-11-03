@@ -19,5 +19,6 @@ export * as Exhibition from "./model/exhibition";
 export * as Arena from "./model/arena";
 export * as Board from "./model/board";
 export * as Player from "./model/player";
+export * as Stake from "./model/stake";
 export * as Player_And_Score from "./model/player_and_score";
 export * as Turn_Results from "./model/turn_results";

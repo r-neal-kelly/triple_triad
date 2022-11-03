@@ -32,7 +32,7 @@ export class Hand extends Component<Hand_Props>
         return this.Parent();
     }
 
-    Stake(stake_index: Model.Player.Stake.Index):
+    Stake(stake_index: Model.Stake.Index):
         Stake
     {
         return this.Try_Array_Index(this.stakes, stake_index);
@@ -77,14 +77,14 @@ export class Hand extends Component<Hand_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const stake_count: Model.Player.Stake.Count = this.Model().Stake_Count();
+        const stake_count: Model.Stake.Count = this.Model().Stake_Count();
 
         return (
             <div
                 className={`Hand`}
             >
                 {
-                    Array(stake_count).fill(null).map((_, stake_index: Model.Player.Stake.Index) =>
+                    Array(stake_count).fill(null).map((_, stake_index: Model.Stake.Index) =>
                     {
                         return (
                             <Stake

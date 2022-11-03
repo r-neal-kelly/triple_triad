@@ -1,15 +1,16 @@
 import * as Color from "../../color";
 import * as Player from "../../player";
+import * as Stake from "../../stake";
 
 /* Represents an empty cell or a player that's making a claim on a stake. */
 export class Instance
 {
-    private stake: Player.Stake.Instance | null;
+    private stake: Stake.Instance | null;
     private claimant: Player.Instance | null;
 
     constructor(
         occupant?: {
-            stake: Player.Stake.Instance,
+            stake: Stake.Instance,
             claimant: Player.Instance,
         },
     )
@@ -31,7 +32,7 @@ export class Instance
         if (this.Is_Occupied()) {
             return new Instance(
                 {
-                    stake: this.stake as Player.Stake.Instance,
+                    stake: this.stake as Stake.Instance,
                     claimant: this.claimant as Player.Instance,
                 },
             );
@@ -53,7 +54,7 @@ export class Instance
     }
 
     Stake():
-        Player.Stake.Instance
+        Stake.Instance
     {
         if (this.stake == null) {
             throw new Error(`This cell is not occupied.`);
