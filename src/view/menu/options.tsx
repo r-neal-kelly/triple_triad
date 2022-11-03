@@ -140,15 +140,15 @@ class Player_Options extends Component<Player_Options_Props>
             <div
                 className={`Player_Options`}
             >
-                <Player_Counter
-                    ref={ref => this.player_counter = ref}
+                <Player_Colors
+                    ref={ref => this.player_colors = ref}
 
                     model={this.Model()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <Player_Colors
-                    ref={ref => this.player_colors = ref}
+                <Player_Counter
+                    ref={ref => this.player_counter = ref}
 
                     model={this.Model()}
                     parent={this}
