@@ -46,7 +46,7 @@ export class Options
 
         this.player_color_pool = new Color.Uniques({
             color_count: 10,
-            max_value: 168,
+            max_value: 152,
             alpha: 0.7,
             from_radians_z: 1.5,
             radians_x: 0.0,
