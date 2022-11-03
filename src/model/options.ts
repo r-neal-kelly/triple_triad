@@ -86,6 +86,72 @@ export class Options
                 blue: 128,
                 alpha: 0.7,
             }),
+
+            /*
+            // Orange H 36, S 85, V 65
+            new Color.Instance({
+                red: 166,
+                green: 110,
+                blue: 25,
+                alpha: 0.7,
+            }),
+            // Gold H 56
+            new Color.Instance({
+                red: 166,
+                green: 157,
+                blue: 25,
+                alpha: 0.7,
+            }),
+            // Green H 114
+            new Color.Instance({
+                red: 37,
+                green: 166,
+                blue: 25,
+                alpha: 0.7,
+            }),
+            // Teal H 144
+            new Color.Instance({
+                red: 25,
+                green: 166,
+                blue: 79,
+                alpha: 0.7,
+            }),
+            // H 179
+            new Color.Instance({
+                red: 25,
+                green: 166,
+                blue: 164,
+                alpha: 0.7,
+            }),
+            // H 220
+            new Color.Instance({
+                red: 25,
+                green: 72,
+                blue: 166,
+                alpha: 0.7,
+            }),
+            // H 272
+            new Color.Instance({
+                red: 100,
+                green: 25,
+                blue: 166,
+                alpha: 0.7,
+            }),
+            // H 332
+            new Color.Instance({
+                red: 166,
+                green: 25,
+                blue: 91,
+                alpha: 0.7,
+            }),
+            // H 360
+            new Color.Instance({
+                red: 166,
+                green: 25,
+                blue: 25,
+                alpha: 0.7,
+            }),
+            */
         ]);
     }
 

@@ -1,208 +1,154 @@
+import { Random_Integer_Inclusive } from "../../utils";
+import { Random_Float_Inclusive } from "../../utils";
+
 import { Instance } from "./instance";
 import { Count } from "./count";
 import { Index } from "./index";
-import { Min } from "./min";
 import { Max } from "./max";
-import { Random } from "./random";
 
 // I think another way to do this would be to a 3d space, select a non-changing radius
 // and just rotate around the plane using sin/cosine to get an equal distribution
+function Plot(
+    radius: number,
+    point_count: number,
+    from_radians_z: number,
+    from_radians_x: number,
+):
+    Array<{
+        x: number,
+        y: number,
+        z: number,
+    }>
+{
+    const points: Array<{
+        x: number,
+        y: number,
+        z: number,
+    }> = [];
+
+    const interval: number = Math.PI * 2 / point_count;
+
+    for (let idx = 0, end = point_count; idx < end; idx += 1) {
+        points.push({
+            x: radius * Math.cos(from_radians_z) * Math.cos(from_radians_x),
+            y: radius * Math.sin(from_radians_z) * Math.cos(from_radians_x),
+            z: radius * Math.sin(from_radians_x),
+        });
+
+        from_radians_z += interval;
+        // it's better if we don't rotate on this axis for generating colors
+        //from_radians_x += interval;
+    }
+
+    return points;
+}
+
+function Generate_Colors(
+    max_value: number,
+    color_count: number,
+    from_radians_z: number,
+    from_radians_x: number,
+):
+    Array<Instance>
+{
+    const Round = (value: number) => value > 0.5 ? Math.ceil(value) : Math.floor(value);
+
+    const colors: Array<Instance> = [];
+
+    const radius: number = max_value / 2;
+    const points: Array<{
+        x: number,
+        y: number,
+        z: number,
+    }> = Plot(radius, color_count, from_radians_z, from_radians_x);
+
+    const method: number = Random_Integer_Inclusive(1, 3);
+    if (method === 1) {
+        for (const point of points) {
+            colors.push(new Instance({
+                red: Round(point.x + radius),
+                green: Round(point.y + radius),
+                blue: Round(point.z + radius),
+                alpha: 0.7,
+            }));
+        }
+    } else if (method === 2) {
+        for (const point of points) {
+            colors.push(new Instance({
+                red: Round(point.y + radius),
+                green: Round(point.z + radius),
+                blue: Round(point.x + radius),
+                alpha: 0.7,
+            }));
+        }
+    } else if (method === 3) {
+        for (const point of points) {
+            colors.push(new Instance({
+                red: Round(point.z + radius),
+                green: Round(point.x + radius),
+                blue: Round(point.y + radius),
+                alpha: 0.7,
+            }));
+        }
+    }
+
+    return colors;
+}
+
+function Generate_Random_Colors(
+    max_value: number,
+    color_count: number,
+):
+    Array<Instance>
+{
+    return Generate_Colors(
+        max_value,
+        color_count,
+        Random_Float_Inclusive(-(Math.PI * 2), Math.PI * 2),
+        // we need to limit this next value so that we get a good range of color
+        Random_Float_Inclusive(-0.5, 0.5),
+    );
+}
+
 export class Uniques
 {
-    private min_red: Min;
-    private max_red: Max;
-
-    private min_green: Min;
-    private max_green: Max;
-
-    private min_blue: Min;
-    private max_blue: Max;
-
-    private min_alpha: Min;
-    private max_alpha: Max;
-
+    private max_value: Max;
     private color_count: Count;
     private colors: Array<Instance>;
-
-    private did_interpolate: boolean;
 
     constructor(
         {
             color_count,
+            max_value,
 
-            min_red = 0,
-            max_red = 255,
-
-            min_green = 0,
-            max_green = 255,
-
-            min_blue = 0,
-            max_blue = 255,
-
-            min_alpha = 0.0,
-            max_alpha = 1.0,
         }: {
             color_count: Count,
-
-            min_red?: Min,
-            max_red?: Max,
-
-            min_green?: Min,
-            max_green?: Max,
-
-            min_blue?: Min,
-            max_blue?: Max,
-
-            min_alpha?: Min,
-            max_alpha?: Max,
-        }
+            max_value: Max,
+        },
     )
     {
         if (color_count < 0) {
             throw new Error(
                 `color_count of ${color_count} is less than 0.`
             );
-        } else if (min_red < 0 || min_red > max_red) {
+        } else if (max_value < 0 || max_value > 255) {
             throw new Error(
-                `min_red of ${min_red} is greater than max_red of ${max_red}.`
-            );
-        } else if (min_green < 0 || min_green > max_green) {
-            throw new Error(
-                `min_green of ${min_green} is greater than max_green of ${max_green}.`
-            );
-        } else if (min_blue < 0 || min_blue > max_blue) {
-            throw new Error(
-                `min_blue of ${min_blue} is greater than max_blue of ${max_blue}.`
-            );
-        } else if (min_alpha < 0 || min_alpha > max_alpha) {
-            throw new Error(
-                `min_alpha of ${min_alpha} is greater than max_alpha of ${max_alpha}.`
+                `max_value of ${max_value} is invalid.`
             );
         } else {
-            this.min_red = min_red;
-            this.max_red = max_red;
-
-            this.min_green = min_green;
-            this.max_green = max_green;
-
-            this.min_blue = min_blue;
-            this.max_blue = max_blue;
-
-            this.min_alpha = min_alpha;
-            this.max_alpha = max_alpha;
-
+            this.max_value = max_value;
             this.color_count = color_count;
-            this.colors = [];
-
-            const min_percent_difference: number = this.Min_Percent_Difference();
-            const max_failure_count: number = 50;
-
-            let failure_count: number = 0;
-            while (this.colors.length < color_count) {
-                if (failure_count <= max_failure_count) {
-                    const new_color: Random = new Random(
-                        {
-                            min_red,
-                            max_red,
-
-                            min_green,
-                            max_green,
-
-                            min_blue,
-                            max_blue,
-
-                            min_alpha,
-                            max_alpha,
-                        }
-                    );
-
-                    let is_different_enough: boolean = true;
-                    for (const old_color of this.colors) {
-                        if (new_color.Percent_Difference_From(old_color) < min_percent_difference) {
-                            failure_count += 1;
-                            is_different_enough = false;
-                            break;
-                        }
-                    }
-
-                    if (is_different_enough) {
-                        this.colors.push(new_color);
-                    }
-                } else {
-                    // temp
-                    // we need to interpolate between the first two colors
-                    // with the greatest difference.
-                    this.colors.push(new Random(
-                        {
-                            min_red,
-                            max_red,
-
-                            min_green,
-                            max_green,
-
-                            min_blue,
-                            max_blue,
-
-                            min_alpha,
-                            max_alpha,
-                        }
-                    ));
-                }
-            }
-
-            this.did_interpolate = failure_count > max_failure_count;
+            this.colors = Generate_Random_Colors(max_value, color_count);
 
             Object.freeze(this.colors);
             Object.freeze(this);
         }
     }
 
-    Min_Red():
-        Min
-    {
-        return this.min_red;
-    }
-
-    Max_Red():
+    Max_Value():
         Max
     {
-        return this.max_red;
-    }
-
-    Min_Green():
-        Min
-    {
-        return this.min_green;
-    }
-
-    Max_Green():
-        Max
-    {
-        return this.max_green;
-    }
-
-    Min_Blue():
-        Min
-    {
-        return this.min_blue;
-    }
-
-    Max_Blue():
-        Max
-    {
-        return this.max_blue;
-    }
-
-    Min_Alpha():
-        Min
-    {
-        return this.min_alpha;
-    }
-
-    Max_Alpha():
-        Max
-    {
-        return this.max_alpha;
+        return this.max_value;
     }
 
     Color_Count():
@@ -225,47 +171,5 @@ export class Uniques
         Array<Instance>
     {
         return Array.from(this.colors);
-    }
-
-    Did_Interpolate():
-        boolean
-    {
-        return this.did_interpolate;
-    }
-
-    private Min_Percent_Difference():
-        number
-    {
-        if (this.color_count > 0) {
-            // if there were no ranges, the min_percent_difference would simply be
-            // (100 / color_count), but because ranges are allowed, it's as if we're
-            // only using a percentage of each color in the count. so we must multiply
-            // the color_count by the average range's scale, such that if only 50% of
-            // each range is used on average, then our equation would be
-            // (100 / (color_count * 0.5)). this would make it so that upon comparison
-            // of each random color generated, there must be a higher min_percent_difference
-            // between the colors with these ranges, to ensure more uniqueness. Because
-            // they randomly generating colors and not equally distributing them, we need to
-            // further decrease the min_percent_difference to ensure that we can get as many
-            // randomly unique colors upto the color_count as possible within reason.
-            let total_decimal_of_ranges_used: number = 0;
-            for (const [min, max] of
-                [
-                    [this.Min_Red(), this.Max_Red()],
-                    [this.Min_Green(), this.Max_Green()],
-                    [this.Min_Blue(), this.Max_Blue()],
-                ] as Array<[Min, Max]>
-            ) {
-                total_decimal_of_ranges_used += (max - min) * 1.0 / 255;
-            }
-            total_decimal_of_ranges_used += (this.Max_Alpha() - this.Min_Alpha());
-
-            const average_decimal_of_ranges_used: number = total_decimal_of_ranges_used / 4;
-            const reasonable_decimal_of_randomness: number = 0.75;
-
-            return 100 / (this.Color_Count() * average_decimal_of_ranges_used * reasonable_decimal_of_randomness);
-        } else {
-            return 0;
-        }
     }
 }
