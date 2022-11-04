@@ -2,6 +2,7 @@ import { Float } from "../types";
 import { URL_Path } from "../types";
 
 import { Assert } from "../utils";
+import { Wait } from "../utils";
 
 import * as Model from "../model"
 
@@ -70,6 +71,18 @@ type Arena_Props = {
 
 export class Arena extends Component<Arena_Props>
 {
+    static Scroll_Player_Name_Wait():
+        Float
+    {
+        return 5000;
+    }
+
+    static Scroll_Player_Name_Duration():
+        Float
+    {
+        return 2000;
+    }
+
     private player_groups: Array<Player_Group | null> =
         new Array(Game.Player_Group_Count()).fill(null);
     private board: Board | null =
@@ -278,6 +291,8 @@ export class Arena extends Component<Arena_Props>
             });
 
             if (this.Is_Alive()) {
+                this.Start_Scrolling_Player_Names();
+
                 this.Send({
                     name_affix: Event.PLAYER_START_TURN,
                     name_suffixes: [
@@ -326,6 +341,36 @@ export class Arena extends Component<Arena_Props>
                     } as Event.Player_Start_Turn_Data,
                     is_atomic: true,
                 });
+            }
+        }
+    }
+
+    private async Start_Scrolling_Player_Names():
+        Promise<void>
+    {
+        let current_direction = Model.Enum.Direction.RIGHT;
+
+        while (true) {
+            await Wait(Arena.Scroll_Player_Name_Wait());
+            if (this.Is_Alive()) {
+                await this.Send({
+                    name_affix: Event.SCROLL_PLAYER_NAMES,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        duration: Arena.Scroll_Player_Name_Duration(),
+                        direction: current_direction,
+                    } as Event.Scroll_Player_Names_Data,
+                    is_atomic: true,
+                });
+
+                if (current_direction === Model.Enum.Direction.LEFT) {
+                    current_direction = Model.Enum.Direction.RIGHT;
+                } else {
+                    current_direction = Model.Enum.Direction.LEFT;
+                }
+            } else {
+                return;
             }
         }
     }

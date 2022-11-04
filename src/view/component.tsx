@@ -482,42 +482,49 @@ export class Component<T extends Component_Props> extends React.Component<T>
             frame: Component_Animation_Frame,
             state: any,
         ) => boolean | Promise<boolean>,
-        state: any = null,
+        data: any,
     ):
         Promise<void>
     {
-        let start: Float | null = null;
-        let last: Float = -1.0;
-
-        async function Loop(
-            this: Component<Component_Props>,
-            now: Float,
-        ):
-            Promise<void>
+        return new Promise((resolve) =>
         {
-            if (this.Is_Alive()) {
-                if (start == null) {
-                    start = now;
-                }
-                if (last !== now) {
-                    last = now;
-                    if (
-                        await method.bind(this)(
-                            {
-                                now: now,
-                                start: start as Float,
-                                elapsed: now - start,
-                            } as Component_Animation_Frame,
-                            state,
-                        )
-                    ) {
+            let start: Float | null = null;
+            let last: Float = -1.0;
+
+            async function Loop(
+                this: Component<Component_Props>,
+                now: Float,
+            ):
+                Promise<void>
+            {
+                if (this.Is_Alive()) {
+                    if (start == null) {
+                        start = now;
+                    }
+                    if (last !== now) {
+                        last = now;
+                        if (
+                            await method.bind(this)(
+                                {
+                                    now: now,
+                                    start: start as Float,
+                                    elapsed: now - start,
+                                } as Component_Animation_Frame,
+                                data,
+                            )
+                        ) {
+                            window.requestAnimationFrame(Loop.bind(this));
+                        } else {
+                            resolve();
+                        }
+                    } else {
                         window.requestAnimationFrame(Loop.bind(this));
                     }
                 } else {
-                    window.requestAnimationFrame(Loop.bind(this));
+                    resolve();
                 }
             }
-        }
-        window.requestAnimationFrame(Loop.bind(this));
+            window.requestAnimationFrame(Loop.bind(this));
+        });
     }
 }

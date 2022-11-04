@@ -1,7 +1,5 @@
 import { Float } from "../../types";
 
-import { Wait } from "../../utils";
-
 import * as Model from "../../model";
 
 import * as Event from "../event";
@@ -18,20 +16,6 @@ type Name_Props = {
 
 export class Name extends Component<Name_Props>
 {
-    static Scroll_Duration():
-        Float
-    {
-        return 2000;
-    }
-
-    static Scroll_Wait():
-        Float
-    {
-        return 5000;
-    }
-
-    private scroll_distance: Float = 0.0;
-
     Player_Bumper():
         Bumper
     {
@@ -47,7 +31,19 @@ export class Name extends Component<Name_Props>
     Scroll_Distance():
         Float
     {
-        return this.scroll_distance;
+        const element: HTMLElement = this.Some_Element();
+        const previous_scroll_left = element.scrollLeft;
+        element.scrollLeft = element.scrollWidth;
+        const scroll_distance = element.scrollLeft;
+        element.scrollLeft = previous_scroll_left;
+
+        return scroll_distance;
+    }
+
+    Current_Scroll_Distance():
+        Float
+    {
+        return this.Some_Element().scrollLeft;
     }
 
     override On_Refresh():
@@ -62,14 +58,6 @@ export class Name extends Component<Name_Props>
                 }
             </div>
         );
-    }
-
-    override On_Life():
-        Array<Event.Listener_Info>
-    {
-        this.Try_To_Scroll();
-
-        return [];
     }
 
     override On_Restyle():
@@ -91,41 +79,24 @@ export class Name extends Component<Name_Props>
         });
     }
 
-    override On_Resize(
-        data: Event.Resize_Data,
-    ):
-        void
+    override On_Life():
+        Array<Event.Listener_Info>
     {
-        super.On_Resize(data);
-
-        this.Try_To_Scroll();
+        return [
+            {
+                event_name: new Event.Name(Event.ON, Event.SCROLL_PLAYER_NAMES),
+                event_handler: this.On_Scroll_Player_Names,
+            },
+        ];
     }
 
-    async Try_To_Scroll():
+    async On_Scroll_Player_Names(
+        data: Event.Scroll_Player_Names_Data,
+    ):
         Promise<void>
     {
-        await Wait(Name.Scroll_Wait());
         if (this.Is_Alive()) {
-            const element: HTMLElement = this.Some_Element();
-            const previous_scroll_left = element.scrollLeft;
-            element.scrollLeft = element.scrollWidth;
-            if (this.scroll_distance !== element.scrollLeft) {
-                this.scroll_distance = element.scrollLeft;
-                element.scrollLeft = 0;
-                if (this.scroll_distance >= 1.0) {
-                    this.Animate_By_Frame(
-                        this.Animate_Scroll,
-                        {
-                            duration: Name.Scroll_Duration(),
-                            direction: Model.Enum.Direction.RIGHT,
-                            distance: this.scroll_distance,
-                            interval: this.scroll_distance / Name.Scroll_Duration(),
-                        },
-                    );
-                }
-            } else {
-                element.scrollLeft = previous_scroll_left;
-            }
+            await this.Animate_By_Frame(this.Animate_Scroll, data);
         }
     }
 
@@ -133,64 +104,41 @@ export class Name extends Component<Name_Props>
         {
             elapsed,
         }: Component_Animation_Frame,
-        state: {
-            duration: Float,
-            direction: Model.Enum.Direction,
-            distance: Float,
-            interval: Float,
-        },
+        {
+            duration,
+            direction,
+        }: Event.Scroll_Player_Names_Data,
     ):
         Promise<boolean>
     {
-        if (
-            this.Is_Alive() &&
-            this.scroll_distance === state.distance
-        ) {
-            const element: HTMLElement = this.Some_Element();
-            if (state.direction === Model.Enum.Direction.RIGHT) {
-                if (elapsed >= state.duration) {
-                    element.scrollLeft = state.distance;
-                    await Wait(Name.Scroll_Wait());
-                    if (this.Is_Alive()) {
-                        this.Animate_By_Frame(
-                            this.Animate_Scroll,
-                            {
-                                duration: state.duration,
-                                direction: Model.Enum.Direction.LEFT,
-                                distance: state.distance,
-                                interval: state.interval,
-                            },
-                        );
+        if (this.Is_Alive()) {
+            const distance: Float = this.Scroll_Distance();
+            if (distance >= 1.0) {
+                const interval: Float = distance / duration;
+                const element: HTMLElement = this.Some_Element();
+                if (direction === Model.Enum.Direction.RIGHT) {
+                    if (elapsed >= duration) {
+                        element.scrollLeft = distance;
+
+                        return false;
+                    } else {
+                        element.scrollLeft = (elapsed) * interval;
+
+                        return true;
                     }
-
-                    return false;
                 } else {
-                    element.scrollLeft = (elapsed) * state.interval;
+                    if (elapsed >= duration) {
+                        element.scrollLeft = 0.0;
 
-                    return true;
+                        return false;
+                    } else {
+                        element.scrollLeft = (duration - elapsed) * interval;
+
+                        return true;
+                    }
                 }
             } else {
-                if (elapsed >= state.duration) {
-                    element.scrollLeft = 0.0;
-                    await Wait(Name.Scroll_Wait());
-                    if (this.Is_Alive()) {
-                        this.Animate_By_Frame(
-                            this.Animate_Scroll,
-                            {
-                                duration: state.duration,
-                                direction: Model.Enum.Direction.RIGHT,
-                                distance: state.distance,
-                                interval: state.interval,
-                            },
-                        );
-                    }
-
-                    return false;
-                } else {
-                    element.scrollLeft = (state.duration - elapsed) * state.interval;
-
-                    return true;
-                }
+                return false;
             }
         } else {
             return false;
