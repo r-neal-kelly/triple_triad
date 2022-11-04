@@ -18,6 +18,20 @@ type Name_Props = {
 
 export class Name extends Component<Name_Props>
 {
+    static Scroll_Duration():
+        Float
+    {
+        return 2000;
+    }
+
+    static Scroll_Wait():
+        Float
+    {
+        return 5000;
+    }
+
+    private scroll_distance: Float = 0.0;
+
     Player_Bumper():
         Bumper
     {
@@ -28,6 +42,12 @@ export class Name extends Component<Name_Props>
         Model.Player.Index
     {
         return this.Model().Index();
+    }
+
+    Scroll_Distance():
+        Float
+    {
+        return this.scroll_distance;
     }
 
     override On_Refresh():
@@ -47,20 +67,7 @@ export class Name extends Component<Name_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        (async function (
-            this: Name,
-        )
-        {
-            await Wait(5000);
-
-            this.Animate_By_Frame(
-                this.Animate_Scroll,
-                {
-                    direction: Model.Enum.Direction.LEFT,
-                    current_scroll: 0.0,
-                },
-            );
-        }.bind(this))();
+        this.Try_To_Scroll();
 
         return [];
     }
@@ -84,63 +91,103 @@ export class Name extends Component<Name_Props>
         });
     }
 
-    // now this is pretty neat, but I want all player names moving in unison
-    // so we should probably go to the Group type and send this as an event.
-    // the event would tell us what direction we need to scroll. the listener
-    // would only return after making a complete scroll, that way they all start
-    // at the same time at least. if we really wanted to be fancy, we could try
-    // to normalize the speed of each individual scroll so that they all
-    // finish at the same time too. we may also want to do a custom resize handler
-    // here so that we initiate the scroll only when it needs to happen
+    override On_Resize(
+        data: Event.Resize_Data,
+    ):
+        void
+    {
+        super.On_Resize(data);
+
+        this.Try_To_Scroll();
+    }
+
+    async Try_To_Scroll():
+        Promise<void>
+    {
+        await Wait(Name.Scroll_Wait());
+        if (this.Is_Alive()) {
+            const element: HTMLElement = this.Some_Element();
+            const previous_scroll_left = element.scrollLeft;
+            element.scrollLeft = element.scrollWidth;
+            if (this.scroll_distance !== element.scrollLeft) {
+                this.scroll_distance = element.scrollLeft;
+                element.scrollLeft = 0;
+                if (this.scroll_distance >= 1.0) {
+                    this.Animate_By_Frame(
+                        this.Animate_Scroll,
+                        {
+                            duration: Name.Scroll_Duration(),
+                            direction: Model.Enum.Direction.RIGHT,
+                            distance: this.scroll_distance,
+                            interval: this.scroll_distance / Name.Scroll_Duration(),
+                        },
+                    );
+                }
+            } else {
+                element.scrollLeft = previous_scroll_left;
+            }
+        }
+    }
+
     async Animate_Scroll(
         {
             elapsed,
         }: Component_Animation_Frame,
         state: {
+            duration: Float,
             direction: Model.Enum.Direction,
-            current_scroll: Float,
+            distance: Float,
+            interval: Float,
         },
     ):
         Promise<boolean>
     {
-        const multiplier = 0.0007;
-        const wait = 5000;
-
-        if (this.Is_Alive()) {
-            const element = this.Some_Element();
-            if (state.direction === Model.Enum.Direction.LEFT) {
-                if (state.current_scroll >= element.scrollWidth - element.clientWidth) {
-                    await Wait(wait);
-                    this.Animate_By_Frame(
-                        this.Animate_Scroll,
-                        {
-                            direction: Model.Enum.Direction.RIGHT,
-                            current_scroll: element.scrollWidth - element.clientWidth,
-                        },
-                    );
+        if (
+            this.Is_Alive() &&
+            this.scroll_distance === state.distance
+        ) {
+            const element: HTMLElement = this.Some_Element();
+            if (state.direction === Model.Enum.Direction.RIGHT) {
+                if (elapsed >= state.duration) {
+                    element.scrollLeft = state.distance;
+                    await Wait(Name.Scroll_Wait());
+                    if (this.Is_Alive()) {
+                        this.Animate_By_Frame(
+                            this.Animate_Scroll,
+                            {
+                                duration: state.duration,
+                                direction: Model.Enum.Direction.LEFT,
+                                distance: state.distance,
+                                interval: state.interval,
+                            },
+                        );
+                    }
 
                     return false;
                 } else {
-                    state.current_scroll += elapsed * multiplier;
-                    element.scrollLeft = state.current_scroll;
+                    element.scrollLeft = (elapsed) * state.interval;
 
                     return true;
                 }
             } else {
-                if (state.current_scroll <= 0.0) {
-                    await Wait(wait);
-                    this.Animate_By_Frame(
-                        this.Animate_Scroll,
-                        {
-                            direction: Model.Enum.Direction.LEFT,
-                            current_scroll: 0.0,
-                        },
-                    );
+                if (elapsed >= state.duration) {
+                    element.scrollLeft = 0.0;
+                    await Wait(Name.Scroll_Wait());
+                    if (this.Is_Alive()) {
+                        this.Animate_By_Frame(
+                            this.Animate_Scroll,
+                            {
+                                duration: state.duration,
+                                direction: Model.Enum.Direction.RIGHT,
+                                distance: state.distance,
+                                interval: state.interval,
+                            },
+                        );
+                    }
 
                     return false;
                 } else {
-                    state.current_scroll -= elapsed * multiplier;
-                    element.scrollLeft = state.current_scroll;
+                    element.scrollLeft = (state.duration - elapsed) * state.interval;
 
                     return true;
                 }
