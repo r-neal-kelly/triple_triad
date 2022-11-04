@@ -47,8 +47,6 @@ export class Name extends Component<Name_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        return [];
-
         this.Animate_By_Frame(
             this.Animate_Scroll,
             {
@@ -79,6 +77,14 @@ export class Name extends Component<Name_Props>
         });
     }
 
+    // now this is pretty neat, but I want all player names moving in unison
+    // so we should probably go to the Group type and send this as an event.
+    // the event would tell us what direction we need to scroll. the listener
+    // would only return after making a complete scroll, that way they all start
+    // at the same time at least. if we really wanted to be fancy, we could try
+    // to normalize the speed of each individual scroll so that they all
+    // finish at the same time too. we may also want to do a custom resize handler
+    // here so that we initiate the scroll only when it needs to happen
     async Animate_Scroll(
         {
             elapsed,
@@ -90,26 +96,30 @@ export class Name extends Component<Name_Props>
     ):
         Promise<boolean>
     {
-        const multiplier = 0.0003;
-        const wait = 2000;
+        const multiplier = 0.0007;
+        const wait = 5000;
 
         if (this.Is_Alive()) {
             const element = this.Some_Element();
+            if (element.textContent === `PLAYER 1`) {
+                console.log(element.scrollLeft)
+                console.log(state.current_scroll);
+            }
             if (state.direction === Model.Enum.Direction.LEFT) {
-                if (state.current_scroll >= element.scrollWidth) {
+                if (state.current_scroll >= element.scrollWidth - element.clientWidth) {
                     await Wait(wait);
                     this.Animate_By_Frame(
                         this.Animate_Scroll,
                         {
                             direction: Model.Enum.Direction.RIGHT,
-                            current_scroll: element.scrollLeft,
+                            current_scroll: element.scrollWidth - element.clientWidth,
                         },
                     );
 
                     return false;
                 } else {
-                    element.scrollLeft += elapsed * multiplier;
                     state.current_scroll += elapsed * multiplier;
+                    element.scrollLeft = state.current_scroll;
 
                     return true;
                 }
@@ -126,8 +136,8 @@ export class Name extends Component<Name_Props>
 
                     return false;
                 } else {
-                    element.scrollLeft -= elapsed * multiplier;
                     state.current_scroll -= elapsed * multiplier;
+                    element.scrollLeft = state.current_scroll;
 
                     return true;
                 }

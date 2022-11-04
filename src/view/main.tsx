@@ -148,7 +148,6 @@ export class Main extends Component<Main_Props>
             overflowX: `hidden`,
 
             fontSize: `2.8vmin`,
-            //fontSize: `16px`,
         });
     }
 

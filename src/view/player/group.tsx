@@ -100,7 +100,6 @@ export class Group extends Component<Group_Props>
         });
 
         if (is_runt) {
-            const arena: Arena = this.Arena();
             const empty: JSX.Element =
                 <Empty
                     key={`empty`}
