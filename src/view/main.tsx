@@ -285,7 +285,6 @@ export class Main extends Component<Main_Props>
             const packs: Model.Packs = model.Packs();
             const options: Model.Options = model.Menu().Options().Data();
             const rules: Model.Rules.Instance = options.Rules();
-
             const selections: Array<Model.Selection.Instance> = [
                 new Model.Selection.Random({
                     collection: new Model.Collection({
@@ -317,8 +316,6 @@ export class Main extends Component<Main_Props>
                 );
             }
 
-            model.New_Game(selections);
-
             await this.Send({
                 name_affix: Event.DISABLE_MENUS,
                 name_suffixes: [
@@ -346,6 +343,7 @@ export class Main extends Component<Main_Props>
                         is_atomic: true,
                     });
                     if (this.Is_Alive()) {
+                        model.New_Game(selections);
                         await this.Refresh();
                     }
                 }
