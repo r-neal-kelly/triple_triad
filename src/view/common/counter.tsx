@@ -185,7 +185,7 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
             width: this.CSS_Width(),
             height: this.CSS_Height(),
             margin: `0`,
-            padding: `0`,
+            padding: `0.5%`,
 
             position: `relative`,
 
@@ -263,6 +263,7 @@ class Value extends Component<Value_Props>
 
             color: `inherit`,
             fontSize: `inherit`,
+            whiteSpace: `nowrap`,
         });
     }
 }

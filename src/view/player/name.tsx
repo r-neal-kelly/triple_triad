@@ -47,13 +47,20 @@ export class Name extends Component<Name_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Animate_By_Frame(
-            this.Animate_Scroll,
-            {
-                direction: Model.Enum.Direction.LEFT,
-                current_scroll: 0.0,
-            },
-        );
+        (async function (
+            this: Name,
+        )
+        {
+            await Wait(5000);
+
+            this.Animate_By_Frame(
+                this.Animate_Scroll,
+                {
+                    direction: Model.Enum.Direction.LEFT,
+                    current_scroll: 0.0,
+                },
+            );
+        }.bind(this))();
 
         return [];
     }
@@ -101,10 +108,6 @@ export class Name extends Component<Name_Props>
 
         if (this.Is_Alive()) {
             const element = this.Some_Element();
-            if (element.textContent === `PLAYER 1`) {
-                console.log(element.scrollLeft)
-                console.log(state.current_scroll);
-            }
             if (state.direction === Model.Enum.Direction.LEFT) {
                 if (state.current_scroll >= element.scrollWidth - element.clientWidth) {
                     await Wait(wait);
