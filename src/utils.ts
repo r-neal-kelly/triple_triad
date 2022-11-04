@@ -189,3 +189,99 @@ export function Plot_Revolution(
 
     return points;
 }
+
+export function Plot_Bezier_Curve_3(
+    step: Float,
+    scale: Float,
+    x1: Float,
+    y1: Float,
+    x2: Float,
+    y2: Float,
+    x3: Float,
+    y3: Float,
+):
+    Array<{
+        x: Float,
+        y: Float,
+    }>
+{
+    // x = (1−t)^2 * x1 + 2 * (1−t) * t * x2 + t^2 * x3
+    // y = (1−t)^2 * y1 + 2 * (1−t) * t * y2 + t^2 * y3
+
+    Assert(step > 0.0 && step <= 1.0);
+    Assert(x1 >= 0.0 && x1 <= 1.0);
+    Assert(y1 >= 0.0 && y1 <= 1.0);
+    Assert(x2 >= 0.0 && x2 <= 1.0);
+    Assert(y2 >= 0.0 && y2 <= 1.0);
+    Assert(x3 >= 0.0 && x3 <= 1.0);
+    Assert(y3 >= 0.0 && y3 <= 1.0);
+
+    const points: Array<{
+        x: Float,
+        y: Float,
+    }> = [];
+
+    for (let t = 0.0, end = 1.0; t <= end; t += step) {
+        const a: Float = 1 - t;
+        const b: Float = Math.pow(a, 2);
+        const c: Float = 2 * a * t;
+        const d: Float = Math.pow(t, 2);
+
+        points.push({
+            x: ((b * x1) + (c * x2) + (d * x3)) * scale,
+            y: ((b * y1) + (c * y2) + (d * y3)) * scale,
+        });
+    }
+
+    return points;
+}
+
+export function Plot_Bezier_Curve_4(
+    step: Float,
+    scale: Float,
+    x1: Float,
+    y1: Float,
+    x2: Float,
+    y2: Float,
+    x3: Float,
+    y3: Float,
+    x4: Float,
+    y4: Float,
+):
+    Array<{
+        x: Float,
+        y: Float,
+    }>
+{
+    // P = (1 - t)^3 * P1 + 3 * (1 - t)^2 * t * P2 + 3 * (1 - t) * t^2 * P3 + t^3 * P4
+
+    const points: Array<{
+        x: Float,
+        y: Float,
+    }> = [];
+
+    Assert(step > 0.0 && step <= 1.0);
+    Assert(x1 >= 0.0 && x1 <= 1.0);
+    Assert(y1 >= 0.0 && y1 <= 1.0);
+    Assert(x2 >= 0.0 && x2 <= 1.0);
+    Assert(y2 >= 0.0 && y2 <= 1.0);
+    Assert(x3 >= 0.0 && x3 <= 1.0);
+    Assert(y3 >= 0.0 && y3 <= 1.0);
+    Assert(x4 >= 0.0 && x4 <= 1.0);
+    Assert(y4 >= 0.0 && y4 <= 1.0);
+
+    for (let t = 0.0, end = 1.0; t <= end; t += step) {
+        const a: Float = 1 - t;
+        const b: Float = Math.pow(a, 3);
+        const c: Float = 3 * Math.pow(a, 2) * t;
+        const d: Float = 3 * a * Math.pow(t, 2);
+        const e: Float = Math.pow(t, 3);
+
+        points.push({
+            x: ((b * x1) + (c * x2) + (d * x3) + (e * x4)) * scale,
+            y: ((b * y1) + (c * y2) + (d * y3) + (e * y4)) * scale,
+        })
+    }
+
+    return points;
+}

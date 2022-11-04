@@ -3,6 +3,7 @@ import { Index } from "../types";
 import { Float } from "../types";
 
 import { Random_Integer_Exclusive } from "../utils";
+import { Plot_Bezier_Curve_4 } from "../utils";
 
 import * as Model from "../model";
 
@@ -220,6 +221,15 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 this.Animate_Fade_Out,
                 {
                     duration: 2000,
+                    plot: Plot_Bezier_Curve_4(
+                        1.0 / (2000 - 1),
+                        100.0,
+                        0.0, 0.0,
+                        0.42, 0.0,
+                        0.58, 1.0,
+                        1.0, 1.0,
+                    ),
+                    index: 0,
                 },
             );
             if (this.Is_Alive()) {
@@ -364,22 +374,39 @@ export class Exhibitions extends Component<Exhibitions_Props>
         {
             elapsed,
         }: Component_Animation_Frame,
-        {
-            duration,
-        }: {
+        state: {
             duration: Integer,
+            plot: Array<{
+                x: Float,
+                y: Float,
+            }>,
+            index: Integer,
         },
     ):
         Promise<boolean>
     {
         if (this.Is_Alive()) {
-            const percent: Float = duration > 0 ?
-                Math.min(elapsed * 100 / duration, 100) :
-                100;
-            const element: HTMLElement = this.Some_Element();
-            element.style.opacity = `${100 - percent}%`;
+            if (elapsed >= state.duration) {
+                const element: HTMLElement = this.Some_Element();
+                element.style.opacity = `${100 - 100}%`;
 
-            return elapsed < duration;
+                return false;
+            } else {
+                const x_percent: Float = state.duration > 0 ?
+                    Math.min(elapsed * 100 / state.duration, 100) :
+                    100;
+                while (
+                    state.index < state.plot.length - 1 &&
+                    state.plot[state.index].x < x_percent
+                ) {
+                    state.index += 1;
+                }
+                const y_percent = state.plot[state.index].y;
+                const element: HTMLElement = this.Some_Element();
+                element.style.opacity = `${100 - y_percent}%`;
+
+                return true;
+            }
         } else {
             return false;
         }
