@@ -126,7 +126,7 @@ export class Results extends Component<Results_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         this.Change_Animation({
             animation_name: `Fade_In`,
@@ -284,7 +284,7 @@ class Banner extends Component<Banner_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         this.Change_Animation({
             animation_name: `Move_In`,

@@ -151,7 +151,7 @@ export class Menu extends Component<Menu_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         return [
             {

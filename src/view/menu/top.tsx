@@ -79,7 +79,7 @@ export class Top extends Component<Top_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         this.Change_Animation({
             animation_name: `Fade_And_Move_Out`,
@@ -254,7 +254,7 @@ class Title_Text extends Component<Title_Text_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         this.Change_Animation({
             animation_name: `Flash`,

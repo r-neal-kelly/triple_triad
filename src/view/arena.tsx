@@ -213,7 +213,7 @@ export class Arena extends Component<Arena_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         this.Change_Animation({
             animation_name: `Fade_In`,

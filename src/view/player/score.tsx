@@ -46,13 +46,20 @@ export class Score extends Component<Score_Props>
             width: `100%`,
             height: `100%`,
 
+            alignSelf: `center`,
+            justifySelf: `center`,
+
+            overflowX: `hidden`,
+            overflowY: `hidden`,
+
             color: `white`,
             textAlign: `center`,
+            whiteSpace: `nowrap`,
         });
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         const player_index: Model.Player.Index = this.Index();
 

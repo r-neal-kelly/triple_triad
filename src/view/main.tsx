@@ -148,11 +148,12 @@ export class Main extends Component<Main_Props>
             overflowX: `hidden`,
 
             fontSize: `2.8vmin`,
+            //fontSize: `16px`,
         });
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         const model: Model.Main = this.Model();
 

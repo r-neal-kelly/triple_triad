@@ -161,7 +161,7 @@ export class Stake extends Component<Stake_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         const player_index: Model.Player.Index = this.Player().Index();
 

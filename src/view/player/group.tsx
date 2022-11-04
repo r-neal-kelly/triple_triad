@@ -7,6 +7,7 @@ import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Arena } from "../arena";
 import { Player } from "../player";
+import { Empty } from "./empty";
 
 type Group_Props = {
     model: Model.Player.Group.Instance;
@@ -100,15 +101,14 @@ export class Group extends Component<Group_Props>
 
         if (is_runt) {
             const arena: Arena = this.Arena();
-            const empty_player_column: JSX.Element =
-                <div
-                    className={`Player_Empty`}
-                    style={{
-                        width: `${arena.Measurements().Player_Width()}px`,
-                        height: `${arena.Measurements().Player_Height()}px`,
-                    }}
-                >
-                </div>;
+            const empty: JSX.Element =
+                <Empty
+                    key={`empty`}
+
+                    model={null}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />;
 
             if (
                 relative_to === Model.Enum.Direction.LEFT ||
@@ -119,7 +119,7 @@ export class Group extends Component<Group_Props>
                         className={`Group`}
                     >
                         {players}
-                        {empty_player_column}
+                        {empty}
                     </div >
                 );
             } else {
@@ -127,7 +127,7 @@ export class Group extends Component<Group_Props>
                     <div
                         className={`Group`}
                     >
-                        {empty_player_column}
+                        {empty}
                         {players}
                     </div>
                 );

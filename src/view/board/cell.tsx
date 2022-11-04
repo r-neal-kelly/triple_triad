@@ -169,7 +169,7 @@ export class Cell extends Component<Cell_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         const cell_index: Model.Board.Cell.Index = this.Index();
 

@@ -3,6 +3,7 @@ import ReactDom from "react-dom";
 
 import { Integer } from "../types";
 import { Index } from "../types";
+import { Float } from "../types";
 import { Name } from "../types";
 
 import { Assert } from "../utils";
@@ -20,7 +21,13 @@ function New_Component_ID():
 
 export type Component_Styles = {
     [index: string]: string,
-};
+}
+
+export type Component_Animation_Frame = {
+    now: Float;
+    start: Float;
+    elapsed: Float;
+}
 
 /*
     Must be satisfied to inherit from Component.
@@ -468,5 +475,49 @@ export class Component<T extends Component_Props> extends React.Component<T>
         void
     {
         this.Change_Style(`animationName`, ``);
+    }
+
+    async Animate_By_Frame(
+        method: (
+            frame: Component_Animation_Frame,
+            state: any,
+        ) => boolean | Promise<boolean>,
+        state: any = null,
+    ):
+        Promise<void>
+    {
+        let start: Float | null = null;
+        let last: Float = -1.0;
+
+        async function Loop(
+            this: Component<Component_Props>,
+            now: Float,
+        ):
+            Promise<void>
+        {
+            if (this.Is_Alive()) {
+                if (start == null) {
+                    start = now;
+                }
+                if (last !== now) {
+                    last = now;
+                    if (
+                        await method.bind(this)(
+                            {
+                                now: now,
+                                start: start as Float,
+                                elapsed: now - start,
+                            } as Component_Animation_Frame,
+                            state,
+                        )
+                    ) {
+                        window.requestAnimationFrame(Loop.bind(this));
+                    }
+                } else {
+                    window.requestAnimationFrame(Loop.bind(this));
+                }
+            }
+        }
+        window.requestAnimationFrame(Loop.bind(this));
     }
 }

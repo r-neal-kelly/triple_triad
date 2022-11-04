@@ -110,7 +110,7 @@ export class Board extends Component<Board_Props>
     }
 
     override On_Life():
-        Event.Listener_Info[]
+        Array<Event.Listener_Info>
     {
         return ([
             {
