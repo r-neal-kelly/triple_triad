@@ -224,7 +224,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 {
                     duration: FADE_OUT_DURATION,
                     plot: Plot_Bezier_Curve_4(
-                        1.0 / (FADE_OUT_DURATION - 1),
+                        1.0 / (FADE_OUT_DURATION / 15 - 1),
                         100.0,
                         0.0, 0.0,
                         0.42, 0.0,
