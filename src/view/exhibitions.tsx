@@ -14,6 +14,8 @@ import { Component_Animation_Frame } from "./component";
 import { Main } from "./main";
 import { Exhibition } from "./exhibition";
 
+const FADE_OUT_DURATION = 2000;
+
 type Exhibitions_Props = {
     model: Model.Main;
     parent: Main;
@@ -220,9 +222,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
             await this.Animate_By_Frame(
                 this.Animate_Fade_Out,
                 {
-                    duration: 2000,
+                    duration: FADE_OUT_DURATION,
                     plot: Plot_Bezier_Curve_4(
-                        1.0 / (2000 - 1),
+                        1.0 / (FADE_OUT_DURATION - 1),
                         100.0,
                         0.0, 0.0,
                         0.42, 0.0,
