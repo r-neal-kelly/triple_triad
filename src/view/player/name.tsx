@@ -100,7 +100,7 @@ export class Name extends Component<Name_Props>
         }
     }
 
-    async Animate_Scroll(
+    private async Animate_Scroll(
         {
             elapsed,
         }: Component_Animation_Frame,

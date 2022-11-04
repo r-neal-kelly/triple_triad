@@ -1,8 +1,14 @@
+import { Integer } from "../../types";
+import { Float } from "../../types";
+
+import { Wait } from "../../utils";
+
 import * as Model from "../../model";
 
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Component_Animation_Frame } from "../component";
 import { Button } from "../common/button";
 import { Menu } from "../menu";
 
@@ -81,26 +87,6 @@ export class Top extends Component<Top_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Fade_And_Move_Out`,
-            animation_body: `
-                0% {
-                    opacity: 100%;
-                    left: 0;
-                }
-
-                50% {
-                    opacity: 100%;
-                    left: 0;
-                }
-            
-                100% {
-                    opacity: 0%;
-                    left: -100%;
-                }
-            `,
-        });
-
         return ([
             {
                 event_name: new Event.Name(Event.ON, Event.CLOSE_MENUS),
@@ -116,16 +102,39 @@ export class Top extends Component<Top_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate({
-                animation_name: `Fade_And_Move_Out`,
-                duration_in_milliseconds: 750,
-                css_iteration_count: `1`,
-                css_timing_function: `ease-in-out`,
-                css_fill_mode: `forwards`,
-            });
+            await Wait(375);
             if (this.Is_Alive()) {
-                this.Deanimate();
+                await this.Animate_By_Frame(
+                    this.Animate_Fade_And_Move_Out,
+                    {
+                        duration: 375,
+                    },
+                );
             }
+        }
+    }
+
+    private async Animate_Fade_And_Move_Out(
+        {
+            elapsed,
+        }: Component_Animation_Frame,
+        {
+            duration,
+        }: {
+            duration: Integer,
+        },
+    ):
+        Promise<boolean>
+    {
+        if (this.Is_Alive()) {
+            const percent: Float = Math.min(elapsed * 100 / duration, 100);
+            const element: HTMLElement = this.Some_Element();
+            element.style.opacity = `${100 - percent}%`;
+            element.style.left = `-${percent}%`;
+
+            return elapsed < duration;
+        } else {
+            return false;
         }
     }
 }
