@@ -127,7 +127,9 @@ export class Top extends Component<Top_Props>
         Promise<boolean>
     {
         if (this.Is_Alive()) {
-            const percent: Float = Math.min(elapsed * 100 / duration, 100);
+            const percent: Float = duration > 0 ?
+                Math.min(elapsed * 100 / duration, 100) :
+                100;
             const element: HTMLElement = this.Some_Element();
             element.style.opacity = `${100 - percent}%`;
             element.style.left = `-${percent}%`;

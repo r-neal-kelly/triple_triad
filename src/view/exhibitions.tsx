@@ -1,3 +1,4 @@
+import { Integer } from "../types";
 import { Index } from "../types";
 import { Float } from "../types";
 
@@ -8,6 +9,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+import { Component_Animation_Frame } from "./component";
 import { Main } from "./main";
 import { Exhibition } from "./exhibition";
 
@@ -140,32 +142,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-            
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
-        this.Change_Animation({
-            animation_name: `Fade_Out`,
-            animation_body: `
-                0% {
-                    opacity: 100%;
-                }
-            
-                100% {
-                    opacity: 0%;
-                }
-            `,
-        });
-
         this.Change_Style(`display`, `none`);
 
         return [
@@ -224,14 +200,12 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Animate({
-                animation_name: `Fade_In`,
-                duration_in_milliseconds: 2000,
-                css_iteration_count: `1`,
-                css_timing_function: `ease-in-out`,
-                css_fill_mode: `forward`,
-            });
-            this.Deanimate();
+            await this.Animate_By_Frame(
+                this.Animate_Fade_In,
+                {
+                    duration: 2000,
+                },
+            );
         }
     }
 
@@ -242,15 +216,15 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate({
-                animation_name: `Fade_Out`,
-                duration_in_milliseconds: 2000,
-                css_iteration_count: `1`,
-                css_timing_function: `ease-in-out`,
-                css_fill_mode: `forward`,
-            });
-            this.Deanimate();
-            this.Change_Style(`display`, `none`);
+            await this.Animate_By_Frame(
+                this.Animate_Fade_Out,
+                {
+                    duration: 2000,
+                },
+            );
+            if (this.Is_Alive()) {
+                this.Change_Style(`display`, `none`);
+            }
         }
     }
 
@@ -359,5 +333,55 @@ export class Exhibitions extends Component<Exhibitions_Props>
         }
 
         this.is_switching = false;
+    }
+
+    private async Animate_Fade_In(
+        {
+            elapsed,
+        }: Component_Animation_Frame,
+        {
+            duration,
+        }: {
+            duration: Integer,
+        },
+    ):
+        Promise<boolean>
+    {
+        if (this.Is_Alive()) {
+            const percent: Float = duration > 0 ?
+                Math.min(elapsed * 100 / duration, 100) :
+                100;
+            const element: HTMLElement = this.Some_Element();
+            element.style.opacity = `${percent}%`;
+
+            return elapsed < duration;
+        } else {
+            return false;
+        }
+    }
+
+    private async Animate_Fade_Out(
+        {
+            elapsed,
+        }: Component_Animation_Frame,
+        {
+            duration,
+        }: {
+            duration: Integer,
+        },
+    ):
+        Promise<boolean>
+    {
+        if (this.Is_Alive()) {
+            const percent: Float = duration > 0 ?
+                Math.min(elapsed * 100 / duration, 100) :
+                100;
+            const element: HTMLElement = this.Some_Element();
+            element.style.opacity = `${100 - percent}%`;
+
+            return elapsed < duration;
+        } else {
+            return false;
+        }
     }
 }
