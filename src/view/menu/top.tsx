@@ -1,7 +1,9 @@
 import { Integer } from "../../types";
+import { Index } from "../../types";
 import { Float } from "../../types";
 
 import { Wait } from "../../utils";
+import { Plot_Bezier_Curve_4 } from "../../utils";
 
 import * as Model from "../../model";
 
@@ -104,39 +106,69 @@ export class Top extends Component<Top_Props>
         if (this.Is_Alive()) {
             await Wait(375);
             if (this.Is_Alive()) {
-                await this.Animate_By_Frame(
-                    this.Animate_Fade_And_Move_Out.bind(this),
-                    {
-                        duration: 375,
-                    },
-                );
+                await this.Fade_And_Move_Out(625);
             }
         }
     }
 
-    private async Animate_Fade_And_Move_Out(
-        {
-            elapsed,
-        }: Component_Animation_Frame,
-        {
-            duration,
-        }: {
-            duration: Integer,
-        },
+    async Fade_And_Move_Out(
+        duration: Float,
     ):
-        Promise<boolean>
+        Promise<void>
     {
-        if (this.Is_Alive()) {
-            const percent: Float = duration > 0 ?
-                Math.min(elapsed * 100 / duration, 100) :
-                100;
-            const element: HTMLElement = this.Some_Element();
-            element.style.opacity = `${100 - percent}%`;
-            element.style.left = `-${percent}%`;
+        function On_Frame(
+            {
+                elapsed,
+            }: Component_Animation_Frame,
+            state: {
+                element: HTMLElement,
+                duration: Integer,
+                plot: Array<{
+                    x: Float,
+                    y: Float,
+                }>,
+            },
+        ):
+            boolean
+        {
+            if (elapsed >= state.duration) {
+                element.style.opacity = `0%`;
+                element.style.left = `-100%`;
 
-            return elapsed < duration;
+                return false;
+            } else {
+                const index: Index =
+                    Math.floor(elapsed * state.plot.length / state.duration);
+
+                state.element.style.opacity =
+                    `${state.plot[index].y}%`;
+                state.element.style.left =
+                    `${state.plot[index].x}%`;
+
+                return true;
+            }
+        }
+
+        const element: HTMLElement = this.Some_Element();
+        if (duration === 0) {
+            element.style.opacity = `0%`;
+            element.style.left = `-100%`;
         } else {
-            return false;
+            await this.Animate_By_Frame(
+                On_Frame,
+                {
+                    element: element,
+                    duration: duration,
+                    plot: Plot_Bezier_Curve_4(
+                        1.0 / (duration / 15),
+                        100.0,
+                        0.0, 1.0,
+                        0.42, 1.0,
+                        -0.58, 0.0,
+                        -1.0, 0.0,
+                    ),
+                },
+            );
         }
     }
 }

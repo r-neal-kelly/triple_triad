@@ -14,6 +14,7 @@ import { Component_Animation_Frame } from "./component";
 import { Main } from "./main";
 import { Exhibition } from "./exhibition";
 
+const FADE_IN_DURATION = 2000;
 const FADE_OUT_DURATION = 2000;
 
 type Exhibitions_Props = {
@@ -203,12 +204,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Animate_By_Frame(
-                this.Animate_Fade_In.bind(this),
-                {
-                    duration: 2000,
-                },
-            );
+            await this.Fade_In(FADE_IN_DURATION);
         }
     }
 
@@ -333,28 +329,60 @@ export class Exhibitions extends Component<Exhibitions_Props>
         this.is_switching = false;
     }
 
-    private async Animate_Fade_In(
-        {
-            elapsed,
-        }: Component_Animation_Frame,
-        {
-            duration,
-        }: {
-            duration: Integer,
-        },
+    async Fade_In(
+        duration: Float,
     ):
-        Promise<boolean>
+        Promise<void>
     {
-        if (this.Is_Alive()) {
-            const percent: Float = duration > 0 ?
-                Math.min(elapsed * 100 / duration, 100) :
-                100;
-            const element: HTMLElement = this.Some_Element();
-            element.style.opacity = `${percent}%`;
+        function On_Frame(
+            {
+                elapsed,
+            }: Component_Animation_Frame,
+            state: {
+                element: HTMLElement,
+                duration: Integer,
+                plot: Array<{
+                    x: Float,
+                    y: Float,
+                }>,
+            },
+        ):
+            boolean
+        {
+            if (elapsed >= state.duration) {
+                state.element.style.opacity = `100%`;
 
-            return elapsed < duration;
+                return false;
+            } else {
+                const index: Index =
+                    Math.floor(elapsed * state.plot.length / state.duration);
+
+                state.element.style.opacity =
+                    `${state.plot[index].y}%`;
+
+                return true;
+            }
+        }
+
+        const element: HTMLElement = this.Some_Element();
+        if (duration === 0) {
+            element.style.opacity = `100%`;
         } else {
-            return false;
+            await this.Animate_By_Frame(
+                On_Frame,
+                {
+                    element: element,
+                    duration: duration,
+                    plot: Plot_Bezier_Curve_4(
+                        1.0 / (duration / 15 - 1),
+                        100.0,
+                        0.0, 0.0,
+                        0.42, 0.0,
+                        0.58, 1.0,
+                        1.0, 1.0,
+                    ),
+                },
+            );
         }
     }
 
@@ -383,13 +411,11 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
                 return false;
             } else {
-                const percent_index: Index =
+                const index: Index =
                     Math.floor(elapsed * state.plot.length / state.duration);
-                const percent: Float = percent_index < state.plot.length ?
-                    state.plot[percent_index].y :
-                    state.plot[state.plot.length - 1].y;
 
-                state.element.style.opacity = `${100 - percent}%`;
+                state.element.style.opacity =
+                    `${100 - state.plot[index].y}%`;
 
                 return true;
             }
