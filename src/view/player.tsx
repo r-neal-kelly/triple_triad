@@ -8,6 +8,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+import { Game_Measurements } from "./game";
 import { Arena } from "./arena";
 import { Group } from "./player/group";
 import { Bumper } from "./player/bumper";
@@ -66,16 +67,22 @@ export class Player extends Component<Player_Props>
         return this.Model().Index();
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Player_Width();
+        return this.Measurements().Player_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Player_Height();
+        return this.Measurements().Player_Height();
     }
 
     CSS_Width():
@@ -124,8 +131,16 @@ export class Player extends Component<Player_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
         const model: Model.Player.Instance = this.Model();
         const color: Model.Color.Instance = this.Model().Color();
+
+        let flex_direction: string;
+        if (measurements.Is_Vertical()) {
+            flex_direction = `row`;
+        } else {
+            flex_direction = `column`;
+        }
 
         let background_color: string;
         if (model.Is_On_Turn()) {
@@ -141,7 +156,7 @@ export class Player extends Component<Player_Props>
 
         return ({
             display: `flex`,
-            flexDirection: `column`,
+            flexDirection: flex_direction,
             alignItems: `center`,
 
             width: this.CSS_Width(),

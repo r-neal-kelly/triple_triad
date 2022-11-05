@@ -2,6 +2,7 @@ import { Float } from "../types";
 
 import { Percent } from "../utils";
 import { X_Scrollbar_Height } from "../utils";
+import { Y_Scrollbar_Width } from "../utils";
 
 import * as Model from "../model";
 
@@ -14,11 +15,11 @@ import { Arena } from "./arena";
 import { Results } from "./results";
 
 const PLAYER_GROUP_COUNT: Model.Player.Group.Count = 2;
-const PLAYER_GROUP_DIRECTION: Model.Enum.Direction = Model.Enum.Direction.RIGHT;
 
 export class Game_Measurements
 {
     has_x_scrollbar: boolean = false;
+    has_y_scrollbar: boolean = false;
 
     width: Float = 0;
     height: Float = 0;
@@ -48,7 +49,8 @@ export class Game_Measurements
 
     player_group_width: Float = 0;
     player_group_height: Float = 0;
-    player_group_padding: Float = 0;
+    player_group_padding_left_right: Float = 0;
+    player_group_padding_top_bottom: Float = 0;
 
     player_width: Float = 0;
     player_height: Float = 0;
@@ -67,14 +69,14 @@ export class Game_Measurements
 
     constructor(
         {
-            may_have_x_scrollbar,
+            may_have_scrollbar,
             parent_width,
             parent_height,
             row_count,
             column_count,
             player_count,
         }: {
-            may_have_x_scrollbar: boolean,
+            may_have_scrollbar: boolean,
             parent_width: Float,
             parent_height: Float,
             row_count: Model.Board.Row.Count,
@@ -83,34 +85,131 @@ export class Game_Measurements
         },
     )
     {
-        this.Calculate(
-            parent_width,
-            parent_height,
-            row_count,
-            column_count,
-            player_count,
-        );
-
-        if (may_have_x_scrollbar && this.content_width > this.width) {
-            this.Calculate(
+        if (parent_height > parent_width) {
+            this.Calculate_By_Width(
                 parent_width,
-                parent_height - X_Scrollbar_Height(),
+                parent_height,
                 row_count,
                 column_count,
                 player_count,
             );
-            this.height = parent_height;
-            this.arena_height = parent_height;
 
-            this.has_x_scrollbar = true;
+            if (may_have_scrollbar && this.content_height > this.height) {
+                this.Calculate_By_Width(
+                    parent_width - Y_Scrollbar_Width(),
+                    parent_height,
+                    row_count,
+                    column_count,
+                    player_count,
+                );
+                this.width = parent_width;
+                this.arena_width = parent_width;
+
+                this.has_y_scrollbar = true;
+            } else {
+                this.has_y_scrollbar = false;
+            }
         } else {
-            this.has_x_scrollbar = false;
+            this.Calculate_By_Height(
+                parent_width,
+                parent_height,
+                row_count,
+                column_count,
+                player_count,
+            );
+
+            if (may_have_scrollbar && this.content_width > this.width) {
+                this.Calculate_By_Height(
+                    parent_width,
+                    parent_height - X_Scrollbar_Height(),
+                    row_count,
+                    column_count,
+                    player_count,
+                );
+                this.height = parent_height;
+                this.arena_height = parent_height;
+
+                this.has_x_scrollbar = true;
+            } else {
+                this.has_x_scrollbar = false;
+            }
         }
 
         Object.freeze(this);
     }
 
-    private Calculate(
+    private Calculate_By_Width(
+        parent_width: Float,
+        parent_height: Float,
+        row_count: Model.Board.Row.Count,
+        column_count: Model.Board.Column.Count,
+        player_count: Model.Player.Count,
+    ):
+        void
+    {
+        this.width = parent_width;
+        this.height = parent_height;
+
+        this.arena_width = this.width;
+        this.arena_height = this.height;
+
+        this.results_width = this.width;
+        this.results_height = this.height;
+
+        this.board_width = Percent(55, this.width); // this.board_width = this.width;
+        this.board_bumper_width = Percent(8, this.board_width);
+        this.board_cells_width = this.board_width - this.board_bumper_width;
+
+        this.board_cells_padding = Percent(2, this.board_width);
+        this.board_cells_grid_gap = Percent(0.5, this.board_width);
+
+        this.card_width =
+            (
+                this.board_cells_width -
+                (this.board_cells_padding * 2) -
+                (this.board_cells_grid_gap * (column_count - 1))
+            ) /
+            column_count;
+        this.card_height = this.card_width * 100 / 80;
+
+        this.board_height =
+            (this.board_cells_padding * 2) +
+            (this.board_cells_grid_gap * (row_count - 1)) +
+            (this.card_height * row_count);
+        this.board_bumper_height = this.board_height;
+        this.board_cells_height = this.board_height;
+
+        this.board_cell_width = this.card_width;
+        this.board_cell_height = this.card_height;
+
+        this.player_group_width = this.width;
+
+        this.player_height = this.card_height * 1.07;
+        this.player_width = this.player_group_width;
+
+        this.player_bumper_height = this.card_height;
+        this.player_bumper_width = this.board_bumper_width;
+
+        this.player_hand_height = this.card_height;
+        this.player_hand_width = this.player_width - this.player_bumper_width;
+
+        this.player_stake_width = this.card_width;
+        this.player_stake_height = this.card_height;
+
+        this.player_group_padding_left_right = 0;
+        this.player_group_padding_top_bottom =
+            (this.player_height - this.player_hand_height) / 2;
+        this.player_group_height =
+            (this.player_height * Math.ceil(player_count / PLAYER_GROUP_COUNT)) +
+            (this.player_group_padding_top_bottom * 2);
+
+        this.content_width = this.width;
+        this.content_height =
+            (this.player_group_height * PLAYER_GROUP_COUNT) +
+            this.board_height;
+    }
+
+    private Calculate_By_Height(
         parent_width: Float,
         parent_height: Float,
         row_count: Model.Board.Row.Count,
@@ -142,7 +241,7 @@ export class Game_Measurements
                 (this.board_cells_grid_gap * (row_count - 1))
             ) /
             row_count;
-        this.card_width = Percent(80, this.card_height);
+        this.card_width = this.card_height * 80 / 100;
 
         this.board_width =
             (this.board_cells_padding * 2) +
@@ -163,16 +262,17 @@ export class Game_Measurements
         this.player_bumper_height = this.board_bumper_height;
 
         this.player_hand_width = this.card_width;
-        this.player_hand_height = this.board_cells_height;
+        this.player_hand_height = this.player_height - this.player_bumper_height;
 
         this.player_stake_width = this.card_width;
         this.player_stake_height = this.card_height;
 
-        this.player_group_padding =
+        this.player_group_padding_left_right =
             (this.player_width - this.player_hand_width) / 2;
+        this.player_group_padding_top_bottom = 0;
         this.player_group_width =
             (this.player_width * Math.ceil(player_count / PLAYER_GROUP_COUNT)) +
-            (this.player_group_padding * 2);
+            (this.player_group_padding_left_right * 2);
 
         this.content_height = this.height;
         this.content_width =
@@ -180,10 +280,34 @@ export class Game_Measurements
             this.board_width;
     }
 
+    Is_Vertical():
+        boolean
+    {
+        return this.height > this.width;
+    }
+
+    Is_Horizontal():
+        boolean
+    {
+        return !this.Is_Vertical();
+    }
+
     Has_X_Scrollbar():
         boolean
     {
         return this.has_x_scrollbar;
+    }
+
+    Has_Y_Scrollbar():
+        boolean
+    {
+        return this.has_y_scrollbar;
+    }
+
+    Has_Scrollbar():
+        boolean
+    {
+        return this.Has_X_Scrollbar() || this.Has_Y_Scrollbar();
     }
 
     Width():
@@ -306,10 +430,16 @@ export class Game_Measurements
         return this.player_group_height;
     }
 
-    Player_Group_Padding():
+    Player_Group_Padding_Left_Right():
         Float
     {
-        return this.player_group_padding;
+        return this.player_group_padding_left_right;
+    }
+
+    Player_Group_Padding_Top_Bottom():
+        Float
+    {
+        return this.player_group_padding_top_bottom;
     }
 
     Player_Width():
@@ -389,7 +519,7 @@ export class Game extends Component<Game_Props>
 
     private measurements: Game_Measurements =
         new Game_Measurements({
-            may_have_x_scrollbar: !this.is_exhibition,
+            may_have_scrollbar: !this.is_exhibition,
             parent_width: this.Parent().Width(),
             parent_height: this.Parent().Height(),
             row_count: this.Model().Rules().Row_Count(),
@@ -401,12 +531,6 @@ export class Game extends Component<Game_Props>
         Model.Player.Group.Count
     {
         return PLAYER_GROUP_COUNT;
-    }
-
-    static Player_Group_Direction():
-        Model.Enum.Direction
-    {
-        return PLAYER_GROUP_DIRECTION;
     }
 
     Arena():
@@ -431,6 +555,16 @@ export class Game extends Component<Game_Props>
         Game_Measurements
     {
         return this.measurements;
+    }
+
+    Player_Group_Direction():
+        Model.Enum.Direction
+    {
+        if (this.Measurements().Is_Vertical()) {
+            return Model.Enum.Direction.BOTTOM;
+        } else {
+            return Model.Enum.Direction.RIGHT;
+        }
     }
 
     Width():
@@ -490,7 +624,7 @@ export class Game extends Component<Game_Props>
         const model: Model.Arena.Instance = this.Model();
 
         this.measurements = new Game_Measurements({
-            may_have_x_scrollbar: !this.is_exhibition,
+            may_have_scrollbar: !this.is_exhibition,
             parent_width: this.Parent().Width(),
             parent_height: this.Parent().Height(),
             row_count: model.Rules().Row_Count(),

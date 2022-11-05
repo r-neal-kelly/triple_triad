@@ -8,6 +8,7 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
 import { Hand } from "./hand";
@@ -21,6 +22,12 @@ type Stake_Props = {
 
 export class Stake extends Component<Stake_Props>
 {
+    static Width_Multiplier():
+        Float
+    {
+        return 1.0;
+    }
+
     static Height_Multiplier():
         Float
     {
@@ -51,16 +58,22 @@ export class Stake extends Component<Stake_Props>
         return this.props.index;
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Player_Stake_Width();
+        return this.Measurements().Player_Stake_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Player_Stake_Height();
+        return this.Measurements().Player_Stake_Height();
     }
 
     CSS_Width():
@@ -110,10 +123,32 @@ export class Stake extends Component<Stake_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
         const model: Model.Stake.Instance = this.Model();
         const color: Model.Color.Instance = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
+
+        let flex_direction: string;
+        let left: string;
+        let top: string;
+        if (measurements.Is_Vertical()) {
+            flex_direction = `row`;
+            left = `calc(
+                ${this.CSS_Width()} *
+                ${Stake.Width_Multiplier()} *
+                ${this.Index()}
+            )`;
+            top = `0`;
+        } else {
+            flex_direction = `column`;
+            left = `0`;
+            top = `calc(
+                ${this.CSS_Height()} *
+                ${Stake.Height_Multiplier()} *
+                ${this.Index()}
+            )`;
+        }
 
         let border: string;
         if (model.Is_Selected()) {
@@ -131,7 +166,7 @@ export class Stake extends Component<Stake_Props>
 
         return ({
             display: `flex`,
-            flexDirection: `column`,
+            flexDirection: flex_direction,
             justifyContent: `center`,
             alignItems: `center`,
 
@@ -139,12 +174,8 @@ export class Stake extends Component<Stake_Props>
             height: this.CSS_Height(),
 
             position: `absolute`,
-            left: `0`,
-            top: `calc(
-                ${this.CSS_Height()} *
-                ${Stake.Height_Multiplier()} *
-                ${this.Index()}
-            )`,
+            left: left,
+            top: top,
             zIndex: `${this.Index()}`,
 
             backgroundColor: `rgba(

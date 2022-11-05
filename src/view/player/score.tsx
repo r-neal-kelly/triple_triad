@@ -3,6 +3,8 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
+import { Arena } from "../arena";
 import { Bumper } from "./bumper";
 
 type Score_Props = {
@@ -13,6 +15,12 @@ type Score_Props = {
 
 export class Score extends Component<Score_Props>
 {
+    Arena():
+        Arena
+    {
+        return this.Player_Bumper().Arena();
+    }
+
     Player_Bumper():
         Bumper
     {
@@ -23,6 +31,12 @@ export class Score extends Component<Score_Props>
         Model.Player.Index
     {
         return this.Model().Index();
+    }
+
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
     }
 
     override On_Refresh():

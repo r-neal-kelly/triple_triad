@@ -121,16 +121,16 @@ export class Arena extends Component<Arena_Props>
         return this.Game().Is_Exhibition();
     }
 
-    Measurements():
-        Game_Measurements
-    {
-        return this.Game().Measurements();
-    }
-
     Card_Images():
         Arena_Card_Images
     {
         return this.card_images;
+    }
+
+    Measurements():
+        Game_Measurements
+    {
+        return this.Game().Measurements();
     }
 
     Width():
@@ -160,9 +160,10 @@ export class Arena extends Component<Arena_Props>
     override On_Refresh():
         JSX.Element | null
     {
+        const game: Game = this.Game();
         const model: Model.Arena.Instance = this.Model();
         const player_groups: Array<Model.Player.Group.Instance> =
-            model.Player_Groups(Game.Player_Group_Count(), Game.Player_Group_Direction());
+            model.Player_Groups(Game.Player_Group_Count(), game.Player_Group_Direction());
         Assert(Game.Player_Group_Count() === 2);
 
         return (
@@ -197,20 +198,39 @@ export class Arena extends Component<Arena_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
+
+        let flex_direction: string;
         let justify_content: string;
         let overflow_x: string;
-        if (this.Measurements().Has_X_Scrollbar()) {
-            justify_content = `start`;
-            overflow_x = `scroll`;
-        } else {
-            justify_content = `center`;
+        let overflow_y: string;
+        if (measurements.Is_Vertical()) {
+            flex_direction = `column`;
+            if (this.Measurements().Has_Y_Scrollbar()) {
+                justify_content = `start`;
+                overflow_y = `scroll`;
+            } else {
+                justify_content = `center`;
+                overflow_y = `hidden`;
+            }
             overflow_x = `hidden`;
+        } else {
+            flex_direction = `row`;
+            if (this.Measurements().Has_X_Scrollbar()) {
+                justify_content = `start`;
+                overflow_x = `scroll`;
+            } else {
+                justify_content = `center`;
+                overflow_x = `hidden`;
+            }
+            overflow_y = `hidden`;
         }
 
         return ({
             display: `flex`,
-            flexDirection: `row`,
+            flexDirection: flex_direction,
             justifyContent: justify_content,
+            alignItems: `center`,
 
             width: this.CSS_Width(),
             height: this.CSS_Height(),
@@ -221,7 +241,7 @@ export class Arena extends Component<Arena_Props>
             zIndex: `0`,
 
             overflowX: overflow_x,
-            overflowY: `hidden`,
+            overflowY: overflow_y,
         });
     }
 

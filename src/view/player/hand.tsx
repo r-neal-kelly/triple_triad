@@ -5,6 +5,7 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
 import { Stake } from "./stake";
@@ -50,16 +51,22 @@ export class Hand extends Component<Hand_Props>
         return this.Model().Index();
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Player_Hand_Width();
+        return this.Measurements().Player_Hand_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Player_Hand_Height();
+        return this.Measurements().Player_Hand_Height();
     }
 
     CSS_Width():
@@ -106,14 +113,26 @@ export class Hand extends Component<Hand_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
+
+        let overflow_x: string;
+        let overflow_y: string;
+        if (measurements.Is_Vertical()) {
+            overflow_x = `auto`;
+            overflow_y = `hidden`;
+        } else {
+            overflow_x = `hidden`;
+            overflow_y = `auto`;
+        }
+
         return ({
             width: this.CSS_Width(),
             height: this.CSS_Height(),
 
             position: `relative`,
 
-            overflowX: `hidden`,
-            overflowY: `auto`,
+            overflowX: overflow_x,
+            overflowY: overflow_y,
 
             scrollbarWidth: `none`,
         });

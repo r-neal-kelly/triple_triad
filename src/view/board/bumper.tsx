@@ -3,6 +3,7 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
 
@@ -24,6 +25,12 @@ export class Bumper extends Component<Bumper_Props>
         Board
     {
         return this.Parent();
+    }
+
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
     }
 
     override On_Refresh():

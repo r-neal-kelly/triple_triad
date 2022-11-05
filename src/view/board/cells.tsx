@@ -5,6 +5,7 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
 import { Cell } from "./cell";
@@ -43,28 +44,34 @@ export class Cells extends Component<Cells_Props>
         return this.Try_Array(this.cells);
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Board_Cells_Width();
+        return this.Measurements().Board_Cells_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Board_Cells_Height();
+        return this.Measurements().Board_Cells_Height();
     }
 
     Padding():
         Float
     {
-        return this.Arena().Measurements().Board_Cells_Padding();
+        return this.Measurements().Board_Cells_Padding();
     }
 
     Grid_Gap():
         Float
     {
-        return this.Arena().Measurements().Board_Cells_Grid_Gap();
+        return this.Measurements().Board_Cells_Grid_Gap();
     }
 
     CSS_Width():

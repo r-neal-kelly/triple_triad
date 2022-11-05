@@ -8,6 +8,7 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
 import { Cells } from "./cells";
@@ -51,16 +52,22 @@ export class Cell extends Component<Cell_Props>
         return this.props.index;
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Board_Cell_Width();
+        return this.Measurements().Board_Cell_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Board_Cell_Height();
+        return this.Measurements().Board_Cell_Height();
     }
 
     CSS_Width():

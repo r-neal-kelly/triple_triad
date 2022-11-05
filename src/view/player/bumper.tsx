@@ -5,6 +5,7 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
 import { Name } from "./name";
@@ -51,16 +52,22 @@ export class Bumper extends Component<Bumper_Props>
         return this.Model().Index();
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Player_Bumper_Width();
+        return this.Measurements().Player_Bumper_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Player_Bumper_Height();
+        return this.Measurements().Player_Bumper_Height();
     }
 
     CSS_Width():

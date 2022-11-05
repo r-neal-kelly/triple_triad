@@ -5,6 +5,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+import { Game_Measurements } from "./game";
 import { Arena } from "./arena";
 import { Bumper } from "./board/bumper";
 import { Cells } from "./board/cells";
@@ -38,16 +39,22 @@ export class Board extends Component<Board_Props>
         return this.Try_Object(this.cells);
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Board_Width();
+        return this.Measurements().Board_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Board_Height();
+        return this.Measurements().Board_Height();
     }
 
     CSS_Width():
@@ -92,15 +99,28 @@ export class Board extends Component<Board_Props>
     override On_Restyle():
         Component_Styles
     {
-        const arena: Arena = this.Arena();
+        const measurements: Game_Measurements = this.Measurements();
+
+        let grid_template_columns: string;
+        let grid_template_rows: string;
+        if (measurements.Is_Vertical()) {
+            grid_template_columns = `
+                ${measurements.Board_Bumper_Width()}px 
+                ${measurements.Board_Cells_Width()}px
+            `;
+            grid_template_rows = `auto`;
+        } else {
+            grid_template_columns = `auto`;
+            grid_template_rows = `
+                ${measurements.Board_Bumper_Height()}px 
+                ${measurements.Board_Cells_Height()}px
+            `;
+        }
 
         return ({
             display: `grid`,
-            gridTemplateColumns: `auto`,
-            gridTemplateRows: `
-                ${arena.Measurements().Board_Bumper_Height()}px 
-                ${arena.Measurements().Board_Cells_Height()}px
-            `,
+            gridTemplateColumns: grid_template_columns,
+            gridTemplateRows: grid_template_rows,
 
             width: this.CSS_Width(),
             height: this.CSS_Height(),

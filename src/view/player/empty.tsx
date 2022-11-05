@@ -3,6 +3,7 @@ import { Float } from "../../types";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Group } from "./group";
 
@@ -26,16 +27,22 @@ export class Empty extends Component<Empty_Props>
         return this.Parent();
     }
 
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
+    }
+
     Width():
         Float
     {
-        return this.Arena().Measurements().Player_Width();
+        return this.Measurements().Player_Width();
     }
 
     Height():
         Float
     {
-        return this.Arena().Measurements().Player_Height();
+        return this.Measurements().Player_Height();
     }
 
     CSS_Width():
@@ -64,9 +71,18 @@ export class Empty extends Component<Empty_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
+
+        let flex_direction: string;
+        if (measurements.Is_Vertical()) {
+            flex_direction = `row`;
+        } else {
+            flex_direction = `column`;
+        }
+
         return ({
             display: `flex`,
-            flexDirection: `column`,
+            flexDirection: flex_direction,
             alignItems: `center`,
 
             width: this.CSS_Width(),

@@ -139,6 +139,34 @@ export function X_Scrollbar_Height():
     return x_scrollbar_height as Float;
 }
 
+let y_scrollbar_width: Float | null = null;
+export function Y_Scrollbar_Width():
+    Float
+{
+    if (y_scrollbar_width == null) {
+        const outer: HTMLElement = document.createElement(`div`);
+        outer.style.width = `100%`;
+        outer.style.height = `100%`;
+        outer.style.zIndex = `-1`;
+        outer.style.overflowY = `scroll`;
+        outer.style.visibility = `hidden`;
+
+        const inner: HTMLElement = document.createElement(`div`);
+        inner.style.width = `100%`;
+        inner.style.height = `200%`;
+        inner.style.overflowY = `hidden`;
+
+        outer.appendChild(inner);
+        document.body.appendChild(outer);
+
+        y_scrollbar_width = outer.offsetWidth - inner.offsetWidth;
+
+        document.body.removeChild(outer);
+    }
+
+    return y_scrollbar_width as Float;
+}
+
 export function Plot_Revolution(
     {
         radius,

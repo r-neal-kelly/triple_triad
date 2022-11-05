@@ -6,6 +6,8 @@ import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
+import { Game_Measurements } from "../game";
+import { Arena } from "../arena";
 import { Bumper } from "./bumper";
 
 type Name_Props = {
@@ -16,6 +18,12 @@ type Name_Props = {
 
 export class Name extends Component<Name_Props>
 {
+    Arena():
+        Arena
+    {
+        return this.Player_Bumper().Arena();
+    }
+
     Player_Bumper():
         Bumper
     {
@@ -26,6 +34,12 @@ export class Name extends Component<Name_Props>
         Model.Player.Index
     {
         return this.Model().Index();
+    }
+
+    Measurements():
+        Game_Measurements
+    {
+        return this.Arena().Measurements();
     }
 
     Scroll_Distance():
