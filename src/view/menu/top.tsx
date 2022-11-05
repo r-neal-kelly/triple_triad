@@ -105,7 +105,7 @@ export class Top extends Component<Top_Props>
             await Wait(375);
             if (this.Is_Alive()) {
                 await this.Animate_By_Frame(
-                    this.Animate_Fade_And_Move_Out,
+                    this.Animate_Fade_And_Move_Out.bind(this),
                     {
                         duration: 375,
                     },

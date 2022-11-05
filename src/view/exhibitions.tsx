@@ -204,7 +204,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
             await this.Animate_By_Frame(
-                this.Animate_Fade_In,
+                this.Animate_Fade_In.bind(this),
                 {
                     duration: 2000,
                 },
@@ -219,21 +219,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_By_Frame(
-                this.Animate_Fade_Out,
-                {
-                    duration: FADE_OUT_DURATION,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (FADE_OUT_DURATION / 15 - 1),
-                        100.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                    index: 0,
-                },
-            );
+            await this.Fade_Out(FADE_OUT_DURATION);
             if (this.Is_Alive()) {
                 this.Change_Style(`display`, `none`);
             }
@@ -372,45 +358,62 @@ export class Exhibitions extends Component<Exhibitions_Props>
         }
     }
 
-    private async Animate_Fade_Out(
-        {
-            elapsed,
-        }: Component_Animation_Frame,
-        state: {
-            duration: Integer,
-            plot: Array<{
-                x: Float,
-                y: Float,
-            }>,
-            index: Integer,
-        },
+    async Fade_Out(
+        duration: Float,
     ):
-        Promise<boolean>
+        Promise<void>
     {
-        if (this.Is_Alive()) {
+        function On_Frame(
+            {
+                elapsed,
+            }: Component_Animation_Frame,
+            state: {
+                element: HTMLElement,
+                duration: Integer,
+                plot: Array<{
+                    x: Float,
+                    y: Float,
+                }>,
+            },
+        ):
+            boolean
+        {
             if (elapsed >= state.duration) {
-                const element: HTMLElement = this.Some_Element();
-                element.style.opacity = `${100 - 100}%`;
+                state.element.style.opacity = `0%`;
 
                 return false;
             } else {
-                const x_percent: Float = state.duration > 0 ?
-                    Math.min(elapsed * 100 / state.duration, 100) :
-                    100;
-                while (
-                    state.index < state.plot.length - 1 &&
-                    state.plot[state.index].x < x_percent
-                ) {
-                    state.index += 1;
-                }
-                const y_percent = state.plot[state.index].y;
-                const element: HTMLElement = this.Some_Element();
-                element.style.opacity = `${100 - y_percent}%`;
+                const percent_index: Index =
+                    Math.floor(elapsed * state.plot.length / state.duration);
+                const percent: Float = percent_index < state.plot.length ?
+                    state.plot[percent_index].y :
+                    state.plot[state.plot.length - 1].y;
+
+                state.element.style.opacity = `${100 - percent}%`;
 
                 return true;
             }
+        }
+
+        const element: HTMLElement = this.Some_Element();
+        if (duration === 0) {
+            element.style.opacity = `0%`;
         } else {
-            return false;
+            await this.Animate_By_Frame(
+                On_Frame,
+                {
+                    element: element,
+                    duration: duration,
+                    plot: Plot_Bezier_Curve_4(
+                        1.0 / (duration / 15 - 1),
+                        100.0,
+                        0.0, 0.0,
+                        0.42, 0.0,
+                        0.58, 1.0,
+                        1.0, 1.0,
+                    ),
+                },
+            );
         }
     }
 }

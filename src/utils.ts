@@ -209,12 +209,6 @@ export function Plot_Bezier_Curve_3(
     // y = (1−t)^2 * y1 + 2 * (1−t) * t * y2 + t^2 * y3
 
     Assert(step > 0.0 && step <= 1.0);
-    Assert(x1 >= 0.0 && x1 <= 1.0);
-    Assert(y1 >= 0.0 && y1 <= 1.0);
-    Assert(x2 >= 0.0 && x2 <= 1.0);
-    Assert(y2 >= 0.0 && y2 <= 1.0);
-    Assert(x3 >= 0.0 && x3 <= 1.0);
-    Assert(y3 >= 0.0 && y3 <= 1.0);
 
     const points: Array<{
         x: Float,
@@ -239,14 +233,10 @@ export function Plot_Bezier_Curve_3(
 export function Plot_Bezier_Curve_4(
     step: Float,
     scale: Float,
-    x1: Float,
-    y1: Float,
-    x2: Float,
-    y2: Float,
-    x3: Float,
-    y3: Float,
-    x4: Float,
-    y4: Float,
+    x1: Float, y1: Float,
+    x2: Float, y2: Float,
+    x3: Float, y3: Float,
+    x4: Float, y4: Float,
 ):
     Array<{
         x: Float,
@@ -261,14 +251,6 @@ export function Plot_Bezier_Curve_4(
     }> = [];
 
     Assert(step > 0.0 && step <= 1.0);
-    Assert(x1 >= 0.0 && x1 <= 1.0);
-    Assert(y1 >= 0.0 && y1 <= 1.0);
-    Assert(x2 >= 0.0 && x2 <= 1.0);
-    Assert(y2 >= 0.0 && y2 <= 1.0);
-    Assert(x3 >= 0.0 && x3 <= 1.0);
-    Assert(y3 >= 0.0 && y3 <= 1.0);
-    Assert(x4 >= 0.0 && x4 <= 1.0);
-    Assert(y4 >= 0.0 && y4 <= 1.0);
 
     for (let t = 0.0, end = 1.0; t <= end; t += step) {
         const a: Float = 1 - t;

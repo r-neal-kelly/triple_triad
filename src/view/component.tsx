@@ -477,12 +477,12 @@ export class Component<T extends Component_Props> extends React.Component<T>
         this.Change_Style(`animationName`, ``);
     }
 
-    async Animate_By_Frame(
-        method: (
+    async Animate_By_Frame<State>(
+        on_frame: (
             frame: Component_Animation_Frame,
-            state: any,
+            state: State,
         ) => boolean | Promise<boolean>,
-        data: any,
+        state: State,
     ):
         Promise<void>
     {
@@ -504,13 +504,13 @@ export class Component<T extends Component_Props> extends React.Component<T>
                     if (last !== now) {
                         last = now;
                         if (
-                            await method.bind(this)(
+                            await on_frame(
                                 {
                                     now: now,
                                     start: start as Float,
                                     elapsed: now - start,
                                 } as Component_Animation_Frame,
-                                data,
+                                state,
                             )
                         ) {
                             window.requestAnimationFrame(Loop.bind(this));

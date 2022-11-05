@@ -96,7 +96,7 @@ export class Name extends Component<Name_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_By_Frame(this.Animate_Scroll, data);
+            await this.Animate_By_Frame(this.Animate_Scroll.bind(this), data);
         }
     }
 
