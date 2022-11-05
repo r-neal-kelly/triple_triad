@@ -104,9 +104,8 @@ export class Top extends Component<Top_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await Wait(375);
             if (this.Is_Alive()) {
-                await this.Fade_And_Move_Out(625);
+                await this.Fade_And_Move_Out(1000);
             }
         }
     }
@@ -163,8 +162,8 @@ export class Top extends Component<Top_Props>
                         1.0 / (duration / 15),
                         100.0,
                         0.0, 1.0,
-                        0.42, 1.0,
-                        -0.58, 0.0,
+                        0.72, 1.0,
+                        -0.38, 0.0,
                         -1.0, 0.0,
                     ),
                 },
