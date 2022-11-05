@@ -2,7 +2,6 @@ import { Integer } from "../../types";
 import { Index } from "../../types";
 import { Float } from "../../types";
 
-import { Wait } from "../../utils";
 import { Plot_Bezier_Curve_4 } from "../../utils";
 
 import * as Model from "../../model";
