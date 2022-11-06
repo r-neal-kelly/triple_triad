@@ -38,6 +38,8 @@ interface Oriented_Board
 
 interface Oriented_Player
 {
+    count: Model.Player.Count;
+
     width: Float;
     height: Float;
 
@@ -63,6 +65,8 @@ interface Oriented_Content
 
     width: Float;
     height: Float;
+
+    has_scrollbar: boolean;
 }
 
 class Vertical_Board implements Oriented_Board
@@ -133,6 +137,8 @@ class Vertical_Board implements Oriented_Board
 
 class Vertical_Player implements Oriented_Player
 {
+    public count: Model.Player.Count;
+
     public width: Float;
     public height: Float;
 
@@ -160,6 +166,8 @@ class Vertical_Player implements Oriented_Player
         },
     )
     {
+        this.count = player_count;
+
         this.width = board.width;
         this.height = board.cell_height * 1.07;
 
@@ -191,6 +199,8 @@ class Vertical_Content implements Oriented_Content
     public width: Float;
     public height: Float;
 
+    public has_scrollbar: boolean;
+
     constructor(
         {
             row_count,
@@ -198,12 +208,14 @@ class Vertical_Content implements Oriented_Content
             player_count,
 
             width,
+            has_scrollbar,
         }: {
             row_count: Model.Board.Row.Count,
             column_count: Model.Board.Column.Count,
             player_count: Model.Player.Count,
 
             width: Float,
+            has_scrollbar: boolean,
         },
     )
     {
@@ -222,6 +234,8 @@ class Vertical_Content implements Oriented_Content
         this.height =
             (this.player.group_height * PLAYER_GROUP_COUNT) +
             this.board.height;
+
+        this.has_scrollbar = has_scrollbar;
 
         Object.freeze(this);
     }
@@ -295,6 +309,8 @@ class Horizontal_Board implements Oriented_Board
 
 class Horizontal_Player implements Oriented_Player
 {
+    public count: Model.Player.Count;
+
     public width: Float;
     public height: Float;
 
@@ -322,6 +338,8 @@ class Horizontal_Player implements Oriented_Player
         },
     )
     {
+        this.count = player_count;
+
         this.height = board.height;
         this.width = board.cell_width * 1.07;
 
@@ -353,6 +371,8 @@ class Horizontal_Content implements Oriented_Content
     public width: Float;
     public height: Float;
 
+    public has_scrollbar: boolean;
+
     constructor(
         {
             row_count,
@@ -360,12 +380,14 @@ class Horizontal_Content implements Oriented_Content
             player_count,
 
             height,
+            has_scrollbar,
         }: {
             row_count: Model.Board.Row.Count,
             column_count: Model.Board.Column.Count,
             player_count: Model.Player.Count,
 
             height: Float,
+            has_scrollbar: boolean,
         },
     )
     {
@@ -385,18 +407,22 @@ class Horizontal_Content implements Oriented_Content
             (this.player.group_width * PLAYER_GROUP_COUNT) +
             this.board.width;
 
+        this.has_scrollbar = has_scrollbar;
+
         Object.freeze(this);
     }
 }
 
 function Generate_Vertical_Content(
     {
+        may_have_scrollbar,
         parent_width,
         parent_height,
         row_count,
         column_count,
         player_count,
     }: {
+        may_have_scrollbar: boolean,
         parent_width: Float,
         parent_height: Float,
         row_count: Model.Board.Row.Count,
@@ -406,11 +432,22 @@ function Generate_Vertical_Content(
 ):
     Vertical_Content
 {
+    // The board starts with a width equal to the parent_width.
+    // We can then get the max card width and height.
+    // Then we can calculate what the max board height is.
+    // If larger than 1/3 of the parent_height, we get the difference in scale.
+    // Then we scale the card width and height down to match that proportion.
+    // Next we get the height of the player_groups, based on the scaled card height.
+    // If height is left, we distribute to all cards without exceeding max or causing overflow.
+    // If overflow occurred instead, we recalculate to account for the width of the scrollbar.
+    // We can then finalize the measurements such as padding for either side of the board.
+
     let current_content = new Vertical_Content({
         row_count: row_count,
         column_count: column_count,
         player_count: player_count,
         width: parent_width,
+        has_scrollbar: false,
     });
     const max_board: Vertical_Board = current_content.board;
 
@@ -421,15 +458,17 @@ function Generate_Vertical_Content(
             column_count: column_count,
             player_count: player_count,
             width: max_board.width * board_target_height / max_board.height,
+            has_scrollbar: false,
         });
     }
 
-    if (current_content.height > parent_height) {
+    if (may_have_scrollbar && current_content.height > parent_height) {
         current_content = new Vertical_Content({
             row_count: row_count,
             column_count: column_count,
             player_count: player_count,
             width: current_content.width - Y_Scrollbar_Width(),
+            has_scrollbar: true,
         });
     } else if (current_content.height < parent_height) {
         const new_width: Float = Math.min(
@@ -447,6 +486,86 @@ function Generate_Vertical_Content(
                 column_count: column_count,
                 player_count: player_count,
                 width: new_width,
+                has_scrollbar: false,
+            });
+        }
+    }
+
+    return current_content;
+}
+
+function Generate_Horizontal_Content(
+    {
+        may_have_scrollbar,
+        parent_width,
+        parent_height,
+        row_count,
+        column_count,
+        player_count,
+    }: {
+        may_have_scrollbar: boolean,
+        parent_width: Float,
+        parent_height: Float,
+        row_count: Model.Board.Row.Count,
+        column_count: Model.Board.Column.Count,
+        player_count: Model.Player.Count,
+    },
+):
+    Horizontal_Content
+{
+    // We can do the the same thing that we do for vertical but in the other dimension.
+    // Or we could use the old method:
+    // The board has a height equal to the parent height.
+    // Next we can get the card's height and width.
+    // Then we can get the full content width.
+    // If overflow occurred instead, we recalculate to account for the width of the scrollbar.
+    // We can then finalize the measurements.
+
+    let current_content = new Horizontal_Content({
+        row_count: row_count,
+        column_count: column_count,
+        player_count: player_count,
+        height: parent_height,
+        has_scrollbar: false,
+    });
+    const max_board: Horizontal_Board = current_content.board;
+
+    const board_target_width: Float = parent_width / 3;
+    if (max_board.width > board_target_width) {
+        current_content = new Horizontal_Content({
+            row_count: row_count,
+            column_count: column_count,
+            player_count: player_count,
+            height: max_board.height * board_target_width / max_board.width,
+            has_scrollbar: false,
+        });
+    }
+
+    if (may_have_scrollbar && current_content.width > parent_width) {
+        current_content = new Horizontal_Content({
+            row_count: row_count,
+            column_count: column_count,
+            player_count: player_count,
+            height: current_content.height - X_Scrollbar_Height(),
+            has_scrollbar: true,
+        });
+    } else if (current_content.width < parent_width) {
+        const new_height: Float = Math.min(
+            current_content.height *
+            max_board.cell_width /
+            current_content.board.cell_width,
+
+            current_content.height *
+            parent_width /
+            current_content.width
+        );
+        if (new_height > current_content.height) {
+            current_content = new Horizontal_Content({
+                row_count: row_count,
+                column_count: column_count,
+                player_count: player_count,
+                height: new_height,
+                has_scrollbar: false,
             });
         }
     }
@@ -456,58 +575,22 @@ function Generate_Vertical_Content(
 
 export class Game_Measurements
 {
-    has_x_scrollbar: boolean = false;
-    has_y_scrollbar: boolean = false;
+    width: Float;
+    height: Float;
 
-    width: Float = 0;
-    height: Float = 0;
+    arena_width: Float;
+    arena_height: Float;
 
-    content_width: Float = 0;
-    content_height: Float = 0;
+    results_width: Float;
+    results_height: Float;
 
-    card_width: Float = 0;
-    card_height: Float = 0;
+    is_vertical: boolean;
+    oriented_content: Oriented_Content;
+    has_x_scrollbar: boolean;
+    has_y_scrollbar: boolean;
 
-    arena_width: Float = 0;
-    arena_height: Float = 0;
-
-    board_width: Float = 0;
-    board_height: Float = 0;
-    board_padding_left: Float = 0;
-    board_padding_right: Float = 0;
-
-    board_bumper_width: Float = 0;
-    board_bumper_height: Float = 0;
-
-    board_cells_width: Float = 0;
-    board_cells_height: Float = 0;
-    board_cells_padding: Float = 0;
-    board_cells_grid_gap: Float = 0;
-
-    board_cell_width: Float = 0;
-    board_cell_height: Float = 0;
-
-    player_group_width: Float = 0;
-    player_group_height: Float = 0;
-    player_group_padding_left_right: Float = 0;
-    player_group_padding_top_bottom: Float = 0;
-
-    player_width: Float = 0;
-    player_height: Float = 0;
-
-    player_bumper_width: Float = 0;
-    player_bumper_height: Float = 0;
-
-    player_hand_width: Float = 0;
-    player_hand_height: Float = 0;
-
-    player_stake_width: Float = 0;
-    player_stake_height: Float = 0;
-
-    results_width: Float = 0;
-    results_height: Float = 0;
-
-    //oriented_content: Oriented_Content;
+    //board_padding_left: Float = 0;
+    //board_padding_right: Float = 0;
 
     constructor(
         {
@@ -527,6 +610,12 @@ export class Game_Measurements
         },
     )
     {
+        this.width = parent_width;
+        this.height = parent_height;
+
+        this.arena_width = parent_width;
+        this.arena_height = parent_height;
+
         // I think what we'll try to do is actually calculate both the
         // vertical and horizontal versions of the layout. Then
         // we pick whichever one has the biggest cards and or least scroll.
@@ -534,238 +623,89 @@ export class Game_Measurements
         // and the total content width in both dimensions, divide by two, and
         // pick which ever has the smallest number. If equal, then pick vertical if
         // the height of the parent is larger than its width, else horizontal.
+        const vertical_content: Vertical_Content = Generate_Vertical_Content({
+            may_have_scrollbar: may_have_scrollbar,
+            parent_width: parent_width,
+            parent_height: parent_height,
+            row_count: row_count,
+            column_count: column_count,
+            player_count: player_count,
+        });
+        const horizontal_content: Horizontal_Content = Generate_Horizontal_Content({
+            may_have_scrollbar: may_have_scrollbar,
+            parent_width: parent_width,
+            parent_height: parent_height,
+            row_count: row_count,
+            column_count: column_count,
+            player_count: player_count,
+        });
 
-        // Vertical:
-        // The board starts with a width equal to the parent_width.
-        // We can then get the max card width and height.
-        // Then we can calculate what the max board height is.
-        // If larger than 1/3 of the parent_height, we get the difference in scale.
-        // Then we scale the card width and height down to match that proportion.
-        // Next we get the height of the player_groups, based on the scaled card height.
-        // If height is left, we distribute to all cards without exceeding max or causing overflow.
-        // If overflow occurred instead, we recalculate to account for the width of the scrollbar.
-        // We can then finalize the measurements such as padding for either side of the board.
+        const vertical_card_board_area: Float =
+            (vertical_content.board.column_count * vertical_content.board.cell_width) *
+            (vertical_content.board.row_count * vertical_content.board.cell_height);
+        const vertical_card_player_area: Float =
+            (vertical_content.player.hand_width * vertical_content.player.stake_height) *
+            vertical_content.player.count;
+        const vertical_card_area =
+            (vertical_card_board_area + vertical_card_player_area) *
+            parent_height / vertical_content.height;
 
-        // Horizontal:
-        // We can do the the same thing that we do for vertical but in the other dimension.
-        // Or we could use the old method:
-        // The board has a height equal to the parent height.
-        // Next we can get the card's height and width.
-        // Then we can get the full content width.
-        // If overflow occurred instead, we recalculate to account for the width of the scrollbar.
-        // We can then finalize the measurements.
+        const horizontal_card_board_area: Float =
+            (horizontal_content.board.column_count * horizontal_content.board.cell_width) *
+            (horizontal_content.board.row_count * horizontal_content.board.cell_height);
+        const horizontal_card_player_area: Float =
+            (horizontal_content.player.hand_height * horizontal_content.player.stake_width) *
+            horizontal_content.player.count;
+        const horizontal_card_area =
+            (horizontal_card_board_area + horizontal_card_player_area) *
+            parent_width / horizontal_content.width;
 
-        if (parent_height > parent_width) {
-            this.Calculate_By_Width(
-                parent_width,
-                parent_height,
-                row_count,
-                column_count,
-                player_count,
-            );
-
-            if (may_have_scrollbar && this.content_height > this.height) {
-                this.Calculate_By_Width(
-                    parent_width - Y_Scrollbar_Width(),
-                    parent_height,
-                    row_count,
-                    column_count,
-                    player_count,
-                );
-                this.width = parent_width;
-                this.arena_width = parent_width;
-
-                this.has_y_scrollbar = true;
-            } else {
-                this.has_y_scrollbar = false;
-            }
+        if (vertical_card_area > horizontal_card_area) {
+            this.is_vertical = true;
+            this.oriented_content = vertical_content;
+            this.has_x_scrollbar = false;
+            this.has_y_scrollbar = this.oriented_content.has_scrollbar;
+        } else if (horizontal_card_area > vertical_card_area) {
+            this.is_vertical = false;
+            this.oriented_content = horizontal_content;
+            this.has_x_scrollbar = this.oriented_content.has_scrollbar;
+            this.has_y_scrollbar = false;
+        } else if (parent_height > parent_width) {
+            this.is_vertical = true;
+            this.oriented_content = vertical_content;
+            this.has_x_scrollbar = false;
+            this.has_y_scrollbar = this.oriented_content.has_scrollbar;
         } else {
-            this.Calculate_By_Height(
-                parent_width,
-                parent_height,
-                row_count,
-                column_count,
-                player_count,
-            );
+            this.is_vertical = false;
+            this.oriented_content = horizontal_content;
+            this.has_x_scrollbar = this.oriented_content.has_scrollbar;
+            this.has_y_scrollbar = false;
+        }
 
-            if (may_have_scrollbar && this.content_width > this.width) {
-                this.Calculate_By_Height(
-                    parent_width,
-                    parent_height - X_Scrollbar_Height(),
-                    row_count,
-                    column_count,
-                    player_count,
-                );
-                this.height = parent_height;
-                this.arena_height = parent_height;
-
-                this.has_x_scrollbar = true;
-            } else {
-                this.has_x_scrollbar = false;
-            }
+        if (this.has_x_scrollbar) {
+            this.results_width = parent_width;
+            this.results_height = this.oriented_content.height;
+        } else if (this.has_y_scrollbar) {
+            this.results_width = this.oriented_content.width;
+            this.results_height = parent_height;
+        } else {
+            this.results_width = parent_width;
+            this.results_height = parent_height;
         }
 
         Object.freeze(this);
     }
 
-    private Calculate_By_Width(
-        parent_width: Float,
-        parent_height: Float,
-        row_count: Model.Board.Row.Count,
-        column_count: Model.Board.Column.Count,
-        player_count: Model.Player.Count,
-    ):
-        void
-    {
-        this.width = parent_width;
-        this.height = parent_height;
-
-        this.arena_width = this.width;
-        this.arena_height = this.height;
-
-        this.results_width = this.width;
-        this.results_height = this.height;
-
-        this.board_width = this.width;
-        this.board_bumper_width = Percent(8, this.board_width);
-        this.board_cells_width = this.board_width - this.board_bumper_width;
-
-        this.board_padding_left = 0;
-        this.board_padding_right = 0;
-
-        this.board_cells_padding = Percent(2, this.board_width);
-        this.board_cells_grid_gap = Percent(0.5, this.board_width);
-
-        this.card_width =
-            (
-                this.board_cells_width -
-                (this.board_cells_padding * 2) -
-                (this.board_cells_grid_gap * (column_count - 1))
-            ) /
-            column_count;
-        this.card_height = this.card_width * 100 / 80;
-
-        this.board_height =
-            (this.board_cells_padding * 2) +
-            (this.board_cells_grid_gap * (row_count - 1)) +
-            (this.card_height * row_count);
-        this.board_bumper_height = this.board_height;
-        this.board_cells_height = this.board_height;
-
-        this.board_cell_width = this.card_width;
-        this.board_cell_height = this.card_height;
-
-        this.player_group_width = this.width;
-
-        this.player_height = this.card_height * 1.07;
-        this.player_width = this.player_group_width;
-
-        this.player_bumper_height = this.card_height;
-        this.player_bumper_width = this.board_bumper_width;
-
-        this.player_hand_height = this.card_height;
-        this.player_hand_width = this.player_width - this.player_bumper_width;
-
-        this.player_stake_width = this.card_width;
-        this.player_stake_height = this.card_height;
-
-        this.player_group_padding_left_right = 0;
-        this.player_group_padding_top_bottom =
-            (this.player_height - this.player_hand_height) / 2;
-        this.player_group_height =
-            (this.player_height * Math.ceil(player_count / PLAYER_GROUP_COUNT)) +
-            (this.player_group_padding_top_bottom * 2);
-
-        this.content_width = this.width;
-        this.content_height =
-            (this.player_group_height * PLAYER_GROUP_COUNT) +
-            this.board_height;
-    }
-
-    private Calculate_By_Height(
-        parent_width: Float,
-        parent_height: Float,
-        row_count: Model.Board.Row.Count,
-        column_count: Model.Board.Column.Count,
-        player_count: Model.Player.Count,
-    ):
-        void
-    {
-        this.width = parent_width;
-        this.height = parent_height;
-
-        this.arena_width = this.width;
-        this.arena_height = this.height;
-
-        this.results_width = this.width;
-        this.results_height = this.height;
-
-        this.board_height = this.height;
-        this.board_bumper_height = Percent(8, this.board_height);
-        this.board_cells_height = this.board_height - this.board_bumper_height;
-
-        this.board_padding_left = 0;
-        this.board_padding_right = 0;
-
-        this.board_cells_padding = Percent(2, this.board_height);
-        this.board_cells_grid_gap = Percent(0.5, this.board_height);
-
-        this.card_height =
-            (
-                this.board_cells_height -
-                (this.board_cells_padding * 2) -
-                (this.board_cells_grid_gap * (row_count - 1))
-            ) /
-            row_count;
-        this.card_width = this.card_height * 80 / 100;
-
-        this.board_width =
-            (this.board_cells_padding * 2) +
-            (this.board_cells_grid_gap * (column_count - 1)) +
-            (this.card_width * column_count);
-        this.board_bumper_width = this.board_width;
-        this.board_cells_width = this.board_width;
-
-        this.board_cell_width = this.card_width;
-        this.board_cell_height = this.card_height;
-
-        this.player_group_height = this.height;
-
-        this.player_width = this.card_width * 1.07;
-        this.player_height = this.player_group_height;
-
-        this.player_bumper_width = this.card_width;
-        this.player_bumper_height = this.board_bumper_height;
-
-        this.player_hand_width = this.card_width;
-        this.player_hand_height = this.player_height - this.player_bumper_height;
-
-        this.player_stake_width = this.card_width;
-        this.player_stake_height = this.card_height;
-
-        this.player_group_padding_left_right =
-            (this.player_width - this.player_hand_width) / 2;
-        this.player_group_padding_top_bottom = 0;
-        this.player_group_width =
-            (this.player_width * Math.ceil(player_count / PLAYER_GROUP_COUNT)) +
-            (this.player_group_padding_left_right * 2);
-
-        this.content_height = this.height;
-        this.content_width =
-            (this.player_group_width * PLAYER_GROUP_COUNT) +
-            this.board_width;
-    }
-
     Is_Vertical():
         boolean
     {
-        return this.height > this.width;
+        return this.is_vertical;
     }
 
     Is_Horizontal():
         boolean
     {
-        return !this.Is_Vertical();
+        return !this.is_vertical;
     }
 
     Has_X_Scrollbar():
@@ -801,25 +741,13 @@ export class Game_Measurements
     Content_Width():
         Float
     {
-        return this.content_width;
+        return this.oriented_content.width;
     }
 
     Content_Height():
         Float
     {
-        return this.content_height;
-    }
-
-    Card_Width():
-        Float
-    {
-        return this.card_width;
-    }
-
-    Card_Height():
-        Float
-    {
-        return this.card_height;
+        return this.oriented_content.height;
     }
 
     Arena_Width():
@@ -837,145 +765,133 @@ export class Game_Measurements
     Board_Width():
         Float
     {
-        return this.board_width;
+        return this.oriented_content.board.width;
     }
 
     Board_Height():
         Float
     {
-        return this.board_height;
-    }
-
-    Board_Padding_Left():
-        Float
-    {
-        return this.board_padding_left;
-    }
-
-    Board_Padding_Right():
-        Float
-    {
-        return this.board_padding_right;
+        return this.oriented_content.board.height;
     }
 
     Board_Bumper_Width():
         Float
     {
-        return this.board_bumper_width;
+        return this.oriented_content.board.bumper_width;
     }
 
     Board_Bumper_Height():
         Float
     {
-        return this.board_bumper_height;
+        return this.oriented_content.board.bumper_height;
     }
 
     Board_Cells_Width():
         Float
     {
-        return this.board_cells_width;
+        return this.oriented_content.board.cells_width;
     }
 
     Board_Cells_Height():
         Float
     {
-        return this.board_cells_height;
+        return this.oriented_content.board.cells_height;
     }
 
     Board_Cells_Padding():
         Float
     {
-        return this.board_cells_padding;
+        return this.oriented_content.board.cells_padding;
     }
 
     Board_Cells_Grid_Gap():
         Float
     {
-        return this.board_cells_grid_gap;
+        return this.oriented_content.board.cells_grid_gap;
     }
 
     Board_Cell_Width():
         Float
     {
-        return this.board_cell_width;
+        return this.oriented_content.board.cell_width;
     }
 
     Board_Cell_Height():
         Float
     {
-        return this.board_cell_height;
+        return this.oriented_content.board.cell_height;
     }
 
     Player_Group_Width():
         Float
     {
-        return this.player_group_width;
+        return this.oriented_content.player.group_width;
     }
 
     Player_Group_Height():
         Float
     {
-        return this.player_group_height;
+        return this.oriented_content.player.group_height;
     }
 
     Player_Group_Padding_Left_Right():
         Float
     {
-        return this.player_group_padding_left_right;
+        return this.oriented_content.player.group_padding_left_right;
     }
 
     Player_Group_Padding_Top_Bottom():
         Float
     {
-        return this.player_group_padding_top_bottom;
+        return this.oriented_content.player.group_padding_top_bottom;
     }
 
     Player_Width():
         Float
     {
-        return this.player_width;
+        return this.oriented_content.player.width;
     }
 
     Player_Height():
         Float
     {
-        return this.player_height;
+        return this.oriented_content.player.height;
     }
 
     Player_Bumper_Width():
         Float
     {
-        return this.player_bumper_width;
+        return this.oriented_content.player.bumper_width;
     }
 
     Player_Bumper_Height():
         Float
     {
-        return this.player_bumper_height;
+        return this.oriented_content.player.bumper_height;
     }
 
     Player_Hand_Width():
         Float
     {
-        return this.player_hand_width;
+        return this.oriented_content.player.hand_width;
     }
 
     Player_Hand_Height():
         Float
     {
-        return this.player_hand_height;
+        return this.oriented_content.player.hand_height;
     }
 
     Player_Stake_Width():
         Float
     {
-        return this.player_stake_width;
+        return this.oriented_content.player.stake_width;
     }
 
     Player_Stake_Height():
         Float
     {
-        return this.player_stake_height;
+        return this.oriented_content.player.stake_height;
     }
 
     Results_Width():
@@ -1049,9 +965,9 @@ export class Game extends Component<Game_Props>
         Model.Enum.Direction
     {
         if (this.Measurements().Is_Vertical()) {
-            return Model.Enum.Direction.BOTTOM;
+            return Model.Enum.Direction.TOP;
         } else {
-            return Model.Enum.Direction.RIGHT;
+            return Model.Enum.Direction.LEFT;
         }
     }
 

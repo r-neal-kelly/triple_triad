@@ -87,6 +87,9 @@ export class Exhibition extends Component<Exhibition_Props>
             top: `0`,
             zIndex: `0`,
             opacity: `100%`,
+
+            overflowX: `hidden`,
+            overflowY: `hidden`,
         });
     }
 

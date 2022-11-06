@@ -25,7 +25,7 @@ export class Stake extends Component<Stake_Props>
     static Width_Multiplier():
         Float
     {
-        return 1.0;
+        return 0.78;
     }
 
     static Height_Multiplier():
