@@ -340,6 +340,14 @@ export class Instance
         return this.final_scores as Player.Scores;
     }
 
+    Score_Bar():
+        Board.Score_Bar.Instance
+    {
+        return new Board.Score_Bar.Instance({
+            arena: this,
+        });
+    }
+
     Has_Human_Players():
         boolean
     {

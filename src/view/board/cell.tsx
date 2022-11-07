@@ -461,6 +461,16 @@ export class Cell extends Component<Cell_Props>
                                 } as Event.Player_Change_Score_Data,
                                 is_atomic: false,
                             }),
+                            this.Send({
+                                name_affix: Event.BOARD_CHANGE_SCORE,
+                                name_suffixes: [
+                                ],
+                                data: {
+                                    player_index_to_decrement: old_claimant_index,
+                                    player_index_to_increment: new_claimant_index,
+                                } as Event.Board_Change_Score_Data,
+                                is_atomic: false,
+                            }),
                             this.Animate({
                                 animation_name: `Flash`,
                                 duration_in_milliseconds: 300,

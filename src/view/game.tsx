@@ -786,6 +786,12 @@ export class Game_Measurements
         return this.oriented_content.board.bumper_height;
     }
 
+    Board_Bumper_Padding():
+        Float
+    {
+        return this.oriented_content.board.cells_padding;
+    }
+
     Board_Cells_Width():
         Float
     {
