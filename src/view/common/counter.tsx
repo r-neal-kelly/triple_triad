@@ -87,18 +87,6 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
         return `100%`;
     }
 
-    CSS_Button_Width():
-        string
-    {
-        return `75%`;
-    }
-
-    CSS_Button_Height():
-        string
-    {
-        return `75%`;
-    }
-
     CSS_Text_Size():
         string
     {
@@ -148,15 +136,15 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
             <div
                 className={this.Name()}
             >
-                <Value
-                    ref={ref => this.value = ref}
+                <Decrementor
+                    ref={ref => this.decrementor = ref}
 
                     model={this.Model()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <Decrementor
-                    ref={ref => this.decrementor = ref}
+                <Value
+                    ref={ref => this.value = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -178,24 +166,19 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
     {
         return ({
             display: `grid`,
-            gridTemplateColumns: `2.5fr 1fr 1fr`,
+            gridTemplateColumns: `1fr 2.5fr 1fr`,
             gridTemplateRows: `1fr`,
-            columnGap: `0`,
+            columnGap: `0.1fr`,
 
             width: this.CSS_Width(),
             height: this.CSS_Height(),
             margin: `0`,
-            padding: `0.5%`,
+            padding: `0`,
 
             position: `relative`,
 
             alignSelf: `center`,
             justifySelf: `center`,
-
-            borderWidth: `0.6vmin`,
-            borderRadius: `0`,
-            borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: this.CSS_Enabled_Background_Color(),
             backgroundRepeat: `no-repeat`,
@@ -241,7 +224,11 @@ class Value extends Component<Value_Props>
             <div
                 className={`Value`}
             >
-                {`${counter.Text()}: ${counter.Count()}`}
+                <div
+                    className={`Value_Text`}
+                >
+                    {`${counter.Text()}: ${counter.Count()}`}
+                </div>
             </div>
         );
     }
@@ -250,11 +237,22 @@ class Value extends Component<Value_Props>
         Component_Styles
     {
         return ({
-            width: `fit-content`,
-            height: `fit-content`,
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+            height: `100%`,
+            padding: `0.6vmin`,
 
             alignSelf: `center`,
             justifySelf: `center`,
+
+            borderWidth: `0.6vmin 0`,
+            borderRadius: `0`,
+            borderStyle: `solid`,
+            borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: `transparent`,
             backgroundRepeat: `no-repeat`,
@@ -344,8 +342,8 @@ class Decrementor extends Component<Decrementor_Props>
             justifyContent: `center`,
             alignItems: `center`,
 
-            width: counter.CSS_Button_Width(),
-            height: counter.CSS_Button_Height(),
+            width: `100%`,
+            height: `100%`,
 
             position: `relative`,
 
@@ -353,7 +351,7 @@ class Decrementor extends Component<Decrementor_Props>
             justifySelf: `center`,
 
             borderWidth: `0.6vmin`,
-            borderRadius: `100%`,
+            borderRadius: `0`,
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
@@ -560,8 +558,8 @@ class Incrementor extends Component<Incrementor_Props>
             justifyContent: `center`,
             alignItems: `center`,
 
-            width: counter.CSS_Button_Width(),
-            height: counter.CSS_Button_Height(),
+            width: `100%`,
+            height: `100%`,
 
             position: `relative`,
 
@@ -569,7 +567,7 @@ class Incrementor extends Component<Incrementor_Props>
             justifySelf: `center`,
 
             borderWidth: `0.6vmin`,
-            borderRadius: `100%`,
+            borderRadius: `0`,
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 

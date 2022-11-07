@@ -230,7 +230,7 @@ class Player_Counter extends Counter<Player_Counter_Props>
     override CSS_Width():
         string
     {
-        return `40%`;
+        return `50%`;
     }
 
     override CSS_Height():
@@ -654,7 +654,7 @@ class Row_Counter extends Counter<Row_Counter_Props>
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -741,7 +741,7 @@ class Column_Counter extends Counter<Column_Counter_Props>
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -822,7 +822,7 @@ class Same_Toggle extends Toggle<Same_Toggle_Props>
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -888,7 +888,7 @@ class Plus_Toggle extends Toggle<Plus_Toggle_Props>
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -954,7 +954,7 @@ class Wall_Toggle extends Toggle<Wall_Toggle_Props>
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -1022,7 +1022,7 @@ class Combo_Toggle extends Toggle<Combo_Toggle_Props>
     override CSS_Width():
         string
     {
-        return `90%`;
+        return `100%`;
     }
 
     override CSS_Height():
