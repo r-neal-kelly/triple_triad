@@ -46,12 +46,21 @@ export class Name extends Component<Name_Props>
         Float
     {
         const element: HTMLElement = this.Some_Element();
-        const previous_scroll_left = element.scrollLeft;
-        element.scrollLeft = element.scrollWidth;
-        const scroll_distance = element.scrollLeft;
-        element.scrollLeft = previous_scroll_left;
+        if (this.Measurements().Is_Vertical()) {
+            const previous_scroll_top = element.scrollTop;
+            element.scrollTop = element.scrollHeight;
+            const scroll_distance = element.scrollTop;
+            element.scrollTop = previous_scroll_top;
 
-        return scroll_distance;
+            return scroll_distance;
+        } else {
+            const previous_scroll_left = element.scrollLeft;
+            element.scrollLeft = element.scrollWidth;
+            const scroll_distance = element.scrollLeft;
+            element.scrollLeft = previous_scroll_left;
+
+            return scroll_distance;
+        }
     }
 
     Current_Scroll_Distance():
@@ -77,6 +86,14 @@ export class Name extends Component<Name_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
+        let writing_mode: string;
+        if (measurements.Is_Vertical()) {
+            writing_mode = `vertical-lr`;
+        } else {
+            writing_mode = `horizontal-tb`;
+        }
+
         return ({
             width: `100%`,
             height: `100%`,
@@ -90,6 +107,8 @@ export class Name extends Component<Name_Props>
             color: `white`,
             textAlign: `center`,
             whiteSpace: `nowrap`,
+            textOrientation: `upright`,
+            writingMode: writing_mode,
         });
     }
 
@@ -140,13 +159,33 @@ export class Name extends Component<Name_Props>
 
                         return true;
                     }
-                } else {
+                } else if (direction === Model.Enum.Direction.LEFT) {
                     if (elapsed >= duration) {
                         element.scrollLeft = 0.0;
 
                         return false;
                     } else {
                         element.scrollLeft = (duration - elapsed) * interval;
+
+                        return true;
+                    }
+                } else if (direction === Model.Enum.Direction.BOTTOM) {
+                    if (elapsed >= duration) {
+                        element.scrollTop = distance;
+
+                        return false;
+                    } else {
+                        element.scrollTop = (elapsed) * interval;
+
+                        return true;
+                    }
+                } else {
+                    if (elapsed >= duration) {
+                        element.scrollTop = 0.0;
+
+                        return false;
+                    } else {
+                        element.scrollTop = (duration - elapsed) * interval;
 
                         return true;
                     }

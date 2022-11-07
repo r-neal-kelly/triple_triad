@@ -116,8 +116,19 @@ export class Bumper extends Component<Bumper_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Game_Measurements = this.Measurements();
         const model: Model.Player.Instance = this.Model();
         const color: Model.Color.Instance = this.Model().Color();
+
+        let grid_template_columns: string;
+        let grid_template_rows: string;
+        if (measurements.Is_Vertical()) {
+            grid_template_columns = `1fr 1fr`;
+            grid_template_rows = `1fr`;
+        } else {
+            grid_template_columns = `1fr`;
+            grid_template_rows = `1fr 1fr`;
+        }
 
         let background_color: string;
         if (model.Arena().Is_Game_Over()) {
@@ -133,8 +144,8 @@ export class Bumper extends Component<Bumper_Props>
 
         return ({
             display: `grid`,
-            gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr`,
+            gridTemplateColumns: grid_template_columns,
+            gridTemplateRows: grid_template_rows,
 
             width: this.CSS_Width(),
             height: this.CSS_Height(),

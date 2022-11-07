@@ -58,7 +58,6 @@ export class Score extends Component<Score_Props>
     {
         return ({
             width: `100%`,
-            height: `100%`,
 
             alignSelf: `center`,
             justifySelf: `center`,

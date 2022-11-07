@@ -368,11 +368,29 @@ export class Arena extends Component<Arena_Props>
     private async Start_Scrolling_Player_Names():
         Promise<void>
     {
-        let current_direction = Model.Enum.Direction.RIGHT;
+        let current_direction: Model.Enum.Direction = Model.Enum.Direction._NONE_;
 
         while (true) {
             await Wait(Arena.Scroll_Player_Name_Wait());
             if (this.Is_Alive()) {
+                if (this.Measurements().Is_Vertical()) {
+                    if (current_direction === Model.Enum.Direction.TOP) {
+                        current_direction = Model.Enum.Direction.BOTTOM;
+                    } else if (current_direction === Model.Enum.Direction.BOTTOM) {
+                        current_direction = Model.Enum.Direction.TOP;
+                    } else {
+                        current_direction = Model.Enum.Direction.BOTTOM;
+                    }
+                } else {
+                    if (current_direction === Model.Enum.Direction.LEFT) {
+                        current_direction = Model.Enum.Direction.RIGHT;
+                    } else if (current_direction === Model.Enum.Direction.RIGHT) {
+                        current_direction = Model.Enum.Direction.LEFT;
+                    } else {
+                        current_direction = Model.Enum.Direction.RIGHT;
+                    }
+                }
+
                 await this.Send({
                     name_affix: Event.SCROLL_PLAYER_NAMES,
                     name_suffixes: [
@@ -383,12 +401,6 @@ export class Arena extends Component<Arena_Props>
                     } as Event.Scroll_Player_Names_Data,
                     is_atomic: true,
                 });
-
-                if (current_direction === Model.Enum.Direction.LEFT) {
-                    current_direction = Model.Enum.Direction.RIGHT;
-                } else {
-                    current_direction = Model.Enum.Direction.LEFT;
-                }
             } else {
                 return;
             }
