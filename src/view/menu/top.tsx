@@ -261,7 +261,7 @@ class Title_Text extends Component<Title_Text_Props>
         Component_Styles
     {
         return ({
-            width: `100%`,
+            width: `calc(100% + (0.8vmin * 2))`,
             height: `fit-content`,
 
             padding: `1% 0`,
@@ -269,7 +269,7 @@ class Title_Text extends Component<Title_Text_Props>
             alignSelf: `center`,
             justifySelf: `center`,
 
-            borderWidth: `0.8vmin 0`,
+            borderWidth: `0.8vmin`,
             borderRadius: `0`,
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
