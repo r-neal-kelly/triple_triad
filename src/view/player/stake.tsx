@@ -1,13 +1,17 @@
-
+import { Integer } from "../../types";
+import { Index } from "../../types";
 import { Float } from "../../types";
 
+import { Assert } from "../../utils";
 import { Wait } from "../../utils";
+import { Plot_Bezier_Curve_4 } from "../../utils";
 
 import * as Model from "../../model";
 
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Component_Animation_Frame } from "../component";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
@@ -267,6 +271,7 @@ export class Stake extends Component<Stake_Props>
     async Before_This_Player_Place_Stake(
         {
             stake_index,
+            cell_index,
         }: Event.Player_Place_Stake_Data,
     ):
         Promise<void>
@@ -283,7 +288,113 @@ export class Stake extends Component<Stake_Props>
                 if (this.Is_Alive()) {
                     this.Deanimate();
                     await Wait(100);
+                    if (this.Is_Alive()) {
+                        await this.Move_To_Cell({
+                            cell_index: cell_index,
+                            duration: 500,
+                        });
+                    }
                 }
+            }
+        }
+    }
+
+    private async Move_To_Cell(
+        {
+            cell_index,
+            duration,
+        }: {
+            cell_index: Model.Board.Cell.Index,
+            duration: Integer,
+        },
+    ):
+        Promise<void>
+    {
+        Assert(duration > 0);
+
+        const hand_element: HTMLElement =
+            this.Player_Hand().Some_Element();
+        const stake_element: HTMLElement =
+            this.Some_Element();
+        const cell_element: HTMLElement =
+            this.Arena().Board().Cells().Cell(cell_index).Some_Element();
+
+        const stake_rect: DOMRect =
+            stake_element.getBoundingClientRect();
+        const stake_old_left: Float =
+            stake_rect.left;
+        const stake_old_top: Float =
+            stake_rect.top;
+
+        stake_element.style.position = `fixed`;
+        stake_element.style.left = `${stake_old_left}px`;
+        stake_element.style.top = `${stake_old_top}px`;
+
+        hand_element.style.zIndex = `1`;
+        await this.Animate_By_Frame(
+            On_Frame,
+            {
+                stake_element: stake_element,
+                stake_old_left: stake_old_left,
+                stake_old_top: stake_old_top,
+                cell_element: cell_element,
+                duration: duration,
+                plot: Plot_Bezier_Curve_4(
+                    1.0 / (duration / 15 - 1),
+                    1.0,
+                    0.0, 0.0,
+                    0.42, 0.0,
+                    0.58, 1.0,
+                    1.0, 1.0,
+                ),
+            },
+        );
+        hand_element.style.zIndex = `0`;
+
+        function On_Frame(
+            {
+                elapsed,
+            }: Component_Animation_Frame,
+            state: {
+                stake_element: HTMLElement,
+                stake_old_left: Float,
+                stake_old_top: Float,
+                cell_element: HTMLElement,
+                duration: Integer,
+                plot: Array<{
+                    x: Float,
+                    y: Float,
+                }>,
+            },
+        ):
+            boolean
+        {
+            const cell_rect: DOMRect =
+                cell_element.getBoundingClientRect();
+            const stake_new_left: Float =
+                cell_rect.left;
+            const stake_new_top: Float =
+                cell_rect.top;
+
+            if (elapsed >= state.duration) {
+                state.stake_element.style.left = `${stake_new_left}px`;
+                state.stake_element.style.top = `${stake_new_top}px`;
+
+                return false;
+            } else {
+                const index: Index =
+                    Math.floor(elapsed * state.plot.length / state.duration);
+                const left_distance: Float =
+                    stake_new_left - stake_old_left;
+                const top_distance: Float =
+                    stake_new_top - stake_old_top;
+
+                state.stake_element.style.left =
+                    `${stake_old_left + (left_distance * state.plot[index].y)}px`;
+                state.stake_element.style.top =
+                    `${stake_old_top + (top_distance * state.plot[index].y)}px`;
+
+                return true;
             }
         }
     }

@@ -125,6 +125,8 @@ export class Board extends Component<Board_Props>
             width: this.CSS_Width(),
             height: this.CSS_Height(),
 
+            zIndex: `0`,
+
             backgroundImage: `url("img/boards/pexels-fwstudio-172296.jpg")`,
         });
     }

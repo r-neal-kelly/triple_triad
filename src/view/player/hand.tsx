@@ -130,6 +130,7 @@ export class Hand extends Component<Hand_Props>
             height: this.CSS_Height(),
 
             position: `relative`,
+            zIndex: `0`,
 
             overflowX: overflow_x,
             overflowY: overflow_y,

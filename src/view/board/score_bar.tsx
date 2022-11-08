@@ -365,7 +365,6 @@ export class Score extends Component<Score_Props>
             width: width,
             height: height,
 
-            // maybe use a multiplier for the alpha
             backgroundColor: `rgba(
                 ${player_color.Red()},
                 ${player_color.Green()},

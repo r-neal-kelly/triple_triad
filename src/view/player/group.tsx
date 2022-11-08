@@ -192,6 +192,8 @@ export class Group extends Component<Group_Props>
             width: this.CSS_Width(),
             height: this.CSS_Height(),
             padding: `${this.CSS_Padding_Top_Bottom()} ${this.CSS_Padding_Left_Right()}`,
+
+            zIndex: `1`,
         });
     }
 }
