@@ -27,6 +27,8 @@ export class Instance
     private id: ID;
 
     private players: Array<Player.Instance>;
+    private player_turn_indices: Array<Turn.Index>;
+
     private board: Board.Instance;
 
     private turn_count: Turn.Count;
@@ -93,6 +95,11 @@ export class Instance
             this.turn_queue = Array.from(this.players).sort(() => Random_Boolean() ? 1 : -1);
             this.turn_queue_index = 0;
 
+            this.player_turn_indices = new Array(player_count);
+            for (const [turn_index, player] of this.turn_queue.entries()) {
+                this.player_turn_indices[player.Index()] = turn_index;
+            }
+
             this.is_input_enabled = true;
 
             this.final_scores = null;
@@ -151,6 +158,16 @@ export class Instance
         Array<Player.Instance>
     {
         return Array.from(this.players);
+    }
+
+    Player_Index_To_Turn_Index(player_index: Player.Index):
+        Turn.Index
+    {
+        if (player_index != null && player_index >= 0 && player_index < this.Player_Count()) {
+            return this.player_turn_indices[player_index];
+        } else {
+            throw new Error("Invalid player_index.");
+        }
     }
 
     Player_Groups(
@@ -258,6 +275,22 @@ export class Instance
         Turn.Count
     {
         return this.turn_count;
+    }
+
+    Current_Turn_Index():
+        Turn.Index | null
+    {
+        if (this.Is_Game_Over()) {
+            return null;
+        } else {
+            return this.turn_queue_index;
+        }
+    }
+
+    Turn_Queue():
+        Array<Player.Instance>
+    {
+        return Array.from(this.turn_queue);
     }
 
     Is_On_Human_Turn():

@@ -25,7 +25,7 @@ type Score_Bar_Props = {
 export class Score_Bar extends Component<Score_Bar_Props>
 {
     private scores: Array<Score | null> =
-        new Array(this.Model().Player_Count()).fill(null);
+        new Array(this.Model().Score_Count()).fill(null);
 
     Arena():
         Arena
@@ -45,7 +45,7 @@ export class Score_Bar extends Component<Score_Bar_Props>
         return this.Parent();
     }
 
-    Score(score_index: Model.Player.Index):
+    Score(score_index: Model.Player.Score.Index):
         Score
     {
         return this.Try_Array_Index(this.scores, score_index);
@@ -69,7 +69,7 @@ export class Score_Bar extends Component<Score_Bar_Props>
         const model: Model.Board.Score_Bar.Instance = this.Model();
 
         const scores: Array<JSX.Element> = [];
-        for (let idx = 0, end = model.Player_Count(); idx < end; idx += 1) {
+        for (let idx = 0, end = model.Score_Count(); idx < end; idx += 1) {
             scores.push(<Score
                 key={`score_${idx}`}
                 ref={ref => this.scores[idx] = ref}
@@ -111,8 +111,6 @@ export class Score_Bar extends Component<Score_Bar_Props>
             width: `100%`,
             height: `100%`,
 
-            border: `0.2vmin solid #00000080`,
-
             backgroundColor: `rgba(0, 0, 0, 0.3)`,
         });
     }
@@ -122,10 +120,34 @@ export class Score_Bar extends Component<Score_Bar_Props>
     {
         return ([
             {
+                event_name: new Event.Name(Event.ON, Event.GAME_STOP),
+                event_handler: this.On_Game_Stop,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.PLAYER_START_TURN),
+                event_handler: this.On_Player_Start_Turn,
+            },
+            {
                 event_name: new Event.Name(Event.ON, Event.BOARD_CHANGE_SCORE),
                 event_handler: this.Board_Change_Score,
             },
         ]);
+    }
+
+    async On_Game_Stop():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Refresh();
+        }
+    }
+
+    async On_Player_Start_Turn():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Refresh();
+        }
     }
 
     async Board_Change_Score(
@@ -139,25 +161,30 @@ export class Score_Bar extends Component<Score_Bar_Props>
         if (this.Is_Alive()) {
             const model: Model.Board.Score_Bar.Instance = this.Model();
 
+            const score_index_to_decrement: Model.Player.Score.Index =
+                model.Player_Index_To_Score_Index(player_index_to_decrement);
+            const score_index_to_increment: Model.Player.Score.Index =
+                model.Player_Index_To_Score_Index(player_index_to_increment);
+
             const decrement_from: Delta =
-                model.Score_Percent(player_index_to_decrement);
+                model.Score_Percent(score_index_to_decrement);
             const increment_from: Delta =
-                model.Score_Percent(player_index_to_increment);
+                model.Score_Percent(score_index_to_increment);
             model.Modify({
-                player_index_to_decrement: player_index_to_decrement,
-                player_index_to_increment: player_index_to_increment,
+                score_index_to_decrement: score_index_to_decrement,
+                score_index_to_increment: score_index_to_increment,
             });
             const decrement_to: Delta =
-                model.Score_Percent(player_index_to_decrement);
+                model.Score_Percent(score_index_to_decrement);
             const increment_to: Delta =
-                model.Score_Percent(player_index_to_increment);
+                model.Score_Percent(score_index_to_increment);
 
             await this.Modify({
                 duration: 300, // this is the same time as the cell flash, we should conjoin the two
-                decrement_index: player_index_to_decrement,
+                decrement_index: score_index_to_decrement,
                 decrement_from: decrement_from,
                 decrement_to: decrement_to,
-                increment_index: player_index_to_increment,
+                increment_index: score_index_to_increment,
                 increment_from: increment_from,
                 increment_to: increment_to,
             });
@@ -175,16 +202,56 @@ export class Score_Bar extends Component<Score_Bar_Props>
             increment_to,
         }: {
             duration: Float,
-            decrement_index: Model.Player.Index,
+            decrement_index: Model.Player.Score.Index,
             decrement_from: Float,
             decrement_to: Float,
-            increment_index: Model.Player.Index,
+            increment_index: Model.Player.Score.Index,
             increment_from: Float,
             increment_to: Float,
         },
     ):
         Promise<void>
     {
+        if (this.Is_Alive()) {
+            const decrement_element: HTMLElement =
+                this.Score(decrement_index).Some_Element();
+            const increment_element: HTMLElement =
+                this.Score(increment_index).Some_Element();
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame.bind(this),
+                    {
+                        decrement_element: decrement_element,
+                        increment_element: increment_element,
+                        decrement_from: decrement_from,
+                        increment_from: increment_from,
+                        decrement_to: decrement_to,
+                        increment_to: increment_to,
+                        decrement_delta: decrement_to - decrement_from,
+                        increment_delta: increment_to - increment_from,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            1.0 / (duration / 15 - 1),
+                            1.0,
+                            0.0, 0.0,
+                            0.42, 0.0,
+                            0.58, 1.0,
+                            1.0, 1.0,
+                        ),
+                    },
+                );
+            } else {
+                const measurements: Game_Measurements = this.Measurements();
+                if (measurements.Is_Vertical()) {
+                    decrement_element.style.height = `${decrement_to}%`;
+                    increment_element.style.height = `${increment_to}%`;
+                } else {
+                    decrement_element.style.width = `${decrement_to}%`;
+                    increment_element.style.width = `${increment_to}%`;
+                }
+            }
+        }
+
         function On_Frame(
             this: Score_Bar,
             {
@@ -239,46 +306,6 @@ export class Score_Bar extends Component<Score_Bar_Props>
                 return true;
             }
         }
-
-        if (this.Is_Alive()) {
-            const decrement_element: HTMLElement =
-                this.Score(decrement_index).Some_Element();
-            const increment_element: HTMLElement =
-                this.Score(increment_index).Some_Element();
-            if (duration > 0) {
-                await this.Animate_By_Frame(
-                    On_Frame.bind(this),
-                    {
-                        decrement_element: decrement_element,
-                        increment_element: increment_element,
-                        decrement_from: decrement_from,
-                        increment_from: increment_from,
-                        decrement_to: decrement_to,
-                        increment_to: increment_to,
-                        decrement_delta: decrement_to - decrement_from,
-                        increment_delta: increment_to - increment_from,
-                        duration: duration,
-                        plot: Plot_Bezier_Curve_4(
-                            1.0 / (duration / 15 - 1),
-                            1.0,
-                            0.0, 0.0,
-                            0.42, 0.0,
-                            0.58, 1.0,
-                            1.0, 1.0,
-                        ),
-                    },
-                );
-            } else {
-                const measurements: Game_Measurements = this.Measurements();
-                if (measurements.Is_Vertical()) {
-                    decrement_element.style.height = `${decrement_to}%`;
-                    increment_element.style.height = `${increment_to}%`;
-                } else {
-                    decrement_element.style.width = `${decrement_to}%`;
-                    increment_element.style.width = `${increment_to}%`;
-                }
-            }
-        }
     }
 }
 
@@ -286,7 +313,7 @@ type Score_Props = {
     model: Model.Board.Score_Bar.Instance;
     parent: Score_Bar;
     event_grid: Event.Grid;
-    index: Model.Player.Index;
+    index: Model.Player.Score.Index;
 }
 
 export class Score extends Component<Score_Props>
@@ -316,7 +343,7 @@ export class Score extends Component<Score_Props>
     }
 
     Index():
-        Model.Player.Index
+        Model.Player.Score.Index
     {
         return this.props.index;
     }
@@ -330,11 +357,11 @@ export class Score extends Component<Score_Props>
     override On_Refresh():
         JSX.Element | null
     {
-        const player_index: Model.Player.Index = this.Index();
+        const score_index: Model.Player.Score.Index = this.Index();
 
         return (
             <div
-                className={`Score_${player_index}`}
+                className={`Score_${score_index}`}
             >
             </div>
         );
@@ -345,11 +372,9 @@ export class Score extends Component<Score_Props>
     {
         const measurements: Game_Measurements = this.Measurements();
         const model: Model.Board.Score_Bar.Instance = this.Model();
-        const player_index: Model.Player.Index = this.Index();
-        const player_color: Model.Color.Instance =
-            model.Player_Color(player_index);
-        const score_percent: Float =
-            model.Score_Percent(player_index);
+        const score_index: Model.Player.Score.Index = this.Index();
+        const score_color: Model.Color.Instance = model.Score_Color(score_index);
+        const score_percent: Float = model.Score_Percent(score_index);
 
         let width: string;
         let height: string;
@@ -361,15 +386,24 @@ export class Score extends Component<Score_Props>
             height = `100%`;
         }
 
+        let border: string;
+        if (model.Current_Score_Index() === score_index) {
+            border = `0.2vmin solid rgba(255, 255, 255, 0.5)`;
+        } else {
+            border = `0.2vmin solid rgba(0, 0, 0, 0.5)`;
+        }
+
         return ({
             width: width,
             height: height,
 
+            border: border,
+
             backgroundColor: `rgba(
-                ${player_color.Red()},
-                ${player_color.Green()},
-                ${player_color.Blue()},
-                ${player_color.Alpha()}
+                ${score_color.Red()},
+                ${score_color.Green()},
+                ${score_color.Blue()},
+                ${score_color.Alpha()}
             )`,
         });
     }
