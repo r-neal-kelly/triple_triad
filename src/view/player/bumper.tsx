@@ -150,6 +150,8 @@ export class Bumper extends Component<Bumper_Props>
             width: this.CSS_Width(),
             height: this.CSS_Height(),
 
+            zIndex: `0`,
+
             backgroundColor: background_color,
         });
     }

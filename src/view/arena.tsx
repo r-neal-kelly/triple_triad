@@ -12,6 +12,7 @@ import { Component_Styles } from "./component";
 import { Game } from "./game";
 import { Game_Measurements } from "./game";
 import { Group as Player_Group } from "./player/group";
+import { Player } from "./player";
 import { Board } from "./board";
 
 class Arena_Card_Images
@@ -107,6 +108,27 @@ export class Arena extends Component<Arena_Props>
         Array<Player_Group>
     {
         return this.Try_Array(this.player_groups);
+    }
+
+    Player(player_index: Model.Player.Index):
+        Player
+    {
+        // I don't like how we're doing this, but our model doesn't
+        // actually represent players in groups, this is purely in the view atm.
+        let current_first_index: Model.Player.Index = 0;
+        const player_groups: Array<Player_Group> = this.Player_Groups();
+        for (const player_group of player_groups) {
+            if (
+                player_index >= current_first_index &&
+                player_index < current_first_index + player_group.Player_Count()
+            ) {
+                return player_group.Player(player_index - current_first_index);
+            } else {
+                current_first_index += player_group.Player_Count();
+            }
+        }
+
+        throw new Error(`Invalid player_index.`);
     }
 
     Board():

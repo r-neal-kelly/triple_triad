@@ -255,6 +255,28 @@ export class Instance
         return this.Current_Player().Index();
     }
 
+    Previous_Player_Index():
+        Player.Index | null
+    {
+        const previous_player: Player.Instance | null = this.Previous_Player();
+        if (previous_player != null) {
+            return previous_player.Index();
+        } else {
+            return null;
+        }
+    }
+
+    Next_Player_Index():
+        Player.Index | null
+    {
+        const next_player: Player.Instance | null = this.Next_Player();
+        if (next_player != null) {
+            return next_player.Index();
+        } else {
+            return null;
+        }
+    }
+
     Current_Player():
         Player.Instance
     {
@@ -262,6 +284,38 @@ export class Instance
             throw new Error(`This arena has no current player because the game is over.`);
         } else {
             return this.turn_queue[this.turn_queue_index];
+        }
+    }
+
+    Previous_Player():
+        Player.Instance | null
+    {
+        Assert(this.Is_Game_Over() === false);
+
+        if (this.Is_On_First_Turn()) {
+            return null;
+        } else {
+            if (this.turn_queue_index > 0) {
+                return this.turn_queue[this.turn_queue_index - 1];
+            } else {
+                return this.turn_queue[this.turn_queue.length - 1];
+            }
+        }
+    }
+
+    Next_Player():
+        Player.Instance | null
+    {
+        Assert(this.Is_Game_Over() === false);
+
+        if (this.Is_On_Last_Turn()) {
+            return null;
+        } else {
+            if (this.turn_queue_index + 1 < this.turn_queue.length) {
+                return this.turn_queue[this.turn_queue_index + 1];
+            } else {
+                return this.turn_queue[0];
+            }
         }
     }
 
@@ -311,6 +365,18 @@ export class Instance
         } else {
             return !this.Is_On_Human_Turn();
         }
+    }
+
+    Is_On_First_Turn():
+        boolean
+    {
+        return this.turn_count === this.Rules().Cell_Count();
+    }
+
+    Is_On_Last_Turn():
+        boolean
+    {
+        return this.turn_count === 1;
     }
 
     Next_Turn():

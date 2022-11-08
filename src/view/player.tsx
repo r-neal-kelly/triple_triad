@@ -11,6 +11,7 @@ import { Component_Styles } from "./component";
 import { Game_Measurements } from "./game";
 import { Arena } from "./arena";
 import { Group } from "./player/group";
+import { Pillar } from "./player/pillar";
 import { Bumper } from "./player/bumper";
 import { Hand } from "./player/hand";
 
@@ -34,6 +35,7 @@ export class Player extends Component<Player_Props>
         return 667;
     }
 
+    private pillar: Pillar | null = null;
     private bumper: Bumper | null = null;
     private hand: Hand | null = null;
 
@@ -47,6 +49,12 @@ export class Player extends Component<Player_Props>
         Group
     {
         return this.Parent();
+    }
+
+    Pillar():
+        Pillar
+    {
+        return this.Try_Object(this.pillar);
     }
 
     Bumper():
@@ -108,6 +116,14 @@ export class Player extends Component<Player_Props>
             <div
                 className={`Player`}
             >
+                <Pillar
+                    key={`pillar_${index}`}
+                    ref={ref => this.pillar = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
                 <Bumper
                     key={`bumper_${index}`}
                     ref={ref => this.bumper = ref}
@@ -132,26 +148,12 @@ export class Player extends Component<Player_Props>
         Component_Styles
     {
         const measurements: Game_Measurements = this.Measurements();
-        const model: Model.Player.Instance = this.Model();
-        const color: Model.Color.Instance = this.Model().Color();
 
         let flex_direction: string;
         if (measurements.Is_Vertical()) {
             flex_direction = `row`;
         } else {
             flex_direction = `column`;
-        }
-
-        let background_color: string;
-        if (model.Is_On_Turn()) {
-            background_color = `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
-                ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
-            )`;
-        } else {
-            background_color = `transparent`;
         }
 
         return ({
@@ -163,8 +165,6 @@ export class Player extends Component<Player_Props>
             height: this.CSS_Height(),
 
             position: `relative`,
-
-            backgroundColor: background_color,
         });
     }
 

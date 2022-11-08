@@ -27,6 +27,12 @@ export class Group extends Component<Group_Props>
         return this.Parent();
     }
 
+    Player_Count():
+        Model.Player.Count
+    {
+        return this.Model().Player_Count();
+    }
+
     Player(player_index: Model.Player.Index):
         Player
     {

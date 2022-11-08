@@ -864,6 +864,18 @@ export class Game_Measurements
         return this.oriented_content.player.height;
     }
 
+    Player_Pillar_Width():
+        Float
+    {
+        return this.oriented_content.player.width;
+    }
+
+    Player_Pillar_Height():
+        Float
+    {
+        return this.oriented_content.player.height;
+    }
+
     Player_Bumper_Width():
         Float
     {

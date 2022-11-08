@@ -635,18 +635,18 @@ export class Cell extends Component<Cell_Props>
     {
         const old_background_color: string =
             `rgba(
-            ${old_color.Red()},
-            ${old_color.Green()},
-            ${old_color.Blue()},
-            ${old_color.Alpha()}
-        )`;
+                ${old_color.Red()},
+                ${old_color.Green()},
+                ${old_color.Blue()},
+                ${old_color.Alpha()}
+            )`;
         const new_background_color: string =
             `rgba(
-            ${new_color.Red()},
-            ${new_color.Green()},
-            ${new_color.Blue()},
-            ${new_color.Alpha()}
-        )`;
+                ${new_color.Red()},
+                ${new_color.Green()},
+                ${new_color.Blue()},
+                ${new_color.Alpha()}
+            )`;
         const animation_duration: number =
             Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
 
@@ -685,10 +685,10 @@ export class Cell extends Component<Cell_Props>
         this.Change_Style(
             `backgroundImage`,
             `linear-gradient(
-            to ${to_position},
-            ${old_background_color},
-            ${new_background_color}
-        )`,
+                to ${to_position},
+                ${old_background_color},
+                ${new_background_color}
+            )`,
         );
         this.Change_Style(
             `backgroundSize`,

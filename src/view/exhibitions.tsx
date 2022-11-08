@@ -318,11 +318,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
                 previous.Deanimate();
                 next.Deanimate();
-
-                await Promise.all([
-                    previous.Refresh(),
-                    next.Refresh(),
-                ]);
             }
         }
 
