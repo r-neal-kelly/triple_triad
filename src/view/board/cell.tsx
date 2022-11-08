@@ -349,90 +349,12 @@ export class Cell extends Component<Cell_Props>
             const model: Model.Board.Cell.Instance = this.Model()();
 
             if (turn_result.old_claimant != null) {
-                const old_color: Model.Color.Instance = turn_result.old_claimant.Color();
-                const new_color: Model.Color.Instance = model.Color();
-                const old_background_color: string =
-                    `rgba(
-                        ${old_color.Red()},
-                        ${old_color.Green()},
-                        ${old_color.Blue()},
-                        ${old_color.Alpha()}
-                    )`;
-                const new_background_color: string =
-                    `rgba(
-                        ${new_color.Red()},
-                        ${new_color.Green()},
-                        ${new_color.Blue()},
-                        ${new_color.Alpha()}
-                    )`;
-                const animation_duration: number =
-                    Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
-
-                this.current_color = old_color;
-
-                let background_size: string = ``;
-                let from_position: string = ``;
-                let to_position: string = ``;
-                let animation_name: string = ``;
-                if (turn_result.direction === Model.Enum.Direction.LEFT) {
-                    background_size = `1000% 100%`;
-                    from_position = `left`;
-                    to_position = `right`;
-                    animation_name = `Left_To_Right`;
-                } else if (turn_result.direction === Model.Enum.Direction.TOP) {
-                    background_size = `100% 1000%`;
-                    from_position = `top`;
-                    to_position = `bottom`;
-                    animation_name = `Top_To_Bottom`;
-                } else if (turn_result.direction === Model.Enum.Direction.RIGHT) {
-                    background_size = `1000% 100%`;
-                    from_position = `right`;
-                    to_position = `left`;
-                    animation_name = `Right_To_Left`;
-                } else if (turn_result.direction === Model.Enum.Direction.BOTTOM) {
-                    background_size = `100% 1000%`;
-                    from_position = `bottom`;
-                    to_position = `top`;
-                    animation_name = `Bottom_To_Top`;
-                }
-
-                this.Change_Style(
-                    `backgroundColor`,
-                    old_background_color,
+                await this.Change_Card_Color(
+                    turn_result.old_claimant.Color(),
+                    model.Color(),
+                    turn_result.direction,
                 );
-                this.Change_Style(
-                    `backgroundImage`,
-                    `linear-gradient(
-                        to ${to_position},
-                        ${old_background_color},
-                        ${new_background_color}
-                    )`,
-                );
-                this.Change_Style(
-                    `backgroundSize`,
-                    background_size,
-                );
-                this.Change_Style(
-                    `backgroundPosition`,
-                    from_position,
-                )
-
-                await this.Animate({
-                    animation_name: animation_name,
-                    duration_in_milliseconds: animation_duration,
-                    css_iteration_count: `1`,
-                    css_timing_function: `ease-in-out`,
-                });
                 if (this.Is_Alive()) {
-                    this.current_color = new_color;
-
-                    this.Change_Style(`backgroundColor`, new_background_color);
-                    this.Change_Style(`backgroundImage`, ``);
-                    this.Change_Style(`backgroundSize`, `100% 100%`);
-
-                    this.Deanimate();
-
-                    await Wait(200);
                     if (this.Is_Alive()) {
                         const old_claimant: Model.Player.Instance = turn_result.old_claimant;
                         const new_claimant: Model.Player.Instance = model.Claimant();
@@ -701,6 +623,96 @@ export class Cell extends Component<Cell_Props>
                     }
                 }
             }
+        }
+    }
+
+    private async Change_Card_Color(
+        old_color: Model.Color.Instance,
+        new_color: Model.Color.Instance,
+        direction: Model.Enum.Direction,
+    ):
+        Promise<void>
+    {
+        const old_background_color: string =
+            `rgba(
+            ${old_color.Red()},
+            ${old_color.Green()},
+            ${old_color.Blue()},
+            ${old_color.Alpha()}
+        )`;
+        const new_background_color: string =
+            `rgba(
+            ${new_color.Red()},
+            ${new_color.Green()},
+            ${new_color.Blue()},
+            ${new_color.Alpha()}
+        )`;
+        const animation_duration: number =
+            Math.ceil(TURN_RESULT_WAIT_MILLISECONDS * TURN_RESULT_TRANSITION_RATIO);
+
+        this.current_color = old_color;
+
+        let background_size: string = ``;
+        let from_position: string = ``;
+        let to_position: string = ``;
+        let animation_name: string = ``;
+        if (direction === Model.Enum.Direction.LEFT) {
+            background_size = `1000% 100%`;
+            from_position = `left`;
+            to_position = `right`;
+            animation_name = `Left_To_Right`;
+        } else if (direction === Model.Enum.Direction.TOP) {
+            background_size = `100% 1000%`;
+            from_position = `top`;
+            to_position = `bottom`;
+            animation_name = `Top_To_Bottom`;
+        } else if (direction === Model.Enum.Direction.RIGHT) {
+            background_size = `1000% 100%`;
+            from_position = `right`;
+            to_position = `left`;
+            animation_name = `Right_To_Left`;
+        } else if (direction === Model.Enum.Direction.BOTTOM) {
+            background_size = `100% 1000%`;
+            from_position = `bottom`;
+            to_position = `top`;
+            animation_name = `Bottom_To_Top`;
+        }
+
+        this.Change_Style(
+            `backgroundColor`,
+            old_background_color,
+        );
+        this.Change_Style(
+            `backgroundImage`,
+            `linear-gradient(
+            to ${to_position},
+            ${old_background_color},
+            ${new_background_color}
+        )`,
+        );
+        this.Change_Style(
+            `backgroundSize`,
+            background_size,
+        );
+        this.Change_Style(
+            `backgroundPosition`,
+            from_position,
+        )
+
+        await this.Animate({
+            animation_name: animation_name,
+            duration_in_milliseconds: animation_duration,
+            css_iteration_count: `1`,
+            css_timing_function: `ease-in-out`,
+        });
+        if (this.Is_Alive()) {
+            this.current_color = new_color;
+
+            this.Change_Style(`backgroundColor`, new_background_color);
+            this.Change_Style(`backgroundImage`, ``);
+            this.Change_Style(`backgroundSize`, `100% 100%`);
+
+            this.Deanimate();
         }
     }
 }

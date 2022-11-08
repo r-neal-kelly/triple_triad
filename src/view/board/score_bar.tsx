@@ -111,9 +111,9 @@ export class Score_Bar extends Component<Score_Bar_Props>
             width: `100%`,
             height: `100%`,
 
-            border: `0.3vmin solid #00000080`,
+            border: `0.2vmin solid #00000080`,
 
-            backgroundColor: `rgba(0, 0, 0, 0.8)`,
+            backgroundColor: `rgba(0, 0, 0, 0.3)`,
         });
     }
 
