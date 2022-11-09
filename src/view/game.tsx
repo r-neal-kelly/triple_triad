@@ -62,6 +62,8 @@ interface Oriented_Player
 
     score_width: Float;
     score_height: Float;
+    score_padding_left_right: Float;
+    score_padding_top_bottom: Float;
 
     hand_width: Float;
     hand_height: Float;
@@ -170,6 +172,8 @@ class Vertical_Player implements Oriented_Player
 
     public score_width: Float;
     public score_height: Float;
+    public score_padding_left_right: Float;
+    public score_padding_top_bottom: Float;
 
     public hand_width: Float;
     public hand_height: Float;
@@ -203,6 +207,8 @@ class Vertical_Player implements Oriented_Player
 
         this.score_width = Percent(50, this.bumper_width);
         this.score_height = Percent(33.33, this.bumper_height);
+        this.score_padding_left_right = Percent(5, this.score_width);
+        this.score_padding_top_bottom = 0;
 
         this.hand_width = this.width - this.bumper_width;
         this.hand_height = board.cell_height;
@@ -360,6 +366,8 @@ class Horizontal_Player implements Oriented_Player
 
     public score_width: Float;
     public score_height: Float;
+    public score_padding_left_right: Float;
+    public score_padding_top_bottom: Float;
 
     public hand_width: Float;
     public hand_height: Float;
@@ -393,6 +401,8 @@ class Horizontal_Player implements Oriented_Player
 
         this.score_height = Percent(50, this.bumper_height);
         this.score_width = Percent(33.33, this.bumper_width);
+        this.score_padding_left_right = 0;
+        this.score_padding_top_bottom = Percent(5, this.score_height);
 
         this.hand_height = this.height - this.bumper_height;
         this.hand_width = board.cell_width;
@@ -772,6 +782,10 @@ export class Game_Measurements
 
                 width: `${this.oriented_content.player.score_width}px`,
                 height: `${this.oriented_content.player.score_height}px`,
+                padding: `
+                    ${this.oriented_content.player.score_padding_top_bottom}px
+                    ${this.oriented_content.player.score_padding_left_right}px
+                `,
 
                 overflowX: `hidden`,
                 overflowY: `hidden`,
@@ -1022,6 +1036,18 @@ export class Game_Measurements
         Float
     {
         return this.oriented_content.player.score_height;
+    }
+
+    Player_Score_Padding_Left_Right():
+        Float
+    {
+        return this.oriented_content.player.score_padding_left_right;
+    }
+
+    Player_Score_Padding_Top_Bottom():
+        Float
+    {
+        return this.oriented_content.player.score_padding_top_bottom;
     }
 
     Player_Score_Font_Size():

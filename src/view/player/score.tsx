@@ -53,6 +53,18 @@ export class Score extends Component<Score_Props>
         return this.Measurements().Player_Score_Height();
     }
 
+    Padding_Left_Right():
+        Float
+    {
+        return this.Measurements().Player_Score_Padding_Left_Right();
+    }
+
+    Padding_Top_Bottom():
+        Float
+    {
+        return this.Measurements().Player_Score_Padding_Top_Bottom();
+    }
+
     Font_Size():
         Float
     {
@@ -77,8 +89,10 @@ export class Score extends Component<Score_Props>
         Component_Styles
     {
         return ({
-            width: `${this.Width()}px`,
-            height: `${this.Height()}px`,
+            padding: `
+                ${this.Padding_Top_Bottom()}px
+                ${this.Padding_Left_Right()}px
+            `,
 
             alignSelf: `center`,
             justifySelf: `center`,
