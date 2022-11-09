@@ -172,7 +172,7 @@ export class Hand extends Component<Hand_Props>
         if (this.Is_Alive()) {
             await this.Scroll_To_Stake({
                 stake_index: stake_index,
-                duration: 50,
+                duration: 100,
             });
         }
     }
