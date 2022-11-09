@@ -1,10 +1,16 @@
+import { Integer } from "../../types";
+import { Index } from "../../types";
 import { Float } from "../../types";
+
+import { Assert } from "../../utils";
+import { Plot_Bezier_Curve_4 } from "../../utils";
 
 import * as Model from "../../model";
 
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+import { Component_Animation_Frame } from "../component";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
@@ -164,50 +170,10 @@ export class Hand extends Component<Hand_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            const measurements: Game_Measurements = this.Measurements();
-            const stake: Stake = this.Stake(stake_index);
-            const hand_element: HTMLElement = this.Some_Element();
-            if (measurements.Is_Vertical()) {
-                const current_scroll_left: Float = hand_element.scrollLeft;
-                const max_scroll_left: Float = this.Max_Scroll_Left();
-                if (max_scroll_left > 0) {
-                    const hand_width: Float = this.Width();
-                    const stake_width: Float = stake.Width();
-                    const hand_x1: Float = current_scroll_left;
-                    const hand_x2: Float = hand_x1 + hand_width;
-                    const stake_x1: Float = stake.X_Offset();
-                    const stake_x2: Float = stake_x1 + stake_width;
-                    const stake_offset_x: Float =
-                        stake_width - stake_width * Stake.X_Offset_Multiplier();
-                    if (stake_x1 - stake_offset_x < hand_x1) {
-                        hand_element.scrollLeft =
-                            current_scroll_left + (stake_x1 - stake_offset_x - hand_x1);
-                    } else if (stake_x2 > hand_x2) {
-                        hand_element.scrollLeft =
-                            current_scroll_left + (stake_x2 - hand_x2);
-                    }
-                }
-            } else {
-                const current_scroll_top: Float = hand_element.scrollTop;
-                const max_scroll_top: Float = this.Max_Scroll_Top();
-                if (max_scroll_top > 0) {
-                    const hand_height: Float = this.Height();
-                    const stake_height: Float = stake.Height();
-                    const hand_y1: Float = current_scroll_top;
-                    const hand_y2: Float = hand_y1 + hand_height;
-                    const stake_y1: Float = stake.Y_Offset();
-                    const stake_y2: Float = stake_y1 + stake_height;
-                    const stake_offset_y: Float =
-                        stake_height - stake_height * Stake.Y_Offset_Multiplier();
-                    if (stake_y1 - stake_offset_y < hand_y1) {
-                        hand_element.scrollTop =
-                            current_scroll_top + (stake_y1 - stake_offset_y - hand_y1);
-                    } else if (stake_y2 > hand_y2) {
-                        hand_element.scrollTop =
-                            current_scroll_top + (stake_y2 - hand_y2);
-                    }
-                }
-            }
+            await this.Scroll_To_Stake({
+                stake_index: stake_index,
+                duration: 50,
+            });
         }
     }
 
@@ -219,6 +185,167 @@ export class Hand extends Component<Hand_Props>
     {
         if (this.Is_Alive()) {
             await this.Refresh();
+        }
+    }
+
+    private async Scroll_To_Stake(
+        {
+            stake_index,
+            duration,
+        }: {
+            stake_index: Model.Stake.Index,
+            duration: Integer,
+        },
+    ):
+        Promise<void>
+    {
+        Assert(duration > 0);
+
+        if (this.Is_Alive()) {
+            await this.Animate_By_Frame(
+                On_Frame.bind(this),
+                {
+                    stake_index: stake_index,
+                    // We store this as a ratio so that if a resize occurs
+                    // or the view mode shifts from vertical to horizontal
+                    // that we can complete the animation faithfully
+                    from_scroll_ratio: this.Measurements().Is_Vertical() ?
+                        this.Some_Element().scrollLeft / this.Max_Scroll_Left() :
+                        this.Some_Element().scrollTop / this.Max_Scroll_Top(),
+                    duration: duration,
+                    plot: Plot_Bezier_Curve_4(
+                        1.0 / (duration / 15),
+                        1.0,
+                        0.0, 0.0,
+                        0.42, 0.0,
+                        0.58, 1.0,
+                        1.0, 1.0,
+                    ),
+                },
+            );
+
+            function On_Frame(
+                this: Hand,
+                {
+                    elapsed,
+                }: Component_Animation_Frame,
+                state: {
+                    stake_index: Model.Stake.Index,
+                    from_scroll_ratio: Float,
+                    duration: Integer,
+                    plot: Array<{
+                        x: Float,
+                        y: Float,
+                    }>,
+                },
+            ):
+                boolean
+            {
+                const hand: Hand = this;
+                const stake: Stake = hand.Stake(state.stake_index);
+                const hand_element: HTMLElement = hand.Some_Element();
+                if (hand.Measurements().Is_Vertical()) {
+                    const max_scroll_left: Float = hand.Max_Scroll_Left();
+                    const from_scroll_left: Float = max_scroll_left * state.from_scroll_ratio;
+                    const hand_width: Float = hand.Width();
+                    const stake_width: Float = stake.Width();
+                    const hand_x1: Float = from_scroll_left;
+                    const hand_x2: Float = hand_x1 + hand_width;
+                    const stake_x1: Float = stake.X_Offset();
+                    const stake_x2: Float = stake_x1 + stake_width;
+                    const stake_x_offset_multiplier: Float = Stake.X_Offset_Multiplier();
+                    const stake_x_offset: Float = stake_x_offset_multiplier < 0.5 ?
+                        stake_width * stake_x_offset_multiplier :
+                        stake_width - stake_width * stake_x_offset_multiplier;
+
+                    if (elapsed >= state.duration) {
+                        if (stake_x1 - stake_x_offset < hand_x1) {
+                            hand_element.scrollLeft =
+                                from_scroll_left + (stake_x1 - stake_x_offset - hand_x1);
+                        } else if (stake_x2 > hand_x2) {
+                            hand_element.scrollLeft =
+                                from_scroll_left + (stake_x2 - hand_x2);
+                        }
+
+                        return false;
+                    } else {
+                        const index: Index =
+                            Math.floor(elapsed * state.plot.length / state.duration);
+
+                        if (stake_x1 - stake_x_offset < hand_x1) {
+                            const start_scroll_left: Float =
+                                from_scroll_left;
+                            const end_scroll_left: Float =
+                                from_scroll_left + (stake_x1 - stake_x_offset - hand_x1);
+                            hand_element.scrollLeft =
+                                start_scroll_left -
+                                (start_scroll_left - end_scroll_left) *
+                                state.plot[index].y;
+                        } else if (stake_x2 > hand_x2) {
+                            const start_scroll_left: Float =
+                                from_scroll_left;
+                            const end_scroll_left: Float =
+                                from_scroll_left + (stake_x2 - hand_x2);
+                            hand_element.scrollLeft =
+                                start_scroll_left +
+                                (end_scroll_left - start_scroll_left) *
+                                state.plot[index].y;
+                        }
+
+                        return true;
+                    }
+                } else {
+                    const max_scroll_top: Float = hand.Max_Scroll_Top();
+                    const from_scroll_top: Float = max_scroll_top * state.from_scroll_ratio;
+                    const hand_height: Float = hand.Height();
+                    const stake_height: Float = stake.Height();
+                    const hand_y1: Float = from_scroll_top;
+                    const hand_y2: Float = hand_y1 + hand_height;
+                    const stake_y1: Float = stake.Y_Offset();
+                    const stake_y2: Float = stake_y1 + stake_height;
+                    const stake_y_offset_multiplier: Float = Stake.Y_Offset_Multiplier();
+                    const stake_y_offset: Float = stake_y_offset_multiplier < 0.5 ?
+                        stake_height * stake_y_offset_multiplier :
+                        stake_height - stake_height * stake_y_offset_multiplier;
+
+                    if (elapsed >= state.duration) {
+                        if (stake_y1 - stake_y_offset < hand_y1) {
+                            hand_element.scrollTop =
+                                from_scroll_top + (stake_y1 - stake_y_offset - hand_y1);
+                        } else if (stake_y2 > hand_y2) {
+                            hand_element.scrollTop =
+                                from_scroll_top + (stake_y2 - hand_y2);
+                        }
+
+                        return false;
+                    } else {
+                        const index: Index =
+                            Math.floor(elapsed * state.plot.length / state.duration);
+
+                        if (stake_y1 - stake_y_offset < hand_y1) {
+                            const start_scroll_top: Float =
+                                from_scroll_top;
+                            const end_scroll_top: Float =
+                                from_scroll_top + (stake_y1 - stake_y_offset - hand_y1);
+                            hand_element.scrollTop =
+                                start_scroll_top -
+                                (start_scroll_top - end_scroll_top) *
+                                state.plot[index].y;
+                        } else if (stake_y2 > hand_y2) {
+                            const start_scroll_top: Float =
+                                from_scroll_top;
+                            const end_scroll_top: Float =
+                                from_scroll_top + (stake_y2 - hand_y2);
+                            hand_element.scrollTop =
+                                start_scroll_top +
+                                (end_scroll_top - start_scroll_top) *
+                                state.plot[index].y;
+                        }
+
+                        return true;
+                    }
+                }
+            }
         }
     }
 }
