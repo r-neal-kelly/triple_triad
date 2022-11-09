@@ -5,22 +5,10 @@ import { Steps } from "./steps";
 
 export class Instance
 {
-    private board: Board.Instance;
-    private origin_cell_index: Board.Cell.Index;
     private steps: { [index: Board.Cell.Index]: Step.Instance };
 
-    constructor(
-        {
-            board,
-            origin_cell_index,
-        }: {
-            board: Board.Instance,
-            origin_cell_index: Board.Cell.Index,
-        },
-    )
+    constructor()
     {
-        this.board = board;
-        this.origin_cell_index = origin_cell_index;
         this.steps = {};
 
         Object.freeze(this);
@@ -71,14 +59,6 @@ export class Instance
 
         const step_hashmap: { [index: Step.Index]: Array<Step.Instance> } = {};
         for (const step of Object.values(this.steps)) {
-            // we defer calculating the step here because the combo recursion
-            // is asynchronous, and thus cannot be depended up to count the steps
-            // for us during evaluation.
-            step.index = this.board.Step_Count(
-                this.origin_cell_index,
-                step.cell_index,
-            );
-
             if (step_hashmap[step.index] == null) {
                 step_hashmap[step.index] = [];
             }
@@ -89,7 +69,16 @@ export class Instance
             Object.freeze(step);
         }
 
-        const step_array = Object.keys(step_hashmap).map(key => parseInt(key)).sort();
+        const step_array = Object.keys(step_hashmap).map(key => parseInt(key)).sort(
+            function (
+                key_a: number,
+                key_b: number,
+            ):
+                number
+            {
+                return key_a - key_b;
+            },
+        );
         for (const step of step_array) {
             results.push(step_hashmap[step]);
         }

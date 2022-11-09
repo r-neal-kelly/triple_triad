@@ -399,10 +399,7 @@ export class Instance
             },
         );
 
-        const turn_results: Turn_Results.Instance = new Turn_Results.Instance({
-            board: this,
-            origin_cell_index: cell_index,
-        });
+        const turn_results: Turn_Results.Instance = new Turn_Results.Instance();
         await this.Evaluate_Cell(cell_index, turn_results);
 
         return turn_results.Steps();
@@ -417,7 +414,7 @@ export class Instance
     private async Evaluate_Cell(
         cell_index: Cell.Index,
         turn_results: Turn_Results.Instance,
-        evaluated_origin_cell: boolean = false,
+        step_index: Turn_Results.Step.Index = 0,
     ):
         Promise<void>
     {
@@ -718,6 +715,7 @@ export class Instance
 
             const left_turn_result: Turn_Results.Step.Instance =
                 turn_results.At(left_index as Cell.Index);
+            left_turn_result.index = step_index + 1;
             left_turn_result.direction =
                 Enum.Direction.LEFT;
             left_turn_result.old_claimant =
@@ -733,6 +731,7 @@ export class Instance
 
             const top_turn_result: Turn_Results.Step.Instance =
                 turn_results.At(top_index as Cell.Index);
+            top_turn_result.index = step_index + 1;
             top_turn_result.direction =
                 Enum.Direction.TOP;
             top_turn_result.old_claimant =
@@ -748,6 +747,7 @@ export class Instance
 
             const right_turn_result: Turn_Results.Step.Instance =
                 turn_results.At(right_index as Cell.Index);
+            right_turn_result.index = step_index + 1;
             right_turn_result.direction =
                 Enum.Direction.RIGHT;
             right_turn_result.old_claimant =
@@ -763,6 +763,7 @@ export class Instance
 
             const bottom_turn_result: Turn_Results.Step.Instance =
                 turn_results.At(bottom_index as Cell.Index);
+            bottom_turn_result.index = step_index + 1;
             bottom_turn_result.direction =
                 Enum.Direction.BOTTOM;
             bottom_turn_result.old_claimant =
@@ -770,7 +771,7 @@ export class Instance
         }
 
         if (this.Rules().Combo()) {
-            if (evaluated_origin_cell) {
+            if (step_index > 0) {
                 if (left_claimed || top_claimed || right_claimed || bottom_claimed) {
                     center_turn_result.combo = true;
                 }
@@ -791,7 +792,7 @@ export class Instance
             }
 
             for (const cell_index_to_combo of cell_indices_to_combo) {
-                await this.Evaluate_Cell(cell_index_to_combo, turn_results, true);
+                await this.Evaluate_Cell(cell_index_to_combo, turn_results, step_index + 1);
             }
         }
     }
