@@ -123,11 +123,17 @@ export class Bumper extends Component<Bumper_Props>
         let grid_template_columns: string;
         let grid_template_rows: string;
         if (measurements.Is_Vertical()) {
-            grid_template_columns = `1fr 1fr`;
+            grid_template_columns = `
+                ${measurements.Player_Name_Width()}px
+                ${measurements.Player_Score_Width()}px
+            `;
             grid_template_rows = `1fr`;
         } else {
             grid_template_columns = `1fr`;
-            grid_template_rows = `1fr 1fr`;
+            grid_template_rows = `
+                ${measurements.Player_Name_Height()}px
+                ${measurements.Player_Score_Height()}px
+            `;
         }
 
         let background_color: string;

@@ -42,6 +42,42 @@ export class Name extends Component<Name_Props>
         return this.Arena().Measurements();
     }
 
+    Width():
+        Float
+    {
+        return this.Measurements().Player_Name_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Measurements().Player_Name_Height();
+    }
+
+    Padding_Left_Right():
+        Float
+    {
+        return this.Measurements().Player_Name_Padding_Left_Right();
+    }
+
+    Padding_Top_Bottom():
+        Float
+    {
+        return this.Measurements().Player_Name_Padding_Top_Bottom();
+    }
+
+    Writing_Mode():
+        string
+    {
+        return this.Measurements().Player_Name_Writing_Mode();
+    }
+
+    Font_Size():
+        Float
+    {
+        return this.Measurements().Player_Name_Font_Size();
+    }
+
     Scroll_Distance():
         Float
     {
@@ -50,12 +86,6 @@ export class Name extends Component<Name_Props>
         } else {
             return this.Max_Scroll_Left();
         }
-    }
-
-    Current_Scroll_Distance():
-        Float
-    {
-        return this.Some_Element().scrollLeft;
     }
 
     override On_Refresh():
@@ -75,17 +105,13 @@ export class Name extends Component<Name_Props>
     override On_Restyle():
         Component_Styles
     {
-        const measurements: Game_Measurements = this.Measurements();
-        let writing_mode: string;
-        if (measurements.Is_Vertical()) {
-            writing_mode = `vertical-lr`;
-        } else {
-            writing_mode = `horizontal-tb`;
-        }
-
         return ({
-            width: `100%`,
-            height: `100%`,
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
+            padding: `
+                ${this.Padding_Top_Bottom()}px
+                ${this.Padding_Left_Right()}px
+            `,
 
             alignSelf: `center`,
             justifySelf: `center`,
@@ -94,10 +120,11 @@ export class Name extends Component<Name_Props>
             overflowY: `hidden`,
 
             color: `white`,
+            fontSize: `${this.Font_Size()}px`,
             textAlign: `center`,
             whiteSpace: `nowrap`,
             textOrientation: `upright`,
-            writingMode: writing_mode,
+            writingMode: this.Writing_Mode(),
         });
     }
 

@@ -3,6 +3,9 @@ import { Float } from "../types";
 import { Percent } from "../utils";
 import { X_Scrollbar_Height } from "../utils";
 import { Y_Scrollbar_Width } from "../utils";
+import { Fitted_Font_Size_X } from "../utils";
+import { Fitted_Font_Size_Y } from "../utils";
+import { Fitted_Font_Size_XY } from "../utils";
 
 import * as Model from "../model";
 
@@ -50,6 +53,15 @@ interface Oriented_Player
 
     bumper_width: Float;
     bumper_height: Float;
+
+    name_width: Float;
+    name_height: Float;
+    name_padding_left_right: Float;
+    name_padding_top_bottom: Float;
+    name_writing_mode: string;
+
+    score_width: Float;
+    score_height: Float;
 
     hand_width: Float;
     hand_height: Float;
@@ -150,6 +162,15 @@ class Vertical_Player implements Oriented_Player
     public bumper_width: Float;
     public bumper_height: Float;
 
+    public name_width: Float;
+    public name_height: Float;
+    public name_padding_left_right: Float;
+    public name_padding_top_bottom: Float;
+    public name_writing_mode: string;
+
+    public score_width: Float;
+    public score_height: Float;
+
     public hand_width: Float;
     public hand_height: Float;
 
@@ -173,6 +194,15 @@ class Vertical_Player implements Oriented_Player
 
         this.bumper_width = board.bumper_width;
         this.bumper_height = board.cell_height;
+
+        this.name_width = Percent(50, this.bumper_width);
+        this.name_height = this.bumper_height;
+        this.name_padding_left_right = Percent(10, this.name_width);
+        this.name_padding_top_bottom = 0;
+        this.name_writing_mode = `vertical-lr`;
+
+        this.score_width = Percent(50, this.bumper_width);
+        this.score_height = Percent(33.33, this.bumper_height);
 
         this.hand_width = this.width - this.bumper_width;
         this.hand_height = board.cell_height;
@@ -322,6 +352,15 @@ class Horizontal_Player implements Oriented_Player
     public bumper_width: Float;
     public bumper_height: Float;
 
+    public name_width: Float;
+    public name_height: Float;
+    public name_padding_left_right: Float;
+    public name_padding_top_bottom: Float;
+    public name_writing_mode: string;
+
+    public score_width: Float;
+    public score_height: Float;
+
     public hand_width: Float;
     public hand_height: Float;
 
@@ -345,6 +384,15 @@ class Horizontal_Player implements Oriented_Player
 
         this.bumper_height = board.bumper_height;
         this.bumper_width = board.cell_width;
+
+        this.name_height = Percent(50, this.bumper_height);
+        this.name_width = this.bumper_width;
+        this.name_padding_left_right = 0;
+        this.name_padding_top_bottom = Percent(10, this.name_height);
+        this.name_writing_mode = `horizontal-tb`;
+
+        this.score_height = Percent(50, this.bumper_height);
+        this.score_width = Percent(33.33, this.bumper_width);
 
         this.hand_height = this.height - this.bumper_height;
         this.hand_width = board.cell_width;
@@ -575,22 +623,22 @@ function Generate_Horizontal_Content(
 
 export class Game_Measurements
 {
-    width: Float;
-    height: Float;
+    private width: Float;
+    private height: Float;
 
-    arena_width: Float;
-    arena_height: Float;
+    private arena_width: Float;
+    private arena_height: Float;
 
-    results_width: Float;
-    results_height: Float;
+    private results_width: Float;
+    private results_height: Float;
 
-    is_vertical: boolean;
-    oriented_content: Oriented_Content;
-    has_x_scrollbar: boolean;
-    has_y_scrollbar: boolean;
+    private is_vertical: boolean;
+    private oriented_content: Oriented_Content;
+    private has_x_scrollbar: boolean;
+    private has_y_scrollbar: boolean;
 
-    //board_padding_left: Float = 0;
-    //board_padding_right: Float = 0;
+    private player_name_font_size: Float;
+    private player_score_font_size: Float;
 
     constructor(
         {
@@ -692,6 +740,46 @@ export class Game_Measurements
             this.results_width = parent_width;
             this.results_height = parent_height;
         }
+
+        this.player_name_font_size = (this.is_vertical ? Fitted_Font_Size_X : Fitted_Font_Size_Y)(
+            `A`,
+            16,
+            {
+                boxSizing: `border-box`,
+
+                width: `${this.oriented_content.player.name_width}px`,
+                height: `${this.oriented_content.player.name_height}px`,
+                padding: `
+                    ${this.oriented_content.player.name_padding_top_bottom}px
+                    ${this.oriented_content.player.name_padding_left_right}px
+                `,
+
+                overflowX: `hidden`,
+                overflowY: `hidden`,
+
+                textAlign: `center`,
+                whiteSpace: `nowrap`,
+                textOrientation: `upright`,
+                writingMode: this.oriented_content.player.name_writing_mode,
+            },
+        );
+
+        this.player_score_font_size = Fitted_Font_Size_XY(
+            `99`,
+            this.player_name_font_size,
+            {
+                boxSizing: `border-box`,
+
+                width: `${this.oriented_content.player.score_width}px`,
+                height: `${this.oriented_content.player.score_height}px`,
+
+                overflowX: `hidden`,
+                overflowY: `hidden`,
+
+                textAlign: `center`,
+                whiteSpace: `nowrap`,
+            },
+        );
 
         Object.freeze(this);
     }
@@ -886,6 +974,60 @@ export class Game_Measurements
         Float
     {
         return this.oriented_content.player.bumper_height;
+    }
+
+    Player_Name_Width():
+        Float
+    {
+        return this.oriented_content.player.name_width;
+    }
+
+    Player_Name_Height():
+        Float
+    {
+        return this.oriented_content.player.name_height;
+    }
+
+    Player_Name_Padding_Left_Right():
+        Float
+    {
+        return this.oriented_content.player.name_padding_left_right;
+    }
+
+    Player_Name_Padding_Top_Bottom():
+        Float
+    {
+        return this.oriented_content.player.name_padding_top_bottom;
+    }
+
+    Player_Name_Writing_Mode():
+        string
+    {
+        return this.oriented_content.player.name_writing_mode;
+    }
+
+    Player_Name_Font_Size():
+        Float
+    {
+        return this.player_name_font_size;
+    }
+
+    Player_Score_Width():
+        Float
+    {
+        return this.oriented_content.player.score_width;
+    }
+
+    Player_Score_Height():
+        Float
+    {
+        return this.oriented_content.player.score_height;
+    }
+
+    Player_Score_Font_Size():
+        Float
+    {
+        return this.player_score_font_size;
     }
 
     Player_Hand_Width():

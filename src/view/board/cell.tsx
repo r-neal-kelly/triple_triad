@@ -449,7 +449,7 @@ export class Cell extends Component<Cell_Props>
 
                                     backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
-                                    borderRadius: `30%`,
+                                    //borderRadius: `30%`,
 
                                     color: `white`,
                                     textAlign: `center`,
@@ -481,7 +481,7 @@ export class Cell extends Component<Cell_Props>
 
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
-                                borderRadius: `50%`,
+                                //borderRadius: `50%`,
 
                                 color: `white`,
                                 textAlign: `center`,
@@ -508,7 +508,7 @@ export class Cell extends Component<Cell_Props>
 
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
-                                borderRadius: `50%`,
+                                //borderRadius: `50%`,
 
                                 color: `white`,
                                 textAlign: `center`,
@@ -535,7 +535,7 @@ export class Cell extends Component<Cell_Props>
 
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
-                                borderRadius: `50%`,
+                                //borderRadius: `50%`,
 
                                 color: `white`,
                                 textAlign: `center`,
@@ -562,7 +562,7 @@ export class Cell extends Component<Cell_Props>
 
                                 backgroundColor: `rgba(0, 0, 0, 0.5)`,
 
-                                borderRadius: `50%`,
+                                //borderRadius: `50%`,
 
                                 color: `white`,
                                 textAlign: `center`,

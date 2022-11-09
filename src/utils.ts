@@ -167,6 +167,184 @@ export function Y_Scrollbar_Width():
     return y_scrollbar_width as Float;
 }
 
+export function Fitted_Font_Size_X(
+    text: string,
+    guess: Float,
+    styles: { [index: string]: string },
+):
+    Float
+{
+    const element: HTMLElement = document.createElement(`div`);
+    element.style.visibility = `hidden`;
+    document.body.appendChild(element);
+    element.textContent = text;
+
+    for (const [key, value] of Object.entries(styles)) {
+        (element.style as any)[key] = value;
+    }
+    element.style.fontSize = `${guess}px`;
+
+    let max_scroll_left: Float;
+
+    element.scrollLeft = element.scrollWidth;
+    max_scroll_left = element.scrollLeft;
+    while (max_scroll_left === 0) {
+        guess *= 4;
+        element.style.fontSize = `${guess}px`;
+        element.scrollLeft = element.scrollWidth;
+        max_scroll_left = element.scrollLeft;
+    }
+
+    guess = element.clientWidth * guess / element.scrollWidth;
+    element.style.fontSize = `${guess}px`;
+    element.scrollLeft = element.scrollWidth;
+    max_scroll_left = element.scrollLeft;
+
+    if (max_scroll_left === 0) {
+        while (max_scroll_left === 0) {
+            guess += 0.5;
+            element.style.fontSize = `${guess}px`;
+            element.scrollLeft = element.scrollWidth;
+            max_scroll_left = element.scrollLeft;
+        }
+        guess -= 0.5;
+    } else {
+        while (max_scroll_left > 0) {
+            guess -= 0.5;
+            element.style.fontSize = `${guess}px`;
+            element.scrollLeft = element.scrollWidth;
+            max_scroll_left = element.scrollLeft;
+        }
+    }
+
+    document.body.removeChild(element);
+
+    return guess > 0.0 ? guess : 0.0;
+}
+
+export function Fitted_Font_Size_Y(
+    text: string,
+    guess: Float,
+    styles: { [index: string]: string },
+):
+    Float
+{
+    const element: HTMLElement = document.createElement(`div`);
+    element.style.visibility = `hidden`;
+    document.body.appendChild(element);
+    element.textContent = text;
+
+    for (const [key, value] of Object.entries(styles)) {
+        (element.style as any)[key] = value;
+    }
+    element.style.fontSize = `${guess}px`;
+
+    let max_scroll_top: Float;
+
+    element.scrollTop = element.scrollHeight;
+    max_scroll_top = element.scrollTop;
+    while (max_scroll_top === 0) {
+        guess *= 4;
+        element.style.fontSize = `${guess}px`;
+        element.scrollTop = element.scrollHeight;
+        max_scroll_top = element.scrollTop;
+    }
+
+    guess = element.clientHeight * guess / element.scrollHeight;
+    element.style.fontSize = `${guess}px`;
+    element.scrollTop = element.scrollHeight;
+    max_scroll_top = element.scrollTop;
+
+    if (max_scroll_top === 0) {
+        while (max_scroll_top === 0) {
+            guess += 0.5;
+            element.style.fontSize = `${guess}px`;
+            element.scrollTop = element.scrollHeight;
+            max_scroll_top = element.scrollTop;
+        }
+        guess -= 0.5;
+    } else {
+        while (max_scroll_top > 0) {
+            guess -= 0.5;
+            element.style.fontSize = `${guess}px`;
+            element.scrollTop = element.scrollHeight;
+            max_scroll_top = element.scrollTop;
+        }
+    }
+
+    document.body.removeChild(element);
+
+    return guess > 0.0 ? guess : 0.0;
+}
+
+export function Fitted_Font_Size_XY(
+    text: string,
+    guess: Float,
+    styles: { [index: string]: string },
+):
+    Float
+{
+    const element: HTMLElement = document.createElement(`div`);
+    element.style.visibility = `hidden`;
+    document.body.appendChild(element);
+    element.textContent = text;
+
+    for (const [key, value] of Object.entries(styles)) {
+        (element.style as any)[key] = value;
+    }
+    element.style.fontSize = `${guess}px`;
+
+    let max_scroll_left: Float;
+    let max_scroll_top: Float;
+
+    element.scrollLeft = element.scrollWidth;
+    max_scroll_left = element.scrollLeft;
+    element.scrollTop = element.scrollHeight;
+    max_scroll_top = element.scrollTop;
+    while (max_scroll_left === 0 && max_scroll_top === 0) {
+        guess *= 4;
+        element.style.fontSize = `${guess}px`;
+        element.scrollLeft = element.scrollWidth;
+        max_scroll_left = element.scrollLeft;
+        element.scrollTop = element.scrollHeight;
+        max_scroll_top = element.scrollTop;
+    }
+
+    guess = element.clientWidth * guess / element.scrollWidth;
+    element.style.fontSize = `${guess}px`;
+    guess = element.clientHeight * guess / element.scrollHeight;
+    element.style.fontSize = `${guess}px`;
+    element.scrollLeft = element.scrollWidth;
+    max_scroll_left = element.scrollLeft;
+    element.scrollTop = element.scrollHeight;
+    max_scroll_top = element.scrollTop;
+
+    if (max_scroll_left === 0 && max_scroll_top === 0) {
+        while (max_scroll_left === 0 && max_scroll_top === 0) {
+            guess += 0.5;
+            element.style.fontSize = `${guess}px`;
+            element.scrollLeft = element.scrollWidth;
+            max_scroll_left = element.scrollLeft;
+            element.scrollTop = element.scrollHeight;
+            max_scroll_top = element.scrollTop;
+        }
+        guess -= 0.5;
+    } else {
+        while (max_scroll_left > 0 || max_scroll_top > 0) {
+            guess -= 0.5;
+            element.style.fontSize = `${guess}px`;
+            element.scrollLeft = element.scrollWidth;
+            max_scroll_left = element.scrollLeft;
+            element.scrollTop = element.scrollHeight;
+            max_scroll_top = element.scrollTop;
+        }
+    }
+
+    document.body.removeChild(element);
+
+    return guess > 0.0 ? guess : 0.0;
+}
+
 export function Plot_Revolution(
     {
         radius,

@@ -1,3 +1,5 @@
+import { Float } from "../../types";
+
 import * as Model from "../../model";
 
 import * as Event from "../event";
@@ -39,6 +41,24 @@ export class Score extends Component<Score_Props>
         return this.Arena().Measurements();
     }
 
+    Width():
+        Float
+    {
+        return this.Measurements().Player_Score_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Measurements().Player_Score_Height();
+    }
+
+    Font_Size():
+        Float
+    {
+        return this.Measurements().Player_Score_Font_Size();
+    }
+
     override On_Refresh():
         JSX.Element | null
     {
@@ -57,7 +77,8 @@ export class Score extends Component<Score_Props>
         Component_Styles
     {
         return ({
-            width: `100%`,
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             alignSelf: `center`,
             justifySelf: `center`,
@@ -66,6 +87,7 @@ export class Score extends Component<Score_Props>
             overflowY: `hidden`,
 
             color: `white`,
+            fontSize: `${this.Font_Size()}px`,
             textAlign: `center`,
             whiteSpace: `nowrap`,
         });
