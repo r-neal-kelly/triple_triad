@@ -171,25 +171,32 @@ export class Main extends Component<Main_Props>
             `,
         });
 
-        this.Send({
-            name_affix: Event.START_EXHIBITIONS,
-            name_suffixes: [
-            ],
-            data: {
-                exhibition: model.Current_Exhibition(),
-            } as Event.Start_Exhibitions_Data,
-            is_atomic: true,
-        });
+        (async function (
+            this: Main,
+        ):
+            Promise<void>
+        {
+            await Promise.all([
+                this.Send({
+                    name_affix: Event.START_EXHIBITIONS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        exhibition: model.Current_Exhibition(),
+                    } as Event.Start_Exhibitions_Data,
+                    is_atomic: true,
+                }),
+                this.Animate({
+                    animation_name: `Fade_In`,
+                    duration_in_milliseconds: 3000,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease-in-out`,
+                    css_fill_mode: `forward`,
+                }),
+            ]);
 
-        this.Animate({
-            animation_name: `Fade_In`,
-            duration_in_milliseconds: 5000,
-            css_iteration_count: `1`,
-            css_timing_function: `ease-in-out`,
-            css_fill_mode: `forward`,
-        });
-
-        this.While_Alive();
+            this.While_Alive();
+        }).bind(this)();
 
         return [
             {
