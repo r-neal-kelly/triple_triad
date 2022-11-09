@@ -26,13 +26,13 @@ type Stake_Props = {
 
 export class Stake extends Component<Stake_Props>
 {
-    static Width_Multiplier():
+    static X_Offset_Multiplier():
         Float
     {
         return 0.78;
     }
 
-    static Height_Multiplier():
+    static Y_Offset_Multiplier():
         Float
     {
         return 0.48;
@@ -80,16 +80,16 @@ export class Stake extends Component<Stake_Props>
         return this.Measurements().Player_Stake_Height();
     }
 
-    CSS_Width():
-        string
+    X_Offset():
+        Float
     {
-        return `${this.Width()}px`;
+        return this.Width() * Stake.X_Offset_Multiplier() * this.Index();
     }
 
-    CSS_Height():
-        string
+    Y_Offset():
+        Float
     {
-        return `${this.Height()}px`;
+        return this.Height() * Stake.Y_Offset_Multiplier() * this.Index();
     }
 
     override On_Refresh():
@@ -138,20 +138,12 @@ export class Stake extends Component<Stake_Props>
         let top: string;
         if (measurements.Is_Vertical()) {
             flex_direction = `row`;
-            left = `calc(
-                ${this.CSS_Width()} *
-                ${Stake.Width_Multiplier()} *
-                ${this.Index()}
-            )`;
+            left = `${this.X_Offset()}px`;
             top = `0`;
         } else {
             flex_direction = `column`;
             left = `0`;
-            top = `calc(
-                ${this.CSS_Height()} *
-                ${Stake.Height_Multiplier()} *
-                ${this.Index()}
-            )`;
+            top = `${this.Y_Offset()}px`;
         }
 
         let border: string;
@@ -174,8 +166,8 @@ export class Stake extends Component<Stake_Props>
             justifyContent: `center`,
             alignItems: `center`,
 
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             position: `absolute`,
             left: left,

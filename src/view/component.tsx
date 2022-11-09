@@ -347,6 +347,30 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return this.Try_Object(this.body);
     }
 
+    Max_Scroll_Left():
+        Float
+    {
+        const element: HTMLElement = this.Some_Element();
+        const previous_scroll_left = element.scrollLeft;
+        element.scrollLeft = element.scrollWidth;
+        const max_scroll_left = element.scrollLeft;
+        element.scrollLeft = previous_scroll_left;
+
+        return max_scroll_left;
+    }
+
+    Max_Scroll_Top():
+        Float
+    {
+        const element: HTMLElement = this.Some_Element();
+        const previous_scroll_top = element.scrollTop;
+        element.scrollTop = element.scrollHeight;
+        const max_scroll_top = element.scrollTop;
+        element.scrollTop = previous_scroll_top;
+
+        return max_scroll_top;
+    }
+
     Try_Object<T>(
         object: T | null,
     ):

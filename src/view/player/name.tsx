@@ -45,21 +45,10 @@ export class Name extends Component<Name_Props>
     Scroll_Distance():
         Float
     {
-        const element: HTMLElement = this.Some_Element();
         if (this.Measurements().Is_Vertical()) {
-            const previous_scroll_top = element.scrollTop;
-            element.scrollTop = element.scrollHeight;
-            const scroll_distance = element.scrollTop;
-            element.scrollTop = previous_scroll_top;
-
-            return scroll_distance;
+            return this.Max_Scroll_Top();
         } else {
-            const previous_scroll_left = element.scrollLeft;
-            element.scrollLeft = element.scrollWidth;
-            const scroll_distance = element.scrollLeft;
-            element.scrollLeft = previous_scroll_left;
-
-            return scroll_distance;
+            return this.Max_Scroll_Left();
         }
     }
 

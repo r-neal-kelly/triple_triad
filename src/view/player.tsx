@@ -265,8 +265,10 @@ export class Player extends Component<Player_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
+            // may want to move this to hand instead, and let it deal with refreshing
+            // just the two stakes needed and to scroll after
             this.Model().Select_Stake(stake_index);
-            await this.Refresh();
+            await this.Refresh(); // this may be a problem when trying to scroll hand
         }
     }
 
