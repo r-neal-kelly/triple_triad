@@ -1211,17 +1211,6 @@ export class Game extends Component<Game_Props>
     override On_Restyle():
         Component_Styles
     {
-        const model: Model.Arena.Instance = this.Model();
-
-        this.measurements = new Game_Measurements({
-            may_have_scrollbar: !this.is_exhibition,
-            parent_width: this.Parent().Width(),
-            parent_height: this.Parent().Height(),
-            row_count: model.Rules().Row_Count(),
-            column_count: model.Rules().Column_Count(),
-            player_count: model.Rules().Player_Count(),
-        });
-
         return ({
             width: this.CSS_Width(),
             height: this.CSS_Height(),
@@ -1231,5 +1220,23 @@ export class Game extends Component<Game_Props>
             overflowX: `hidden`,
             overflowY: `hidden`,
         });
+    }
+
+    override On_Resize(
+        data: Event.Resize_Data
+    ):
+        void
+    {
+        const model: Model.Arena.Instance = this.Model();
+        this.measurements = new Game_Measurements({
+            may_have_scrollbar: !this.is_exhibition,
+            parent_width: this.Parent().Width(),
+            parent_height: this.Parent().Height(),
+            row_count: model.Rules().Row_Count(),
+            column_count: model.Rules().Column_Count(),
+            player_count: model.Rules().Player_Count(),
+        });
+
+        super.On_Resize(data);
     }
 }
