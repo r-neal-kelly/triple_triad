@@ -12,6 +12,7 @@ import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
 import { Cells } from "./cells";
+import * as Popup from "./popup";
 
 const TURN_RESULT_WAIT_MILLISECONDS: number = 667;
 const TURN_RESULT_TRANSITION_RATIO: number = 1 / 2;
@@ -70,16 +71,34 @@ export class Cell extends Component<Cell_Props>
         return this.Measurements().Board_Cell_Height();
     }
 
-    CSS_Width():
-        string
+    Border():
+        Float
     {
-        return `${this.Width()}px`;
+        return this.Measurements().Board_Cell_Border();
     }
 
-    CSS_Height():
-        string
+    Row_Small_Width():
+        Float
     {
-        return `${this.Height()}px`;
+        return this.Measurements().Board_Cell_Row_Small_Width();
+    }
+
+    Row_Large_Width():
+        Float
+    {
+        return this.Measurements().Board_Cell_Row_Large_Width();
+    }
+
+    Column_Small_Height():
+        Float
+    {
+        return this.Measurements().Board_Cell_Column_Small_Height();
+    }
+
+    Column_Large_Height():
+        Float
+    {
+        return this.Measurements().Board_Cell_Column_Large_Height();
     }
 
     override On_Refresh():
@@ -158,16 +177,32 @@ export class Cell extends Component<Cell_Props>
             cursor = `default`;
         }
 
+        const row_small_width: Float = this.Row_Small_Width();
+        const row_large_width: Float = this.Row_Large_Width();
+        const column_small_height: Float = this.Column_Small_Height();
+        const column_large_height: Float = this.Column_Large_Height();
+
         return ({
             display: `grid`,
-            gridTemplateColumns: `4fr 3fr 4fr 3fr 4fr`,
-            gridTemplateRows: `4fr 3fr 4fr 3fr 4fr`,
-            columnGap: `5%`,
+            gridTemplateColumns: `
+                ${row_large_width}px
+                ${row_small_width}px
+                ${row_large_width}px
+                ${row_small_width}px
+                ${row_large_width}px
+            `,
+            gridTemplateRows: `
+                ${column_large_height}px
+                ${column_small_height}px
+                ${column_large_height}px
+                ${column_small_height}px
+                ${column_large_height}px
+            `,
 
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
-            border: `0.3vmin solid #00000080`,
+            border: `${this.Border()}px solid #00000080`,
 
             backgroundColor: background_color,
 
@@ -426,192 +461,48 @@ export class Cell extends Component<Cell_Props>
                     turn_result.plus.right ||
                     turn_result.plus.bottom
                 ) {
-                    this.popups = [];
+                    this.popups = [
+                        <Popup.Center
+                            key={`center`}
 
-                    if (turn_result.combo) {
-                        this.popups.push(
-                            <div
-                                key={`center`}
-                                className={`Board_Cell_Center`}
-                                style={{
-                                    display: `flex`,
-                                    flexDirection: `column`,
-                                    justifyContent: `center`,
+                            model={turn_result}
+                            parent={this}
+                            event_grid={this.Event_Grid()}
+                            index={this.Index()}
+                        />,
+                        <Popup.Left
+                            key={`left`}
 
-                                    width: `100%`,
-                                    height: `100%`,
+                            model={turn_result}
+                            parent={this}
+                            event_grid={this.Event_Grid()}
+                            index={this.Index()}
+                        />,
+                        <Popup.Top
+                            key={`top`}
 
-                                    gridColumn: `2 / span 3`,
-                                    gridRow: `3 / span 1`,
-                                    alignSelf: `center`,
-                                    justifySelf: `center`,
-                                    zIndex: `1`,
+                            model={turn_result}
+                            parent={this}
+                            event_grid={this.Event_Grid()}
+                            index={this.Index()}
+                        />,
+                        <Popup.Right
+                            key={`right`}
 
-                                    backgroundColor: `rgba(0, 0, 0, 0.5)`,
+                            model={turn_result}
+                            parent={this}
+                            event_grid={this.Event_Grid()}
+                            index={this.Index()}
+                        />,
+                        <Popup.Bottom
+                            key={`bottom`}
 
-                                    //borderRadius: `30%`,
-
-                                    color: `white`,
-                                    textAlign: `center`,
-                                }}
-                            >
-                                <div>COMBO</div>
-                            </div>
-                        );
-                    }
-                    for (const [class_name, key, has_same, has_plus, styles] of [
-                        [
-                            `Board_Cell_Left`,
-                            `left`,
-                            turn_result.same.left,
-                            turn_result.plus.left,
-                            {
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-
-                                width: `100%`,
-                                height: `100%`,
-
-                                gridColumn: `1 / span 1`,
-                                gridRow: `3 / span 1`,
-                                alignSelf: `center`,
-                                justifySelf: `start`,
-                                zIndex: `1`,
-
-                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
-
-                                //borderRadius: `50%`,
-
-                                color: `white`,
-                                textAlign: `center`,
-                            },
-                        ],
-                        [
-                            `Board_Cell_Top`,
-                            `top`,
-                            turn_result.same.top,
-                            turn_result.plus.top,
-                            {
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-
-                                width: `100%`,
-                                height: `100%`,
-
-                                gridColumn: `3 / span 1`,
-                                gridRow: `1 / span 1`,
-                                alignSelf: `start`,
-                                justifySelf: `center`,
-                                zIndex: `1`,
-
-                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
-
-                                //borderRadius: `50%`,
-
-                                color: `white`,
-                                textAlign: `center`,
-                            },
-                        ],
-                        [
-                            `Board_Cell_Right`,
-                            `right`,
-                            turn_result.same.right,
-                            turn_result.plus.right,
-                            {
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-
-                                width: `100%`,
-                                height: `100%`,
-
-                                gridColumn: `5 / span 1`,
-                                gridRow: `3 / span 1`,
-                                alignSelf: `center`,
-                                justifySelf: `end`,
-                                zIndex: `1`,
-
-                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
-
-                                //borderRadius: `50%`,
-
-                                color: `white`,
-                                textAlign: `center`,
-                            },
-                        ],
-                        [
-                            `Board_Cell_Bottom`,
-                            `bottom`,
-                            turn_result.same.bottom,
-                            turn_result.plus.bottom,
-                            {
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-
-                                width: `100%`,
-                                height: `100%`,
-
-                                gridColumn: `3 / span 1`,
-                                gridRow: `5 / span 1`,
-                                alignSelf: `end`,
-                                justifySelf: `center`,
-                                zIndex: `1`,
-
-                                backgroundColor: `rgba(0, 0, 0, 0.5)`,
-
-                                //borderRadius: `50%`,
-
-                                color: `white`,
-                                textAlign: `center`,
-                            },
-                        ],
-                    ] as Array<
-                        [
-                            string,
-                            string,
-                            boolean,
-                            boolean,
-                            any,
-                        ]
-                    >) {
-                        if (has_same) {
-                            if (has_plus) {
-                                this.popups.push(
-                                    <div
-                                        key={key}
-                                        className={class_name}
-                                        style={styles}
-                                    >
-                                        <div>=</div>
-                                        <div>+</div>
-                                    </div>
-                                );
-                            } else {
-                                this.popups.push(
-                                    <div
-                                        key={key}
-                                        className={class_name}
-                                        style={styles}
-                                    >
-                                        <div>=</div>
-                                    </div>
-                                );
-                            }
-                        } else if (has_plus) {
-                            this.popups.push(
-                                <div
-                                    key={key}
-                                    className={class_name}
-                                    style={styles}
-                                >
-                                    <div>+</div>
-                                </div>
-                            );
-                        }
-                    }
+                            model={turn_result}
+                            parent={this}
+                            event_grid={this.Event_Grid()}
+                            index={this.Index()}
+                        />,
+                    ];
 
                     await this.Refresh();
                     if (this.Is_Alive()) {

@@ -647,6 +647,20 @@ export class Game_Measurements
     private has_x_scrollbar: boolean;
     private has_y_scrollbar: boolean;
 
+    private board_cell_border: Float;
+    private board_cell_row_small_width: Float;
+    private board_cell_row_large_width: Float;
+    private board_cell_column_small_height: Float;
+    private board_cell_column_large_height: Float;
+    private board_cell_popup_center_margin_left_right: Float;
+    private board_cell_popup_center_width: Float;
+    private board_cell_popup_center_height: Float;
+    private board_cell_popup_center_padding_left_right: Float;
+    private board_cell_popup_center_font_size: Float;
+    private board_cell_popup_side_width: Float;
+    private board_cell_popup_side_height: Float;
+    private board_cell_popup_side_font_size: Float;
+
     private player_name_font_size: Float;
     private player_score_font_size: Float;
 
@@ -749,6 +763,76 @@ export class Game_Measurements
         } else {
             this.results_width = parent_width;
             this.results_height = parent_height;
+        }
+
+        {
+            const cell_width = this.oriented_content.board.cell_width;
+            const cell_height = this.oriented_content.board.cell_height;
+
+            this.board_cell_border = Percent(1.5, cell_width);
+
+            const resolution: Float =
+                4.0 + 3.0 + 4.0 + 3.0 + 4.0;
+            const row_part: Float =
+                (cell_width - (this.board_cell_border * 2)) / resolution;
+            const column_part: Float =
+                (cell_height - (this.board_cell_border * 2)) / resolution;
+            this.board_cell_row_small_width = row_part * 3.0;
+            this.board_cell_row_large_width = row_part * 4.0;
+            this.board_cell_column_small_height = column_part * 3.0;
+            this.board_cell_column_large_height = column_part * 4.0;
+
+            const popup_center_width_and_margin: Float =
+                this.board_cell_row_small_width +
+                this.board_cell_row_large_width +
+                this.board_cell_row_small_width;
+            this.board_cell_popup_center_margin_left_right =
+                Percent(6, popup_center_width_and_margin);
+            this.board_cell_popup_center_width =
+                popup_center_width_and_margin -
+                (this.board_cell_popup_center_margin_left_right * 2);
+            this.board_cell_popup_center_height =
+                this.board_cell_column_large_height;
+            this.board_cell_popup_center_padding_left_right =
+                Percent(4, this.board_cell_popup_center_width);
+            this.board_cell_popup_center_font_size = Fitted_Font_Size_XY(
+                `COMBO`,
+                16,
+                {
+                    boxSizing: `border-box`,
+
+                    width: `${this.board_cell_popup_center_width}px`,
+                    height: `${this.board_cell_popup_center_height}px`,
+                    padding: `0px ${this.board_cell_popup_center_padding_left_right}px`,
+
+                    overflowX: `hidden`,
+                    overflowY: `hidden`,
+
+                    textAlign: `center`,
+                    whiteSpace: `nowrap`,
+                },
+            );
+
+            this.board_cell_popup_side_width =
+                this.board_cell_row_large_width;
+            this.board_cell_popup_side_height =
+                this.board_cell_column_large_height;
+            this.board_cell_popup_side_font_size = Fitted_Font_Size_XY(
+                `⩲`,
+                16,
+                {
+                    boxSizing: `border-box`,
+
+                    width: `${this.board_cell_popup_side_width}px`,
+                    height: `${this.board_cell_popup_side_height}px`,
+
+                    overflowX: `hidden`,
+                    overflowY: `hidden`,
+
+                    textAlign: `center`,
+                    whiteSpace: `nowrap`,
+                },
+            );
         }
 
         this.player_name_font_size = (this.is_vertical ? Fitted_Font_Size_X : Fitted_Font_Size_Y)(
@@ -928,6 +1012,84 @@ export class Game_Measurements
         Float
     {
         return this.oriented_content.board.cell_height;
+    }
+
+    Board_Cell_Border():
+        Float
+    {
+        return this.board_cell_border;
+    }
+
+    Board_Cell_Row_Small_Width():
+        Float
+    {
+        return this.board_cell_row_small_width;
+    }
+
+    Board_Cell_Row_Large_Width():
+        Float
+    {
+        return this.board_cell_row_large_width;
+    }
+
+    Board_Cell_Column_Small_Height():
+        Float
+    {
+        return this.board_cell_column_small_height;
+    }
+
+    Board_Cell_Column_Large_Height():
+        Float
+    {
+        return this.board_cell_column_large_height;
+    }
+
+    Board_Cell_Popup_Center_Margin_Left_Right():
+        Float
+    {
+        return this.board_cell_popup_center_margin_left_right;
+    }
+
+    Board_Cell_Popup_Center_Width():
+        Float
+    {
+        return this.board_cell_popup_center_width;
+    }
+
+    Board_Cell_Popup_Center_Height():
+        Float
+    {
+        return this.board_cell_popup_center_height;
+    }
+
+    Board_Cell_Popup_Center_Padding_Left_Right():
+        Float
+    {
+        return this.board_cell_popup_center_padding_left_right;
+    }
+
+    Board_Cell_Popup_Center_Font_Size():
+        Float
+    {
+        return this.board_cell_popup_center_font_size;
+    }
+
+    Board_Cell_Popup_Side_Width():
+        Float
+    {
+        return this.board_cell_popup_side_width;
+    }
+
+    Board_Cell_Popup_Side_Height():
+        Float
+    {
+        return this.board_cell_popup_side_height;
+    }
+
+    Board_Cell_Popup_Side_Font_Size():
+        Float
+    {
+        return this.board_cell_popup_side_font_size;
     }
 
     Player_Group_Width():
