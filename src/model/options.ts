@@ -24,6 +24,8 @@ export class Options
 
     private use_small_board: boolean;
 
+    private player_types: Array<Player.Type>;
+
     private player_color_pool: Array<Color.Instance>;
     private player_colors: Array<Color.Instance>;
     private player_color_pool_select_index: Color.Index;
@@ -43,6 +45,13 @@ export class Options
         this.rules = rules.Clone();
 
         this.use_small_board = use_small_board;
+
+        this.player_types = [];
+        this.player_types.push(Player.Type.HUMAN);
+        for (let idx = 0, end = this.rules.Player_Count() - 1; idx < end; idx += 1) {
+            this.player_types.push(Player.Type.COMPUTER);
+        }
+        Assert(this.player_types.length === this.rules.Player_Count());
 
         this.player_color_pool = new Color.Uniques({
             color_count: 10,
@@ -104,6 +113,7 @@ export class Options
         Assert(this.Can_Decrement_Player_Count());
 
         this.Rules().Decrement_Player_Count();
+        this.Decrement_Player_Types();
         this.Decrement_Player_Colors();
     }
 
@@ -114,7 +124,67 @@ export class Options
         Assert(this.Can_Increment_Player_Count());
 
         this.Rules().Increment_Player_Count();
+        this.Increment_Player_Types();
         this.Increment_Player_Colors();
+    }
+
+    Player_Type(
+        player_index: Player.Index,
+    ):
+        Player.Type
+    {
+        Assert(
+            player_index != null &&
+            player_index >= 0 &&
+            player_index < this.player_types.length
+        );
+
+        return this.player_types[player_index];
+    }
+
+    Change_Player_Type(
+        player_index: Player.Index,
+        player_type: Player.Type,
+    ):
+        void
+    {
+        Assert(
+            player_index != null &&
+            player_index >= 0 &&
+            player_index < this.player_types.length
+        );
+
+        this.player_types[player_index] = player_type;
+    }
+
+    Toggle_Player_Type(
+        player_index: Player.Index,
+    ):
+        void
+    {
+        Assert(
+            player_index != null &&
+            player_index >= 0 &&
+            player_index < this.player_types.length
+        );
+
+        if (this.player_types[player_index] === Player.Type.HUMAN) {
+            this.player_types[player_index] = Player.Type.COMPUTER;
+        } else {
+            this.player_types[player_index] = Player.Type.HUMAN;
+        }
+    }
+
+    private Decrement_Player_Types():
+        void
+    {
+        this.player_types.pop();
+    }
+
+    private Increment_Player_Types():
+        void
+    {
+        this.player_types.push(Player.Type.COMPUTER);
     }
 
     private Decrement_Player_Colors():

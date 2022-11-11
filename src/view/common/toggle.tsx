@@ -63,6 +63,12 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
         return `1em`;
     }
 
+    CSS_Untoggled_Border_Color():
+        string
+    {
+        return `rgba(255, 255, 255, 0.5)`;
+    }
+
     CSS_Untoggled_Background_Color():
         string
     {
@@ -81,10 +87,16 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
         return this.CSS_Text_Size();
     }
 
+    CSS_Toggled_Border_Color():
+        string
+    {
+        return `rgba(0, 0, 0, 0.7)`;
+    }
+
     CSS_Toggled_Background_Color():
         string
     {
-        return `rgba(255, 255, 255, 0.7)`;
+        return `rgba(255, 255, 255, 0.65)`;
     }
 
     CSS_Toggled_Text_Color():
@@ -97,6 +109,12 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
         string
     {
         return this.CSS_Text_Size();
+    }
+
+    CSS_Disabled_Border_Color():
+        string
+    {
+        return `rgba(255, 255, 255, 0.5)`;
     }
 
     CSS_Disabled_Background_Color():
@@ -127,6 +145,8 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
                 <div
                     style={{
                         color: `inherit`,
+                        textAlign: `center`,
+                        whiteSpace: `nowrap`,
                     }}
                 >
                     {this.Text()}
@@ -145,22 +165,26 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
     override On_Restyle():
         Component_Styles
     {
+        let border_color: string;
         let background_color: string;
         let color: string;
         let font_size: string;
         let cursor: string;
         if (this.Is_Enabled()) {
             if (this.Is_Toggled()) {
+                border_color = this.CSS_Toggled_Border_Color();
                 background_color = this.CSS_Toggled_Background_Color();
                 color = this.CSS_Toggled_Text_Color();
                 font_size = this.CSS_Toggled_Text_Size();
             } else {
+                border_color = this.CSS_Untoggled_Border_Color();
                 background_color = this.CSS_Untoggled_Background_Color();
                 color = this.CSS_Untoggled_Text_Color();
                 font_size = this.CSS_Untoggled_Text_Size();
             }
             cursor = `pointer`;
         } else {
+            border_color = this.CSS_Disabled_Border_Color();
             background_color = this.CSS_Disabled_Background_Color();
             color = this.CSS_Disabled_Text_Color();
             font_size = this.CSS_Disabled_Text_Size();
@@ -176,6 +200,9 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
             width: this.CSS_Width(),
             height: this.CSS_Height(),
 
+            overflowX: `hidden`,
+            overflowY: `hidden`,
+
             position: `relative`,
 
             alignSelf: `center`,
@@ -184,7 +211,7 @@ export class Toggle<Props extends Toggle_Props> extends Component<Props>
             borderWidth: `0.6vmin`,
             borderRadius: `0`,
             borderStyle: `solid`,
-            borderColor: `rgba(255, 255, 255, 0.5)`,
+            borderColor: border_color,
 
             backgroundColor: background_color,
             backgroundRepeat: `no-repeat`,

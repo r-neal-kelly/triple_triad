@@ -32,7 +32,7 @@ export class Player extends Component<Player_Props>
     static AI_Selection_Wait_Milliseconds():
         Integer
     {
-        return 667;
+        return 600;
     }
 
     private pillar: Pillar | null = null;

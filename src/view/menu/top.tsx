@@ -12,6 +12,7 @@ import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
 import { Button } from "../common/button";
 import { Menu } from "../menu";
+import { Menu_Measurements } from "../menu";
 
 type Top_Props = {
     model: Model.Menu.Top;
@@ -21,7 +22,7 @@ type Top_Props = {
 
 export class Top extends Component<Top_Props>
 {
-    private title: Title | null = null;
+    private title_area: Title_Area | null = null;
     private buttons: Buttons | null = null;
 
     Menu():
@@ -30,16 +31,34 @@ export class Top extends Component<Top_Props>
         return this.Parent();
     }
 
-    Title():
-        Title
+    Title_Area():
+        Title_Area
     {
-        return this.Try_Object(this.title);
+        return this.Try_Object(this.title_area);
     }
 
     Buttons():
         Buttons
     {
         return this.Try_Object(this.buttons);
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Menu().Measurements();
+    }
+
+    Width():
+        Float
+    {
+        return this.Measurements().Top_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Measurements().Top_Height();
     }
 
     override On_Refresh():
@@ -49,8 +68,8 @@ export class Top extends Component<Top_Props>
             <div
                 className={`Top`}
             >
-                <Title
-                    ref={ref => this.title = ref}
+                <Title_Area
+                    ref={ref => this.title_area = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -70,18 +89,21 @@ export class Top extends Component<Top_Props>
     override On_Restyle():
         Component_Styles
     {
+        const measurements: Menu_Measurements = this.Measurements();
+
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `40% 60%`,
+            gridTemplateRows: `
+                ${measurements.Top_Title_Area_Height()}px
+                ${measurements.Top_Buttons_Height()}px
+            `,
             rowGap: `0%`,
 
-            width: `100%`,
-            height: `100%`,
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             position: `relative`,
-
-            backgroundColor: `transparent`,
         });
     }
 
@@ -171,13 +193,13 @@ export class Top extends Component<Top_Props>
     }
 }
 
-type Title_Props = {
+type Title_Area_Props = {
     model: Model.Menu.Top;
     parent: Top;
     event_grid: Event.Grid;
 }
 
-class Title extends Component<Title_Props>
+class Title_Area extends Component<Title_Area_Props>
 {
     private text: Title_Text | null = null;
 
@@ -193,12 +215,30 @@ class Title extends Component<Title_Props>
         return this.Try_Object(this.text);
     }
 
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    Width():
+        Float
+    {
+        return this.Measurements().Top_Title_Area_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Measurements().Top_Title_Area_Height();
+    }
+
     override On_Refresh():
         JSX.Element | null
     {
         return (
             <div
-                className={`Title`}
+                className={`Title_Area`}
             >
                 <Title_Text
                     ref={ref => this.text = ref}
@@ -220,8 +260,8 @@ class Title extends Component<Title_Props>
             justifyContent: `center`,
             alignItems: `center`,
 
-            width: `100%`,
-            height: `100%`,
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             alignSelf: `center`,
             justifySelf: `center`,
@@ -233,14 +273,14 @@ class Title extends Component<Title_Props>
 
 type Title_Text_Props = {
     model: Model.Menu.Top;
-    parent: Title;
+    parent: Title_Area;
     event_grid: Event.Grid;
 }
 
 class Title_Text extends Component<Title_Text_Props>
 {
-    Title():
-        Title
+    Area():
+        Title_Area
     {
         return this.Parent();
     }
@@ -362,6 +402,24 @@ class Buttons extends Component<Buttons_Props>
         return this.Try_Object(this.help);
     }
 
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    Width():
+        Float
+    {
+        return this.Measurements().Top_Buttons_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Measurements().Top_Buttons_Height();
+    }
+
     override On_Refresh():
         JSX.Element | null
     {
@@ -403,8 +461,8 @@ class Buttons extends Component<Buttons_Props>
             gridTemplateRows: `1fr 1fr 1fr`,
             rowGap: `4%`,
 
-            width: `100%`,
-            height: `100%`,
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
             padding: `2%`,
 
             alignSelf: `center`,

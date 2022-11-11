@@ -345,6 +345,73 @@ export function Fitted_Font_Size_XY(
     return guess > 0.0 ? guess : 0.0;
 }
 
+export function Fit_Font_Size_XY(
+    {
+        element,
+        guess = 16,
+        interval = 0.5,
+    }: {
+        element: HTMLElement,
+        guess?: Float,
+        interval?: Float,
+    },
+):
+    Float
+{
+    Assert(element.textContent !== ``);
+
+    element.style.fontSize = `${guess}px`;
+
+    let max_scroll_left: Float;
+    let max_scroll_top: Float;
+
+    element.scrollLeft = element.scrollWidth;
+    max_scroll_left = element.scrollLeft;
+    element.scrollTop = element.scrollHeight;
+    max_scroll_top = element.scrollTop;
+    while (max_scroll_left === 0 && max_scroll_top === 0) {
+        guess *= 4;
+        element.style.fontSize = `${guess}px`;
+        element.scrollLeft = element.scrollWidth;
+        max_scroll_left = element.scrollLeft;
+        element.scrollTop = element.scrollHeight;
+        max_scroll_top = element.scrollTop;
+    }
+
+    guess = element.clientWidth * guess / element.scrollWidth;
+    element.style.fontSize = `${guess}px`;
+    guess = element.clientHeight * guess / element.scrollHeight;
+    element.style.fontSize = `${guess}px`;
+    element.scrollLeft = element.scrollWidth;
+    max_scroll_left = element.scrollLeft;
+    element.scrollTop = element.scrollHeight;
+    max_scroll_top = element.scrollTop;
+
+    if (max_scroll_left === 0 && max_scroll_top === 0) {
+        while (max_scroll_left === 0 && max_scroll_top === 0) {
+            guess += interval;
+            element.style.fontSize = `${guess}px`;
+            element.scrollLeft = element.scrollWidth;
+            max_scroll_left = element.scrollLeft;
+            element.scrollTop = element.scrollHeight;
+            max_scroll_top = element.scrollTop;
+        }
+        guess -= interval;
+        element.style.fontSize = `${guess}px`;
+    } else {
+        while (max_scroll_left > 0 || max_scroll_top > 0) {
+            guess -= interval;
+            element.style.fontSize = `${guess}px`;
+            element.scrollLeft = element.scrollWidth;
+            max_scroll_left = element.scrollLeft;
+            element.scrollTop = element.scrollHeight;
+            max_scroll_top = element.scrollTop;
+        }
+    }
+
+    return guess > 0.0 ? guess : 0.0;
+}
+
 export function Plot_Revolution(
     {
         radius,

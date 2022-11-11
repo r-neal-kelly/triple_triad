@@ -292,21 +292,8 @@ export class Main extends Component<Main_Props>
             const packs: Model.Packs = model.Packs();
             const options: Model.Options = model.Menu().Options().Data();
             const rules: Model.Rules.Instance = options.Rules();
-            const selections: Array<Model.Selection.Instance> = [
-                new Model.Selection.Random({
-                    collection: new Model.Collection({
-                        default_shuffle: new Model.Shuffle.Instance({
-                            pack: packs.Pack(`Cats`),
-                            min_tier_index: 0,
-                            max_tier_index: 9,
-                        }),
-                    }),
-                    color: options.Player_Color(0),
-                    is_of_human: true,
-                    card_count: rules.Selection_Card_Count(),
-                }),
-            ];
-            for (let idx = 1, end = rules.Player_Count(); idx < end; idx += 1) {
+            const selections: Array<Model.Selection.Instance> = [];
+            for (let idx = 0, end = rules.Player_Count(); idx < end; idx += 1) {
                 selections.push(
                     new Model.Selection.Random({
                         collection: new Model.Collection({
@@ -317,7 +304,7 @@ export class Main extends Component<Main_Props>
                             }),
                         }),
                         color: options.Player_Color(idx),
-                        is_of_human: false,
+                        is_of_human: options.Player_Type(idx) === Model.Player.Type.HUMAN,
                         card_count: rules.Selection_Card_Count(),
                     }),
                 );
