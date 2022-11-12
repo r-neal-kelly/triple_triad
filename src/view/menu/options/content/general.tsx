@@ -402,27 +402,26 @@ class Display_Button extends Button<Display_Button_Props>
     {
         if (this.Is_Alive()) {
             this.Model().Toggle_Measurement();
-
-            const exhibitions: Exhibitions = this.Main().Exhibitions();
-            const measurement: Model.Enum.Measurement = this.Model().Measurement();
-            await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
-                event_grid: Event.Grid,
-            ):
-                Promise<void>
-            {
-                await event_grid.Send_Event({
-                    name_affix: Event.GAME_REMEASURE,
-                    name_suffixes: [
-                    ],
-                    data: {
-                        measurement: measurement,
-                    } as Event.Game_Remeasure_Data,
-                    is_atomic: true,
-                });
-            }));
+            await this.Refresh();
 
             if (this.Is_Alive()) {
-                await this.Refresh();
+                const exhibitions: Exhibitions = this.Main().Exhibitions();
+                const measurement: Model.Enum.Measurement = this.Model().Measurement();
+                await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
+                    event_grid: Event.Grid,
+                ):
+                    Promise<void>
+                {
+                    await event_grid.Send_Event({
+                        name_affix: Event.GAME_REMEASURE,
+                        name_suffixes: [
+                        ],
+                        data: {
+                            measurement: measurement,
+                        } as Event.Game_Remeasure_Data,
+                        is_atomic: true,
+                    });
+                }));
             }
         }
     }
