@@ -22,6 +22,7 @@ export class Options
 
     private rules: Rules.Instance;
 
+    private measurement: Enum.Measurement;
     private use_small_board: boolean;
 
     private player_types: Array<Player.Type>;
@@ -34,16 +35,19 @@ export class Options
         {
             rules = new Rules.Instance({}),
 
+            measurement = Enum.Measurement.BEST_FIT,
             use_small_board = true,
         }: {
             rules?: Rules.Instance,
 
+            measurement?: Enum.Measurement,
             use_small_board?: boolean,
         },
     )
     {
         this.rules = rules.Clone();
 
+        this.measurement = measurement;
         this.use_small_board = use_small_board;
 
         this.player_types = [];
@@ -74,6 +78,22 @@ export class Options
         Rules.Instance
     {
         return this.rules;
+    }
+
+    Measurement():
+        Enum.Measurement
+    {
+        return this.measurement;
+    }
+
+    Toggle_Measurement():
+        void
+    {
+        if (this.measurement < Enum.Measurement._LAST_) {
+            this.measurement += 1;
+        } else {
+            this.measurement = Enum.Measurement._FIRST_;
+        }
     }
 
     Use_Small_Board():
@@ -175,38 +195,6 @@ export class Options
         }
     }
 
-    private Decrement_Player_Types():
-        void
-    {
-        this.player_types.pop();
-    }
-
-    private Increment_Player_Types():
-        void
-    {
-        this.player_types.push(Player.Type.COMPUTER);
-    }
-
-    private Decrement_Player_Colors():
-        void
-    {
-        this.player_color_pool.push(this.player_colors.pop() as Color.Instance);
-    }
-
-    private Increment_Player_Colors():
-        void
-    {
-        Assert(this.player_color_pool.length > 0);
-
-        const pool_index: Color.Index =
-            Random_Integer_Exclusive(0, this.player_color_pool.length);
-
-        this.player_colors.push(this.player_color_pool[pool_index]);
-        this.player_color_pool[pool_index] =
-            this.player_color_pool[this.player_color_pool.length - 1];
-        this.player_color_pool.pop();
-    }
-
     Player_Color_Count():
         Color.Count
     {
@@ -296,5 +284,37 @@ export class Options
         } else {
             return this.player_colors[player_color_index];
         }
+    }
+
+    private Decrement_Player_Types():
+        void
+    {
+        this.player_types.pop();
+    }
+
+    private Increment_Player_Types():
+        void
+    {
+        this.player_types.push(Player.Type.COMPUTER);
+    }
+
+    private Decrement_Player_Colors():
+        void
+    {
+        this.player_color_pool.push(this.player_colors.pop() as Color.Instance);
+    }
+
+    private Increment_Player_Colors():
+        void
+    {
+        Assert(this.player_color_pool.length > 0);
+
+        const pool_index: Color.Index =
+            Random_Integer_Exclusive(0, this.player_color_pool.length);
+
+        this.player_colors.push(this.player_color_pool[pool_index]);
+        this.player_color_pool[pool_index] =
+            this.player_color_pool[this.player_color_pool.length - 1];
+        this.player_color_pool.pop();
     }
 }

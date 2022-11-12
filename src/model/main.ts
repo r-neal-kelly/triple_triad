@@ -14,6 +14,7 @@ export class Main
 {
     private packs: Packs;
     private collections: { [index: Player.Name]: Collection };
+    private options: Options;
 
     private menu: Menu.Instance;
     private exhibitions: Array<Exhibition.Instance>;
@@ -38,9 +39,10 @@ export class Main
         for (const collection of collections) {
             this.collections[collection.Owner_Name()] = collection;
         }
+        this.options = options;
 
         this.menu = new Menu.Instance({
-            options_data: options,
+            main: this,
         });
         this.exhibitions = [];
         for (let idx = 0, end = exhibition_count; idx < end; idx += 1) {
@@ -80,6 +82,12 @@ export class Main
         Array<Player.Name>
     {
         return Object.keys(this.collections).sort();
+    }
+
+    Options():
+        Options
+    {
+        return this.options;
     }
 
     Menu():

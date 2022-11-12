@@ -8,6 +8,7 @@ import { Component_Styles } from "../../../component";
 
 import { Menu_Measurements } from "../../../menu";
 import { Options } from "../options";
+import { General } from "./general";
 import { Player } from "./player";
 import { Board } from "./board";
 import { Rules } from "./rules";
@@ -20,6 +21,7 @@ type Content_Props = {
 
 export class Content extends Component<Content_Props>
 {
+    private general: General | null = null;
     private player: Player | null = null;
     private board: Board | null = null;
     private rules: Rules | null = null;
@@ -28,6 +30,12 @@ export class Content extends Component<Content_Props>
         Options
     {
         return this.Parent();
+    }
+
+    General():
+        General
+    {
+        return this.Try_Object(this.general);
     }
 
     Player():
@@ -85,6 +93,13 @@ export class Content extends Component<Content_Props>
             <div
                 className={`Content`}
             >
+                <General
+                    ref={ref => this.general = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
                 <Player
                     ref={ref => this.player = ref}
 

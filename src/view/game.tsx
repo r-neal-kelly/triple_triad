@@ -1,5 +1,6 @@
 import { Float } from "../types";
 
+import { Assert } from "../utils";
 import { Percent } from "../utils";
 import { X_Scrollbar_Height } from "../utils";
 import { Y_Scrollbar_Width } from "../utils";
@@ -666,6 +667,7 @@ export class Game_Measurements
 
     constructor(
         {
+            measurement,
             may_have_scrollbar,
             parent_width,
             parent_height,
@@ -673,6 +675,7 @@ export class Game_Measurements
             column_count,
             player_count,
         }: {
+            measurement: Model.Enum.Measurement,
             may_have_scrollbar: boolean,
             parent_width: Float,
             parent_height: Float,
@@ -688,72 +691,105 @@ export class Game_Measurements
         this.arena_width = parent_width;
         this.arena_height = parent_height;
 
-        // I think what we'll try to do is actually calculate both the
-        // vertical and horizontal versions of the layout. Then
-        // we pick whichever one has the biggest cards and or least scroll.
-        // What we can do is get the difference between total visible card width
-        // and the total content width in both dimensions, divide by two, and
-        // pick which ever has the smallest number. If equal, then pick vertical if
-        // the height of the parent is larger than its width, else horizontal.
-        const vertical_content: Vertical_Content = Generate_Vertical_Content({
-            may_have_scrollbar: may_have_scrollbar,
-            parent_width: parent_width,
-            parent_height: parent_height,
-            row_count: row_count,
-            column_count: column_count,
-            player_count: player_count,
-        });
-        const horizontal_content: Horizontal_Content = Generate_Horizontal_Content({
-            may_have_scrollbar: may_have_scrollbar,
-            parent_width: parent_width,
-            parent_height: parent_height,
-            row_count: row_count,
-            column_count: column_count,
-            player_count: player_count,
-        });
+        if (measurement === Model.Enum.Measurement.BEST_FIT) {
+            // I think what we'll try to do is actually calculate both the
+            // vertical and horizontal versions of the layout. Then
+            // we pick whichever one has the biggest cards and or least scroll.
+            // What we can do is get the difference between total visible card width
+            // and the total content width in both dimensions, divide by two, and
+            // pick which ever has the smallest number. If equal, then pick vertical if
+            // the height of the parent is larger than its width, else horizontal.
+            const vertical_content: Vertical_Content = Generate_Vertical_Content({
+                may_have_scrollbar: may_have_scrollbar,
+                parent_width: parent_width,
+                parent_height: parent_height,
+                row_count: row_count,
+                column_count: column_count,
+                player_count: player_count,
+            });
+            const horizontal_content: Horizontal_Content = Generate_Horizontal_Content({
+                may_have_scrollbar: may_have_scrollbar,
+                parent_width: parent_width,
+                parent_height: parent_height,
+                row_count: row_count,
+                column_count: column_count,
+                player_count: player_count,
+            });
 
-        const vertical_card_board_area: Float =
-            (vertical_content.board.column_count * vertical_content.board.cell_width) *
-            (vertical_content.board.row_count * vertical_content.board.cell_height);
-        const vertical_card_player_area: Float =
-            (vertical_content.player.hand_width * vertical_content.player.stake_height) *
-            vertical_content.player.count;
-        const vertical_card_area =
-            (vertical_card_board_area + vertical_card_player_area) *
-            parent_height / vertical_content.height;
+            const vertical_card_board_area: Float =
+                (vertical_content.board.column_count * vertical_content.board.cell_width) *
+                (vertical_content.board.row_count * vertical_content.board.cell_height);
+            const vertical_card_player_area: Float =
+                (vertical_content.player.hand_width * vertical_content.player.stake_height) *
+                vertical_content.player.count;
+            const vertical_card_area =
+                (vertical_card_board_area + vertical_card_player_area) *
+                parent_height / vertical_content.height;
 
-        const horizontal_card_board_area: Float =
-            (horizontal_content.board.column_count * horizontal_content.board.cell_width) *
-            (horizontal_content.board.row_count * horizontal_content.board.cell_height);
-        const horizontal_card_player_area: Float =
-            (horizontal_content.player.hand_height * horizontal_content.player.stake_width) *
-            horizontal_content.player.count;
-        const horizontal_card_area =
-            (horizontal_card_board_area + horizontal_card_player_area) *
-            parent_width / horizontal_content.width;
+            const horizontal_card_board_area: Float =
+                (horizontal_content.board.column_count * horizontal_content.board.cell_width) *
+                (horizontal_content.board.row_count * horizontal_content.board.cell_height);
+            const horizontal_card_player_area: Float =
+                (horizontal_content.player.hand_height * horizontal_content.player.stake_width) *
+                horizontal_content.player.count;
+            const horizontal_card_area =
+                (horizontal_card_board_area + horizontal_card_player_area) *
+                parent_width / horizontal_content.width;
 
-        if (vertical_card_area > horizontal_card_area) {
+            if (vertical_card_area > horizontal_card_area) {
+                this.is_vertical = true;
+                this.oriented_content = vertical_content;
+                this.has_x_scrollbar = false;
+                this.has_y_scrollbar = this.oriented_content.has_scrollbar;
+            } else if (horizontal_card_area > vertical_card_area) {
+                this.is_vertical = false;
+                this.oriented_content = horizontal_content;
+                this.has_x_scrollbar = this.oriented_content.has_scrollbar;
+                this.has_y_scrollbar = false;
+            } else if (parent_height > parent_width) {
+                this.is_vertical = true;
+                this.oriented_content = vertical_content;
+                this.has_x_scrollbar = false;
+                this.has_y_scrollbar = this.oriented_content.has_scrollbar;
+            } else {
+                this.is_vertical = false;
+                this.oriented_content = horizontal_content;
+                this.has_x_scrollbar = this.oriented_content.has_scrollbar;
+                this.has_y_scrollbar = false;
+            }
+        } else if (measurement === Model.Enum.Measurement.VERTICAL) {
+            const vertical_content: Vertical_Content = Generate_Vertical_Content({
+                may_have_scrollbar: may_have_scrollbar,
+                parent_width: parent_width,
+                parent_height: parent_height,
+                row_count: row_count,
+                column_count: column_count,
+                player_count: player_count,
+            });
+
             this.is_vertical = true;
             this.oriented_content = vertical_content;
             this.has_x_scrollbar = false;
             this.has_y_scrollbar = this.oriented_content.has_scrollbar;
-        } else if (horizontal_card_area > vertical_card_area) {
+        } else if (measurement === Model.Enum.Measurement.HORIZONTAL) {
+            const horizontal_content: Horizontal_Content = Generate_Horizontal_Content({
+                may_have_scrollbar: may_have_scrollbar,
+                parent_width: parent_width,
+                parent_height: parent_height,
+                row_count: row_count,
+                column_count: column_count,
+                player_count: player_count,
+            });
+
             this.is_vertical = false;
             this.oriented_content = horizontal_content;
             this.has_x_scrollbar = this.oriented_content.has_scrollbar;
             this.has_y_scrollbar = false;
-        } else if (parent_height > parent_width) {
-            this.is_vertical = true;
-            this.oriented_content = vertical_content;
-            this.has_x_scrollbar = false;
-            this.has_y_scrollbar = this.oriented_content.has_scrollbar;
         } else {
-            this.is_vertical = false;
-            this.oriented_content = horizontal_content;
-            this.has_x_scrollbar = this.oriented_content.has_scrollbar;
-            this.has_y_scrollbar = false;
+            throw new Error(`Invalid measurement.`);
         }
 
+        /* Results */
         if (this.has_x_scrollbar) {
             this.results_width = parent_width;
             this.results_height = this.oriented_content.height;
@@ -765,6 +801,7 @@ export class Game_Measurements
             this.results_height = parent_height;
         }
 
+        /* Cell Popups */
         {
             const cell_width = this.oriented_content.board.cell_width;
             const cell_height = this.oriented_content.board.cell_height;
@@ -835,6 +872,7 @@ export class Game_Measurements
             );
         }
 
+        /* Font Sizes */
         this.player_name_font_size = (this.is_vertical ? Fitted_Font_Size_X : Fitted_Font_Size_Y)(
             `A`,
             16,
@@ -1271,6 +1309,7 @@ export class Game extends Component<Game_Props>
 
     private measurements: Game_Measurements =
         new Game_Measurements({
+            measurement: this.Main().Model().Options().Measurement(),
             may_have_scrollbar: !this.is_exhibition,
             parent_width: this.Parent().Width(),
             parent_height: this.Parent().Height(),
@@ -1283,6 +1322,24 @@ export class Game extends Component<Game_Props>
         Model.Player.Group.Count
     {
         return PLAYER_GROUP_COUNT;
+    }
+
+    Main():
+        Main
+    {
+        if (this.Is_Exhibition()) {
+            return this.Exhibition().Main();
+        } else {
+            return this.Parent() as Main;
+        }
+    }
+
+    Exhibition():
+        Exhibition
+    {
+        Assert(this.Is_Exhibition());
+
+        return this.Parent() as Exhibition;
     }
 
     Arena():
@@ -1384,6 +1441,17 @@ export class Game extends Component<Game_Props>
         });
     }
 
+    override On_Life():
+        Array<Event.Listener_Info>
+    {
+        return [
+            {
+                event_name: new Event.Name(Event.ON, Event.GAME_REMEASURE),
+                event_handler: this.On_Game_Remeasure,
+            },
+        ];
+    }
+
     override On_Resize(
         data: Event.Resize_Data
     ):
@@ -1391,6 +1459,7 @@ export class Game extends Component<Game_Props>
     {
         const model: Model.Arena.Instance = this.Model();
         this.measurements = new Game_Measurements({
+            measurement: this.Main().Model().Options().Measurement(),
             may_have_scrollbar: !this.is_exhibition,
             parent_width: this.Parent().Width(),
             parent_height: this.Parent().Height(),
@@ -1400,5 +1469,17 @@ export class Game extends Component<Game_Props>
         });
 
         super.On_Resize(data);
+    }
+
+    async On_Game_Remeasure(
+        {
+        }: Event.Game_Remeasure_Data
+    ):
+        Promise<void>
+    {
+        this.On_Resize({
+            width: this.Parent().Width(),
+            height: this.Parent().Height(),
+        });
     }
 }

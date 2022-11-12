@@ -41,6 +41,30 @@ export class Button<Props extends Button_Props> extends Component<Props>
         return `100%`;
     }
 
+    CSS_Padding_Left():
+        string
+    {
+        return `0`;
+    }
+
+    CSS_Padding_Top():
+        string
+    {
+        return `0`;
+    }
+
+    CSS_Padding_Right():
+        string
+    {
+        return `0`;
+    }
+
+    CSS_Padding_Bottom():
+        string
+    {
+        return `0`;
+    }
+
     CSS_Text_Color():
         string
     {
@@ -114,6 +138,10 @@ export class Button<Props extends Button_Props> extends Component<Props>
 
             width: this.CSS_Width(),
             height: this.CSS_Height(),
+            paddingLeft: this.CSS_Padding_Left(),
+            paddingTop: this.CSS_Padding_Top(),
+            paddingRight: this.CSS_Padding_Right(),
+            paddingBottom: this.CSS_Padding_Bottom(),
 
             position: `relative`,
 

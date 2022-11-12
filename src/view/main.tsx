@@ -290,7 +290,7 @@ export class Main extends Component<Main_Props>
         if (this.Is_Alive()) {
             const model: Model.Main = this.Model();
             const packs: Model.Packs = model.Packs();
-            const options: Model.Options = model.Menu().Options().Data();
+            const options: Model.Options = model.Options();
             const rules: Model.Rules.Instance = options.Rules();
             const selections: Array<Model.Selection.Instance> = [];
             for (let idx = 0, end = rules.Player_Count(); idx < end; idx += 1) {

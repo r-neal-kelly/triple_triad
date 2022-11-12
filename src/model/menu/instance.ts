@@ -1,13 +1,15 @@
 import { Assert } from "../../utils";
 
 import * as Enum from "../enum";
-import { Options as Options_Data } from "../options";
+import { Main } from "../main";
 import { Top } from "./top";
 import { Options } from "./options";
 import { Help } from "./help";
 
 export class Instance
 {
+    private main: Main;
+
     private top: Top;
     private options: Options;
     private help: Help;
@@ -16,24 +18,31 @@ export class Instance
 
     constructor(
         {
-            options_data = new Options_Data({}),
+            main,
         }: {
-            options_data?: Options_Data,
+            main: Main,
         },
     )
     {
+        this.main = main;
+
         this.top = new Top({
             menu: this,
         });
         this.options = new Options({
             menu: this,
-            data: options_data,
         });
         this.help = new Help({
             menu: this,
         });
 
         this.current_menu = Enum.Menu.TOP;
+    }
+
+    Main():
+        Main
+    {
+        return this.main;
     }
 
     Top():
