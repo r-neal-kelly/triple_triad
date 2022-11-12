@@ -1,4 +1,3 @@
-import { Index } from "../types";
 import { Float } from "../types";
 
 import { Assert } from "../utils";
