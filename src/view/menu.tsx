@@ -49,6 +49,8 @@ export class Menu_Measurements
     private options_content_section_title_border_width_left_right: Float;
     private options_content_section_title_border_width_top_bottom: Float;
     private options_content_section_types_width: Float;
+    private options_content_section_general_toggle_padding: Float;
+    private options_content_section_rules_toggle_padding: Float;
     private options_panel_width: Float;
     private options_panel_height: Float;
     private options_panel_padding_left_right: Float;
@@ -150,6 +152,10 @@ export class Menu_Measurements
         this.options_content_section_title_border_width_left_right = 0.0;
         this.options_content_section_title_border_width_top_bottom = Percent(0.2, min_size);
         this.options_content_section_types_width = this.options_content_section_width;
+        this.options_content_section_general_toggle_padding =
+            Percent(0.7, this.options_content_width + this.options_content_height / 2);
+        this.options_content_section_rules_toggle_padding =
+            this.options_content_section_general_toggle_padding;
         this.options_panel_width = sub_panel_width;
         this.options_panel_height = sub_panel_height;
         this.options_panel_padding_left_right = sub_panel_padding_left_right;
@@ -169,6 +175,8 @@ export class Menu_Measurements
         this.help_panel_height = sub_panel_height;
         this.help_panel_padding_left_right = sub_panel_padding_left_right;
         this.help_panel_padding_top_bottom = sub_panel_padding_top_bottom;
+
+        Object.freeze(this);
     }
 
     Menu_Width():
@@ -367,6 +375,18 @@ export class Menu_Measurements
         Float
     {
         return this.options_content_section_types_width;
+    }
+
+    Options_Content_Section_General_Toggle_Padding():
+        Float
+    {
+        return this.options_content_section_general_toggle_padding;
+    }
+
+    Options_Content_Section_Rules_Toggle_Padding():
+        Float
+    {
+        return this.options_content_section_rules_toggle_padding;
     }
 
     Options_Panel_Width():

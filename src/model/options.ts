@@ -89,6 +89,16 @@ export class Options
         return this.measurement;
     }
 
+    Change_Measurement(measurement: Enum.Measurement):
+        void
+    {
+        Assert(measurement != null);
+        Assert(measurement >= Enum.Measurement._FIRST_);
+        Assert(measurement <= Enum.Measurement._LAST_);
+
+        this.measurement = measurement;
+    }
+
     Toggle_Measurement():
         void
     {

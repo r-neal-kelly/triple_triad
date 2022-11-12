@@ -377,7 +377,7 @@ class Toggles extends Component<Toggles_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 2fr`,
+            gridTemplateRows: `1.25fr 2fr`,
 
             width: `100%`,
             height: `100%`,

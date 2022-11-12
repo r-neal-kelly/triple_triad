@@ -261,6 +261,12 @@ class Same_Toggle extends Toggle<Same_Toggle_Props>
         return this.Parent();
     }
 
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
     override Name():
         string
     {
@@ -295,6 +301,30 @@ class Same_Toggle extends Toggle<Same_Toggle_Props>
         string
     {
         return `90%`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
     }
 
     override async On_Toggle(event: React.SyntheticEvent):
@@ -333,6 +363,12 @@ class Plus_Toggle extends Toggle<Plus_Toggle_Props>
         return this.Parent();
     }
 
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
     override Name():
         string
     {
@@ -367,6 +403,30 @@ class Plus_Toggle extends Toggle<Plus_Toggle_Props>
         string
     {
         return `90%`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
     }
 
     override async On_Toggle(event: React.SyntheticEvent):
@@ -405,6 +465,12 @@ class Wall_Toggle extends Toggle<Wall_Toggle_Props>
         return this.Parent();
     }
 
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
     override Name():
         string
     {
@@ -439,6 +505,30 @@ class Wall_Toggle extends Toggle<Wall_Toggle_Props>
         string
     {
         return `90%`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
     }
 
     override async On_Toggle(event: React.SyntheticEvent):
@@ -479,6 +569,12 @@ class Combo_Toggle extends Toggle<Combo_Toggle_Props>
         return this.Parent();
     }
 
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
     override Name():
         string
     {
@@ -513,6 +609,30 @@ class Combo_Toggle extends Toggle<Combo_Toggle_Props>
         string
     {
         return `90%`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_Rules_Toggle_Padding()}px`;
     }
 
     override async On_Toggle(event: React.SyntheticEvent):

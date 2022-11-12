@@ -5,7 +5,7 @@ import * as Model from "../../../../model";
 import * as Event from "../../../event";
 import { Component } from "../../../component";
 import { Component_Styles } from "../../../component";
-import { Button } from "../../../common/button";
+import { Toggle } from "../../../common/toggle";
 
 import { Main } from "../../../main";
 import { Exhibitions } from "../../../exhibitions";
@@ -93,7 +93,7 @@ export class General extends Component<General_Props>
 
         return (
             <div
-                className={`Board`}
+                className={`General`}
             >
                 <Title
                     ref={ref => this.title = ref}
@@ -119,7 +119,7 @@ export class General extends Component<General_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr`,
+            gridTemplateRows: `1fr 1fr 1fr`,
             gridGap: `
                 ${this.Row_Gap()}px
                 ${this.Column_Gap()}px
@@ -216,8 +216,8 @@ type Display_Props = {
 
 class Display extends Component<Display_Props>
 {
-    private display_name: Display_Name | null = null;
-    private display_button: Display_Button | null = null;
+    private name: Display_Name | null = null;
+    private toggles: Display_Toggles | null = null;
 
     General():
         General
@@ -225,16 +225,22 @@ class Display extends Component<Display_Props>
         return this.Parent();
     }
 
-    Display_Name():
+    Name():
         Display_Name
     {
-        return this.Try_Object(this.display_name);
+        return this.Try_Object(this.name);
     }
 
-    Display_Button():
-        Display_Button
+    Toggles():
+        Display_Toggles
     {
-        return this.Try_Object(this.display_button);
+        return this.Try_Object(this.toggles);
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
     }
 
     override On_Refresh():
@@ -248,14 +254,14 @@ class Display extends Component<Display_Props>
                 className={`Display`}
             >
                 <Display_Name
-                    ref={ref => this.display_name = ref}
+                    ref={ref => this.name = ref}
 
                     model={model}
                     parent={this}
                     event_grid={event_grid}
                 />
-                <Display_Button
-                    ref={ref => this.display_button = ref}
+                <Display_Toggles
+                    ref={ref => this.toggles = ref}
 
                     model={model}
                     parent={this}
@@ -269,19 +275,16 @@ class Display extends Component<Display_Props>
         Component_Styles
     {
         return ({
-            display: `flex`,
-            flexDirection: `row`,
-            justifyContent: `center`,
-            alignItems: `center`,
+            display: `grid`,
+            gridTemplateColumns: `1fr`,
+            gridTemplateRows: `1fr 1fr`,
 
             width: `100%`,
 
+            gridColumn: `1 / span 1`,
+            gridRow: `2 / span 2`,
             alignSelf: `center`,
             justifySelf: `center`,
-
-            color: `white`,
-            textAlign: `end`,
-            whiteSpace: `nowrap`,
         });
     }
 }
@@ -301,7 +304,7 @@ class Display_Name extends Component<Display_Name_Props>
             <div
                 className={`Display_Name`}
             >
-                {`Display:`}
+                {`Display`}
             </div>
         );
     }
@@ -317,19 +320,120 @@ class Display_Name extends Component<Display_Name_Props>
             justifySelf: `center`,
 
             color: `white`,
-            textAlign: `end`,
+            textAlign: `center`,
             whiteSpace: `nowrap`,
         });
     }
 }
 
-type Display_Button_Props = {
+type Display_Toggles_Props = {
     model: Model.Options;
     parent: Display;
     event_grid: Event.Grid;
 }
 
-class Display_Button extends Button<Display_Button_Props>
+class Display_Toggles extends Component<Display_Toggles_Props>
+{
+    private best_fit_toggle: Display_Best_Fit_Toggle | null = null;
+    private horizontal_toggle: Display_Horizontal_Toggle | null = null;
+    private vertical_toggle: Display_Vertical_Toggle | null = null;
+
+    General():
+        General
+    {
+        return this.Display().General();
+    }
+
+    Display():
+        Display
+    {
+        return this.Parent();
+    }
+
+    Best_Fit_Toggle():
+        Display_Best_Fit_Toggle
+    {
+        return this.Try_Object(this.best_fit_toggle);
+    }
+
+    Horizontal_Toggle():
+        Display_Horizontal_Toggle
+    {
+        return this.Try_Object(this.horizontal_toggle);
+    }
+
+    Vertical_Toggle():
+        Display_Vertical_Toggle
+    {
+        return this.Try_Object(this.vertical_toggle);
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Options = this.Model();
+        const event_grid: Event.Grid = this.Event_Grid();
+
+        return (
+            <div
+                className={`Display`}
+            >
+                <Display_Best_Fit_Toggle
+                    ref={ref => this.best_fit_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Display_Horizontal_Toggle
+                    ref={ref => this.horizontal_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+                <Display_Vertical_Toggle
+                    ref={ref => this.vertical_toggle = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
+            </div>
+        );
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `row`,
+            flexWrap: `wrap`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `100%`,
+
+            alignSelf: `center`,
+            justifySelf: `center`,
+        });
+    }
+}
+
+type Display_Best_Fit_Toggle_Props = {
+    model: Model.Options;
+    parent: Display_Toggles;
+    event_grid: Event.Grid;
+}
+
+class Display_Best_Fit_Toggle extends Toggle<Display_Best_Fit_Toggle_Props>
 {
     Main():
         Main
@@ -358,19 +462,31 @@ class Display_Button extends Button<Display_Button_Props>
     Display():
         Display
     {
+        return this.Toggles().Parent();
+    }
+
+    Toggles():
+        Display_Toggles
+    {
         return this.Parent();
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
     }
 
     override Name():
         string
     {
-        return `Display_Button`;
+        return `Display_Best_Fit_Toggle`;
     }
 
     override Text():
         string
     {
-        return Model.Enum.Measurement_String(this.Model().Measurement());
+        return Model.Enum.Measurement_String(Model.Enum.Measurement.BEST_FIT);
     }
 
     override CSS_Width():
@@ -388,21 +504,307 @@ class Display_Button extends Button<Display_Button_Props>
     override CSS_Padding_Left():
         string
     {
-        return `3%`;
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
     }
 
     override CSS_Padding_Right():
         string
     {
-        return `3%`;
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
     }
 
-    override async On_Activate(event: React.SyntheticEvent):
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override Is_Toggled():
+        boolean
+    {
+        return this.Model().Measurement() === Model.Enum.Measurement.BEST_FIT;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.Model().Toggle_Measurement();
-            await this.Refresh();
+            this.Model().Change_Measurement(Model.Enum.Measurement.BEST_FIT);
+            await this.Toggles().Refresh();
+
+            if (this.Is_Alive()) {
+                const exhibitions: Exhibitions = this.Main().Exhibitions();
+                const measurement: Model.Enum.Measurement = this.Model().Measurement();
+                await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
+                    event_grid: Event.Grid,
+                ):
+                    Promise<void>
+                {
+                    await event_grid.Send_Event({
+                        name_affix: Event.GAME_REMEASURE,
+                        name_suffixes: [
+                        ],
+                        data: {
+                            measurement: measurement,
+                        } as Event.Game_Remeasure_Data,
+                        is_atomic: true,
+                    });
+                }));
+            }
+        }
+    }
+}
+
+type Display_Horizontal_Toggle_Props = {
+    model: Model.Options;
+    parent: Display_Toggles;
+    event_grid: Event.Grid;
+}
+
+class Display_Horizontal_Toggle extends Toggle<Display_Horizontal_Toggle_Props>
+{
+    Main():
+        Main
+    {
+        return this.Menu().Main();
+    }
+
+    Menu():
+        Menu
+    {
+        return this.Options().Menu();
+    }
+
+    Options():
+        Options
+    {
+        return this.General().Options();
+    }
+
+    General():
+        General
+    {
+        return this.Display().General();
+    }
+
+    Display():
+        Display
+    {
+        return this.Toggles().Parent();
+    }
+
+    Toggles():
+        Display_Toggles
+    {
+        return this.Parent();
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    override Name():
+        string
+    {
+        return `Display_Horizontal_Toggle`;
+    }
+
+    override Text():
+        string
+    {
+        return Model.Enum.Measurement_String(Model.Enum.Measurement.HORIZONTAL);
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `fit-content`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override Is_Toggled():
+        boolean
+    {
+        return this.Model().Measurement() === Model.Enum.Measurement.HORIZONTAL;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Change_Measurement(Model.Enum.Measurement.HORIZONTAL);
+            await this.Toggles().Refresh();
+
+            if (this.Is_Alive()) {
+                const exhibitions: Exhibitions = this.Main().Exhibitions();
+                const measurement: Model.Enum.Measurement = this.Model().Measurement();
+                await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
+                    event_grid: Event.Grid,
+                ):
+                    Promise<void>
+                {
+                    await event_grid.Send_Event({
+                        name_affix: Event.GAME_REMEASURE,
+                        name_suffixes: [
+                        ],
+                        data: {
+                            measurement: measurement,
+                        } as Event.Game_Remeasure_Data,
+                        is_atomic: true,
+                    });
+                }));
+            }
+        }
+    }
+}
+
+type Display_Vertical_Toggle_Props = {
+    model: Model.Options;
+    parent: Display_Toggles;
+    event_grid: Event.Grid;
+}
+
+class Display_Vertical_Toggle extends Toggle<Display_Vertical_Toggle_Props>
+{
+    Main():
+        Main
+    {
+        return this.Menu().Main();
+    }
+
+    Menu():
+        Menu
+    {
+        return this.Options().Menu();
+    }
+
+    Options():
+        Options
+    {
+        return this.General().Options();
+    }
+
+    General():
+        General
+    {
+        return this.Display().General();
+    }
+
+    Display():
+        Display
+    {
+        return this.Toggles().Parent();
+    }
+
+    Toggles():
+        Display_Toggles
+    {
+        return this.Parent();
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    override Name():
+        string
+    {
+        return `Display_Vertical_Toggle`;
+    }
+
+    override Text():
+        string
+    {
+        return Model.Enum.Measurement_String(Model.Enum.Measurement.VERTICAL);
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `fit-content`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Options_Content_Section_General_Toggle_Padding()}px`;
+    }
+
+    override Is_Toggled():
+        boolean
+    {
+        return this.Model().Measurement() === Model.Enum.Measurement.VERTICAL;
+    }
+
+    override async On_Toggle(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Model().Change_Measurement(Model.Enum.Measurement.VERTICAL);
+            await this.Toggles().Refresh();
 
             if (this.Is_Alive()) {
                 const exhibitions: Exhibitions = this.Main().Exhibitions();
