@@ -792,9 +792,9 @@ export class Game_Measurements
         /* Results */
         if (this.has_x_scrollbar) {
             this.results_width = parent_width;
-            this.results_height = this.oriented_content.height;
+            this.results_height = parent_height - X_Scrollbar_Height();
         } else if (this.has_y_scrollbar) {
-            this.results_width = this.oriented_content.width;
+            this.results_width = parent_width - Y_Scrollbar_Width();
             this.results_height = parent_height;
         } else {
             this.results_width = parent_width;

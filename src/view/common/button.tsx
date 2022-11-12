@@ -112,6 +112,7 @@ export class Button<Props extends Button_Props> extends Component<Props>
                     className={`Button_Text`}
                     style={{
                         color: `inherit`,
+                        textAlign: `center`,
                     }}
                 >
                     {this.Text()}
