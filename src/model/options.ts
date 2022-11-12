@@ -1,3 +1,6 @@
+import { Index } from "../types";
+import { Float } from "../types";
+
 import { Assert } from "../utils";
 import { Random_Integer_Exclusive } from "../utils";
 
@@ -309,8 +312,33 @@ export class Options
     {
         Assert(this.player_color_pool.length > 0);
 
-        const pool_index: Color.Index =
-            Random_Integer_Exclusive(0, this.player_color_pool.length);
+        let pool_index: Color.Index;
+        if (this.player_colors.length === 0) {
+            pool_index = Random_Integer_Exclusive(0, this.player_color_pool.length);
+        } else {
+            pool_index =
+                this.player_color_pool.map(function (
+                    this: Options,
+                    color: Color.Instance,
+                    index: Color.Index,
+                ):
+                    [Color.Index, Float]
+                {
+                    let total_difference: Float = 0.0;
+                    for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
+                        total_difference += this.player_colors[idx].Percent_Difference_From(color);
+                    }
+
+                    return [index, total_difference / this.player_colors.length];
+                }, this).sort(function (
+                    a: [Color.Index, Float],
+                    b: [Color.Index, Float],
+                ):
+                    number
+                {
+                    return b[1] - a[1];
+                })[0][0];
+        }
 
         this.player_colors.push(this.player_color_pool[pool_index]);
         this.player_color_pool[pool_index] =
