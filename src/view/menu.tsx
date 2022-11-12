@@ -215,7 +215,7 @@ export class Menu_Measurements
         return this.square_button_padding;
     }
 
-    Square_Button_Right():
+    Square_Button_Left():
         Float
     {
         return this.square_button_offset;
@@ -950,8 +950,9 @@ class Show_Button extends Button<Show_Button_Props>
         const styles: Component_Styles = super.On_Restyle();
         styles.borderWidth = `${this.Measurements().Square_Button_Border_Width()}px`;
         styles.position = `fixed`;
-        styles.right = `${this.Measurements().Square_Button_Right()}px`;
+        styles.left = `${this.Measurements().Square_Button_Left()}px`;
         styles.bottom = `${this.Measurements().Square_Button_Bottom()}px`;
+        styles.zIndex = `1`;
 
         return styles;
     }
@@ -1076,8 +1077,9 @@ class Hide_Button extends Button<Hide_Button_Props>
         styles.borderWidth = `${this.Measurements().Square_Button_Border_Width()}px`;
         styles.borderColor = `rgba(32, 32, 32, 0.7)`;
         styles.position = `fixed`;
-        styles.right = `${this.Measurements().Square_Button_Right()}px`;
+        styles.left = `${this.Measurements().Square_Button_Left()}px`;
         styles.bottom = `${this.Measurements().Square_Button_Bottom()}px`;
+        styles.zIndex = `1`;
 
         return styles;
     }
