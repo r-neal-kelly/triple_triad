@@ -11,12 +11,14 @@ import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
 import { Button } from "../common/button";
+
 import { Menu } from "../menu";
+import { Content as Menu_Content } from "../menu";
 import { Menu_Measurements } from "../menu";
 
 type Top_Props = {
     model: Model.Menu.Top;
-    parent: Menu;
+    parent: Menu_Content;
     event_grid: Event.Grid;
 }
 
@@ -27,6 +29,12 @@ export class Top extends Component<Top_Props>
 
     Menu():
         Menu
+    {
+        return this.Menu_Content().Menu();
+    }
+
+    Menu_Content():
+        Menu_Content
     {
         return this.Parent();
     }

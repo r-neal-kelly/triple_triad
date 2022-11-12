@@ -7,13 +7,14 @@ import { Component } from "../../component";
 import { Component_Styles } from "../../component";
 
 import { Menu } from "../../menu";
+import { Content as Menu_Content } from "../../menu";
 import { Menu_Measurements } from "../../menu";
 import * as Content from "./content";
 import * as Panel from "./panel";
 
 type Options_Props = {
     model: Model.Menu.Options;
-    parent: Menu;
+    parent: Menu_Content;
     event_grid: Event.Grid;
 }
 
@@ -24,6 +25,12 @@ export class Options extends Component<Options_Props>
 
     Menu():
         Menu
+    {
+        return this.Menu_Content().Menu();
+    }
+
+    Menu_Content():
+        Menu_Content
     {
         return this.Parent();
     }

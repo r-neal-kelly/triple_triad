@@ -6,7 +6,10 @@ import { Y_Scrollbar_Width } from "../utils";
 import * as Model from "../model";
 
 import * as Event from "./event";
-import { Component, Component_Styles } from "./component";
+import { Component } from "./component";
+import { Component_Styles } from "./component";
+import { Button } from "./common/button";
+
 import { Main } from "./main";
 import { Top } from "./menu/top";
 import * as Options from "./menu/options";
@@ -16,6 +19,11 @@ export class Menu_Measurements
 {
     private width: Float;
     private height: Float;
+
+    private square_button_size: Float;
+    private square_button_border_width: Float;
+    private square_button_padding: Float;
+    private square_button_offset: Float;
 
     private top_width: Float;
     private top_height: Float;
@@ -74,6 +82,18 @@ export class Menu_Measurements
         this.width = parent_width;
         this.height = parent_height;
 
+        const min_size: Float = this.width < this.height ?
+            this.width :
+            this.height;
+
+        {
+            const square_button_max: Float = 50;
+            this.square_button_size = Math.min(Percent(6, min_size), square_button_max);
+            this.square_button_border_width = Math.min(Percent(0.5, min_size), square_button_max / 12);
+            this.square_button_padding = Math.min(Percent(1, min_size), square_button_max / 6);
+            this.square_button_offset = Math.min(Percent(2, min_size), square_button_max / 3);
+        }
+
         this.top_width = this.width;
         this.top_height = this.height;
         this.top_title_area_width = this.top_width;
@@ -81,9 +101,6 @@ export class Menu_Measurements
         this.top_buttons_width = this.top_width;
         this.top_buttons_height = this.top_height - this.top_title_area_height;
 
-        const min_size: Float = this.width < this.height ?
-            this.width :
-            this.height;
         const sub_width: Float = Percent(90, this.width);
         const sub_height: Float = Percent(90, this.height);
         const sub_min_size: Float = sub_width < sub_height ?
@@ -161,6 +178,54 @@ export class Menu_Measurements
     }
 
     Menu_Height():
+        Float
+    {
+        return this.height;
+    }
+
+    Square_Button_Width():
+        Float
+    {
+        return this.square_button_size;
+    }
+
+    Square_Button_Height():
+        Float
+    {
+        return this.square_button_size;
+    }
+
+    Square_Button_Border_Width():
+        Float
+    {
+        return this.square_button_border_width;
+    }
+
+    Square_Button_Padding():
+        Float
+    {
+        return this.square_button_padding;
+    }
+
+    Square_Button_Right():
+        Float
+    {
+        return this.square_button_offset;
+    }
+
+    Square_Button_Bottom():
+        Float
+    {
+        return this.square_button_offset;
+    }
+
+    Content_Width():
+        Float
+    {
+        return this.width;
+    }
+
+    Content_Height():
         Float
     {
         return this.height;
@@ -421,15 +486,17 @@ type Menu_Props = {
 
 export class Menu extends Component<Menu_Props>
 {
-    private top: Top | null = null;
-    private options: Options.Instance | null = null;
-    private help: Help.Instance | null = null;
+    private content: Content | null = null;
+    private show_button: Show_Button | null = null;
+    private hide_button: Hide_Button | null = null;
 
     private measurements: Menu_Measurements = new Menu_Measurements({
         parent_width: this.Parent().Width(),
         parent_height: this.Parent().Height(),
     });
 
+    // put these in model.
+    private is_hidden: boolean = false;
     private is_disabled: boolean = false;
 
     Main():
@@ -438,22 +505,10 @@ export class Menu extends Component<Menu_Props>
         return this.Parent();
     }
 
-    Top():
-        Top
+    Content():
+        Content
     {
-        return this.Try_Object(this.top);
-    }
-
-    Options():
-        Options.Instance
-    {
-        return this.Try_Object(this.options);
-    }
-
-    Help():
-        Help.Instance
-    {
-        return this.Try_Object(this.help);
+        return this.Try_Object(this.content);
     }
 
     Measurements():
@@ -478,47 +533,19 @@ export class Menu extends Component<Menu_Props>
         JSX.Element | null
     {
         const model: Model.Menu.Instance = this.Model();
-        const current_menu: Model.Enum.Menu = model.Current_Menu();
+        const event_grid: Event.Grid = this.Event_Grid();
 
-        if (current_menu === Model.Enum.Menu.TOP) {
+        if (this.is_hidden) {
             return (
                 <div
                     className={`Menu`}
                 >
-                    <Top
-                        ref={ref => this.top = ref}
+                    <Show_Button
+                        ref={ref => this.show_button = ref}
 
-                        model={this.Model().Top()}
+                        model={model}
                         parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else if (current_menu === Model.Enum.Menu.OPTIONS) {
-            return (
-                <div
-                    className={`Menu`}
-                >
-                    <Options.Instance
-                        ref={ref => this.options = ref}
-
-                        model={this.Model().Options()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
-                    />
-                </div>
-            );
-        } else if (current_menu === Model.Enum.Menu.HELP) {
-            return (
-                <div
-                    className={`Menu`}
-                >
-                    <Help.Instance
-                        ref={ref => this.help = ref}
-
-                        model={this.Model().Help()}
-                        parent={this}
-                        event_grid={this.Event_Grid()}
+                        event_grid={event_grid}
                     />
                 </div>
             );
@@ -527,6 +554,20 @@ export class Menu extends Component<Menu_Props>
                 <div
                     className={`Menu`}
                 >
+                    <Content
+                        ref={ref => this.content = ref}
+
+                        model={model}
+                        parent={this}
+                        event_grid={event_grid}
+                    />
+                    <Hide_Button
+                        ref={ref => this.hide_button = ref}
+
+                        model={model}
+                        parent={this}
+                        event_grid={event_grid}
+                    />
                 </div>
             );
         }
@@ -536,11 +577,6 @@ export class Menu extends Component<Menu_Props>
         Component_Styles
     {
         return ({
-            display: `flex`,
-            flexDirection: `column`,
-            justifyContent: `center`,
-            alignItems: `center`,
-
             width: `${this.Width()}px`,
             height: `${this.Height()}px`,
 
@@ -548,8 +584,6 @@ export class Menu extends Component<Menu_Props>
             left: `0`,
             top: `0`,
             zIndex: `1`,
-
-            backgroundColor: `rgba(0, 0, 0, 0.4)`,
         });
     }
 
@@ -619,9 +653,420 @@ export class Menu extends Component<Menu_Props>
         }
     }
 
+    async On_Show_Menus():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.is_hidden = false;
+            await this.Refresh();
+        }
+    }
+
+    async On_Hide_Menus():
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.is_hidden = true;
+            await this.Refresh();
+        }
+    }
+
     async On_Disable_Menus():
         Promise<void>
     {
         this.is_disabled = true;
+    }
+}
+
+type Content_Props = {
+    model: Model.Menu.Instance;
+    parent: Menu;
+    event_grid: Event.Grid;
+}
+
+export class Content extends Component<Content_Props>
+{
+    private top: Top | null = null;
+    private options: Options.Instance | null = null;
+    private help: Help.Instance | null = null;
+
+    Main():
+        Main
+    {
+        return this.Menu().Main();
+    }
+
+    Menu():
+        Menu
+    {
+        return this.Parent();
+    }
+
+    Top():
+        Top
+    {
+        return this.Try_Object(this.top);
+    }
+
+    Options():
+        Options.Instance
+    {
+        return this.Try_Object(this.options);
+    }
+
+    Help():
+        Help.Instance
+    {
+        return this.Try_Object(this.help);
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    Width():
+        Float
+    {
+        return this.Measurements().Content_Width();
+    }
+
+    Height():
+        Float
+    {
+        return this.Measurements().Content_Height();
+    }
+
+    override On_Refresh():
+        JSX.Element | null
+    {
+        const model: Model.Menu.Instance = this.Model();
+        const current_menu: Model.Enum.Menu = model.Current_Menu();
+
+        if (current_menu === Model.Enum.Menu.TOP) {
+            return (
+                <div
+                    className={`Content`}
+                >
+                    <Top
+                        ref={ref => this.top = ref}
+
+                        model={this.Model().Top()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else if (current_menu === Model.Enum.Menu.OPTIONS) {
+            return (
+                <div
+                    className={`Content`}
+                >
+                    <Options.Instance
+                        ref={ref => this.options = ref}
+
+                        model={this.Model().Options()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else if (current_menu === Model.Enum.Menu.HELP) {
+            return (
+                <div
+                    className={`Content`}
+                >
+                    <Help.Instance
+                        ref={ref => this.help = ref}
+
+                        model={this.Model().Help()}
+                        parent={this}
+                        event_grid={this.Event_Grid()}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        return ({
+            display: `flex`,
+            flexDirection: `column`,
+            justifyContent: `center`,
+            alignItems: `center`,
+
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
+
+            position: `absolute`,
+            left: `0`,
+            top: `0`,
+            zIndex: `0`,
+
+            backgroundColor: `rgba(0, 0, 0, 0.4)`,
+        });
+    }
+
+    override On_Life():
+        Array<Event.Listener_Info>
+    {
+        return [
+        ];
+    }
+}
+
+type Show_Button_Props = {
+    model: Model.Menu.Instance;
+    parent: Menu;
+    event_grid: Event.Grid;
+}
+
+class Show_Button extends Button<Show_Button_Props>
+{
+    Menu():
+        Menu
+    {
+        return this.Parent();
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    override Name():
+        string
+    {
+        return `Show_Button`;
+    }
+
+    override Text():
+        string
+    {
+        return `X`;
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `${this.Measurements().Square_Button_Width()}px`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `${this.Measurements().Square_Button_Height()}px`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    override CSS_Background_Color():
+        string
+    {
+        return `rgba(0, 0, 0, 0.7)`;
+    }
+
+    override CSS_Activated_Text_Color():
+        string
+    {
+        return `black`;
+    }
+
+    override CSS_Activated_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    override CSS_Activated_Background_Color():
+        string
+    {
+        return `rgba(255, 255, 255, 0.7)`;
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const styles: Component_Styles = super.On_Restyle();
+        styles.borderWidth = `${this.Measurements().Square_Button_Border_Width()}px`;
+        styles.position = `fixed`;
+        styles.right = `${this.Measurements().Square_Button_Right()}px`;
+        styles.bottom = `${this.Measurements().Square_Button_Bottom()}px`;
+
+        return styles;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Menu().On_Show_Menus();
+        }
+    }
+}
+
+type Hide_Button_Props = {
+    model: Model.Menu.Instance;
+    parent: Menu;
+    event_grid: Event.Grid;
+}
+
+class Hide_Button extends Button<Hide_Button_Props>
+{
+    Menu():
+        Menu
+    {
+        return this.Parent();
+    }
+
+    Measurements():
+        Menu_Measurements
+    {
+        return this.Parent().Measurements();
+    }
+
+    override Name():
+        string
+    {
+        return `Hide_Button`;
+    }
+
+    override Text():
+        string
+    {
+        return ``;
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `${this.Measurements().Square_Button_Width()}px`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `${this.Measurements().Square_Button_Height()}px`;
+    }
+
+    override CSS_Padding_Left():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Padding_Top():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Padding_Right():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Padding_Bottom():
+        string
+    {
+        return `${this.Measurements().Square_Button_Padding()}px`;
+    }
+
+    override CSS_Text_Color():
+        string
+    {
+        return `white`;
+    }
+
+    override CSS_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    override CSS_Background_Color():
+        string
+    {
+        return `rgba(32, 32, 32, 0.5)`;
+    }
+
+    override CSS_Activated_Text_Color():
+        string
+    {
+        return `black`;
+    }
+
+    override CSS_Activated_Text_Size():
+        string
+    {
+        return `1em`;
+    }
+
+    override CSS_Activated_Background_Color():
+        string
+    {
+        return `rgba(255, 255, 255, 0.7)`;
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const styles: Component_Styles = super.On_Restyle();
+        styles.borderWidth = `${this.Measurements().Square_Button_Border_Width()}px`;
+        styles.borderColor = `rgba(32, 32, 32, 0.7)`;
+        styles.position = `fixed`;
+        styles.right = `${this.Measurements().Square_Button_Right()}px`;
+        styles.bottom = `${this.Measurements().Square_Button_Bottom()}px`;
+
+        return styles;
+    }
+
+    override async On_Activate(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.Menu().On_Hide_Menus();
+        }
     }
 }

@@ -5,14 +5,16 @@ import * as Model from "../../../model";
 import * as Event from "../../event";
 import { Component } from "../../component";
 import { Component_Styles } from "../../component";
+
 import { Menu } from "../../menu";
+import { Content as Menu_Content } from "../../menu";
 import { Menu_Measurements } from "../../menu";
 import { Content } from "./content/content";
 import { Panel } from "./panel/panel";
 
 type Help_Props = {
     model: Model.Menu.Help;
-    parent: Menu;
+    parent: Menu_Content;
     event_grid: Event.Grid;
 }
 
@@ -23,6 +25,12 @@ export class Help extends Component<Help_Props>
 
     Menu():
         Menu
+    {
+        return this.Menu_Content().Menu();
+    }
+
+    Menu_Content():
+        Menu_Content
     {
         return this.Parent();
     }
