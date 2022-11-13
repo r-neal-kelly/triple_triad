@@ -1,3 +1,5 @@
+import { Integer } from "../types";
+import { Index } from "../types";
 import { Float } from "../types";
 
 import { Assert } from "../utils";
@@ -7,6 +9,18 @@ import * as Enum from "./enum";
 import * as Color from "./color";
 import * as Rules from "./rules";
 import * as Player from "./player";
+
+type Color_And_Index = {
+    color: Color.Instance;
+    index: Color.Index;
+}
+
+type Color_Palette = {
+    x: Float;
+    y: Float;
+    z: Float;
+    orientation: Enum.RGBA;
+}
 
 export class Options
 {
@@ -22,6 +36,61 @@ export class Options
         return Rules.Instance.Max_Player_Count();
     }
 
+    static Min_Player_Color_Brightness():
+        Integer
+    {
+        return (
+            this.Default_Player_Color_Brightness() -
+            (this.Player_Color_Brightness_Interval() * 8)
+        );
+    }
+
+    static Max_Player_Color_Brightness():
+        Integer
+    {
+        return (
+            this.Default_Player_Color_Brightness() +
+            (this.Player_Color_Brightness_Interval() * 12)
+        );
+    }
+
+    static Default_Player_Color_Brightness():
+        Integer
+    {
+        return 152;
+    }
+
+    static Player_Color_Brightness_Interval():
+        Integer
+    {
+        return 8;
+    }
+
+    static Color_Palettes():
+        Array<Color_Palette>
+    {
+        return [
+            {
+                x: 0.0,
+                y: 0.0,
+                z: 1.5,
+                orientation: Enum.RGBA.BLUE,
+            },
+            {
+                x: 0.0,
+                y: 0.0,
+                z: 1.5,
+                orientation: Enum.RGBA.GREEN,
+            },
+            {
+                x: 0.0,
+                y: 0.0,
+                z: 1.5,
+                orientation: Enum.RGBA.RED,
+            },
+        ];
+    }
+
     private rules: Rules.Instance;
 
     private measurement: Enum.Measurement;
@@ -29,8 +98,11 @@ export class Options
 
     private player_types: Array<Player.Type>;
 
-    private player_color_pool: Array<Color.Instance>;
-    private player_colors: Array<Color.Instance>;
+    private player_color_brightness: Float;
+    private player_color_palettes: Array<Color_Palette>;
+    private player_color_palette_index: Index;
+    private player_color_pool: Array<Color_And_Index>;
+    private player_colors: Array<Color_And_Index>;
     private player_color_pool_select_index: Color.Index;
 
     constructor(
@@ -59,14 +131,27 @@ export class Options
         }
         Assert(this.player_types.length === this.rules.Player_Count());
 
+        this.player_color_brightness = Options.Default_Player_Color_Brightness();
+        this.player_color_palettes = Options.Color_Palettes();
+        this.player_color_palette_index = 0;
         this.player_color_pool = new Color.Uniques({
             color_count: 10,
-            max_value: 152,
+            max_value: this.player_color_brightness,
             alpha: 0.7,
-            from_radians_z: 1.5,
-            radians_x: 0.0,
-            orientation: Enum.RGBA.BLUE,
-        }).Colors();
+            from_radians_z: this.player_color_palettes[this.player_color_palette_index].z,
+            radians_x: this.player_color_palettes[this.player_color_palette_index].x,
+            orientation: this.player_color_palettes[this.player_color_palette_index].orientation,
+        }).Colors().map(function (
+            color: Color.Instance,
+            index: Color.Index,
+        ):
+            Color_And_Index
+        {
+            return ({
+                color: color,
+                index: index,
+            });
+        });
         this.player_colors = [];
         this.player_color_pool_select_index = 0;
 
@@ -225,7 +310,7 @@ export class Options
             player_color_index < this.player_colors.length
         );
 
-        return this.player_colors[player_color_index];
+        return this.player_colors[player_color_index].color;
     }
 
     Player_Colors():
@@ -233,7 +318,12 @@ export class Options
     {
         Assert(this.player_colors.length === this.Rules().Player_Count());
 
-        return Array.from(this.player_colors);
+        const results: Array<Color.Instance> = [];
+        for (const { color } of this.player_colors) {
+            results.push(color);
+        }
+
+        return results;
     }
 
     Select_Previous_Player_Color(player_color_index: Color.Index):
@@ -255,17 +345,17 @@ export class Options
             }
             this.player_color_pool_select_index -= 1;
 
-            const old_color: Color.Instance =
+            const old_color: Color_And_Index =
                 this.player_colors[player_color_index];
-            const new_color: Color.Instance =
+            const new_color: Color_And_Index =
                 this.player_color_pool[this.player_color_pool_select_index];
 
             this.player_colors[player_color_index] = new_color;
             this.player_color_pool[this.player_color_pool_select_index] = old_color;
 
-            return new_color;
+            return new_color.color;
         } else {
-            return this.player_colors[player_color_index];
+            return this.player_colors[player_color_index].color;
         }
     }
 
@@ -284,18 +374,106 @@ export class Options
             if (this.player_color_pool_select_index >= this.player_color_pool.length) {
                 this.player_color_pool_select_index = 0;
             }
-            const old_color: Color.Instance =
+            const old_color: Color_And_Index =
                 this.player_colors[player_color_index];
-            const new_color: Color.Instance =
+            const new_color: Color_And_Index =
                 this.player_color_pool[this.player_color_pool_select_index];
 
             this.player_colors[player_color_index] = new_color;
             this.player_color_pool[this.player_color_pool_select_index] = old_color;
 
-            return new_color;
+            return new_color.color;
         } else {
-            return this.player_colors[player_color_index];
+            return this.player_colors[player_color_index].color;
         }
+    }
+
+    Player_Color_Brightness_Index():
+        Index
+    {
+        const default_brightness: Integer = Options.Default_Player_Color_Brightness();
+
+        if (this.player_color_brightness < default_brightness) {
+            return -(
+                (default_brightness - this.player_color_brightness) /
+                Options.Player_Color_Brightness_Interval()
+            );
+        } else {
+            return (
+                (this.player_color_brightness - default_brightness) /
+                Options.Player_Color_Brightness_Interval()
+            );
+        }
+    }
+
+    Can_Decrement_Player_Color_Brightness():
+        boolean
+    {
+        return this.player_color_brightness > Options.Min_Player_Color_Brightness();
+    }
+
+    Can_Increment_Player_Color_Brightness():
+        boolean
+    {
+        return this.player_color_brightness < Options.Max_Player_Color_Brightness();
+    }
+
+    Decrement_Player_Color_Brightness():
+        void
+    {
+        Assert(this.Can_Decrement_Player_Color_Brightness());
+
+        this.player_color_brightness -= Options.Player_Color_Brightness_Interval();
+
+        this.Update_Player_Colors_And_Pool();
+    }
+
+    Increment_Player_Color_Brightness():
+        void
+    {
+        Assert(this.Can_Increment_Player_Color_Brightness());
+
+        this.player_color_brightness += Options.Player_Color_Brightness_Interval();
+
+        this.Update_Player_Colors_And_Pool();
+    }
+
+    Player_Color_Palette_Index():
+        Index
+    {
+        return this.player_color_palette_index;
+    }
+
+    Can_Decrement_Player_Color_Palette():
+        boolean
+    {
+        return this.player_color_palette_index > 0;
+    }
+
+    Can_Increment_Player_Color_Palette():
+        boolean
+    {
+        return this.player_color_palette_index < this.player_color_palettes.length - 1;
+    }
+
+    Decrement_Player_Color_Palette():
+        void
+    {
+        Assert(this.Can_Decrement_Player_Color_Palette());
+
+        this.player_color_palette_index -= 1;
+
+        this.Update_Player_Colors_And_Pool();
+    }
+
+    Increment_Player_Color_Palette():
+        void
+    {
+        Assert(this.Can_Increment_Player_Color_Palette());
+
+        this.player_color_palette_index += 1;
+
+        this.Update_Player_Colors_And_Pool();
     }
 
     private Decrement_Player_Types():
@@ -313,7 +491,7 @@ export class Options
     private Decrement_Player_Colors():
         void
     {
-        this.player_color_pool.push(this.player_colors.pop() as Color.Instance);
+        this.player_color_pool.push(this.player_colors.pop() as Color_And_Index);
     }
 
     private Increment_Player_Colors():
@@ -328,14 +506,15 @@ export class Options
             pool_index =
                 this.player_color_pool.map(function (
                     this: Options,
-                    color: Color.Instance,
+                    color: Color_And_Index,
                     index: Color.Index,
                 ):
                     [Color.Index, Float]
                 {
                     let total_difference: Float = 0.0;
                     for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
-                        total_difference += this.player_colors[idx].Percent_Difference_From(color);
+                        total_difference +=
+                            this.player_colors[idx].color.Percent_Difference_From(color.color);
                     }
 
                     return [index, total_difference / this.player_colors.length];
@@ -353,5 +532,34 @@ export class Options
         this.player_color_pool[pool_index] =
             this.player_color_pool[this.player_color_pool.length - 1];
         this.player_color_pool.pop();
+    }
+
+    private Update_Player_Colors_And_Pool():
+        void
+    {
+        const new_colors: Array<Color.Instance> =
+            new Color.Uniques({
+                color_count: 10,
+                max_value: this.player_color_brightness,
+                alpha: 0.7,
+                from_radians_z: this.player_color_palettes[this.player_color_palette_index].z,
+                radians_x: this.player_color_palettes[this.player_color_palette_index].x,
+                orientation: this.player_color_palettes[this.player_color_palette_index].orientation,
+            }).Colors();
+
+        for (let idx = 0, end = this.player_color_pool.length; idx < end; idx += 1) {
+            const new_color_index: Color.Index = this.player_color_pool[idx].index;
+            this.player_color_pool[idx] = {
+                color: new_colors[new_color_index],
+                index: new_color_index,
+            };
+        }
+        for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
+            const new_color_index: Color.Index = this.player_colors[idx].index;
+            this.player_colors[idx] = {
+                color: new_colors[new_color_index],
+                index: new_color_index,
+            };
+        }
     }
 }
