@@ -182,15 +182,17 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 is_atomic: false,
             });
 
-            for (const exhibition_event_grid of this.exhibition_event_grids) {
-                exhibition_event_grid.Send_Event({
-                    name_affix: `${Event.RESIZE}_${this.ID()}`,
-                    data: {
-                        width: 0,
-                        height: 0,
-                    } as Event.Resize_Data,
-                    is_atomic: false,
-                });
+            for (let idx = 0, end = this.exhibition_event_grids.length; idx < end; idx += 1) {
+                if (this.Model().Exhibition(idx).Is_Visible()) {
+                    this.exhibition_event_grids[idx].Send_Event({
+                        name_affix: `${Event.RESIZE}_${this.ID()}`,
+                        data: {
+                            width: 0,
+                            height: 0,
+                        } as Event.Resize_Data,
+                        is_atomic: false,
+                    });
+                }
             }
         }
     }
@@ -235,6 +237,15 @@ export class Exhibitions extends Component<Exhibitions_Props>
         if (this.Is_Alive()) {
             const previous: Exhibition = this.Exhibition(previous_exhibition.Index());
             const next: Exhibition = this.Exhibition(next_exhibition.Index());
+
+            this.exhibition_event_grids[next_exhibition.Index()].Send_Event({
+                name_affix: `${Event.RESIZE}_${this.ID()}`,
+                data: {
+                    width: 0,
+                    height: 0,
+                } as Event.Resize_Data,
+                is_atomic: false,
+            });
 
             // we do several cool different transitions,
             // including fade-outs and swipes in various directions
