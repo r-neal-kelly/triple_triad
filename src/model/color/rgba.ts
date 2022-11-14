@@ -1,8 +1,8 @@
 import { Integer } from "../../types";
 import { Float } from "../../types";
 
-/* Contains RGBA values for a color. */
-export class Instance
+/* Contains RGB and alpha values for a color. */
+export class RGBA
 {
     private red: Integer;
     private green: Integer;
@@ -65,16 +65,16 @@ export class Instance
         return this.alpha;
     }
 
-    Percent_Difference_From(other_color: Instance):
+    Percent_Difference_From(other: RGBA):
         Float
     {
         let percent_difference = 0;
 
         for (const [color_a, color_b] of
             [
-                [this.Red(), other_color.Red()],
-                [this.Green(), other_color.Green()],
-                [this.Blue(), other_color.Blue()],
+                [this.Red(), other.Red()],
+                [this.Green(), other.Green()],
+                [this.Blue(), other.Blue()],
             ] as Array<[number, number]>
         ) {
             if (color_a > color_b) {
@@ -85,7 +85,7 @@ export class Instance
         }
 
         const alpha_a = this.Alpha();
-        const alpha_b = other_color.Alpha();
+        const alpha_b = other.Alpha();
         if (alpha_a > alpha_b) {
             percent_difference += (alpha_a - alpha_b) * 100;
         } else {

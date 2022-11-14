@@ -6,7 +6,7 @@ import { Collection } from "../collection";
 export class Instance
 {
     private collection: Collection;
-    private color: Color.Instance;
+    private color: Color.HSLA;
     private cards: Array<Card.Instance>;
     private is_of_human: boolean;
 
@@ -18,7 +18,7 @@ export class Instance
             is_of_human,
         }: {
             collection: Collection,
-            color: Color.Instance,
+            color: Color.HSLA,
             cards: Array<Card.Instance>,
             is_of_human: boolean,
         }
@@ -44,7 +44,7 @@ export class Instance
     }
 
     Color():
-        Color.Instance
+        Color.HSLA
     {
         return this.color;
     }

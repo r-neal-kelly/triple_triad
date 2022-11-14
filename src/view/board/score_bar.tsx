@@ -373,7 +373,7 @@ export class Score extends Component<Score_Props>
         const measurements: Game_Measurements = this.Measurements();
         const model: Model.Board.Score_Bar.Instance = this.Model();
         const score_index: Model.Player.Score.Index = this.Index();
-        const score_color: Model.Color.Instance = model.Score_Color(score_index);
+        const score_color: Model.Color.HSLA = model.Score_Color(score_index);
         const score_percent: Float = model.Score_Percent(score_index);
 
         let width: string;
@@ -399,10 +399,10 @@ export class Score extends Component<Score_Props>
 
             border: border,
 
-            backgroundColor: `rgba(
-                ${score_color.Red()},
-                ${score_color.Green()},
-                ${score_color.Blue()},
+            backgroundColor: `hsl(
+                ${score_color.Hue()},
+                ${score_color.Saturation()}%,
+                ${score_color.Lightness()}%,
                 ${score_color.Alpha()}
             )`,
         });

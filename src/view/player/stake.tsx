@@ -129,7 +129,7 @@ export class Stake extends Component<Stake_Props>
     {
         const measurements: Game_Measurements = this.Measurements();
         const model: Model.Stake.Instance = this.Model();
-        const color: Model.Color.Instance = model.Color();
+        const color: Model.Color.HSLA = model.Color();
         const is_of_human: boolean = this.Model().Is_Of_Human();
         const is_selectable: boolean = this.Model().Is_Selectable();
 
@@ -174,10 +174,10 @@ export class Stake extends Component<Stake_Props>
             top: top,
             zIndex: `${this.Index()}`,
 
-            backgroundColor: `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
+            backgroundColor: `hsl(
+                ${color.Hue()},
+                ${color.Saturation()}%,
+                ${color.Lightness()}%,
                 ${color.Alpha()}
             )`,
 

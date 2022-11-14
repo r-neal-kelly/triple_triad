@@ -87,14 +87,14 @@ export class Pillar extends Component<Pillar_Props>
         Component_Styles
     {
         const model: Model.Player.Instance = this.Model();
-        const color: Model.Color.Instance = this.Model().Color();
+        const color: Model.Color.HSLA = this.Model().Color();
 
         let background_color: string;
         if (model.Is_On_Turn()) {
-            background_color = `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
+            background_color = `hsl(
+                ${color.Hue()},
+                ${color.Saturation()}%,
+                ${color.Lightness()}%,
                 ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
             )`;
         } else {
@@ -359,8 +359,8 @@ export class Pillar extends Component<Pillar_Props>
             const old_player_element: HTMLElement = old_player.Some_Element();
             const new_player_element: HTMLElement = new_player.Some_Element();
             const pillar_element: HTMLElement = this.Some_Element();
-            const old_player_color: Model.Color.Instance = old_player.Model().Color();
-            const new_player_color: Model.Color.Instance = new_player.Model().Color();
+            const old_player_color: Model.Color.HSLA = old_player.Model().Color();
+            const new_player_color: Model.Color.HSLA = new_player.Model().Color();
 
             {
                 const pillar_rect: DOMRect = pillar_element.getBoundingClientRect();
@@ -413,17 +413,17 @@ export class Pillar extends Component<Pillar_Props>
             ):
                 void
             {
-                const old_background_color: string = `rgba(
-                    ${old_player_color.Red()},
-                    ${old_player_color.Green()},
-                    ${old_player_color.Blue()},
+                const old_background_color: string = `hsl(
+                    ${old_player_color.Hue()},
+                    ${old_player_color.Saturation()}%,
+                    ${old_player_color.Lightness()}%,
                     ${old_player_color.Alpha() * Player.Alpha_Highlight_Multiplier()}
                 )`;
 
-                const new_background_color: string = `rgba(
-                    ${new_player_color.Red()},
-                    ${new_player_color.Green()},
-                    ${new_player_color.Blue()},
+                const new_background_color: string = `hsl(
+                    ${new_player_color.Hue()},
+                    ${new_player_color.Saturation()}%,
+                    ${new_player_color.Lightness()}%,
                     ${new_player_color.Alpha() * Player.Alpha_Highlight_Multiplier()}
                 )`;
 

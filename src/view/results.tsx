@@ -352,7 +352,7 @@ class Winner extends Component<Winner_Props>
         Component_Styles
     {
         const model: Model.Player_And_Score.Instance = this.Model();
-        const color: Model.Color.Instance = model.player.Color();
+        const color: Model.Color.HSLA = model.player.Color();
 
         return ({
             display: `flex`,
@@ -363,10 +363,10 @@ class Winner extends Component<Winner_Props>
             width: `100%`,
             height: `100%`,
 
-            backgroundColor: `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
+            backgroundColor: `hsl(
+                ${color.Hue()},
+                ${color.Saturation()}%,
+                ${color.Lightness()}%,
                 ${color.Alpha()}
             )`,
 
@@ -422,10 +422,16 @@ class Draws extends Component<Draws_Props>
         ):
             string
         {
-            const color: Model.Color.Instance = draw.player.Color();
-            const color_stop: string = `${index * color_stop_percent}% ${(index + 1) * color_stop_percent}%`;
+            const color: Model.Color.HSLA = draw.player.Color();
+            const color_stop: string =
+                `${index * color_stop_percent}% ${(index + 1) * color_stop_percent}%`;
 
-            return `rgba(${color.Red()}, ${color.Green()}, ${color.Blue()}, ${color.Alpha()}) ${color_stop}`;
+            return `hsl(
+                ${color.Hue()},
+                ${color.Saturation()}%,
+                ${color.Lightness()}%,
+                ${color.Alpha()}
+            ) ${color_stop}`;
         }).join(`, `);
 
         return ({

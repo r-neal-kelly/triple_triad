@@ -1,9 +1,16 @@
+import { Float } from "../../types";
+
+import { Random_Boolean } from "../../utils";
+import { Random_Float_Inclusive } from "../../utils";
+import { Random_Float_Exclusive } from "../../utils";
+
 import * as Enum from "../enum";
 import * as Pack from "../pack";
 import { Collection } from "../collection";
 import * as Shuffle from "../shuffle";
 import * as Selection from "../selection";
 import * as Color from "../color";
+import { Options } from "../options";
 import * as Rules from "../rules";
 import { Main } from "../main";
 import { Index } from "./index";
@@ -65,11 +72,35 @@ export class Instance
     {
         const random_rules: Rules.Random = new Rules.Random({});
 
-        const random_colors: Color.Uniques = new Color.Uniques({
-            color_count: random_rules.Player_Count(),
-            max_value: 192,
-            alpha: 0.7,
-        });
+        const random_colors: Array<Color.HSLA> = [];
+        {
+            const hue_interval: Float = 360 / random_rules.Player_Count();
+            const hue_start: Float = Random_Float_Exclusive(0.0, hue_interval);
+            const saturation: Float = Random_Float_Inclusive(
+                Options.Min_Player_Color_Saturation(),
+                Options.Max_Player_Color_Saturation(),
+            );
+            const lightness: Float = Random_Float_Inclusive(
+                Options.Min_Player_Color_Lightness(),
+                Options.Max_Player_Color_Lightness(),
+            );
+            const alpha: Float = 0.7;
+
+            for (
+                let idx = 0, hue = hue_start, end = random_rules.Player_Count();
+                idx < end;
+                idx += 1, hue += hue_interval
+            ) {
+                random_colors.push(new Color.HSLA({
+                    hue: hue > 360 ? hue - 360 : hue,
+                    saturation: saturation,
+                    lightness: lightness,
+                    alpha: alpha,
+                }));
+            }
+
+            random_colors.sort(() => Random_Boolean() ? 1 : -1);
+        }
 
         const random_selections: Array<Selection.Random> = [];
         for (let idx = 0, end = random_rules.Player_Count(); idx < end; idx += 1) {
@@ -83,7 +114,7 @@ export class Instance
                             allow_multiple_difficulties: true,
                         }),
                     }),
-                    color: random_colors.Color(idx),
+                    color: random_colors[idx],
                     is_of_human: false,
                     card_count: random_rules.Selection_Card_Count(),
                 })

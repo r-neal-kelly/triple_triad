@@ -17,7 +17,7 @@ export class Random extends Instance
             allow_multiple_packs = false,
         }: {
             collection: Collection,
-            color: Color.Instance,
+            color: Color.HSLA,
             is_of_human: boolean,
 
             card_count: Card.Count,

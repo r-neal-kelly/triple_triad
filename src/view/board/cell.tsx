@@ -26,7 +26,7 @@ type Cell_Props = {
 
 export class Cell extends Component<Cell_Props>
 {
-    private current_color: Model.Color.Instance | null = null;
+    private current_color: Model.Color.HSLA | null = null;
     private popups: Array<JSX.Element> | null = null;
 
     Arena():
@@ -164,13 +164,13 @@ export class Cell extends Component<Cell_Props>
                 cursor = `default`;
             }
         } else {
-            const color: Model.Color.Instance = this.current_color as Model.Color.Instance;
+            const color: Model.Color.HSLA = this.current_color as Model.Color.HSLA;
             Assert(color != null);
 
-            background_color = `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
+            background_color = `hsl(
+                ${color.Hue()},
+                ${color.Saturation()}%,
+                ${color.Lightness()}%,
                 ${color.Alpha()}
             )`;
 
@@ -518,24 +518,24 @@ export class Cell extends Component<Cell_Props>
     }
 
     private async Change_Card_Color(
-        old_color: Model.Color.Instance,
-        new_color: Model.Color.Instance,
+        old_color: Model.Color.HSLA,
+        new_color: Model.Color.HSLA,
         direction: Model.Enum.Direction,
     ):
         Promise<void>
     {
         const old_background_color: string =
-            `rgba(
-                ${old_color.Red()},
-                ${old_color.Green()},
-                ${old_color.Blue()},
+            `hsl(
+                ${old_color.Hue()},
+                ${old_color.Saturation()}%,
+                ${old_color.Lightness()}%,
                 ${old_color.Alpha()}
             )`;
         const new_background_color: string =
-            `rgba(
-                ${new_color.Red()},
-                ${new_color.Green()},
-                ${new_color.Blue()},
+            `hsl(
+                ${new_color.Hue()},
+                ${new_color.Saturation()}%,
+                ${new_color.Lightness()}%,
                 ${new_color.Alpha()}
             )`;
         const animation_duration: number =

@@ -6,7 +6,7 @@ import * as Player from "../player";
 
 type Score = {
     score: Player.Score.Instance,
-    color: Color.Instance,
+    color: Color.HSLA,
 };
 
 export class Instance
@@ -32,7 +32,7 @@ export class Instance
         for (let idx = 0, end = turn_queue.length; idx < end; idx += 1) {
             const player: Player.Instance = turn_queue[idx];
             const player_score: Player.Score.Instance = player.Score();
-            const player_color: Color.Instance = player.Color();
+            const player_color: Color.HSLA = player.Color();
             this.scores.push({
                 score: player_score,
                 color: player_color,
@@ -68,7 +68,7 @@ export class Instance
     }
 
     Score_Color(score_index: Player.Score.Index):
-        Color.Instance
+        Color.HSLA
     {
         return this.scores[score_index].color;
     }

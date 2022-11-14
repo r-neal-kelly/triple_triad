@@ -118,7 +118,7 @@ export class Bumper extends Component<Bumper_Props>
     {
         const measurements: Game_Measurements = this.Measurements();
         const model: Model.Player.Instance = this.Model();
-        const color: Model.Color.Instance = this.Model().Color();
+        const color: Model.Color.HSLA = this.Model().Color();
 
         let grid_template_columns: string;
         let grid_template_rows: string;
@@ -138,10 +138,10 @@ export class Bumper extends Component<Bumper_Props>
 
         let background_color: string;
         if (model.Arena().Is_Game_Over()) {
-            background_color = `rgba(
-                ${color.Red()},
-                ${color.Green()},
-                ${color.Blue()},
+            background_color = `hsl(
+                ${color.Hue()},
+                ${color.Saturation()}%,
+                ${color.Lightness()}%,
                 ${color.Alpha() * Player.Alpha_Highlight_Multiplier()}
             )`;
         } else {

@@ -24,8 +24,9 @@ export class Player extends Component<Player_Props>
     private title: Title | null = null;
     private counter: Player_Counter | null = null;
     private toggles: Toggles | null = null;
-    private brightness_counter: Brightness_Counter | null = null;
     private palette_counter: Palette_Counter | null = null;
+    private saturation_counter: Saturation_Counter | null = null;
+    private lightness_counter: Lightness_Counter | null = null;
 
     Options():
         Options
@@ -57,16 +58,22 @@ export class Player extends Component<Player_Props>
         return this.Try_Object(this.toggles);
     }
 
-    Brightness_Counter():
-        Brightness_Counter
-    {
-        return this.Try_Object(this.brightness_counter);
-    }
-
     Palette_Counter():
         Palette_Counter
     {
         return this.Try_Object(this.palette_counter);
+    }
+
+    Saturation_Counter():
+        Saturation_Counter
+    {
+        return this.Try_Object(this.saturation_counter);
+    }
+
+    Lightness_Counter():
+        Lightness_Counter
+    {
+        return this.Try_Object(this.lightness_counter);
     }
 
     Measurements():
@@ -127,8 +134,22 @@ export class Player extends Component<Player_Props>
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <Brightness_Counter
-                    ref={ref => this.brightness_counter = ref}
+                <Palette_Counter
+                    ref={ref => this.palette_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Saturation_Counter
+                    ref={ref => this.saturation_counter = ref}
+
+                    model={this.Model()}
+                    parent={this}
+                    event_grid={this.Event_Grid()}
+                />
+                <Lightness_Counter
+                    ref={ref => this.lightness_counter = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -756,7 +777,7 @@ class Color extends Component<Color_Props>
     }
 
     Value():
-        Model.Color.Instance
+        Model.Color.HSLA
     {
         return this.Model().Player_Color(this.Index());
     }
@@ -788,7 +809,7 @@ class Color extends Component<Color_Props>
     override On_Restyle():
         Component_Styles
     {
-        const value: Model.Color.Instance = this.Value();
+        const value: Model.Color.HSLA = this.Value();
 
         return ({
             display: `flex`,
@@ -809,10 +830,10 @@ class Color extends Component<Color_Props>
             borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
-            backgroundColor: `rgba(
-                ${value.Red()},
-                ${value.Green()},
-                ${value.Blue()},
+            backgroundColor: `hsl(
+                ${value.Hue()},
+                ${value.Saturation()}%,
+                ${value.Lightness()}%,
                 ${value.Alpha()}
             )`,
             backgroundRepeat: `no-repeat`,
@@ -829,109 +850,6 @@ class Color extends Component<Color_Props>
         if (this.Is_Alive()) {
             this.Model().Select_Next_Player_Color(this.Index());
             await this.Options().Refresh();
-        }
-    }
-}
-
-type Brightness_Counter_Props = {
-    model: Model.Options;
-    parent: Player;
-    event_grid: Event.Grid;
-}
-
-class Brightness_Counter extends Counter<Brightness_Counter_Props>
-{
-    Options():
-        Options
-    {
-        return this.Content().Options();
-    }
-
-    Content():
-        Content
-    {
-        return this.Player().Content();
-    }
-
-    Player():
-        Player
-    {
-        return this.Parent();
-    }
-
-    override Name():
-        string
-    {
-        return `Brightness_Counter`;
-    }
-
-    override Text():
-        string
-    {
-        return `Brightness`;
-    }
-
-    override Count():
-        Integer
-    {
-        return this.Model().Player_Color_Brightness_Index();
-    }
-
-    override Can_Decrement():
-        boolean
-    {
-        return this.Model().Can_Decrement_Player_Color_Brightness();
-    }
-
-    override Can_Increment():
-        boolean
-    {
-        return this.Model().Can_Increment_Player_Color_Brightness();
-    }
-
-    override CSS_Width():
-        string
-    {
-        return `50%`;
-    }
-
-    override CSS_Height():
-        string
-    {
-        return `90%`;
-    }
-
-    override On_Restyle():
-        Component_Styles
-    {
-        const styles = super.On_Restyle();
-        styles.gridColumn = `1 / span 2`;
-        styles.gridRow = `5 / span 1`;
-
-        return styles;
-    }
-
-    override async On_Decrement(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model: Model.Options = this.Model();
-            if (model.Can_Decrement_Player_Color_Brightness()) {
-                model.Decrement_Player_Color_Brightness();
-                await this.Options().Refresh();
-            }
-        }
-    }
-
-    override async On_Increment(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model: Model.Options = this.Model();
-            if (model.Can_Increment_Player_Color_Brightness()) {
-                model.Increment_Player_Color_Brightness();
-                await this.Options().Refresh();
-            }
         }
     }
 }
@@ -995,13 +913,23 @@ class Palette_Counter extends Counter<Palette_Counter_Props>
     override CSS_Width():
         string
     {
-        return `100%`;
+        return `50%`;
     }
 
     override CSS_Height():
         string
     {
         return `90%`;
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const styles = super.On_Restyle();
+        styles.gridColumn = `1 / span 2`;
+        styles.gridRow = `5 / span 1`;
+
+        return styles;
     }
 
     override async On_Decrement(event: React.SyntheticEvent):
@@ -1023,6 +951,212 @@ class Palette_Counter extends Counter<Palette_Counter_Props>
             const model: Model.Options = this.Model();
             if (model.Can_Increment_Player_Color_Palette()) {
                 model.Increment_Player_Color_Palette();
+                await this.Options().Refresh();
+            }
+        }
+    }
+}
+
+type Saturation_Counter_Props = {
+    model: Model.Options;
+    parent: Player;
+    event_grid: Event.Grid;
+}
+
+class Saturation_Counter extends Counter<Saturation_Counter_Props>
+{
+    Options():
+        Options
+    {
+        return this.Content().Options();
+    }
+
+    Content():
+        Content
+    {
+        return this.Player().Content();
+    }
+
+    Player():
+        Player
+    {
+        return this.Parent();
+    }
+
+    override Name():
+        string
+    {
+        return `Saturation_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Saturation`;
+    }
+
+    override Count():
+        Integer
+    {
+        return this.Model().Player_Color_Saturation_Index();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        return this.Model().Can_Decrement_Player_Color_Saturation();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        return this.Model().Can_Increment_Player_Color_Saturation();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const styles = super.On_Restyle();
+        styles.gridColumn = `1 / span 1`;
+        styles.gridRow = `6 / span 1`;
+
+        return styles;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Decrement_Player_Color_Saturation()) {
+                model.Decrement_Player_Color_Saturation();
+                await this.Options().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Increment_Player_Color_Saturation()) {
+                model.Increment_Player_Color_Saturation();
+                await this.Options().Refresh();
+            }
+        }
+    }
+}
+
+type Lightness_Counter_Props = {
+    model: Model.Options;
+    parent: Player;
+    event_grid: Event.Grid;
+}
+
+class Lightness_Counter extends Counter<Lightness_Counter_Props>
+{
+    Options():
+        Options
+    {
+        return this.Content().Options();
+    }
+
+    Content():
+        Content
+    {
+        return this.Player().Content();
+    }
+
+    Player():
+        Player
+    {
+        return this.Parent();
+    }
+
+    override Name():
+        string
+    {
+        return `Lightness_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Lightness`;
+    }
+
+    override Count():
+        Integer
+    {
+        return this.Model().Player_Color_Lightness_Index();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        return this.Model().Can_Decrement_Player_Color_Lightness();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        return this.Model().Can_Increment_Player_Color_Lightness();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const styles = super.On_Restyle();
+        styles.gridColumn = `2 / span 1`;
+        styles.gridRow = `6 / span 1`;
+
+        return styles;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Decrement_Player_Color_Lightness()) {
+                model.Decrement_Player_Color_Lightness();
+                await this.Options().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Increment_Player_Color_Lightness()) {
+                model.Increment_Player_Color_Lightness();
                 await this.Options().Refresh();
             }
         }

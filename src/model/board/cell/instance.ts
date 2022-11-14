@@ -74,7 +74,7 @@ export class Instance
     }
 
     Color():
-        Color.Instance
+        Color.HSLA
     {
         return this.Claimant().Color();
     }

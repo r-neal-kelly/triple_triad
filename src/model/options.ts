@@ -10,18 +10,6 @@ import * as Color from "./color";
 import * as Rules from "./rules";
 import * as Player from "./player";
 
-type Color_And_Index = {
-    color: Color.Instance;
-    index: Color.Index;
-}
-
-type Color_Palette = {
-    x: Float;
-    y: Float;
-    z: Float;
-    orientation: Enum.RGBA;
-}
-
 export class Options
 {
     static Min_Player_Count():
@@ -36,59 +24,94 @@ export class Options
         return Rules.Instance.Max_Player_Count();
     }
 
-    static Min_Player_Color_Brightness():
+    static Player_Color_Pool_Count():
         Integer
     {
+        return 12;
+    }
+
+    static Default_Player_Color_Palette():
+        Float
+    {
+        return 0.0;
+    }
+
+    static Player_Color_Palette_Interval():
+        Float
+    {
+        return 5.0;
+    }
+
+    static Min_Player_Color_Palette():
+        Float
+    {
+        return 0.0;
+    }
+
+    static Max_Player_Color_Palette():
+        Float
+    {
+        return (360.0 / Options.Player_Color_Pool_Count()) - Number.EPSILON;
+    }
+
+    static Default_Player_Color_Saturation():
+        Float
+    {
+        return 50.0;
+    }
+
+    static Player_Color_Saturation_Interval():
+        Float
+    {
+        return 5.0;
+    }
+
+    static Min_Player_Color_Saturation():
+        Float
+    {
         return (
-            this.Default_Player_Color_Brightness() -
-            (this.Player_Color_Brightness_Interval() * 8)
+            this.Default_Player_Color_Saturation() -
+            (this.Player_Color_Saturation_Interval() * 2)
         );
     }
 
-    static Max_Player_Color_Brightness():
-        Integer
+    static Max_Player_Color_Saturation():
+        Float
     {
         return (
-            this.Default_Player_Color_Brightness() +
-            (this.Player_Color_Brightness_Interval() * 12)
+            this.Default_Player_Color_Saturation() +
+            (this.Player_Color_Saturation_Interval() * 8)
         );
     }
 
-    static Default_Player_Color_Brightness():
-        Integer
+    static Default_Player_Color_Lightness():
+        Float
     {
-        return 152;
+        return 40.0;
     }
 
-    static Player_Color_Brightness_Interval():
-        Integer
+    static Player_Color_Lightness_Interval():
+        Float
     {
-        return 8;
+        return 3.0;
     }
 
-    static Color_Palettes():
-        Array<Color_Palette>
+    static Min_Player_Color_Lightness():
+        Float
     {
-        return [
-            {
-                x: 0.0,
-                y: 0.0,
-                z: 1.5,
-                orientation: Enum.RGBA.BLUE,
-            },
-            {
-                x: 0.0,
-                y: 0.0,
-                z: 1.5,
-                orientation: Enum.RGBA.GREEN,
-            },
-            {
-                x: 0.0,
-                y: 0.0,
-                z: 1.5,
-                orientation: Enum.RGBA.RED,
-            },
-        ];
+        return (
+            this.Default_Player_Color_Lightness() -
+            (this.Player_Color_Lightness_Interval() * 6)
+        );
+    }
+
+    static Max_Player_Color_Lightness():
+        Float
+    {
+        return (
+            this.Default_Player_Color_Lightness() +
+            (this.Player_Color_Lightness_Interval() * 6)
+        );
     }
 
     private rules: Rules.Instance;
@@ -98,11 +121,12 @@ export class Options
 
     private player_types: Array<Player.Type>;
 
-    private player_color_brightness: Float;
-    private player_color_palettes: Array<Color_Palette>;
-    private player_color_palette_index: Index;
-    private player_color_pool: Array<Color_And_Index>;
-    private player_colors: Array<Color_And_Index>;
+    private player_color_palette: Float;
+    private player_color_saturation: Float;
+    private player_color_lightness: Float;
+    private player_color_alpha: Float;
+    private player_color_pool: Array<Color.HSLA>;
+    private player_colors: Array<Color.HSLA>;
     private player_color_pool_select_index: Color.Index;
 
     constructor(
@@ -131,29 +155,23 @@ export class Options
         }
         Assert(this.player_types.length === this.rules.Player_Count());
 
-        this.player_color_brightness = Options.Default_Player_Color_Brightness();
-        this.player_color_palettes = Options.Color_Palettes();
-        this.player_color_palette_index = 0;
-        this.player_color_pool = new Color.Uniques({
-            color_count: 10,
-            max_value: this.player_color_brightness,
-            alpha: 0.7,
-            from_radians_z: this.player_color_palettes[this.player_color_palette_index].z,
-            radians_x: this.player_color_palettes[this.player_color_palette_index].x,
-            orientation: this.player_color_palettes[this.player_color_palette_index].orientation,
-        }).Colors().map(function (
-            color: Color.Instance,
-            index: Color.Index,
-        ):
-            Color_And_Index
-        {
-            return ({
-                color: color,
-                index: index,
-            });
-        });
+        this.player_color_palette = Options.Default_Player_Color_Palette();
+        this.player_color_saturation = Options.Default_Player_Color_Saturation();
+        this.player_color_lightness = Options.Default_Player_Color_Lightness();
+        this.player_color_alpha = 0.7;
+        this.player_color_pool = [];
         this.player_colors = [];
         this.player_color_pool_select_index = 0;
+
+        const hue_interval: Float = 360.0 / Options.Player_Color_Pool_Count();
+        for (let hue = 0, end = 360; hue < end; hue += hue_interval) {
+            this.player_color_pool.push(new Color.HSLA({
+                hue: hue + this.player_color_palette,
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            }));
+        }
 
         Assert(rules.Player_Count() <= this.player_color_pool.length);
         for (let idx = 0, end = rules.Player_Count(); idx < end; idx += 1) {
@@ -301,7 +319,7 @@ export class Options
     }
 
     Player_Color(player_color_index: Color.Index):
-        Color.Instance
+        Color.HSLA
     {
         Assert(this.player_colors.length === this.Rules().Player_Count());
         Assert(
@@ -310,24 +328,19 @@ export class Options
             player_color_index < this.player_colors.length
         );
 
-        return this.player_colors[player_color_index].color;
+        return this.player_colors[player_color_index];
     }
 
     Player_Colors():
-        Array<Color.Instance>
+        Array<Color.HSLA>
     {
         Assert(this.player_colors.length === this.Rules().Player_Count());
 
-        const results: Array<Color.Instance> = [];
-        for (const { color } of this.player_colors) {
-            results.push(color);
-        }
-
-        return results;
+        return Array.from(this.player_colors);
     }
 
     Select_Previous_Player_Color(player_color_index: Color.Index):
-        Color.Instance
+        Color.HSLA
     {
         Assert(this.player_colors.length === this.Rules().Player_Count());
         Assert(
@@ -345,22 +358,22 @@ export class Options
             }
             this.player_color_pool_select_index -= 1;
 
-            const old_color: Color_And_Index =
+            const old_color: Color.HSLA =
                 this.player_colors[player_color_index];
-            const new_color: Color_And_Index =
+            const new_color: Color.HSLA =
                 this.player_color_pool[this.player_color_pool_select_index];
 
             this.player_colors[player_color_index] = new_color;
             this.player_color_pool[this.player_color_pool_select_index] = old_color;
 
-            return new_color.color;
+            return new_color;
         } else {
-            return this.player_colors[player_color_index].color;
+            return this.player_colors[player_color_index];
         }
     }
 
     Select_Next_Player_Color(player_color_index: Color.Index):
-        Color.Instance
+        Color.HSLA
     {
         Assert(this.player_colors.length === this.Rules().Player_Count());
         Assert(
@@ -374,86 +387,48 @@ export class Options
             if (this.player_color_pool_select_index >= this.player_color_pool.length) {
                 this.player_color_pool_select_index = 0;
             }
-            const old_color: Color_And_Index =
+            const old_color: Color.HSLA =
                 this.player_colors[player_color_index];
-            const new_color: Color_And_Index =
+            const new_color: Color.HSLA =
                 this.player_color_pool[this.player_color_pool_select_index];
 
             this.player_colors[player_color_index] = new_color;
             this.player_color_pool[this.player_color_pool_select_index] = old_color;
 
-            return new_color.color;
+            return new_color;
         } else {
-            return this.player_colors[player_color_index].color;
+            return this.player_colors[player_color_index];
         }
-    }
-
-    Player_Color_Brightness_Index():
-        Index
-    {
-        const default_brightness: Integer = Options.Default_Player_Color_Brightness();
-
-        if (this.player_color_brightness < default_brightness) {
-            return -(
-                (default_brightness - this.player_color_brightness) /
-                Options.Player_Color_Brightness_Interval()
-            );
-        } else {
-            return (
-                (this.player_color_brightness - default_brightness) /
-                Options.Player_Color_Brightness_Interval()
-            );
-        }
-    }
-
-    Can_Decrement_Player_Color_Brightness():
-        boolean
-    {
-        return this.player_color_brightness > Options.Min_Player_Color_Brightness();
-    }
-
-    Can_Increment_Player_Color_Brightness():
-        boolean
-    {
-        return this.player_color_brightness < Options.Max_Player_Color_Brightness();
-    }
-
-    Decrement_Player_Color_Brightness():
-        void
-    {
-        Assert(this.Can_Decrement_Player_Color_Brightness());
-
-        this.player_color_brightness -= Options.Player_Color_Brightness_Interval();
-
-        this.Update_Player_Colors_And_Pool();
-    }
-
-    Increment_Player_Color_Brightness():
-        void
-    {
-        Assert(this.Can_Increment_Player_Color_Brightness());
-
-        this.player_color_brightness += Options.Player_Color_Brightness_Interval();
-
-        this.Update_Player_Colors_And_Pool();
     }
 
     Player_Color_Palette_Index():
         Index
     {
-        return this.player_color_palette_index;
+        const default_palette: Float = Options.Default_Player_Color_Palette();
+
+        if (this.player_color_palette < default_palette) {
+            return -(
+                (default_palette - this.player_color_palette) /
+                Options.Player_Color_Palette_Interval()
+            );
+        } else {
+            return (
+                (this.player_color_palette - default_palette) /
+                Options.Player_Color_Palette_Interval()
+            );
+        }
     }
 
     Can_Decrement_Player_Color_Palette():
         boolean
     {
-        return this.player_color_palette_index > 0;
+        return this.player_color_palette > Options.Min_Player_Color_Palette();
     }
 
     Can_Increment_Player_Color_Palette():
         boolean
     {
-        return this.player_color_palette_index < this.player_color_palettes.length - 1;
+        return this.player_color_palette < Options.Max_Player_Color_Palette();
     }
 
     Decrement_Player_Color_Palette():
@@ -461,9 +436,26 @@ export class Options
     {
         Assert(this.Can_Decrement_Player_Color_Palette());
 
-        this.player_color_palette_index -= 1;
+        const interval: Float = Options.Player_Color_Palette_Interval();
 
-        this.Update_Player_Colors_And_Pool();
+        this.player_color_palette -= interval;
+
+        for (let idx = 0, end = this.player_color_pool.length; idx < end; idx += 1) {
+            this.player_color_pool[idx] = new Color.HSLA({
+                hue: this.player_color_pool[idx].Hue() - interval,
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            });
+        }
+        for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
+            this.player_colors[idx] = new Color.HSLA({
+                hue: this.player_colors[idx].Hue() - interval,
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            });
+        }
     }
 
     Increment_Player_Color_Palette():
@@ -471,7 +463,124 @@ export class Options
     {
         Assert(this.Can_Increment_Player_Color_Palette());
 
-        this.player_color_palette_index += 1;
+        const interval: Float = Options.Player_Color_Palette_Interval();
+
+        this.player_color_palette += interval;
+
+        for (let idx = 0, end = this.player_color_pool.length; idx < end; idx += 1) {
+            this.player_color_pool[idx] = new Color.HSLA({
+                hue: this.player_color_pool[idx].Hue() + interval,
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            });
+        }
+        for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
+            this.player_colors[idx] = new Color.HSLA({
+                hue: this.player_colors[idx].Hue() + interval,
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            });
+        }
+    }
+
+    Player_Color_Saturation_Index():
+        Index
+    {
+        const default_saturation: Float = Options.Default_Player_Color_Saturation();
+
+        if (this.player_color_saturation < default_saturation) {
+            return -(
+                (default_saturation - this.player_color_saturation) /
+                Options.Player_Color_Saturation_Interval()
+            );
+        } else {
+            return (
+                (this.player_color_saturation - default_saturation) /
+                Options.Player_Color_Saturation_Interval()
+            );
+        }
+    }
+
+    Can_Decrement_Player_Color_Saturation():
+        boolean
+    {
+        return this.player_color_saturation > Options.Min_Player_Color_Saturation();
+    }
+
+    Can_Increment_Player_Color_Saturation():
+        boolean
+    {
+        return this.player_color_saturation < Options.Max_Player_Color_Saturation();
+    }
+
+    Decrement_Player_Color_Saturation():
+        void
+    {
+        Assert(this.Can_Decrement_Player_Color_Saturation());
+
+        this.player_color_saturation -= Options.Player_Color_Saturation_Interval();
+
+        this.Update_Player_Colors_And_Pool();
+    }
+
+    Increment_Player_Color_Saturation():
+        void
+    {
+        Assert(this.Can_Increment_Player_Color_Saturation());
+
+        this.player_color_saturation += Options.Player_Color_Saturation_Interval();
+
+        this.Update_Player_Colors_And_Pool();
+    }
+
+    Player_Color_Lightness_Index():
+        Index
+    {
+        const default_lightness: Float = Options.Default_Player_Color_Lightness();
+
+        if (this.player_color_lightness < default_lightness) {
+            return -(
+                (default_lightness - this.player_color_lightness) /
+                Options.Player_Color_Lightness_Interval()
+            );
+        } else {
+            return (
+                (this.player_color_lightness - default_lightness) /
+                Options.Player_Color_Lightness_Interval()
+            );
+        }
+    }
+
+    Can_Decrement_Player_Color_Lightness():
+        boolean
+    {
+        return this.player_color_lightness > Options.Min_Player_Color_Lightness();
+    }
+
+    Can_Increment_Player_Color_Lightness():
+        boolean
+    {
+        return this.player_color_lightness < Options.Max_Player_Color_Lightness();
+    }
+
+    Decrement_Player_Color_Lightness():
+        void
+    {
+        Assert(this.Can_Decrement_Player_Color_Lightness());
+
+        this.player_color_lightness -= Options.Player_Color_Lightness_Interval();
+
+        this.Update_Player_Colors_And_Pool();
+    }
+
+    Increment_Player_Color_Lightness():
+        void
+    {
+        Assert(this.Can_Increment_Player_Color_Lightness());
+
+        this.player_color_lightness += Options.Player_Color_Lightness_Interval();
 
         this.Update_Player_Colors_And_Pool();
     }
@@ -491,7 +600,7 @@ export class Options
     private Decrement_Player_Colors():
         void
     {
-        this.player_color_pool.push(this.player_colors.pop() as Color_And_Index);
+        this.player_color_pool.push(this.player_colors.pop() as Color.HSLA);
     }
 
     private Increment_Player_Colors():
@@ -503,10 +612,10 @@ export class Options
         if (this.player_colors.length === 0) {
             pool_index = Random_Integer_Exclusive(0, this.player_color_pool.length);
         } else {
-            pool_index =
+            const possible_indices: Array<[Color.Index, Float]> =
                 this.player_color_pool.map(function (
                     this: Options,
-                    color: Color_And_Index,
+                    color: Color.HSLA,
                     index: Color.Index,
                 ):
                     [Color.Index, Float]
@@ -514,7 +623,7 @@ export class Options
                     let total_difference: Float = 0.0;
                     for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
                         total_difference +=
-                            this.player_colors[idx].color.Percent_Difference_From(color.color);
+                            this.player_colors[idx].Percent_Difference_From(color);
                     }
 
                     return [index, total_difference / this.player_colors.length];
@@ -525,7 +634,17 @@ export class Options
                     number
                 {
                     return b[1] - a[1];
-                })[0][0];
+                }).filter(function (
+                    value: [Color.Index, Float],
+                    index: Color.Index,
+                    array: Array<[Color.Index, Float]>,
+                ):
+                    boolean
+                {
+                    return value[1] >= array[0][1];
+                });
+            pool_index =
+                possible_indices[Random_Integer_Exclusive(0, possible_indices.length)][0];
         }
 
         this.player_colors.push(this.player_color_pool[pool_index]);
@@ -537,29 +656,21 @@ export class Options
     private Update_Player_Colors_And_Pool():
         void
     {
-        const new_colors: Array<Color.Instance> =
-            new Color.Uniques({
-                color_count: 10,
-                max_value: this.player_color_brightness,
-                alpha: 0.7,
-                from_radians_z: this.player_color_palettes[this.player_color_palette_index].z,
-                radians_x: this.player_color_palettes[this.player_color_palette_index].x,
-                orientation: this.player_color_palettes[this.player_color_palette_index].orientation,
-            }).Colors();
-
         for (let idx = 0, end = this.player_color_pool.length; idx < end; idx += 1) {
-            const new_color_index: Color.Index = this.player_color_pool[idx].index;
-            this.player_color_pool[idx] = {
-                color: new_colors[new_color_index],
-                index: new_color_index,
-            };
+            this.player_color_pool[idx] = new Color.HSLA({
+                hue: this.player_color_pool[idx].Hue(),
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            });
         }
         for (let idx = 0, end = this.player_colors.length; idx < end; idx += 1) {
-            const new_color_index: Color.Index = this.player_colors[idx].index;
-            this.player_colors[idx] = {
-                color: new_colors[new_color_index],
-                index: new_color_index,
-            };
+            this.player_colors[idx] = new Color.HSLA({
+                hue: this.player_colors[idx].Hue(),
+                saturation: this.player_color_saturation,
+                lightness: this.player_color_lightness,
+                alpha: this.player_color_alpha,
+            });
         }
     }
 }
