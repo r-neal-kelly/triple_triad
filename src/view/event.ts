@@ -25,6 +25,7 @@ export const RESIZE: Event.Name_Affix = `Resize`;
 export const START_EXHIBITIONS: Event.Name_Affix = `Start_Exhibitions`;
 export const STOP_EXHIBITIONS: Event.Name_Affix = `Stop_Exhibitions`;
 export const SWITCH_EXHIBITIONS: Event.Name_Affix = `Switch_Exhibitions`;
+export const REMEASURE_EXHIBITIONS: Event.Name_Affix = `Remeasure_Exhibitions`;
 
 export const START_NEW_GAME: Event.Name_Affix = `Start_New_Game`;
 export const REMATCH_GAME: Event.Name_Affix = `Rematch_Game`;
@@ -37,7 +38,6 @@ export const CLOSE_MENUS: Event.Name_Affix = `Close_Menus`;
 
 export const GAME_START: Event.Name_Affix = `Game_Start`;// maybe ARENA_START and ARENA_STOP
 export const GAME_STOP: Event.Name_Affix = `Game_Stop`;
-export const GAME_REMEASURE: Event.Name_Affix = `Game_Remeasure`;
 export const SCROLL_PLAYER_NAMES: Event.Name_Affix = `Scroll_Player_Names`;
 export const PLAYER_START_TURN: Event.Name_Affix = `Player_Start_Turn`;
 export const PLAYER_STOP_TURN: Event.Name_Affix = `Player_Stop_Turn`;
@@ -65,6 +65,10 @@ export type Stop_Exhibitions_Data = {
 export type Switch_Exhibitions_Data = {
     previous_exhibition: Model.Exhibition.Instance;
     next_exhibition: Model.Exhibition.Instance;
+}
+
+export type Remeasure_Exhibitions_Data = {
+    measurement: Model.Enum.Measurement;
 }
 
 export type Start_New_Game_Data = {
@@ -96,10 +100,6 @@ export type Game_Start_Data = {
 
 export type Game_Stop_Data = {
     scores: Model.Player.Scores;
-}
-
-export type Game_Remeasure_Data = {
-    measurement: Model.Enum.Measurement;
 }
 
 export type Scroll_Player_Names_Data = {

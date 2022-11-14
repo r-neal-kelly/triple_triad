@@ -1441,17 +1441,6 @@ export class Game extends Component<Game_Props>
         });
     }
 
-    override On_Life():
-        Array<Event.Listener_Info>
-    {
-        return [
-            {
-                event_name: new Event.Name(Event.ON, Event.GAME_REMEASURE),
-                event_handler: this.On_Game_Remeasure,
-            },
-        ];
-    }
-
     override On_Resize(
         data: Event.Resize_Data
     ):
@@ -1469,17 +1458,5 @@ export class Game extends Component<Game_Props>
         });
 
         super.On_Resize(data);
-    }
-
-    async On_Game_Remeasure(
-        {
-        }: Event.Game_Remeasure_Data
-    ):
-        Promise<void>
-    {
-        this.On_Resize({
-            width: this.Parent().Width(),
-            height: this.Parent().Height(),
-        });
     }
 }

@@ -161,6 +161,10 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 event_name: new Event.Name(Event.ON, Event.SWITCH_EXHIBITIONS),
                 event_handler: this.On_Switch_Exhibitions,
             },
+            {
+                event_name: new Event.Name(Event.ON, Event.REMEASURE_EXHIBITIONS),
+                event_handler: this.On_Remeasure_Exhibitions,
+            },
         ];
     }
 
@@ -333,6 +337,22 @@ export class Exhibitions extends Component<Exhibitions_Props>
         }
 
         this.is_switching = false;
+    }
+
+    async On_Remeasure_Exhibitions(
+        {
+        }: Event.Remeasure_Exhibitions_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            this.On_Resize(
+                {
+                    width: 0,
+                    height: 0,
+                } as Event.Resize_Data,
+            );
+        }
     }
 
     async Fade_In(

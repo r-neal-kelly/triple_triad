@@ -539,23 +539,15 @@ class Display_Best_Fit_Toggle extends Toggle<Display_Best_Fit_Toggle_Props>
             await this.Toggles().Refresh();
 
             if (this.Is_Alive()) {
-                const exhibitions: Exhibitions = this.Main().Exhibitions();
-                const measurement: Model.Enum.Measurement = this.Model().Measurement();
-                await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
-                    event_grid: Event.Grid,
-                ):
-                    Promise<void>
-                {
-                    await event_grid.Send_Event({
-                        name_affix: Event.GAME_REMEASURE,
-                        name_suffixes: [
-                        ],
-                        data: {
-                            measurement: measurement,
-                        } as Event.Game_Remeasure_Data,
-                        is_atomic: true,
-                    });
-                }));
+                await this.Send({
+                    name_affix: Event.REMEASURE_EXHIBITIONS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        measurement: this.Model().Measurement(),
+                    } as Event.Remeasure_Exhibitions_Data,
+                    is_atomic: true,
+                });
             }
         }
     }
@@ -673,23 +665,15 @@ class Display_Horizontal_Toggle extends Toggle<Display_Horizontal_Toggle_Props>
             await this.Toggles().Refresh();
 
             if (this.Is_Alive()) {
-                const exhibitions: Exhibitions = this.Main().Exhibitions();
-                const measurement: Model.Enum.Measurement = this.Model().Measurement();
-                await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
-                    event_grid: Event.Grid,
-                ):
-                    Promise<void>
-                {
-                    await event_grid.Send_Event({
-                        name_affix: Event.GAME_REMEASURE,
-                        name_suffixes: [
-                        ],
-                        data: {
-                            measurement: measurement,
-                        } as Event.Game_Remeasure_Data,
-                        is_atomic: true,
-                    });
-                }));
+                await this.Send({
+                    name_affix: Event.REMEASURE_EXHIBITIONS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        measurement: this.Model().Measurement(),
+                    } as Event.Remeasure_Exhibitions_Data,
+                    is_atomic: true,
+                });
             }
         }
     }
@@ -807,23 +791,15 @@ class Display_Vertical_Toggle extends Toggle<Display_Vertical_Toggle_Props>
             await this.Toggles().Refresh();
 
             if (this.Is_Alive()) {
-                const exhibitions: Exhibitions = this.Main().Exhibitions();
-                const measurement: Model.Enum.Measurement = this.Model().Measurement();
-                await Promise.all(exhibitions.Exhibition_Event_Grids().map(async function (
-                    event_grid: Event.Grid,
-                ):
-                    Promise<void>
-                {
-                    await event_grid.Send_Event({
-                        name_affix: Event.GAME_REMEASURE,
-                        name_suffixes: [
-                        ],
-                        data: {
-                            measurement: measurement,
-                        } as Event.Game_Remeasure_Data,
-                        is_atomic: true,
-                    });
-                }));
+                await this.Send({
+                    name_affix: Event.REMEASURE_EXHIBITIONS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        measurement: this.Model().Measurement(),
+                    } as Event.Remeasure_Exhibitions_Data,
+                    is_atomic: true,
+                });
             }
         }
     }
