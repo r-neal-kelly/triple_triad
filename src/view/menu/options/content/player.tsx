@@ -120,15 +120,15 @@ export class Player extends Component<Player_Props>
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <Player_Counter
-                    ref={ref => this.counter = ref}
+                <Toggles
+                    ref={ref => this.toggles = ref}
 
                     model={this.Model()}
                     parent={this}
                     event_grid={this.Event_Grid()}
                 />
-                <Toggles
-                    ref={ref => this.toggles = ref}
+                <Player_Counter
+                    ref={ref => this.counter = ref}
 
                     model={this.Model()}
                     parent={this}
@@ -248,109 +248,6 @@ class Title extends Component<Title_Props>
     }
 }
 
-type Player_Counter_Props = {
-    model: Model.Options;
-    parent: Player;
-    event_grid: Event.Grid;
-}
-
-class Player_Counter extends Counter<Player_Counter_Props>
-{
-    Options():
-        Options
-    {
-        return this.Content().Options();
-    }
-
-    Content():
-        Content
-    {
-        return this.Player().Content();
-    }
-
-    Player():
-        Player
-    {
-        return this.Parent();
-    }
-
-    override Name():
-        string
-    {
-        return `Player_Counter`;
-    }
-
-    override Text():
-        string
-    {
-        return `Count`;
-    }
-
-    override Count():
-        Integer
-    {
-        return this.Model().Player_Count();
-    }
-
-    override Can_Decrement():
-        boolean
-    {
-        return this.Model().Can_Decrement_Player_Count();
-    }
-
-    override Can_Increment():
-        boolean
-    {
-        return this.Model().Can_Increment_Player_Count();
-    }
-
-    override CSS_Width():
-        string
-    {
-        return `50%`;
-    }
-
-    override CSS_Height():
-        string
-    {
-        return `90%`;
-    }
-
-    override On_Restyle():
-        Component_Styles
-    {
-        const styles = super.On_Restyle();
-        styles.gridColumn = `1 / span 2`;
-        styles.gridRow = `2 / span 1`;
-
-        return styles;
-    }
-
-    override async On_Decrement(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model: Model.Options = this.Model();
-            if (model.Can_Decrement_Player_Count()) {
-                model.Decrement_Player_Count();
-                await this.Options().Refresh();
-            }
-        }
-    }
-
-    override async On_Increment(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const model: Model.Options = this.Model();
-            if (model.Can_Increment_Player_Count()) {
-                model.Increment_Player_Count();
-                await this.Options().Refresh();
-            }
-        }
-    }
-}
-
 type Toggles_Props = {
     model: Model.Options;
     parent: Player;
@@ -435,7 +332,7 @@ class Toggles extends Component<Toggles_Props>
             height: `100%`,
 
             gridColumn: `1 / span 2`,
-            gridRow: `3 / span 2`,
+            gridRow: `2 / span 2`,
             alignSelf: `center`,
             justifySelf: `center`,
         });
@@ -854,6 +751,109 @@ class Color extends Component<Color_Props>
     }
 }
 
+type Player_Counter_Props = {
+    model: Model.Options;
+    parent: Player;
+    event_grid: Event.Grid;
+}
+
+class Player_Counter extends Counter<Player_Counter_Props>
+{
+    Options():
+        Options
+    {
+        return this.Content().Options();
+    }
+
+    Content():
+        Content
+    {
+        return this.Player().Content();
+    }
+
+    Player():
+        Player
+    {
+        return this.Parent();
+    }
+
+    override Name():
+        string
+    {
+        return `Player_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Count`;
+    }
+
+    override Count():
+        Integer
+    {
+        return this.Model().Player_Count();
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        return this.Model().Can_Decrement_Player_Count();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        return this.Model().Can_Increment_Player_Count();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `100%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override On_Restyle():
+        Component_Styles
+    {
+        const styles = super.On_Restyle();
+        styles.gridColumn = `1 / span 1`;
+        styles.gridRow = `4 / span 1`;
+
+        return styles;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Decrement_Player_Count()) {
+                model.Decrement_Player_Count();
+                await this.Options().Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Increment_Player_Count()) {
+                model.Increment_Player_Count();
+                await this.Options().Refresh();
+            }
+        }
+    }
+}
+
 type Palette_Counter_Props = {
     model: Model.Options;
     parent: Player;
@@ -913,7 +913,7 @@ class Palette_Counter extends Counter<Palette_Counter_Props>
     override CSS_Width():
         string
     {
-        return `50%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -926,8 +926,8 @@ class Palette_Counter extends Counter<Palette_Counter_Props>
         Component_Styles
     {
         const styles = super.On_Restyle();
-        styles.gridColumn = `1 / span 2`;
-        styles.gridRow = `5 / span 1`;
+        styles.gridColumn = `2 / span 1`;
+        styles.gridRow = `4 / span 1`;
 
         return styles;
     }
@@ -1030,7 +1030,7 @@ class Saturation_Counter extends Counter<Saturation_Counter_Props>
     {
         const styles = super.On_Restyle();
         styles.gridColumn = `1 / span 1`;
-        styles.gridRow = `6 / span 1`;
+        styles.gridRow = `5 / span 1`;
 
         return styles;
     }
@@ -1133,7 +1133,7 @@ class Lightness_Counter extends Counter<Lightness_Counter_Props>
     {
         const styles = super.On_Restyle();
         styles.gridColumn = `2 / span 1`;
-        styles.gridRow = `6 / span 1`;
+        styles.gridRow = `5 / span 1`;
 
         return styles;
     }
