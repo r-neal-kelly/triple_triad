@@ -8,7 +8,6 @@ import { Component_Styles } from "../../../component";
 import { Toggle } from "../../../common/toggle";
 
 import { Main } from "../../../main";
-import { Exhibitions } from "../../../exhibitions";
 import { Menu } from "../../../menu";
 import { Menu_Measurements } from "../../../menu";
 import { Options } from "../options";
