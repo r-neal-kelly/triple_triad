@@ -1,16 +1,13 @@
-import { Integer } from "../types";
 import { Index } from "../types";
 import { Float } from "../types";
 
 import { Random_Integer_Exclusive } from "../utils";
-import { Plot_Bezier_Curve_4 } from "../utils";
 
 import * as Model from "../model";
 
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
-import { Component_Animation_Frame } from "./component";
 import { Main } from "./main";
 import { Exhibition } from "./exhibition";
 
@@ -210,7 +207,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Fade_In(FADE_IN_DURATION);
+            await this.Animate_Fade_In({
+                duration: FADE_IN_DURATION,
+            });
         }
     }
 
@@ -221,7 +220,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Fade_Out(FADE_OUT_DURATION);
+            await this.Animate_Fade_Out({
+                duration: FADE_OUT_DURATION,
+            });
             if (this.Is_Alive()) {
                 this.Change_Style(`display`, `none`);
             }
@@ -351,120 +352,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
                     width: 0,
                     height: 0,
                 } as Event.Resize_Data,
-            );
-        }
-    }
-
-    async Fade_In(
-        duration: Float,
-    ):
-        Promise<void>
-    {
-        function On_Frame(
-            {
-                elapsed,
-            }: Component_Animation_Frame,
-            state: {
-                element: HTMLElement,
-                duration: Integer,
-                plot: Array<{
-                    x: Float,
-                    y: Float,
-                }>,
-            },
-        ):
-            boolean
-        {
-            if (elapsed >= state.duration) {
-                state.element.style.opacity = `100%`;
-
-                return false;
-            } else {
-                const index: Index =
-                    Math.floor(elapsed * state.plot.length / state.duration);
-
-                state.element.style.opacity =
-                    `${state.plot[index].y}%`;
-
-                return true;
-            }
-        }
-
-        const element: HTMLElement = this.Some_Element();
-        if (duration === 0) {
-            element.style.opacity = `100%`;
-        } else {
-            await this.Animate_By_Frame(
-                On_Frame,
-                {
-                    element: element,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15 - 1),
-                        100.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
-            );
-        }
-    }
-
-    async Fade_Out(
-        duration: Float,
-    ):
-        Promise<void>
-    {
-        function On_Frame(
-            {
-                elapsed,
-            }: Component_Animation_Frame,
-            state: {
-                element: HTMLElement,
-                duration: Integer,
-                plot: Array<{
-                    x: Float,
-                    y: Float,
-                }>,
-            },
-        ):
-            boolean
-        {
-            if (elapsed >= state.duration) {
-                state.element.style.opacity = `0%`;
-
-                return false;
-            } else {
-                const index: Index =
-                    Math.floor(elapsed * state.plot.length / state.duration);
-
-                state.element.style.opacity =
-                    `${100 - state.plot[index].y}%`;
-
-                return true;
-            }
-        }
-
-        const element: HTMLElement = this.Some_Element();
-        if (duration === 0) {
-            element.style.opacity = `0%`;
-        } else {
-            await this.Animate_By_Frame(
-                On_Frame,
-                {
-                    element: element,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15 - 1),
-                        100.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
             );
         }
     }

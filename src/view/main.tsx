@@ -154,48 +154,38 @@ export class Main extends Component<Main_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        const model: Model.Main = this.Model();
-
-        this.resize_observer.observe(this.Root());
-
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-            
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
         (async function (
             this: Main,
         ):
             Promise<void>
         {
-            await Promise.all([
-                this.Send({
-                    name_affix: Event.START_EXHIBITIONS,
-                    name_suffixes: [
-                    ],
-                    data: {
-                        exhibition: model.Current_Exhibition(),
-                    } as Event.Start_Exhibitions_Data,
-                    is_atomic: true,
-                }),
-                this.Animate({
-                    animation_name: `Fade_In`,
-                    duration_in_milliseconds: 3000,
-                    css_iteration_count: `1`,
-                    css_timing_function: `ease-in-out`,
-                    css_fill_mode: `forward`,
-                }),
-            ]);
+            const model: Model.Main = this.Model();
 
-            this.While_Alive();
+            this.resize_observer.observe(this.Root());
+
+            this.Some_Element().style.opacity = `0%`;
+
+            // This seems to stop requestAnimationFrame from
+            // dropping a massive amount of frames on site load.
+            await Wait(1);
+            if (this.Is_Alive()) {
+                await Promise.all([
+                    this.Send({
+                        name_affix: Event.START_EXHIBITIONS,
+                        name_suffixes: [
+                        ],
+                        data: {
+                            exhibition: model.Current_Exhibition(),
+                        } as Event.Start_Exhibitions_Data,
+                        is_atomic: true,
+                    }),
+                    this.Animate_Fade_In({
+                        duration: 3000,
+                    }),
+                ]);
+
+                this.While_Alive();
+            }
         }).bind(this)();
 
         return [
@@ -371,22 +361,24 @@ export class Main extends Component<Main_Props>
 
             model.Exit_Game();
 
+            this.Some_Element().style.opacity = `0%`;
+
             await this.Refresh();
-
             if (this.Is_Alive()) {
-                const exhibition: Model.Exhibition.Instance =
-                    model.Current_Exhibition() as Model.Exhibition.Instance;
-                Assert(exhibition != null);
-
-                await this.Send({
-                    name_affix: Event.START_EXHIBITIONS,
-                    name_suffixes: [
-                    ],
-                    data: {
-                        exhibition: model.Current_Exhibition(),
-                    } as Event.Start_Exhibitions_Data,
-                    is_atomic: true,
-                });
+                await Promise.all([
+                    this.Send({
+                        name_affix: Event.START_EXHIBITIONS,
+                        name_suffixes: [
+                        ],
+                        data: {
+                            exhibition: model.Current_Exhibition(),
+                        } as Event.Start_Exhibitions_Data,
+                        is_atomic: true,
+                    }),
+                    this.Animate_Fade_In({
+                        duration: 1000,
+                    }),
+                ]);
             }
         }
     }

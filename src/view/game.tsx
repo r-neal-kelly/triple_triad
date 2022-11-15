@@ -1441,6 +1441,17 @@ export class Game extends Component<Game_Props>
         });
     }
 
+    override On_Life():
+        Array<Event.Listener_Info>
+    {
+        return ([
+            {
+                event_name: new Event.Name(Event.BEFORE, Event.EXIT_GAME),
+                event_handler: this.Before_Exit_Game,
+            },
+        ]);
+    }
+
     override On_Resize(
         data: Event.Resize_Data
     ):
@@ -1458,5 +1469,18 @@ export class Game extends Component<Game_Props>
         });
 
         super.On_Resize(data);
+    }
+
+    async Before_Exit_Game(
+        {
+        }: Event.Exit_Game_Data,
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            await this.Animate_Fade_Out({
+                duration: 1000,
+            });
+        }
     }
 }

@@ -270,19 +270,6 @@ export class Arena extends Component<Arena_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
         (async function (
             this: Arena,
         ):
@@ -324,12 +311,8 @@ export class Arena extends Component<Arena_Props>
             const current_player_index: Model.Player.Index = this.Model().Current_Player_Index();
 
             this.Change_Style(`visibility`, `visible`);
-            await this.Animate({
-                animation_name: `Fade_In`,
-                duration_in_milliseconds: 1000,
-                css_iteration_count: `1`,
-                css_timing_function: `ease-in-out`,
-                css_fill_mode: `forward`,
+            await this.Animate_Fade_In({
+                duration: 1000,
             });
 
             if (this.Is_Alive()) {

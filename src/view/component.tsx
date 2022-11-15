@@ -8,6 +8,7 @@ import { Name } from "../types";
 
 import { Assert } from "../utils";
 import { Wait } from "../utils";
+import { Plot_Bezier_Curve_4 } from "../utils";
 
 import * as Event from "./event";
 
@@ -550,5 +551,133 @@ export class Component<T extends Component_Props> extends React.Component<T>
             }
             window.requestAnimationFrame(Loop.bind(this));
         });
+    }
+
+    async Animate_Fade_In(
+        {
+            duration,
+        }: {
+            duration: Integer,
+        },
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const element: HTMLElement = this.Some_Element();
+
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame.bind(this),
+                    {
+                        element: element,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            1.0 / (duration / 15),
+                            100.0,
+                            0.0, 0.0,
+                            0.42, 0.0,
+                            0.58, 1.0,
+                            1.0, 1.0,
+                        ),
+                    },
+                );
+            } else {
+                element.style.opacity = `100%`;
+            }
+        }
+
+        function On_Frame(
+            this: Component<Component_Props>,
+            {
+                elapsed,
+            }: Component_Animation_Frame,
+            state: {
+                element: HTMLElement,
+                duration: Integer,
+                plot: Array<{
+                    x: Float,
+                    y: Float,
+                }>,
+            },
+        ):
+            boolean
+        {
+            if (elapsed >= state.duration) {
+                state.element.style.opacity = `100%`;
+
+                return false;
+            } else {
+                const index: Index =
+                    Math.floor(elapsed * state.plot.length / state.duration);
+
+                state.element.style.opacity = `${state.plot[index].y}%`;
+
+                return true;
+            }
+        }
+    }
+
+    async Animate_Fade_Out(
+        {
+            duration,
+        }: {
+            duration: Integer,
+        },
+    ):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const element: HTMLElement = this.Some_Element();
+
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame.bind(this),
+                    {
+                        element: element,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            1.0 / (duration / 15),
+                            100.0,
+                            0.0, 0.0,
+                            0.42, 0.0,
+                            0.58, 1.0,
+                            1.0, 1.0,
+                        ),
+                    },
+                );
+            } else {
+                element.style.opacity = `0%`;
+            }
+        }
+
+        function On_Frame(
+            this: Component<Component_Props>,
+            {
+                elapsed,
+            }: Component_Animation_Frame,
+            state: {
+                element: HTMLElement,
+                duration: Integer,
+                plot: Array<{
+                    x: Float,
+                    y: Float,
+                }>,
+            },
+        ):
+            boolean
+        {
+            if (elapsed >= state.duration) {
+                state.element.style.opacity = `0%`;
+
+                return false;
+            } else {
+                const index: Index =
+                    Math.floor(elapsed * state.plot.length / state.duration);
+
+                state.element.style.opacity = `${100 - state.plot[index].y}%`;
+
+                return true;
+            }
+        }
     }
 }
