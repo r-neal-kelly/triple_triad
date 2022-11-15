@@ -39,7 +39,7 @@ export class Options
     static Player_Color_Palette_Interval():
         Float
     {
-        return 5.0;
+        return (360.0 / Options.Player_Color_Pool_Count()) / 6;
     }
 
     static Min_Player_Color_Palette():
@@ -51,7 +51,10 @@ export class Options
     static Max_Player_Color_Palette():
         Float
     {
-        return (360.0 / Options.Player_Color_Pool_Count()) - Number.EPSILON;
+        return (
+            (360.0 / Options.Player_Color_Pool_Count()) -
+            this.Player_Color_Palette_Interval()
+        );
     }
 
     static Default_Player_Color_Saturation():
