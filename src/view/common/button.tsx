@@ -252,6 +252,9 @@ class Button_Cover extends Component<Button_Cover_Props>
     async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
+        event.preventDefault();
+        event.stopPropagation();
+
         const button: Button<Button_Props> = this.Parent();
         if (button.Is_Alive()) {
             await button.Animate({

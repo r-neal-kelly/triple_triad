@@ -744,6 +744,9 @@ class Color extends Component<Color_Props>
     async On_Activate(event: React.SyntheticEvent):
         Promise<void>
     {
+        event.preventDefault();
+        event.stopPropagation();
+
         if (this.Is_Alive()) {
             this.Model().Select_Next_Player_Color(this.Index());
             await this.Options().Refresh();

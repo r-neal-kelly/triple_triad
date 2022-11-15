@@ -461,6 +461,9 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
     async On_Decrement(event: React.SyntheticEvent):
         Promise<void>
     {
+        event.preventDefault();
+        event.stopPropagation();
+
         const counter: Counter<Counter_Props> = this.Counter();
         if (counter.Is_Alive() && counter.Can_Decrement()) {
             const decrementor: Decrementor = this.Decrementor();
@@ -677,6 +680,9 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
     async On_Increment(event: React.SyntheticEvent):
         Promise<void>
     {
+        event.preventDefault();
+        event.stopPropagation();
+
         const counter: Counter<Counter_Props> = this.Counter();
         if (counter.Is_Alive() && counter.Can_Increment()) {
             const incrementor: Incrementor = this.Incrementor();

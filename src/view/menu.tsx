@@ -508,7 +508,6 @@ export class Menu extends Component<Menu_Props>
 {
     private content: Content | null = null;
     private show_button: Show_Button | null = null;
-    private hide_button: Hide_Button | null = null;
 
     private measurements: Menu_Measurements = new Menu_Measurements({
         parent_width: this.Parent().Width(),
@@ -559,6 +558,7 @@ export class Menu extends Component<Menu_Props>
             return (
                 <div
                     className={`Menu`}
+                    onClick={event => this.On_Click(event)}
                 >
                     <Show_Button
                         ref={ref => this.show_button = ref}
@@ -576,13 +576,6 @@ export class Menu extends Component<Menu_Props>
                 >
                     <Content
                         ref={ref => this.content = ref}
-
-                        model={model}
-                        parent={this}
-                        event_grid={event_grid}
-                    />
-                    <Hide_Button
-                        ref={ref => this.hide_button = ref}
 
                         model={model}
                         parent={this}
@@ -627,7 +620,35 @@ export class Menu extends Component<Menu_Props>
                 event_name: new Event.Name(Event.ON, Event.DISABLE_MENUS),
                 event_handler: this.On_Disable_Menus,
             },
+            {
+                event_name: new Event.Name(Event.ON, Event.SHOW_MENUS),
+                event_handler: this.On_Show_Menus,
+            },
+            {
+                event_name: new Event.Name(Event.ON, Event.HIDE_MENUS),
+                event_handler: this.On_Hide_Menus,
+            },
         ];
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.Is_Alive()) {
+            if (event.target === this.Some_Element()) {
+                await this.Send({
+                    name_affix: Event.SHOW_MENUS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Show_Menus_Data,
+                    is_atomic: true,
+                });
+            }
+        }
     }
 
     override On_Resize(
@@ -673,7 +694,16 @@ export class Menu extends Component<Menu_Props>
         }
     }
 
-    async On_Show_Menus():
+    async On_Disable_Menus():
+        Promise<void>
+    {
+        this.is_disabled = true;
+    }
+
+    async On_Show_Menus(
+        {
+        }: Event.Show_Menus_Data,
+    ):
         Promise<void>
     {
         if (this.Is_Alive()) {
@@ -682,19 +712,16 @@ export class Menu extends Component<Menu_Props>
         }
     }
 
-    async On_Hide_Menus():
+    async On_Hide_Menus(
+        {
+        }: Event.Hide_Menus_Data,
+    ):
         Promise<void>
     {
         if (this.Is_Alive()) {
             this.is_hidden = true;
             await this.Refresh();
         }
-    }
-
-    async On_Disable_Menus():
-        Promise<void>
-    {
-        this.is_disabled = true;
     }
 }
 
@@ -782,6 +809,7 @@ export class Content extends Component<Content_Props>
             return (
                 <div
                     className={`Content`}
+                    onClick={event => this.On_Click(event)}
                 >
                     <Options.Instance
                         ref={ref => this.options = ref}
@@ -796,6 +824,7 @@ export class Content extends Component<Content_Props>
             return (
                 <div
                     className={`Content`}
+                    onClick={event => this.On_Click(event)}
                 >
                     <Help.Instance
                         ref={ref => this.help = ref}
@@ -832,11 +861,24 @@ export class Content extends Component<Content_Props>
         });
     }
 
-    override On_Life():
-        Array<Event.Listener_Info>
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
     {
-        return [
-        ];
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.Is_Alive()) {
+            if (event.target === this.Some_Element()) {
+                await this.Send({
+                    name_affix: Event.OPEN_TOP_MENU,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Open_Top_Menu_Data,
+                    is_atomic: true,
+                });
+            }
+        }
     }
 }
 
@@ -961,134 +1003,14 @@ class Show_Button extends Button<Show_Button_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.Menu().On_Show_Menus();
-        }
-    }
-}
-
-type Hide_Button_Props = {
-    model: Model.Menu.Instance;
-    parent: Menu;
-    event_grid: Event.Grid;
-}
-
-class Hide_Button extends Button<Hide_Button_Props>
-{
-    Menu():
-        Menu
-    {
-        return this.Parent();
-    }
-
-    Measurements():
-        Menu_Measurements
-    {
-        return this.Parent().Measurements();
-    }
-
-    override Name():
-        string
-    {
-        return `Hide_Button`;
-    }
-
-    override Text():
-        string
-    {
-        return ``;
-    }
-
-    override CSS_Width():
-        string
-    {
-        return `${this.Measurements().Square_Button_Width()}px`;
-    }
-
-    override CSS_Height():
-        string
-    {
-        return `${this.Measurements().Square_Button_Height()}px`;
-    }
-
-    override CSS_Padding_Left():
-        string
-    {
-        return `${this.Measurements().Square_Button_Padding()}px`;
-    }
-
-    override CSS_Padding_Top():
-        string
-    {
-        return `${this.Measurements().Square_Button_Padding()}px`;
-    }
-
-    override CSS_Padding_Right():
-        string
-    {
-        return `${this.Measurements().Square_Button_Padding()}px`;
-    }
-
-    override CSS_Padding_Bottom():
-        string
-    {
-        return `${this.Measurements().Square_Button_Padding()}px`;
-    }
-
-    override CSS_Text_Color():
-        string
-    {
-        return `white`;
-    }
-
-    override CSS_Text_Size():
-        string
-    {
-        return `1em`;
-    }
-
-    override CSS_Background_Color():
-        string
-    {
-        return `rgba(32, 32, 32, 0.5)`;
-    }
-
-    override CSS_Activated_Text_Color():
-        string
-    {
-        return `black`;
-    }
-
-    override CSS_Activated_Text_Size():
-        string
-    {
-        return `1em`;
-    }
-
-    override CSS_Activated_Background_Color():
-        string
-    {
-        return `rgba(255, 255, 255, 0.7)`;
-    }
-
-    override On_Restyle():
-        Component_Styles
-    {
-        const styles: Component_Styles = super.On_Restyle();
-        styles.borderWidth = `${this.Measurements().Square_Button_Border_Width()}px`;
-        styles.borderColor = `rgba(32, 32, 32, 0.7)`;
-        styles.position = `fixed`;
-        styles.left = `${this.Measurements().Square_Button_Left()}px`;
-        styles.bottom = `${this.Measurements().Square_Button_Bottom()}px`;
-        styles.zIndex = `1`;
-
-        return styles;
-    }
-
-    override async On_Activate(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            this.Menu().On_Hide_Menus();
+            await this.Send({
+                name_affix: Event.SHOW_MENUS,
+                name_suffixes: [
+                ],
+                data: {
+                } as Event.Show_Menus_Data,
+                is_atomic: true,
+            });
         }
     }
 }

@@ -247,6 +247,7 @@ class Title_Area extends Component<Title_Area_Props>
         return (
             <div
                 className={`Title_Area`}
+                onClick={event => this.On_Click(event)}
             >
                 <Title_Text
                     ref={ref => this.text = ref}
@@ -276,6 +277,26 @@ class Title_Area extends Component<Title_Area_Props>
 
             fontSize: `5em`,
         });
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.Is_Alive()) {
+            if (event.target === this.Some_Element()) {
+                await this.Send({
+                    name_affix: Event.HIDE_MENUS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Hide_Menus_Data,
+                    is_atomic: true,
+                });
+            }
+        }
     }
 }
 
@@ -434,6 +455,7 @@ class Buttons extends Component<Buttons_Props>
         return (
             <div
                 className={`Buttons`}
+                onClick={event => this.On_Click(event)}
             >
                 <New_Game_Button
                     ref={ref => this.new_game = ref}
@@ -476,6 +498,26 @@ class Buttons extends Component<Buttons_Props>
             alignSelf: `center`,
             justifySelf: `center`,
         });
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.Is_Alive()) {
+            if (event.target === this.Some_Element()) {
+                await this.Send({
+                    name_affix: Event.HIDE_MENUS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Hide_Menus_Data,
+                    is_atomic: true,
+                });
+            }
+        }
     }
 }
 

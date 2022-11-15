@@ -279,7 +279,7 @@ class Toggle_Cover extends Component<Toggle_Cover_Props>
         return (
             <div
                 className={`Toggle_Cover`}
-                onClick={event => this.Parent().On_Toggle(event)}
+                onClick={event => this.On_Toggle(event)}
             >
             </div>
         );
@@ -313,5 +313,17 @@ class Toggle_Cover extends Component<Toggle_Cover_Props>
 
             cursor: cursor,
         });
+    }
+
+    async On_Toggle(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const toggle: Toggle<Toggle_Props> = this.Parent();
+        if (toggle.Is_Alive()) {
+            toggle.On_Toggle(event);
+        }
     }
 }

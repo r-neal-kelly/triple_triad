@@ -34,6 +34,8 @@ export const OPEN_TOP_MENU: Event.Name_Affix = `Open_Top_Menu`;
 export const OPEN_OPTIONS_MENU: Event.Name_Affix = `Open_Options_Menu`;
 export const OPEN_HELP_MENU: Event.Name_Affix = `Open_Help_Menu`;
 export const DISABLE_MENUS: Event.Name_Affix = `Disable_Menus`;
+export const SHOW_MENUS: Event.Name_Affix = `Show_Menus`;
+export const HIDE_MENUS: Event.Name_Affix = `Hide_Menus`;
 export const CLOSE_MENUS: Event.Name_Affix = `Close_Menus`;
 
 export const GAME_START: Event.Name_Affix = `Game_Start`;// maybe ARENA_START and ARENA_STOP
@@ -90,6 +92,12 @@ export type Open_Help_Menu_Data = {
 }
 
 export type Disable_Menus_Data = {
+}
+
+export type Show_Menus_Data = {
+}
+
+export type Hide_Menus_Data = {
 }
 
 export type Close_Menus_Data = {
