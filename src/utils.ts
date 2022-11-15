@@ -478,6 +478,7 @@ export function Plot_Bezier_Curve_3(
         y: Float,
     }>
 {
+    // https://javascript.info/bezier-curve
     // x = (1−t)^2 * x1 + 2 * (1−t) * t * x2 + t^2 * x3
     // y = (1−t)^2 * y1 + 2 * (1−t) * t * y2 + t^2 * y3
 
@@ -516,6 +517,7 @@ export function Plot_Bezier_Curve_4(
         y: Float,
     }>
 {
+    // https://javascript.info/bezier-curve
     // P = (1 - t)^3 * P1 + 3 * (1 - t)^2 * t * P2 + 3 * (1 - t) * t^2 * P3 + t^3 * P4
 
     const points: Array<{

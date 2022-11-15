@@ -8,6 +8,7 @@ export class RGBA
     private green: Integer;
     private blue: Integer;
     private alpha: Float;
+    private luminance: Float | null;
 
     constructor(
         {
@@ -20,7 +21,7 @@ export class RGBA
             green?: Integer,
             blue?: Integer,
             alpha?: Float,
-        }
+        },
     )
     {
         if (
@@ -36,8 +37,7 @@ export class RGBA
             this.green = green;
             this.blue = blue;
             this.alpha = alpha;
-
-            Object.freeze(this);
+            this.luminance = null;
         }
     }
 
@@ -63,6 +63,52 @@ export class RGBA
         Float
     {
         return this.alpha;
+    }
+
+    Luminance():
+        Float
+    {
+        if (this.luminance == null) {
+            // https://www.w3.org/TR/WCAG22/#dfn-relative-luminance
+
+            let r = this.red / 255.0;
+            let g = this.green / 255.0;
+            let b = this.blue / 255.0;
+
+            r = r <= 0.04045 ?
+                r / 12.92 :
+                Math.pow((r + 0.055) / 1.055, 2.4);
+            g = g <= 0.04045 ?
+                g / 12.92 :
+                Math.pow((g + 0.055) / 1.055, 2.4);
+            b = b <= 0.04045 ?
+                b / 12.92 :
+                Math.pow((b + 0.055) / 1.055, 2.4);
+
+            this.luminance = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
+        }
+
+        return this.luminance as Float;
+    }
+
+    Has_Higher_Contrast_With_White():
+        boolean
+    {
+        // https://www.w3.org/TR/WCAG22/#dfn-contrast-ratio
+
+        const luminance: Float = this.Luminance();
+
+        return (1.0 + 0.05) / (luminance + 0.05) > (luminance + 0.05) / (0.0 + 0.05);
+    }
+
+    Has_Higher_Contrast_With_Black():
+        boolean
+    {
+        // https://www.w3.org/TR/WCAG22/#dfn-contrast-ratio
+
+        const luminance: Float = this.Luminance();
+
+        return (luminance + 0.05) / (0.0 + 0.05) > (1.0 + 0.05) / (luminance + 0.05);
     }
 
     Percent_Difference_From(other: RGBA):
@@ -95,3 +141,5 @@ export class RGBA
         return percent_difference / 4;
     }
 }
+
+(window as any).RGBA = RGBA;
