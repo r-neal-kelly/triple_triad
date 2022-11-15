@@ -718,7 +718,7 @@ export class Menu extends Component<Menu_Props>
     ):
         Promise<void>
     {
-        if (this.Is_Alive()) {
+        if (this.Is_Alive() && !this.is_disabled) {
             this.is_hidden = true;
             await this.Refresh();
         }
