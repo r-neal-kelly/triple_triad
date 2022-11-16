@@ -502,7 +502,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
         Promise<void>
     {
         Assert(this.Is_Alive());
-        Assert(css_iteration_count != `infinite`); // we can add an Animate_Forever later
+        Assert(css_iteration_count !== `infinite`); // we can add an Animate_Forever later
 
         const element: HTMLElement = this.Maybe_Element() as HTMLElement; // Is_Alive !== Has_Element
         if (element) {
