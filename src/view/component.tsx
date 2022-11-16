@@ -8,7 +8,6 @@ import { Name } from "../types";
 
 import { Assert } from "../utils";
 import { Wait } from "../utils";
-import { Plot_Bezier_Curve_4 } from "../utils";
 
 import * as Event from "./event";
 
