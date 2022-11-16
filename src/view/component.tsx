@@ -12,12 +12,23 @@ import { Wait } from "../utils";
 import * as Event from "./event";
 
 export type Component_ID = Integer;
-let component_id = 0;
+let new_component_id = 0;
 function New_Component_ID():
     Component_ID
 {
-    return component_id++;
+    return new_component_id++;
 }
+
+type Animation_Name = Name;
+type Component_Animation_Rule = {
+    index: Index,
+    end_styles: Component_Styles,
+}
+const COMPONENT_ANIMATION_RULES: {
+    [index: Component_ID]: {
+        [index: Animation_Name]: Component_Animation_Rule
+    }
+} = {};
 
 export type Component_Styles = {
     [index: string]: string,
@@ -69,7 +80,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
     private id: Component_ID = New_Component_ID();
     private styles: Component_Styles = {};
     private stylesheet: HTMLStyleElement | null = null;
-    private stylesheet_selectors: { [index: Name]: Index } = {};
     private body: HTMLElement | null = null;
     private is_alive: boolean = false;
     private is_refreshing: boolean = true;
@@ -77,6 +87,8 @@ export class Component<T extends Component_Props> extends React.Component<T>
     constructor(props: T)
     {
         super(props);
+
+        COMPONENT_ANIMATION_RULES[this.id] = {};
 
         this.styles = Object.assign({
             boxSizing: `border-box`,
@@ -433,9 +445,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
         {
             animation_name,
             animation_body,
+            end_styles = {},
         }: {
-            animation_name: Name,
+            animation_name: Animation_Name,
             animation_body: string,
+            end_styles?: Component_Styles,
         },
     ):
         void
@@ -443,21 +457,25 @@ export class Component<T extends Component_Props> extends React.Component<T>
         const sheet: CSSStyleSheet =
             this.Some_Stylesheet().sheet as CSSStyleSheet;
         Assert(sheet != null);
-        const full_animation_name: string =
-            `${animation_name}_${this.ID()}`;
-        const animation_selector: string =
-            `@keyframes ${full_animation_name}`;
 
         let rule_index: Index;
-        if (this.stylesheet_selectors[animation_selector] != null) {
-            rule_index = this.stylesheet_selectors[animation_selector];
+        if (COMPONENT_ANIMATION_RULES[this.id][animation_name] != null) {
+            rule_index = COMPONENT_ANIMATION_RULES[this.id][animation_name].index;
             sheet.deleteRule(rule_index);
         } else {
             rule_index = sheet.cssRules.length;
         }
-        this.stylesheet_selectors[animation_selector] = rule_index;
+
+        const rule: Component_Animation_Rule = {
+            index: rule_index,
+            end_styles: Object.assign({}, end_styles),
+        };
+        Object.freeze(rule.end_styles);
+        Object.freeze(rule);
+
+        COMPONENT_ANIMATION_RULES[this.id][animation_name] = rule;
         sheet.insertRule(
-            `${animation_selector} {
+            `@keyframes ${animation_name}_${this.ID()} {
                 ${animation_body}
             }`,
             rule_index,
@@ -472,15 +490,13 @@ export class Component<T extends Component_Props> extends React.Component<T>
             css_iteration_count = `1`,
             css_timing_function = `ease`,
             css_direction = `normal`,
-            end_styles = {},
         }: {
-            animation_name: Name,
+            animation_name: Animation_Name,
             animation_owner_id?: Component_ID,
             duration_in_milliseconds: Integer,
             css_iteration_count?: string,
             css_timing_function?: string,
             css_direction?: string,
-            end_styles?: Component_Styles,
         },
     ):
         Promise<void>
@@ -488,25 +504,28 @@ export class Component<T extends Component_Props> extends React.Component<T>
         Assert(this.Is_Alive());
         Assert(css_iteration_count != `infinite`); // we can add an Animate_Forever later
 
-        const element: HTMLElement = this.Some_Element();
+        const element: HTMLElement = this.Maybe_Element() as HTMLElement; // Is_Alive !== Has_Element
+        if (element) {
+            element.style.animationName = `${animation_name}_${animation_owner_id}`;
+            element.style.animationDuration = `${duration_in_milliseconds}ms`;
+            element.style.animationIterationCount = css_iteration_count;
+            element.style.animationTimingFunction = css_timing_function;
+            element.style.animationDirection = css_direction;
 
-        element.style.animationName = `${animation_name}_${animation_owner_id}`;
-        element.style.animationDuration = `${duration_in_milliseconds}ms`;
-        element.style.animationIterationCount = css_iteration_count;
-        element.style.animationTimingFunction = css_timing_function;
-        element.style.animationDirection = css_direction;
+            await Wait(duration_in_milliseconds);
 
-        await Wait(duration_in_milliseconds);
+            element.style.animationName = ``;
+            element.style.animationDuration = ``;
+            element.style.animationIterationCount = ``;
+            element.style.animationTimingFunction = ``;
+            element.style.animationDirection = ``;
 
-        element.style.animationName = ``;
-        element.style.animationDuration = ``;
-        element.style.animationIterationCount = ``;
-        element.style.animationTimingFunction = ``;
-        element.style.animationDirection = ``;
-
-        for (const [key, value] of Object.entries(end_styles)) {
-            this.styles[key] = value;
-            (element.style as any)[key] = value;
+            const end_styles: Component_Styles =
+                COMPONENT_ANIMATION_RULES[animation_owner_id][animation_name].end_styles;
+            for (const [key, value] of Object.entries(end_styles)) {
+                this.styles[key] = value;
+                (element.style as any)[key] = value;
+            }
         }
     }
 

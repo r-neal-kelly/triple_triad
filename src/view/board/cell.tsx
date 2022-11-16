@@ -8,6 +8,8 @@ import * as Model from "../../model";
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
+
+import { Main } from "../main";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
@@ -28,6 +30,12 @@ export class Cell extends Component<Cell_Props>
 {
     private current_color: Model.Color.HSLA | null = null;
     private popups: Array<JSX.Element> | null = null;
+
+    Main():
+        Main
+    {
+        return this.Arena().Main();
+    }
 
     Arena():
         Arena
@@ -215,75 +223,6 @@ export class Cell extends Component<Cell_Props>
     {
         const cell_index: Model.Board.Cell.Index = this.Index();
 
-        this.Change_Animation({
-            animation_name: `Left_To_Right`,
-            animation_body: `
-                0% {
-                    background-position: left;
-                }
-            
-                100% {
-                    background-position: right;
-                }
-            `,
-        });
-
-        this.Change_Animation({
-            animation_name: `Top_To_Bottom`,
-            animation_body: `
-                0% {
-                    background-position: top;
-                }
-            
-                100% {
-                    background-position: bottom;
-                }
-            `,
-        });
-
-        this.Change_Animation({
-            animation_name: `Right_To_Left`,
-            animation_body: `
-                0% {
-                    background-position: right;
-                }
-            
-                100% {
-                    background-position: left;
-                }
-            `,
-        });
-
-        this.Change_Animation({
-            animation_name: `Bottom_To_Top`,
-            animation_body: `
-                0% {
-                    background-position: bottom;
-                }
-            
-                100% {
-                    background-position: top;
-                }
-            `,
-        });
-
-        this.Change_Animation({
-            animation_name: `Flash`,
-            animation_body: `
-                0% {
-                    border-color: black;
-                }
-            
-                50% {
-                    border-color: white;
-                }
-            
-                100% {
-                    border-color: black;
-                }
-            `,
-        });
-
         return ([
             {
                 event_name: new Event.Name(Event.AFTER, Event.PLAYER_SELECT_STAKE),
@@ -429,7 +368,8 @@ export class Cell extends Component<Cell_Props>
                                 is_atomic: false,
                             }),
                             this.Animate({
-                                animation_name: `Flash`,
+                                animation_name: `Flash_Border`,
+                                animation_owner_id: this.Main().ID(),
                                 duration_in_milliseconds: 300,
                                 css_timing_function: `ease-in`,
                             })
@@ -548,22 +488,22 @@ export class Cell extends Component<Cell_Props>
             background_size = `1000% 100%`;
             from_position = `left`;
             to_position = `right`;
-            animation_name = `Left_To_Right`;
+            animation_name = `Background_Left_To_Right`;
         } else if (direction === Model.Enum.Direction.TOP) {
             background_size = `100% 1000%`;
             from_position = `top`;
             to_position = `bottom`;
-            animation_name = `Top_To_Bottom`;
+            animation_name = `Background_Top_To_Bottom`;
         } else if (direction === Model.Enum.Direction.RIGHT) {
             background_size = `1000% 100%`;
             from_position = `right`;
             to_position = `left`;
-            animation_name = `Right_To_Left`;
+            animation_name = `Background_Right_To_Left`;
         } else if (direction === Model.Enum.Direction.BOTTOM) {
             background_size = `100% 1000%`;
             from_position = `bottom`;
             to_position = `top`;
-            animation_name = `Bottom_To_Top`;
+            animation_name = `Background_Bottom_To_Top`;
         }
 
         this.Change_Style(
@@ -589,6 +529,7 @@ export class Cell extends Component<Cell_Props>
 
         await this.Animate({
             animation_name: animation_name,
+            animation_owner_id: this.Main().ID(),
             duration_in_milliseconds: animation_duration,
             css_timing_function: `ease-in-out`,
         });

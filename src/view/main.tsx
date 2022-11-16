@@ -165,6 +165,9 @@ export class Main extends Component<Main_Props>
                     opacity: 100%;
                 }
             `,
+            end_styles: {
+                opacity: `100%`,
+            },
         });
 
         this.Change_Animation({
@@ -177,6 +180,9 @@ export class Main extends Component<Main_Props>
                     opacity: 0%;
                 }
             `,
+            end_styles: {
+                opacity: `0%`,
+            },
         });
 
         this.Change_Animation({
@@ -188,10 +194,14 @@ export class Main extends Component<Main_Props>
                 }
             
                 100% {
-                    left: 0;
+                    left: 0%;
                     opacity: 100%;
                 }
             `,
+            end_styles: {
+                left: `0%`,
+                opacity: `100%`,
+            },
         });
 
         this.Change_Animation({
@@ -203,10 +213,14 @@ export class Main extends Component<Main_Props>
                 }
             
                 100% {
-                    top: 0;
+                    top: 0%;
                     opacity: 100%;
                 }
             `,
+            end_styles: {
+                top: `0%`,
+                opacity: `100%`,
+            },
         });
 
         this.Change_Animation({
@@ -218,10 +232,14 @@ export class Main extends Component<Main_Props>
                 }
             
                 100% {
-                    left: 0;
+                    left: 0%;
                     opacity: 100%;
                 }
             `,
+            end_styles: {
+                left: `0%`,
+                opacity: `100%`,
+            },
         });
 
         this.Change_Animation({
@@ -233,17 +251,21 @@ export class Main extends Component<Main_Props>
                 }
             
                 100% {
-                    top: 0;
+                    top: 0%;
                     opacity: 100%;
                 }
             `,
+            end_styles: {
+                top: `0%`,
+                opacity: `100%`,
+            },
         });
 
         this.Change_Animation({
             animation_name: `Exit_Left`,
             animation_body: `
                 0% {
-                    left: 0;
+                    left: 0%;
                     opacity: 100%;
                 }
             
@@ -252,13 +274,17 @@ export class Main extends Component<Main_Props>
                     opacity: 0%;
                 }
             `,
+            end_styles: {
+                left: `-100%`,
+                opacity: `0%`,
+            },
         });
 
         this.Change_Animation({
             animation_name: `Exit_Top`,
             animation_body: `
                 0% {
-                    top: 0;
+                    top: 0%;
                     opacity: 100%;
                 }
             
@@ -267,13 +293,17 @@ export class Main extends Component<Main_Props>
                     opacity: 0%;
                 }
             `,
+            end_styles: {
+                top: `-100%`,
+                opacity: `0%`,
+            },
         });
 
         this.Change_Animation({
             animation_name: `Exit_Right`,
             animation_body: `
                 0% {
-                    left: 0;
+                    left: 0%;
                     opacity: 100%;
                 }
             
@@ -282,19 +312,121 @@ export class Main extends Component<Main_Props>
                     opacity: 0%;
                 }
             `,
+            end_styles: {
+                left: `100%`,
+                opacity: `0%`,
+            },
         });
 
         this.Change_Animation({
             animation_name: `Exit_Bottom`,
             animation_body: `
                 0% {
-                    top: 0;
+                    top: 0%;
                     opacity: 100%;
                 }
             
                 100% {
                     top: 100%;
                     opacity: 0%;
+                }
+            `,
+            end_styles: {
+                top: `100%`,
+                opacity: `0%`,
+            },
+        });
+
+        this.Change_Animation({
+            animation_name: `Flash_Border`,
+            animation_body: `
+                0% {
+                    border-color: black;
+                }
+            
+                50% {
+                    border-color: white;
+                }
+            
+                100% {
+                    border-color: black;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Twinkle_Border`,
+            animation_body: `
+                0% {
+                    border-color: white;
+                }
+            
+                25% {
+                    border-color: black;
+                }
+            
+                50% {
+                    border-color: white;
+                }
+            
+                75% {
+                    border-color: black;
+                }
+            
+                100% {
+                    border-color: white;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Background_Left_To_Right`,
+            animation_body: `
+                0% {
+                    background-position: left;
+                }
+            
+                100% {
+                    background-position: right;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Background_Top_To_Bottom`,
+            animation_body: `
+                0% {
+                    background-position: top;
+                }
+            
+                100% {
+                    background-position: bottom;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Background_Right_To_Left`,
+            animation_body: `
+                0% {
+                    background-position: right;
+                }
+            
+                100% {
+                    background-position: left;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Background_Bottom_To_Top`,
+            animation_body: `
+                0% {
+                    background-position: bottom;
+                }
+            
+                100% {
+                    background-position: top;
                 }
             `,
         });
@@ -328,9 +460,6 @@ export class Main extends Component<Main_Props>
                         animation_name: `Fade_In`,
                         duration_in_milliseconds: 3000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `100%`,
-                        },
                     }),
                 ]);
 
@@ -537,9 +666,6 @@ export class Main extends Component<Main_Props>
                         animation_name: `Fade_In`,
                         duration_in_milliseconds: 3000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `100%`,
-                        },
                     }),
                 ]);
             }

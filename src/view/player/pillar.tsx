@@ -125,8 +125,6 @@ export class Pillar extends Component<Pillar_Props>
             top: `0`,
             zIndex: `-1`,
 
-            opacity: `100%`,
-
             backgroundColor: background_color,
             backgroundImage: ``,
             backgroundRepeat: `no-repeat`,
@@ -169,7 +167,7 @@ export class Pillar extends Component<Pillar_Props>
         if (this.Is_Alive()) {
             const model: Model.Player.Instance = this.Model();
             if (model.Is_On_Turn()) {
-                this.Some_Element().style.opacity = `0%`;
+                this.Change_Style(`opacity`, `0%`);
             }
         }
     }
@@ -188,9 +186,6 @@ export class Pillar extends Component<Pillar_Props>
                     animation_owner_id: this.Main().ID(),
                     duration_in_milliseconds: 750,
                     css_timing_function: `ease-in-out`,
-                    end_styles: {
-                        opacity: `0%`,
-                    },
                 });
             }
         }
@@ -233,9 +228,6 @@ export class Pillar extends Component<Pillar_Props>
                     animation_owner_id: this.Main().ID(),
                     duration_in_milliseconds: 750,
                     css_timing_function: `ease-in-out`,
-                    end_styles: {
-                        opacity: `0%`,
-                    },
                 });
             }
         }

@@ -1942,9 +1942,6 @@ export class Game extends Component<Game_Props>
                 animation_owner_id: this.Main().ID(),
                 duration_in_milliseconds: 1000,
                 css_timing_function: `ease-in-out`,
-                end_styles: {
-                    opacity: `0%`,
-                },
             });
         }
     }

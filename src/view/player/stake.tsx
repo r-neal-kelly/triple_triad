@@ -12,6 +12,8 @@ import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
+
+import { Main } from "../main";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
@@ -36,6 +38,12 @@ export class Stake extends Component<Stake_Props>
         Float
     {
         return 0.48;
+    }
+
+    Main():
+        Main
+    {
+        return this.Arena().Main();
     }
 
     Arena():
@@ -192,31 +200,6 @@ export class Stake extends Component<Stake_Props>
     {
         const player_index: Model.Player.Index = this.Player().Index();
 
-        this.Change_Animation({
-            animation_name: `Twinkle`,
-            animation_body: `
-                0% {
-                    border-color: white;
-                }
-            
-                25% {
-                    border-color: black;
-                }
-            
-                50% {
-                    border-color: white;
-                }
-            
-                75% {
-                    border-color: black;
-                }
-            
-                100% {
-                    border-color: white;
-                }
-            `,
-        });
-
         return ([
             {
                 event_name: new Event.Name(Event.BEFORE, Event.PLAYER_PLACE_STAKE, player_index.toString()),
@@ -271,7 +254,8 @@ export class Stake extends Component<Stake_Props>
         if (this.Is_Alive()) {
             if (stake_index === this.Index()) {
                 await this.Animate({
-                    animation_name: `Twinkle`,
+                    animation_name: `Twinkle_Border`,
+                    animation_owner_id: this.Main().ID(),
                     duration_in_milliseconds: 500,
                     css_timing_function: `ease-in-out`,
                 });

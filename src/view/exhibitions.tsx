@@ -200,9 +200,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 animation_owner_id: this.Main().ID(),
                 duration_in_milliseconds: FADE_IN_DURATION,
                 css_timing_function: `ease-in-out`,
-                end_styles: {
-                    opacity: `100%`,
-                },
             });
         }
     }
@@ -219,9 +216,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 animation_owner_id: this.Main().ID(),
                 duration_in_milliseconds: FADE_OUT_DURATION,
                 css_timing_function: `ease-in-out`,
-                end_styles: {
-                    opacity: `0%`,
-                },
             });
             if (this.Is_Alive()) {
                 this.Change_Style(`display`, `none`);
@@ -259,18 +253,12 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `0%`,
-                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Left`,
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `100%`,
-                        },
                     }),
                 ]),
                 () => Promise.all([
@@ -279,18 +267,12 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `0%`,
-                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Top`,
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `100%`,
-                        },
                     }),
                 ]),
                 () => Promise.all([
@@ -299,18 +281,12 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `0%`,
-                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Right`,
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `100%`,
-                        },
                     }),
                 ]),
                 () => Promise.all([
@@ -319,18 +295,12 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `0%`,
-                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Bottom`,
                         animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
                         css_timing_function: `ease-in-out`,
-                        end_styles: {
-                            opacity: `100%`,
-                        },
                     }),
                 ]),
             ];

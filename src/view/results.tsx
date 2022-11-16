@@ -175,9 +175,6 @@ export class Results extends Component<Results_Props>
                     duration_in_milliseconds: 2000,
                     css_timing_function: `ease-in-out`,
                     css_direction: `normal`,
-                    end_styles: {
-                        opacity: `100%`,
-                    },
                 });
             }
         }
@@ -194,6 +191,12 @@ class Banner extends Component<Banner_Props>
 {
     private winner: Winner | null = null;
     private draws: Draws | null = null;
+
+    Main():
+        Main
+    {
+        return this.Arena().Main();
+    }
 
     Arena():
         Arena
@@ -286,21 +289,9 @@ class Banner extends Component<Banner_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Move_In`,
-            animation_body: `
-                0% {
-                    left: -100%;
-                }
-            
-                100% {
-                    left: 0;
-                }
-            `,
-        });
-
         this.Animate({
-            animation_name: `Move_In`,
+            animation_name: `Enter_Left`,
+            animation_owner_id: this.Main().ID(),
             duration_in_milliseconds: 2000,
             css_timing_function: `ease-in-out`,
             css_direction: `normal`,
