@@ -66,7 +66,7 @@ export type Stop_Exhibitions_Data = {
 
 export type Switch_Exhibitions_Data = {
     previous_exhibition: Model.Exhibition.Instance;
-    next_exhibition: Model.Exhibition.Instance;
+    current_exhibition: Model.Exhibition.Instance;
 }
 
 export type Remeasure_Exhibitions_Data = {

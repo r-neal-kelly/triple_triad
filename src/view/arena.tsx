@@ -34,33 +34,30 @@ class Arena_Card_Images
     async Load():
         Promise<void>
     {
-        Assert(
-            this.elements.length === 0,
-            `The images have already been loaded.`,
-        );
-
-        await Promise.all(this.images.map(async function (
-            this: Arena_Card_Images,
-            image: URL_Path,
-        ):
-            Promise<void>
-        {
-            const element = new Image();
-            this.elements.push(element);
-
-            await new Promise<void>(function (
-                resolve: () => void,
-                reject: () => void,
+        if (this.elements.length === 0) {
+            await Promise.all(this.images.map(async function (
+                this: Arena_Card_Images,
+                image: URL_Path,
             ):
-                void
+                Promise<void>
             {
-                element.onload = resolve;
-                element.onerror = reject;
-                element.src = image;
-            });
-        }, this));
+                const element = new Image();
+                this.elements.push(element);
 
-        Object.freeze(this.elements);
+                await new Promise<void>(function (
+                    resolve: () => void,
+                    reject: () => void,
+                ):
+                    void
+                {
+                    element.onload = resolve;
+                    element.onerror = reject;
+                    element.src = image;
+                });
+            }, this));
+
+            Object.freeze(this.elements);
+        }
     }
 }
 
@@ -143,6 +140,12 @@ export class Arena extends Component<Arena_Props>
         return this.Game().Is_Exhibition();
     }
 
+    Is_Visible():
+        boolean
+    {
+        return this.Game().Is_Visible();
+    }
+
     Card_Images():
         Arena_Card_Images
     {
@@ -165,18 +168,6 @@ export class Arena extends Component<Arena_Props>
         Float
     {
         return this.Measurements().Arena_Height();
-    }
-
-    CSS_Width():
-        string
-    {
-        return `${this.Width()}px`;
-    }
-
-    CSS_Height():
-        string
-    {
-        return `${this.Height()}px`;
     }
 
     override On_Refresh():
@@ -254,8 +245,8 @@ export class Arena extends Component<Arena_Props>
             justifyContent: justify_content,
             alignItems: `center`,
 
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             position: `absolute`,
             left: `0`,
@@ -276,7 +267,10 @@ export class Arena extends Component<Arena_Props>
             Promise<void>
         {
             this.Change_Style(`visibility`, `hidden`);
-            await this.card_images.Load();
+            if (this.Is_Visible()) {
+                // See main's While_Alive loop for more info about this optimization
+                await this.Card_Images().Load();
+            }
             if (this.Is_Alive()) {
                 this.Send({
                     name_affix: Event.GAME_START,

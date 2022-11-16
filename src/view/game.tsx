@@ -632,7 +632,78 @@ function Generate_Horizontal_Content(
     return current_content;
 }
 
-export class Game_Measurements
+export interface Game_Measurements
+{
+    Is_Vertical(): boolean;
+    Is_Horizontal(): boolean;
+    Has_X_Scrollbar(): boolean;
+    Has_Y_Scrollbar(): boolean;
+    Has_Scrollbar(): boolean;
+
+    Width(): Float;
+    Height(): Float;
+    Content_Width(): Float;
+    Content_Height(): Float;
+
+    Arena_Width(): Float;
+    Arena_Height(): Float;
+
+    Board_Width(): Float;
+    Board_Height(): Float;
+    Board_Bumper_Width(): Float;
+    Board_Bumper_Height(): Float;
+    Board_Bumper_Padding(): Float;
+    Board_Cells_Width(): Float;
+    Board_Cells_Height(): Float;
+    Board_Cells_Padding(): Float;
+    Board_Cells_Grid_Gap(): Float;
+    Board_Cell_Width(): Float;
+    Board_Cell_Height(): Float;
+    Board_Cell_Border(): Float;
+    Board_Cell_Row_Small_Width(): Float;
+    Board_Cell_Row_Large_Width(): Float;
+    Board_Cell_Column_Small_Height(): Float;
+    Board_Cell_Column_Large_Height(): Float;
+    Board_Cell_Popup_Center_Margin_Left_Right(): Float;
+    Board_Cell_Popup_Center_Width(): Float;
+    Board_Cell_Popup_Center_Height(): Float;
+    Board_Cell_Popup_Center_Padding_Left_Right(): Float;
+    Board_Cell_Popup_Center_Font_Size(): Float;
+    Board_Cell_Popup_Side_Width(): Float;
+    Board_Cell_Popup_Side_Height(): Float;
+    Board_Cell_Popup_Side_Font_Size(): Float;
+
+    Player_Group_Width(): Float;
+    Player_Group_Height(): Float;
+    Player_Group_Padding_Left_Right(): Float;
+    Player_Group_Padding_Top_Bottom(): Float;
+    Player_Width(): Float;
+    Player_Height(): Float;
+    Player_Pillar_Width(): Float;
+    Player_Pillar_Height(): Float;
+    Player_Bumper_Width(): Float;
+    Player_Bumper_Height(): Float;
+    Player_Name_Width(): Float;
+    Player_Name_Height(): Float;
+    Player_Name_Padding_Left_Right(): Float;
+    Player_Name_Padding_Top_Bottom(): Float;
+    Player_Name_Writing_Mode(): string;
+    Player_Name_Font_Size(): Float;
+    Player_Score_Width(): Float;
+    Player_Score_Height(): Float;
+    Player_Score_Padding_Left_Right(): Float;
+    Player_Score_Padding_Top_Bottom(): Float;
+    Player_Score_Font_Size(): Float;
+    Player_Hand_Width(): Float;
+    Player_Hand_Height(): Float;
+    Player_Stake_Width(): Float;
+    Player_Stake_Height(): Float;
+
+    Results_Width(): Float;
+    Results_Height(): Float;
+}
+
+class Game_Measurements_Visible implements Game_Measurements
 {
     private width: Float;
     private height: Float;
@@ -1293,6 +1364,381 @@ export class Game_Measurements
     }
 }
 
+class Game_Measurements_Invisible implements Game_Measurements
+{
+    Is_Vertical():
+        boolean
+    {
+        return true;
+    }
+
+    Is_Horizontal():
+        boolean
+    {
+        return false;
+    }
+
+    Has_X_Scrollbar():
+        boolean
+    {
+        return false;
+    }
+
+    Has_Y_Scrollbar():
+        boolean
+    {
+        return false;
+    }
+
+    Has_Scrollbar():
+        boolean
+    {
+        return false;
+    }
+
+    Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Content_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Content_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Arena_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Arena_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Bumper_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Bumper_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Bumper_Padding():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cells_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cells_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cells_Padding():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cells_Grid_Gap():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Border():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Row_Small_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Row_Large_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Column_Small_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Column_Large_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Center_Margin_Left_Right():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Center_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Center_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Center_Padding_Left_Right():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Center_Font_Size():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Side_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Side_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Board_Cell_Popup_Side_Font_Size():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Group_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Group_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Group_Padding_Left_Right():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Group_Padding_Top_Bottom():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Pillar_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Pillar_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Bumper_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Bumper_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Name_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Name_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Name_Padding_Left_Right():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Name_Padding_Top_Bottom():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Name_Writing_Mode():
+        string
+    {
+        return ``;
+    }
+
+    Player_Name_Font_Size():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Score_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Score_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Score_Padding_Left_Right():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Score_Padding_Top_Bottom():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Score_Font_Size():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Hand_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Hand_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Stake_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Player_Stake_Height():
+        Float
+    {
+        return 0.0;
+    }
+
+    Results_Width():
+        Float
+    {
+        return 0.0;
+    }
+
+    Results_Height():
+        Float
+    {
+        return 0.0;
+    }
+}
+
 type Game_Props = {
     model: Model.Arena.Instance;
     parent: Main | Exhibition;
@@ -1307,8 +1753,10 @@ export class Game extends Component<Game_Props>
     private is_exhibition: boolean =
         this.Parent() instanceof Exhibition;
 
-    private measurements: Game_Measurements =
-        new Game_Measurements({
+    // We don't bother calculating measurements until they are
+    // going to be visible. This defers computation until its needed.
+    private measurements: Game_Measurements = this.Is_Visible() ?
+        new Game_Measurements_Visible({
             measurement: this.Main().Model().Options().Measurement(),
             may_have_scrollbar: !this.is_exhibition,
             parent_width: this.Parent().Width(),
@@ -1316,7 +1764,8 @@ export class Game extends Component<Game_Props>
             row_count: this.Model().Rules().Row_Count(),
             column_count: this.Model().Rules().Column_Count(),
             player_count: this.Model().Rules().Player_Count(),
-        });
+        }) :
+        new Game_Measurements_Invisible();
 
     static Player_Group_Count():
         Model.Player.Group.Count
@@ -1358,6 +1807,14 @@ export class Game extends Component<Game_Props>
         boolean
     {
         return this.is_exhibition;
+    }
+
+    Is_Visible():
+        boolean
+    {
+        return this.Is_Exhibition() ?
+            this.Exhibition().Model().Is_Visible() :
+            true;
     }
 
     Measurements():
@@ -1458,15 +1915,17 @@ export class Game extends Component<Game_Props>
         void
     {
         const model: Model.Arena.Instance = this.Model();
-        this.measurements = new Game_Measurements({
-            measurement: this.Main().Model().Options().Measurement(),
-            may_have_scrollbar: !this.is_exhibition,
-            parent_width: this.Parent().Width(),
-            parent_height: this.Parent().Height(),
-            row_count: model.Rules().Row_Count(),
-            column_count: model.Rules().Column_Count(),
-            player_count: model.Rules().Player_Count(),
-        });
+        this.measurements = this.Is_Visible() ?
+            new Game_Measurements_Visible({
+                measurement: this.Main().Model().Options().Measurement(),
+                may_have_scrollbar: !this.is_exhibition,
+                parent_width: this.Parent().Width(),
+                parent_height: this.Parent().Height(),
+                row_count: model.Rules().Row_Count(),
+                column_count: model.Rules().Column_Count(),
+                player_count: model.Rules().Player_Count(),
+            }) :
+            new Game_Measurements_Invisible();
 
         super.On_Resize(data);
     }

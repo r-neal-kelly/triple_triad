@@ -17,9 +17,11 @@ export class Main
     private options: Options;
 
     private menu: Menu.Instance;
-    private exhibitions: Array<Exhibition.Instance>;
 
+    private exhibitions: Array<Exhibition.Instance>;
     private current_exhibition_index: Exhibition.Index | null;
+    private next_exhibition_index: Exhibition.Index | null;
+
     private current_arena: Arena.Instance | null;
 
     constructor(
@@ -44,6 +46,7 @@ export class Main
         this.menu = new Menu.Instance({
             main: this,
         });
+
         this.exhibitions = [];
         for (let idx = 0, end = exhibition_count; idx < end; idx += 1) {
             this.exhibitions.push(new Exhibition.Instance({
@@ -51,8 +54,10 @@ export class Main
                 index: idx,
             }));
         }
+        this.current_exhibition_index = 0;
+        this.next_exhibition_index = Random_Integer_Exclusive(0, exhibition_count);
+        this.Change_Exhibition();
 
-        this.current_exhibition_index = Random_Integer_Exclusive(0, exhibition_count);
         this.current_arena = null;
     }
 
@@ -134,12 +139,28 @@ export class Main
         }
     }
 
-    Change_Current_Exhibition():
+    Next_Exhibition_Index():
+        Exhibition.Index | null
+    {
+        return this.next_exhibition_index;
+    }
+
+    Next_Exhibition():
+        Exhibition.Instance | null
+    {
+        if (this.next_exhibition_index != null) {
+            return this.exhibitions[this.next_exhibition_index as Exhibition.Index];
+        } else {
+            return null;
+        }
+    }
+
+    Change_Exhibition():
         void
     {
-        const old_current_exhibition_index = this.current_exhibition_index;
-        while (this.current_exhibition_index === old_current_exhibition_index) {
-            this.current_exhibition_index = Random_Integer_Exclusive(0, this.Exhibition_Count());
+        this.current_exhibition_index = this.next_exhibition_index;
+        while (this.next_exhibition_index === this.current_exhibition_index) {
+            this.next_exhibition_index = Random_Integer_Exclusive(0, this.Exhibition_Count());
         }
     }
 

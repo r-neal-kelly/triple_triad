@@ -78,18 +78,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
         return this.Parent().Height();
     }
 
-    CSS_Width():
-        string
-    {
-        return `${this.Width()}px`;
-    }
-
-    CSS_Height():
-        string
-    {
-        return `${this.Height()}px`;
-    }
-
     override On_Refresh():
         JSX.Element | null
     {
@@ -127,8 +115,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Component_Styles
     {
         return ({
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             position: `absolute`,
             left: `0`,
@@ -232,7 +220,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
     async On_Switch_Exhibitions(
         {
             previous_exhibition,
-            next_exhibition,
+            current_exhibition,
         }: Event.Switch_Exhibitions_Data,
     ):
         Promise<void>
@@ -241,9 +229,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
         if (this.Is_Alive()) {
             const previous: Exhibition = this.Exhibition(previous_exhibition.Index());
-            const next: Exhibition = this.Exhibition(next_exhibition.Index());
+            const current: Exhibition = this.Exhibition(current_exhibition.Index());
 
-            this.exhibition_event_grids[next_exhibition.Index()].Send_Event({
+            this.exhibition_event_grids[current_exhibition.Index()].Send_Event({
                 name_affix: `${Event.RESIZE}_${this.ID()}`,
                 data: {
                     width: 0,
@@ -252,8 +240,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 is_atomic: false,
             });
 
-            // we do several cool different transitions,
-            // including fade-outs and swipes in various directions
             const methods: Array<() => Promise<[void, void]>> = [
                 () => Promise.all([
                     previous.Animate({
@@ -263,7 +249,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         css_timing_function: `ease-in-out`,
                         css_fill_mode: `forwards`,
                     }),
-                    next.Animate({
+                    current.Animate({
                         animation_name: `Enter_Left`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
@@ -279,7 +265,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         css_timing_function: `ease-in-out`,
                         css_fill_mode: `forwards`,
                     }),
-                    next.Animate({
+                    current.Animate({
                         animation_name: `Enter_Top`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
@@ -295,7 +281,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         css_timing_function: `ease-in-out`,
                         css_fill_mode: `forwards`,
                     }),
-                    next.Animate({
+                    current.Animate({
                         animation_name: `Enter_Right`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
@@ -311,7 +297,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         css_timing_function: `ease-in-out`,
                         css_fill_mode: `forwards`,
                     }),
-                    next.Animate({
+                    current.Animate({
                         animation_name: `Enter_Bottom`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
@@ -327,13 +313,13 @@ export class Exhibitions extends Component<Exhibitions_Props>
             }
             this.last_switch_method_index = method_index;
 
-            next.Change_Style(`display`, ``);
+            current.Change_Style(`display`, ``);
             await methods[method_index]();
             if (this.Is_Alive()) {
                 previous.Change_Style(`display`, `none`);
 
                 previous.Deanimate();
-                next.Deanimate();
+                current.Deanimate();
             }
         }
 
