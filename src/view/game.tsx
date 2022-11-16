@@ -1901,6 +1901,18 @@ export class Game extends Component<Game_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
+        this.Change_Animation({
+            animation_name: `Fade_Out`,
+            animation_body: `
+                0% {
+                    opacity: 100%;
+                }
+                100% {
+                    opacity: 0%;
+                }
+            `,
+        });
+
         return ([
             {
                 event_name: new Event.Name(Event.BEFORE, Event.EXIT_GAME),
@@ -1937,8 +1949,14 @@ export class Game extends Component<Game_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_Fade_Out({
-                duration: 1000,
+            await this.Animate({
+                animation_name: `Fade_Out`,
+                duration_in_milliseconds: 1000,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                end_styles: {
+                    opacity: `0%`,
+                },
             });
         }
     }

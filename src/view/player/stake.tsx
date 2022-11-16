@@ -276,9 +276,7 @@ export class Stake extends Component<Stake_Props>
                     css_iteration_count: `1`,
                     css_timing_function: `ease-in-out`,
                 });
-
                 if (this.Is_Alive()) {
-                    this.Deanimate();
                     await Wait(100);
                     if (this.Is_Alive()) {
                         await this.Move_To_Cell({

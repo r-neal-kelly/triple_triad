@@ -263,10 +263,8 @@ class Button_Cover extends Component<Button_Cover_Props>
                 css_iteration_count: `1`,
                 css_timing_function: `ease`,
                 css_direction: `normal`,
-                css_fill_mode: `both`,
             });
             if (button.Is_Alive()) {
-                button.Deanimate();
                 button.On_Activate(event);
             }
         }

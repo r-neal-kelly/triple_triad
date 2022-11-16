@@ -472,34 +472,40 @@ export class Component<T extends Component_Props> extends React.Component<T>
             css_iteration_count = `infinite`,
             css_timing_function = `ease`,
             css_direction = `normal`,
-            css_fill_mode = `none`,
+            end_styles = {},
         }: {
             animation_name: Name,
             duration_in_milliseconds: Integer,
             css_iteration_count?: string,
             css_timing_function?: string,
             css_direction?: string,
-            css_fill_mode?: string,
+            end_styles?: Component_Styles,
         },
     ):
         Promise<void>
     {
         Assert(this.Is_Alive());
 
-        this.Change_Style(`animationName`, `${animation_name}_${this.ID()}`);
-        this.Change_Style(`animationDuration`, `${duration_in_milliseconds}ms`);
-        this.Change_Style(`animationIterationCount`, css_iteration_count);
-        this.Change_Style(`animationTimingFunction`, css_timing_function);
-        this.Change_Style(`animationDirection`, css_direction);
-        this.Change_Style(`animationFillMode`, css_fill_mode);
+        const element: HTMLElement = this.Some_Element();
+
+        element.style.animationName = `${animation_name}_${this.ID()}`;
+        element.style.animationDuration = `${duration_in_milliseconds}ms`;
+        element.style.animationIterationCount = css_iteration_count;
+        element.style.animationTimingFunction = css_timing_function;
+        element.style.animationDirection = css_direction;
 
         await Wait(duration_in_milliseconds);
-    }
 
-    Deanimate():
-        void
-    {
-        this.Change_Style(`animationName`, ``);
+        element.style.animationName = ``;
+        element.style.animationDuration = ``;
+        element.style.animationIterationCount = ``;
+        element.style.animationTimingFunction = ``;
+        element.style.animationDirection = ``;
+
+        for (const [key, value] of Object.entries(end_styles)) {
+            this.styles[key] = value;
+            (element.style as any)[key] = value;
+        }
     }
 
     async Animate_By_Frame<State>(
@@ -551,133 +557,5 @@ export class Component<T extends Component_Props> extends React.Component<T>
             }
             window.requestAnimationFrame(Loop.bind(this));
         });
-    }
-
-    async Animate_Fade_In(
-        {
-            duration,
-        }: {
-            duration: Integer,
-        },
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const element: HTMLElement = this.Some_Element();
-
-            if (duration > 0) {
-                await this.Animate_By_Frame(
-                    On_Frame.bind(this),
-                    {
-                        element: element,
-                        duration: duration,
-                        plot: Plot_Bezier_Curve_4(
-                            1.0 / (duration / 15),
-                            100.0,
-                            0.0, 0.0,
-                            0.42, 0.0,
-                            0.58, 1.0,
-                            1.0, 1.0,
-                        ),
-                    },
-                );
-            } else {
-                element.style.opacity = `100%`;
-            }
-        }
-
-        function On_Frame(
-            this: Component<Component_Props>,
-            {
-                elapsed,
-            }: Component_Animation_Frame,
-            state: {
-                element: HTMLElement,
-                duration: Integer,
-                plot: Array<{
-                    x: Float,
-                    y: Float,
-                }>,
-            },
-        ):
-            boolean
-        {
-            if (elapsed >= state.duration) {
-                state.element.style.opacity = `100%`;
-
-                return false;
-            } else {
-                const index: Index =
-                    Math.floor(elapsed * state.plot.length / state.duration);
-
-                state.element.style.opacity = `${state.plot[index].y}%`;
-
-                return true;
-            }
-        }
-    }
-
-    async Animate_Fade_Out(
-        {
-            duration,
-        }: {
-            duration: Integer,
-        },
-    ):
-        Promise<void>
-    {
-        if (this.Is_Alive()) {
-            const element: HTMLElement = this.Some_Element();
-
-            if (duration > 0) {
-                await this.Animate_By_Frame(
-                    On_Frame.bind(this),
-                    {
-                        element: element,
-                        duration: duration,
-                        plot: Plot_Bezier_Curve_4(
-                            1.0 / (duration / 15),
-                            100.0,
-                            0.0, 0.0,
-                            0.42, 0.0,
-                            0.58, 1.0,
-                            1.0, 1.0,
-                        ),
-                    },
-                );
-            } else {
-                element.style.opacity = `0%`;
-            }
-        }
-
-        function On_Frame(
-            this: Component<Component_Props>,
-            {
-                elapsed,
-            }: Component_Animation_Frame,
-            state: {
-                element: HTMLElement,
-                duration: Integer,
-                plot: Array<{
-                    x: Float,
-                    y: Float,
-                }>,
-            },
-        ):
-            boolean
-        {
-            if (elapsed >= state.duration) {
-                state.element.style.opacity = `0%`;
-
-                return false;
-            } else {
-                const index: Index =
-                    Math.floor(elapsed * state.plot.length / state.duration);
-
-                state.element.style.opacity = `${100 - state.plot[index].y}%`;
-
-                return true;
-            }
-        }
     }
 }

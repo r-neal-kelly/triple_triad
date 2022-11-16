@@ -141,14 +141,6 @@ export class Results extends Component<Results_Props>
             `,
         });
 
-        this.Animate({
-            animation_name: `Fade_In`,
-            duration_in_milliseconds: 2000,
-            css_iteration_count: `1`,
-            css_timing_function: `ease-in-out`,
-            css_direction: `normal`,
-        });
-
         return ([
             {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
@@ -180,6 +172,15 @@ export class Results extends Component<Results_Props>
     {
         if (this.Is_Alive()) {
             await this.Refresh();
+            if (this.Is_Alive()) {
+                await this.Animate({
+                    animation_name: `Fade_In`,
+                    duration_in_milliseconds: 2000,
+                    css_iteration_count: `1`,
+                    css_timing_function: `ease-in-out`,
+                    css_direction: `normal`,
+                });
+            }
         }
     }
 }

@@ -131,6 +131,30 @@ export class Exhibitions extends Component<Exhibitions_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
+        this.Change_Animation({
+            animation_name: `Fade_In`,
+            animation_body: `
+                0% {
+                    opacity: 0%;
+                }
+                100% {
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Fade_Out`,
+            animation_body: `
+                0% {
+                    opacity: 100%;
+                }
+                100% {
+                    opacity: 0%;
+                }
+            `,
+        });
+
         this.Change_Style(`display`, `none`);
 
         return [
@@ -195,8 +219,14 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Animate_Fade_In({
-                duration: FADE_IN_DURATION,
+            await this.Animate({
+                animation_name: `Fade_In`,
+                duration_in_milliseconds: FADE_IN_DURATION,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                end_styles: {
+                    opacity: `100%`,
+                },
             });
         }
     }
@@ -208,8 +238,14 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_Fade_Out({
-                duration: FADE_OUT_DURATION,
+            await this.Animate({
+                animation_name: `Fade_Out`,
+                duration_in_milliseconds: FADE_OUT_DURATION,
+                css_iteration_count: `1`,
+                css_timing_function: `ease-in-out`,
+                end_styles: {
+                    opacity: `0%`,
+                },
             });
             if (this.Is_Alive()) {
                 this.Change_Style(`display`, `none`);
@@ -247,14 +283,18 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `0%`,
+                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Left`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `100%`,
+                        },
                     }),
                 ]),
                 () => Promise.all([
@@ -263,14 +303,18 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `0%`,
+                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Top`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `100%`,
+                        },
                     }),
                 ]),
                 () => Promise.all([
@@ -279,14 +323,18 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `0%`,
+                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Right`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `100%`,
+                        },
                     }),
                 ]),
                 () => Promise.all([
@@ -295,14 +343,18 @@ export class Exhibitions extends Component<Exhibitions_Props>
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `0%`,
+                        },
                     }),
                     current.Animate({
                         animation_name: `Enter_Bottom`,
                         duration_in_milliseconds: 2000,
                         css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
-                        css_fill_mode: `forwards`,
+                        end_styles: {
+                            opacity: `100%`,
+                        },
                     }),
                 ]),
             ];
@@ -317,9 +369,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
             await methods[method_index]();
             if (this.Is_Alive()) {
                 previous.Change_Style(`display`, `none`);
-
-                previous.Deanimate();
-                current.Deanimate();
             }
         }
 

@@ -474,10 +474,8 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
                     css_iteration_count: `1`,
                     css_timing_function: `ease`,
                     css_direction: `normal`,
-                    css_fill_mode: `both`,
                 });
                 if (counter.Is_Alive() && decrementor.Is_Alive()) {
-                    decrementor.Deanimate();
                     counter.On_Decrement(event);
                 }
             }
@@ -693,10 +691,8 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
                     css_iteration_count: `1`,
                     css_timing_function: `ease`,
                     css_direction: `normal`,
-                    css_fill_mode: `both`,
                 });
                 if (counter.Is_Alive() && incrementor.Is_Alive()) {
-                    incrementor.Deanimate();
                     counter.On_Increment(event);
                 }
             }

@@ -436,8 +436,6 @@ export class Cell extends Component<Cell_Props>
                             })
                         ]);
                         if (this.Is_Alive()) {
-                            this.Deanimate();
-
                             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
                         }
                     }
@@ -602,8 +600,6 @@ export class Cell extends Component<Cell_Props>
             this.Change_Style(`backgroundColor`, new_background_color);
             this.Change_Style(`backgroundImage`, ``);
             this.Change_Style(`backgroundSize`, `100% 100%`);
-
-            this.Deanimate();
         }
     }
 }
