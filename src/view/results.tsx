@@ -169,12 +169,9 @@ export class Results extends Component<Results_Props>
             this.Change_Style(`opacity`, `0%`);
             await this.Refresh();
             if (this.Is_Alive()) {
-                await this.Animate({
-                    animation_name: `Fade_In`,
-                    animation_owner_id: this.Main().ID(),
-                    duration_in_milliseconds: 2000,
-                    css_timing_function: `ease-in-out`,
-                    css_direction: `normal`,
+                await this.Animate_Opacity_Fade_In({
+                    duration: 2000,
+                    easing: `ease-in-out`,
                 });
             }
         }

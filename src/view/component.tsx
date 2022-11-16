@@ -553,7 +553,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
             options.direction = `normal`;
         }
         if (options.fill === undefined) {
-            options.fill = `both`;
+            // there's something wrong with setting this in Chromium,
+            // and it causes JavaScript style sets to not work afterwards.
+            // We simulate `both` below, which is necessary to avoid this bug
+            // and also to keep our component model's styles up to date.
+            options.fill = `none`;
         }
 
         if (this.Is_Alive()) {
@@ -571,7 +575,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
 
                 for (const [key, value] of Object.entries(first_keyframe)) {
                     if (key !== `offset` && value != null) {
-                        (element.style as any)[key] = value;
+                        (element.style as any)[key] = value.toString();
                     }
                 }
 
@@ -592,8 +596,9 @@ export class Component<T extends Component_Props> extends React.Component<T>
 
                 for (const [key, value] of Object.entries(last_keyframe)) {
                     if (key !== `offset` && value != null) {
-                        this.styles[key] = value.toString();
-                        (element.style as any)[key] = value;
+                        const value_string: string = value.toString();
+                        this.styles[key] = value_string;
+                        (element.style as any)[key] = value_string;
                     }
                 }
             }

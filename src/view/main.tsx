@@ -156,36 +156,6 @@ export class Main extends Component<Main_Props>
         Array<Event.Listener_Info>
     {
         this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-                100% {
-                    opacity: 100%;
-                }
-            `,
-            end_styles: {
-                opacity: `100%`,
-            },
-        });
-
-        this.Change_Animation({
-            animation_name: `Fade_Out`,
-            animation_body: `
-                0% {
-                    opacity: 100%;
-                }
-                100% {
-                    opacity: 0%;
-                }
-            `,
-            end_styles: {
-                opacity: `0%`,
-            },
-        });
-
-        this.Change_Animation({
             animation_name: `Enter_Left`,
             animation_body: `
                 0% {
@@ -459,7 +429,6 @@ export class Main extends Component<Main_Props>
                     this.Animate_Opacity_Fade_In({
                         duration: 3000,
                         easing: `ease-in-out`,
-                        composite: `accumulate`,
                     }),
                 ]);
 
@@ -521,7 +490,7 @@ export class Main extends Component<Main_Props>
     {
         while (this.Is_Alive()) {
             const model: Model.Main = this.Model();
-            if (model.Isnt_In_Game()) {
+            if (model.Isnt_In_Game() && this.exhibitions != null) {
                 // We're deferring card_images from being loaded until they are
                 // going to be in the next exhibition. This cuts down on potential bandwidth usage.
                 const next_exhibition_index: Model.Exhibition.Index =
@@ -650,6 +619,7 @@ export class Main extends Component<Main_Props>
             model.Exit_Game();
 
             this.Change_Style(`opacity`, `0%`);
+
             await this.Refresh();
             if (this.Is_Alive()) {
                 await Promise.all([
@@ -662,10 +632,9 @@ export class Main extends Component<Main_Props>
                         } as Event.Start_Exhibitions_Data,
                         is_atomic: true,
                     }),
-                    this.Animate({
-                        animation_name: `Fade_In`,
-                        duration_in_milliseconds: 3000,
-                        css_timing_function: `ease-in-out`,
+                    this.Animate_Opacity_Fade_In({
+                        duration: 3000,
+                        easing: `ease-in-out`,
                     }),
                 ]);
             }

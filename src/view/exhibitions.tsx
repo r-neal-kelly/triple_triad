@@ -195,11 +195,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Animate({
-                animation_name: `Fade_In`,
-                animation_owner_id: this.Main().ID(),
-                duration_in_milliseconds: FADE_IN_DURATION,
-                css_timing_function: `ease-in-out`,
+            await this.Animate_Opacity_Fade_In({
+                duration: FADE_IN_DURATION,
+                easing: `ease-in-out`,
             });
         }
     }
@@ -211,11 +209,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate({
-                animation_name: `Fade_Out`,
-                animation_owner_id: this.Main().ID(),
-                duration_in_milliseconds: FADE_OUT_DURATION,
-                css_timing_function: `ease-in-out`,
+            await this.Animate_Opacity_Fade_Out({
+                duration: FADE_OUT_DURATION,
+                easing: `ease-in-out`,
             });
             if (this.Is_Alive()) {
                 this.Change_Style(`display`, `none`);

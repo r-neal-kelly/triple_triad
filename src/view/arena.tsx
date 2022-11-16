@@ -316,7 +316,6 @@ export class Arena extends Component<Arena_Props>
             await this.Animate_Opacity_Fade_In({
                 duration: 1000,
                 easing: `ease-in-out`,
-                composite: `accumulate`,
             });
 
             if (this.Is_Alive()) {
