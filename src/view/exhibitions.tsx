@@ -131,30 +131,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
-        this.Change_Animation({
-            animation_name: `Fade_Out`,
-            animation_body: `
-                0% {
-                    opacity: 100%;
-                }
-                100% {
-                    opacity: 0%;
-                }
-            `,
-        });
-
         this.Change_Style(`display`, `none`);
 
         return [
@@ -221,8 +197,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
             this.Change_Style(`display`, ``);
             await this.Animate({
                 animation_name: `Fade_In`,
+                animation_owner_id: this.Main().ID(),
                 duration_in_milliseconds: FADE_IN_DURATION,
-                css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
                 end_styles: {
                     opacity: `100%`,
@@ -240,8 +216,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
         if (this.Is_Alive()) {
             await this.Animate({
                 animation_name: `Fade_Out`,
+                animation_owner_id: this.Main().ID(),
                 duration_in_milliseconds: FADE_OUT_DURATION,
-                css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
                 end_styles: {
                     opacity: `0%`,
@@ -280,8 +256,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 () => Promise.all([
                     previous.Animate({
                         animation_name: `Exit_Right`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `0%`,
@@ -289,8 +265,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                     }),
                     current.Animate({
                         animation_name: `Enter_Left`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `100%`,
@@ -300,8 +276,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 () => Promise.all([
                     previous.Animate({
                         animation_name: `Exit_Bottom`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `0%`,
@@ -309,8 +285,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                     }),
                     current.Animate({
                         animation_name: `Enter_Top`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `100%`,
@@ -320,8 +296,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 () => Promise.all([
                     previous.Animate({
                         animation_name: `Exit_Left`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `0%`,
@@ -329,8 +305,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                     }),
                     current.Animate({
                         animation_name: `Enter_Right`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `100%`,
@@ -340,8 +316,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 () => Promise.all([
                     previous.Animate({
                         animation_name: `Exit_Top`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `0%`,
@@ -349,8 +325,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
                     }),
                     current.Animate({
                         animation_name: `Enter_Bottom`,
+                        animation_owner_id: this.Main().ID(),
                         duration_in_milliseconds: 2000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `100%`,

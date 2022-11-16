@@ -431,7 +431,6 @@ export class Cell extends Component<Cell_Props>
                             this.Animate({
                                 animation_name: `Flash`,
                                 duration_in_milliseconds: 300,
-                                css_iteration_count: `1`,
                                 css_timing_function: `ease-in`,
                             })
                         ]);
@@ -591,7 +590,6 @@ export class Cell extends Component<Cell_Props>
         await this.Animate({
             animation_name: animation_name,
             duration_in_milliseconds: animation_duration,
-            css_iteration_count: `1`,
             css_timing_function: `ease-in-out`,
         });
         if (this.Is_Alive()) {

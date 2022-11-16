@@ -6,6 +6,8 @@ import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Button } from "./common/button";
+
+import { Main } from "./main";
 import { Game } from "./game";
 import { Arena } from "./arena";
 
@@ -19,6 +21,12 @@ export class Results extends Component<Results_Props>
 {
     private banner: Banner | null = null;
     private buttons: Buttons | null = null;
+
+    Main():
+        Main
+    {
+        return this.Game().Main();
+    }
 
     Game():
         Game
@@ -128,19 +136,6 @@ export class Results extends Component<Results_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-            
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
         return ([
             {
                 event_name: new Event.Name(Event.ON, Event.GAME_START),
@@ -171,14 +166,18 @@ export class Results extends Component<Results_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
+            this.Change_Style(`opacity`, `0%`);
             await this.Refresh();
             if (this.Is_Alive()) {
                 await this.Animate({
                     animation_name: `Fade_In`,
+                    animation_owner_id: this.Main().ID(),
                     duration_in_milliseconds: 2000,
-                    css_iteration_count: `1`,
                     css_timing_function: `ease-in-out`,
                     css_direction: `normal`,
+                    end_styles: {
+                        opacity: `100%`,
+                    },
                 });
             }
         }
@@ -303,7 +302,6 @@ class Banner extends Component<Banner_Props>
         this.Animate({
             animation_name: `Move_In`,
             duration_in_milliseconds: 2000,
-            css_iteration_count: `1`,
             css_timing_function: `ease-in-out`,
             css_direction: `normal`,
         });

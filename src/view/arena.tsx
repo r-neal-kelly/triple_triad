@@ -9,6 +9,8 @@ import * as Model from "../model"
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+
+import { Main } from "./main";
 import { Game } from "./game";
 import { Game_Measurements } from "./game";
 import { Group as Player_Group } from "./player/group";
@@ -88,6 +90,12 @@ export class Arena extends Component<Arena_Props>
 
     private card_images: Arena_Card_Images =
         new Arena_Card_Images(this.Model());
+
+    Main():
+        Main
+    {
+        return this.Game().Main();
+    }
 
     Game():
         Game
@@ -261,18 +269,6 @@ export class Arena extends Component<Arena_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Fade_In`,
-            animation_body: `
-                0% {
-                    opacity: 0%;
-                }
-                100% {
-                    opacity: 100%;
-                }
-            `,
-        });
-
         (async function (
             this: Arena,
         ):
@@ -319,8 +315,8 @@ export class Arena extends Component<Arena_Props>
             this.Change_Style(`visibility`, `visible`);
             await this.Animate({
                 animation_name: `Fade_In`,
+                animation_owner_id: this.Main().ID(),
                 duration_in_milliseconds: 1000,
-                css_iteration_count: `1`,
                 css_timing_function: `ease-in-out`,
             });
 

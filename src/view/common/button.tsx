@@ -260,7 +260,6 @@ class Button_Cover extends Component<Button_Cover_Props>
             await button.Animate({
                 animation_name: `Activate`,
                 duration_in_milliseconds: 300,
-                css_iteration_count: `1`,
                 css_timing_function: `ease`,
                 css_direction: `normal`,
             });

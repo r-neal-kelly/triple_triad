@@ -167,6 +167,138 @@ export class Main extends Component<Main_Props>
             `,
         });
 
+        this.Change_Animation({
+            animation_name: `Fade_Out`,
+            animation_body: `
+                0% {
+                    opacity: 100%;
+                }
+                100% {
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Left`,
+            animation_body: `
+                0% {
+                    left: -100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Top`,
+            animation_body: `
+                0% {
+                    top: -100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Right`,
+            animation_body: `
+                0% {
+                    left: 100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Enter_Bottom`,
+            animation_body: `
+                0% {
+                    top: 100%;
+                    opacity: 0%;
+                }
+            
+                100% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Left`,
+            animation_body: `
+                0% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    left: -100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Top`,
+            animation_body: `
+                0% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    top: -100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Right`,
+            animation_body: `
+                0% {
+                    left: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    left: 100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
+        this.Change_Animation({
+            animation_name: `Exit_Bottom`,
+            animation_body: `
+                0% {
+                    top: 0;
+                    opacity: 100%;
+                }
+            
+                100% {
+                    top: 100%;
+                    opacity: 0%;
+                }
+            `,
+        });
+
         (async function (
             this: Main,
         ):
@@ -176,7 +308,7 @@ export class Main extends Component<Main_Props>
 
             this.resize_observer.observe(this.Root());
 
-            this.Some_Element().style.opacity = `0%`;
+            this.Change_Style(`opacity`, `0%`);
 
             // This seems to stop requestAnimationFrame from
             // dropping a massive amount of frames on site load.
@@ -195,7 +327,6 @@ export class Main extends Component<Main_Props>
                     this.Animate({
                         animation_name: `Fade_In`,
                         duration_in_milliseconds: 3000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `100%`,
@@ -405,7 +536,6 @@ export class Main extends Component<Main_Props>
                     this.Animate({
                         animation_name: `Fade_In`,
                         duration_in_milliseconds: 3000,
-                        css_iteration_count: `1`,
                         css_timing_function: `ease-in-out`,
                         end_styles: {
                             opacity: `100%`,

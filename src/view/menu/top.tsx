@@ -388,7 +388,6 @@ class Title_Text extends Component<Title_Text_Props>
         this.Animate({
             animation_name: `Flash`,
             duration_in_milliseconds: 4000,
-            css_iteration_count: `1`,
         });
 
         return [];

@@ -273,7 +273,6 @@ export class Stake extends Component<Stake_Props>
                 await this.Animate({
                     animation_name: `Twinkle`,
                     duration_in_milliseconds: 500,
-                    css_iteration_count: `1`,
                     css_timing_function: `ease-in-out`,
                 });
                 if (this.Is_Alive()) {

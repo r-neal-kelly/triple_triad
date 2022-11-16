@@ -11,6 +11,9 @@ import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
+
+import { Main } from "../main";
+import { Game } from "../game";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Group } from "../player/group";
@@ -28,6 +31,18 @@ export class Pillar extends Component<Pillar_Props>
         Float
     {
         return 0.7;
+    }
+
+    Main():
+        Main
+    {
+        return this.Game().Main();
+    }
+
+    Game():
+        Game
+    {
+        return this.Arena().Game();
     }
 
     Arena():
@@ -168,8 +183,14 @@ export class Pillar extends Component<Pillar_Props>
         if (this.Is_Alive()) {
             const model: Model.Player.Instance = this.Model();
             if (model.Arena().Is_On_First_Turn()) {
-                await this.Fade_In({
-                    duration: 750,
+                await this.Animate({
+                    animation_name: `Fade_In`,
+                    animation_owner_id: this.Main().ID(),
+                    duration_in_milliseconds: 750,
+                    css_timing_function: `ease-in-out`,
+                    end_styles: {
+                        opacity: `0%`,
+                    },
                 });
             }
         }
@@ -207,135 +228,15 @@ export class Pillar extends Component<Pillar_Props>
                     duration: 750,
                 });
             } else {
-                await this.Fade_Out({
-                    duration: 750,
+                await this.Animate({
+                    animation_name: `Fade_Out`,
+                    animation_owner_id: this.Main().ID(),
+                    duration_in_milliseconds: 750,
+                    css_timing_function: `ease-in-out`,
+                    end_styles: {
+                        opacity: `0%`,
+                    },
                 });
-            }
-        }
-    }
-
-    private async Fade_In(
-        {
-            duration,
-        }: {
-            duration: Integer,
-        },
-    ):
-        Promise<void>
-    {
-        Assert(duration > 0);
-
-        if (this.Is_Alive()) {
-            const element: HTMLElement = this.Some_Element();
-            element.style.opacity = `0%`;
-            await this.Animate_By_Frame(
-                On_Frame.bind(this),
-                {
-                    element: element,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15),
-                        1.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
-            );
-
-            function On_Frame(
-                this: Pillar,
-                {
-                    elapsed,
-                }: Component_Animation_Frame,
-                state: {
-                    element: HTMLElement,
-                    duration: Integer,
-                    plot: Array<{
-                        x: Float,
-                        y: Float,
-                    }>,
-                },
-            ):
-                boolean
-            {
-                if (elapsed >= state.duration) {
-                    state.element.style.opacity = `100%`;
-
-                    return false;
-                } else {
-                    const index: Index =
-                        Math.floor(elapsed * state.plot.length / state.duration);
-
-                    state.element.style.opacity =
-                        `${100 * state.plot[index].y}%`;
-
-                    return true;
-                }
-            }
-        }
-    }
-
-    private async Fade_Out(
-        {
-            duration,
-        }: {
-            duration: Integer,
-        },
-    ):
-        Promise<void>
-    {
-        Assert(duration > 0);
-
-        if (this.Is_Alive()) {
-            const element: HTMLElement = this.Some_Element();
-            element.style.opacity = `100%`;
-            await this.Animate_By_Frame(
-                On_Frame.bind(this),
-                {
-                    element: element,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15),
-                        1.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
-            );
-
-            function On_Frame(
-                this: Pillar,
-                {
-                    elapsed,
-                }: Component_Animation_Frame,
-                state: {
-                    element: HTMLElement,
-                    duration: Integer,
-                    plot: Array<{
-                        x: Float,
-                        y: Float,
-                    }>,
-                },
-            ):
-                boolean
-            {
-                if (elapsed >= state.duration) {
-                    state.element.style.opacity = `0%`;
-
-                    return false;
-                } else {
-                    const index: Index =
-                        Math.floor(elapsed * state.plot.length / state.duration);
-
-                    state.element.style.opacity =
-                        `${100 - (100 * state.plot[index].y)}%`;
-
-                    return true;
-                }
             }
         }
     }

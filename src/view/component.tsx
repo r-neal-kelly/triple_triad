@@ -467,13 +467,15 @@ export class Component<T extends Component_Props> extends React.Component<T>
     async Animate(
         {
             animation_name,
+            animation_owner_id = this.ID(),
             duration_in_milliseconds,
-            css_iteration_count = `infinite`,
+            css_iteration_count = `1`,
             css_timing_function = `ease`,
             css_direction = `normal`,
             end_styles = {},
         }: {
             animation_name: Name,
+            animation_owner_id?: Component_ID,
             duration_in_milliseconds: Integer,
             css_iteration_count?: string,
             css_timing_function?: string,
@@ -484,10 +486,11 @@ export class Component<T extends Component_Props> extends React.Component<T>
         Promise<void>
     {
         Assert(this.Is_Alive());
+        Assert(css_iteration_count != `infinite`); // we can add an Animate_Forever later
 
         const element: HTMLElement = this.Some_Element();
 
-        element.style.animationName = `${animation_name}_${this.ID()}`;
+        element.style.animationName = `${animation_name}_${animation_owner_id}`;
         element.style.animationDuration = `${duration_in_milliseconds}ms`;
         element.style.animationIterationCount = css_iteration_count;
         element.style.animationTimingFunction = css_timing_function;

@@ -471,7 +471,6 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
                 await decrementor.Animate({
                     animation_name: `Activate_Enabled`,
                     duration_in_milliseconds: 200,
-                    css_iteration_count: `1`,
                     css_timing_function: `ease`,
                     css_direction: `normal`,
                 });
@@ -688,7 +687,6 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
                 await incrementor.Animate({
                     animation_name: `Activate_Enabled`,
                     duration_in_milliseconds: 200,
-                    css_iteration_count: `1`,
                     css_timing_function: `ease`,
                     css_direction: `normal`,
                 });
