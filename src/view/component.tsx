@@ -529,6 +529,105 @@ export class Component<T extends Component_Props> extends React.Component<T>
         }
     }
 
+    async Animate_Keyframes(
+        keyframes: Array<Keyframe>,
+        options: KeyframeEffectOptions,
+    ):
+        Promise<void>
+    {
+        Assert(keyframes.length >= 2);
+        Assert(keyframes[0].offset === 0.0);
+        Assert(keyframes[keyframes.length - 1].offset === 1.0);
+
+        Assert(
+            options.direction === undefined ||
+            options.direction === `normal` ||
+            options.direction === `reverse`
+        );
+        Assert(
+            options.fill === undefined ||
+            options.fill === `both`
+        );
+
+        if (options.direction === undefined) {
+            options.direction = `normal`;
+        }
+        if (options.fill === undefined) {
+            options.fill = `both`;
+        }
+
+        if (this.Is_Alive()) {
+            const element: HTMLElement = this.Maybe_Element() as HTMLElement;
+            if (element) {
+                let first_keyframe: Keyframe;
+                let last_keyframe: Keyframe;
+                if (options.direction === `normal`) {
+                    first_keyframe = keyframes[0];
+                    last_keyframe = keyframes[keyframes.length - 1];
+                } else {
+                    first_keyframe = keyframes[keyframes.length - 1];
+                    last_keyframe = keyframes[0];
+                }
+
+                for (const [key, value] of Object.entries(first_keyframe)) {
+                    if (key !== `offset` && value != null) {
+                        (element.style as any)[key] = value;
+                    }
+                }
+
+                await new Promise<void>(function (resolve, reject):
+                    void
+                {
+                    const animation: Animation =
+                        new Animation(new KeyframeEffect(element, keyframes, options));
+
+                    animation.onfinish = function (event: AnimationPlaybackEvent):
+                        void
+                    {
+                        resolve();
+                    };
+
+                    animation.play();
+                });
+
+                for (const [key, value] of Object.entries(last_keyframe)) {
+                    if (key !== `offset` && value != null) {
+                        this.styles[key] = value.toString();
+                        (element.style as any)[key] = value;
+                    }
+                }
+            }
+        }
+    }
+
+    async Animate_Opacity_Fade_In(
+        options: KeyframeEffectOptions,
+    ):
+        Promise<void>
+    {
+        await this.Animate_Keyframes(
+            [
+                { opacity: `0%`, offset: 0.0 },
+                { opacity: `100%`, offset: 1.0 },
+            ],
+            options,
+        );
+    }
+
+    async Animate_Opacity_Fade_Out(
+        options: KeyframeEffectOptions,
+    ):
+        Promise<void>
+    {
+        await this.Animate_Keyframes(
+            [
+                { opacity: `100%`, offset: 0.0 },
+                { opacity: `0%`, offset: 1.0 },
+            ],
+            options,
+        );
+    }
+
     async Animate_By_Frame<State>(
         on_frame: (
             frame: Component_Animation_Frame,

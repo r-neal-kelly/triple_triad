@@ -313,11 +313,10 @@ export class Arena extends Component<Arena_Props>
             const current_player_index: Model.Player.Index = this.Model().Current_Player_Index();
 
             this.Change_Style(`visibility`, `visible`);
-            await this.Animate({
-                animation_name: `Fade_In`,
-                animation_owner_id: this.Main().ID(),
-                duration_in_milliseconds: 1000,
-                css_timing_function: `ease-in-out`,
+            await this.Animate_Opacity_Fade_In({
+                duration: 1000,
+                easing: `ease-in-out`,
+                composite: `accumulate`,
             });
 
             if (this.Is_Alive()) {

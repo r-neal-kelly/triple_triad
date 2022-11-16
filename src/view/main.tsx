@@ -456,10 +456,10 @@ export class Main extends Component<Main_Props>
                         } as Event.Start_Exhibitions_Data,
                         is_atomic: true,
                     }),
-                    this.Animate({
-                        animation_name: `Fade_In`,
-                        duration_in_milliseconds: 3000,
-                        css_timing_function: `ease-in-out`,
+                    this.Animate_Opacity_Fade_In({
+                        duration: 3000,
+                        easing: `ease-in-out`,
+                        composite: `accumulate`,
                     }),
                 ]);
 
