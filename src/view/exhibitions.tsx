@@ -28,6 +28,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
     private exhibition_event_grids: Array<Event.Grid> =
         Array.from(new Array(this.Model().Exhibition_Count()).fill(null).map(() => new Event.Grid()));
 
+    // should be added to model.
+    private is_started: boolean = false;
     private is_switching: boolean = false;
     private last_switch_method_index: Index = Number.MAX_SAFE_INTEGER;
 
@@ -79,31 +81,35 @@ export class Exhibitions extends Component<Exhibitions_Props>
         const model: Model.Main = this.Model();
         const exhibition_count: Model.Exhibition.Count = model.Exhibition_Count();
 
-        return (
-            <div
-                className={`Exhibitions`}
-            >
-                {
-                    Array(exhibition_count).fill(null).map((
-                        _: null,
-                        exhibition_index: Model.Exhibition.Index,
-                    ):
-                        JSX.Element =>
+        if (this.is_started) {
+            return (
+                <div
+                    className={`Exhibitions`}
+                >
                     {
-                        return (
-                            <Exhibition
-                                key={`exhibition_${exhibition_index}`}
-                                ref={ref => this.exhibitions[exhibition_index] = ref}
+                        Array(exhibition_count).fill(null).map((
+                            _: null,
+                            exhibition_index: Model.Exhibition.Index,
+                        ):
+                            JSX.Element =>
+                        {
+                            return (
+                                <Exhibition
+                                    key={`exhibition_${exhibition_index}`}
+                                    ref={ref => this.exhibitions[exhibition_index] = ref}
 
-                                model={model.Exhibition(exhibition_index)}
-                                parent={this}
-                                event_grid={this.Exhibition_Event_Grid(exhibition_index)}
-                            />
-                        );
-                    })
-                }
-            </div>
-        );
+                                    model={model.Exhibition(exhibition_index)}
+                                    parent={this}
+                                    event_grid={this.Exhibition_Event_Grid(exhibition_index)}
+                                />
+                            );
+                        })
+                    }
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     override On_Restyle():
@@ -189,6 +195,9 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
+            this.is_started = true;
+            await this.Refresh();
+
             this.Change_Style(`display`, ``);
             await this.Animate(
                 [

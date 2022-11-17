@@ -159,52 +159,9 @@ export class Main extends Component<Main_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        (async function (
-            this: Main,
-        ):
-            Promise<void>
-        {
-            const model: Model.Main = this.Model();
+        this.resize_observer.observe(this.Root());
 
-            this.resize_observer.observe(this.Root());
-
-            this.Change_Style(`opacity`, `0%`);
-
-            // This seems to stop requestAnimationFrame from
-            // dropping a massive amount of frames on site load.
-            await Wait(1);
-            if (this.Is_Alive()) {
-                await Promise.all([
-                    this.Send({
-                        name_affix: Event.START_EXHIBITIONS,
-                        name_suffixes: [
-                        ],
-                        data: {
-                            exhibition: model.Current_Exhibition(),
-                        } as Event.Start_Exhibitions_Data,
-                        is_atomic: true,
-                    }),
-                    this.Animate(
-                        [
-                            {
-                                offset: 0.0,
-                                opacity: `0%`,
-                            },
-                            {
-                                offset: 1.0,
-                                opacity: `100%`,
-                            },
-                        ],
-                        {
-                            duration: this.Animation_Duration(3000),
-                            easing: `ease-in-out`,
-                        },
-                    ),
-                ]);
-
-                this.While_Alive();
-            }
-        }).bind(this)();
+        this.While_Alive_Out_Of_Game();
 
         return [
             {
@@ -255,45 +212,84 @@ export class Main extends Component<Main_Props>
         this.current_width = 0;
     }
 
-    private async While_Alive():
+    private async While_Alive_Out_Of_Game():
         Promise<void>
     {
-        while (this.Is_Alive()) {
-            const model: Model.Main = this.Model();
-            if (model.Isnt_In_Game() && this.exhibitions != null) {
-                // We're deferring card_images from being loaded until they are
-                // going to be in the next exhibition. This cuts down on potential bandwidth usage.
-                const next_exhibition_index: Model.Exhibition.Index =
-                    model.Next_Exhibition_Index() as Model.Exhibition.Index;
-                Assert(next_exhibition_index != null);
-                const next_exhibition_game_arena: Arena =
-                    this.Exhibitions().Exhibition(next_exhibition_index).Game().Arena();
-                await Promise.all([
-                    next_exhibition_game_arena.Card_Images().Load(),
-                    Wait(5000),
-                ]);
-                if (this.Is_Alive() && model.Isnt_In_Game()) {
-                    const previous_exhibition: Model.Exhibition.Instance =
-                        model.Current_Exhibition() as Model.Exhibition.Instance;
-                    this.Model().Change_Exhibition();
-                    const current_exhibition: Model.Exhibition.Instance =
-                        model.Current_Exhibition() as Model.Exhibition.Instance;
-                    Assert(previous_exhibition != null);
-                    Assert(current_exhibition != null);
+        const model: Model.Main = this.Model();
 
-                    await this.Send({
-                        name_affix: Event.SWITCH_EXHIBITIONS,
+        if (this.Is_Alive()) {
+            this.Change_Style(`opacity`, `0%`);
+
+            // This seems to stop requestAnimationFrame from
+            // dropping a massive amount of frames on site load.
+            await Wait(1);
+
+            if (this.Is_Alive()) {
+                await Promise.all([
+                    this.Send({
+                        name_affix: Event.START_EXHIBITIONS,
                         name_suffixes: [
                         ],
                         data: {
-                            previous_exhibition,
-                            current_exhibition,
-                        } as Event.Switch_Exhibitions_Data,
+                            exhibition: model.Current_Exhibition(),
+                        } as Event.Start_Exhibitions_Data,
                         is_atomic: true,
-                    });
+                    }),
+                    this.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: this.Animation_Duration(3000),
+                            easing: `ease-in-out`,
+                        },
+                    ),
+                ]);
+
+                while (this.Is_Alive() && model.Isnt_In_Game()) {
+                    if (this.exhibitions != null) {
+                        // We're deferring card_images from being loaded until they are
+                        // going to be in the next exhibition. This cuts down on potential bandwidth usage.
+                        const next_exhibition_index: Model.Exhibition.Index =
+                            model.Next_Exhibition_Index() as Model.Exhibition.Index;
+                        Assert(next_exhibition_index != null);
+                        const next_exhibition_game_arena: Arena =
+                            this.Exhibitions().Exhibition(next_exhibition_index).Game().Arena();
+                        await Promise.all([
+                            next_exhibition_game_arena.Card_Images().Load(),
+                            Wait(5000),
+                        ]);
+                        if (this.Is_Alive() && model.Isnt_In_Game()) {
+                            const previous_exhibition: Model.Exhibition.Instance =
+                                model.Current_Exhibition() as Model.Exhibition.Instance;
+                            this.Model().Change_Exhibition();
+                            const current_exhibition: Model.Exhibition.Instance =
+                                model.Current_Exhibition() as Model.Exhibition.Instance;
+                            Assert(previous_exhibition != null);
+                            Assert(current_exhibition != null);
+
+                            await this.Send({
+                                name_affix: Event.SWITCH_EXHIBITIONS,
+                                name_suffixes: [
+                                ],
+                                data: {
+                                    previous_exhibition,
+                                    current_exhibition,
+                                } as Event.Switch_Exhibitions_Data,
+                                is_atomic: true,
+                            });
+                        }
+                    } else {
+                        await Wait(5000);
+                    }
                 }
-            } else {
-                await Wait(5000);
             }
         }
     }
@@ -392,33 +388,7 @@ export class Main extends Component<Main_Props>
 
             await this.Refresh();
             if (this.Is_Alive()) {
-                await Promise.all([
-                    this.Send({
-                        name_affix: Event.START_EXHIBITIONS,
-                        name_suffixes: [
-                        ],
-                        data: {
-                            exhibition: model.Current_Exhibition(),
-                        } as Event.Start_Exhibitions_Data,
-                        is_atomic: true,
-                    }),
-                    this.Animate(
-                        [
-                            {
-                                offset: 0.0,
-                                opacity: `0%`,
-                            },
-                            {
-                                offset: 1.0,
-                                opacity: `100%`,
-                            },
-                        ],
-                        {
-                            duration: this.Animation_Duration(3000),
-                            easing: `ease-in-out`,
-                        },
-                    ),
-                ]);
+                this.While_Alive_Out_Of_Game()
             }
         }
     }
