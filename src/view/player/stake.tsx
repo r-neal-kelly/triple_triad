@@ -282,7 +282,7 @@ export class Stake extends Component<Stake_Props>
                         },
                     ],
                     {
-                        duration: 500,
+                        duration: 600,
                         easing: `ease-in-out`,
                     },
                 );
