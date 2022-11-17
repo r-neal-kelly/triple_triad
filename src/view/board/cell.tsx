@@ -210,7 +210,9 @@ export class Cell extends Component<Cell_Props>
             width: `${this.Width()}px`,
             height: `${this.Height()}px`,
 
-            border: `${this.Border()}px solid #00000080`,
+            borderStyle: `solid`,
+            borderWidth: `${this.Border()}px`,
+            borderColor: `#00000080`,
 
             backgroundColor: background_color,
 
@@ -367,12 +369,26 @@ export class Cell extends Component<Cell_Props>
                                 } as Event.Board_Change_Score_Data,
                                 is_atomic: false,
                             }),
-                            this.Animate({
-                                animation_name: `Flash_Border`,
-                                animation_owner_id: this.Main().ID(),
-                                duration_in_milliseconds: 300,
-                                css_timing_function: `ease-in`,
-                            })
+                            this.Animate_Keyframes(
+                                [
+                                    {
+                                        offset: 0.0,
+                                        borderColor: `#00000080`,
+                                    },
+                                    {
+                                        offset: 0.5,
+                                        borderColor: `white`,
+                                    },
+                                    {
+                                        offset: 1.0,
+                                        borderColor: `#00000080`,
+                                    },
+                                ],
+                                {
+                                    duration: 300,
+                                    easing: `ease-in`,
+                                },
+                            ),
                         ]);
                         if (this.Is_Alive()) {
                             await Wait(TURN_RESULT_WAIT_MILLISECONDS);
@@ -480,30 +496,27 @@ export class Cell extends Component<Cell_Props>
 
         this.current_color = old_color;
 
-        let background_size: string = ``;
-        let from_position: string = ``;
-        let to_position: string = ``;
-        let animation_name: string = ``;
+        let background_size: string;
+        let from_position: string;
+        let to_position: string;
         if (direction === Model.Enum.Direction.LEFT) {
             background_size = `1000% 100%`;
             from_position = `left`;
             to_position = `right`;
-            animation_name = `Background_Left_To_Right`;
         } else if (direction === Model.Enum.Direction.TOP) {
             background_size = `100% 1000%`;
             from_position = `top`;
             to_position = `bottom`;
-            animation_name = `Background_Top_To_Bottom`;
         } else if (direction === Model.Enum.Direction.RIGHT) {
             background_size = `1000% 100%`;
             from_position = `right`;
             to_position = `left`;
-            animation_name = `Background_Right_To_Left`;
         } else if (direction === Model.Enum.Direction.BOTTOM) {
             background_size = `100% 1000%`;
             from_position = `bottom`;
             to_position = `top`;
-            animation_name = `Background_Bottom_To_Top`;
+        } else {
+            throw new Error(`Invalid direction: ${direction}`);
         }
 
         this.Change_Style(
@@ -527,12 +540,23 @@ export class Cell extends Component<Cell_Props>
             from_position,
         )
 
-        await this.Animate({
-            animation_name: animation_name,
-            animation_owner_id: this.Main().ID(),
-            duration_in_milliseconds: animation_duration,
-            css_timing_function: `ease-in-out`,
-        });
+        await this.Animate_Keyframes(
+            [
+                {
+                    offset: 0.0,
+                    backgroundPosition: from_position,
+                },
+                {
+                    offset: 1.0,
+                    backgroundPosition: to_position,
+                },
+            ],
+            {
+                duration: animation_duration,
+                easing: `ease-in-out`,
+            },
+        );
+
         if (this.Is_Alive()) {
             this.current_color = new_color;
 

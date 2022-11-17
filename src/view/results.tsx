@@ -169,7 +169,7 @@ export class Results extends Component<Results_Props>
             this.Change_Style(`opacity`, `0%`);
             await this.Refresh();
             if (this.Is_Alive()) {
-                await this.Animate_Opacity_Fade_In({
+                await this.Animate_Fade_In({
                     duration: 2000,
                     easing: `ease-in-out`,
                 });
@@ -286,12 +286,9 @@ class Banner extends Component<Banner_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Animate({
-            animation_name: `Enter_Left`,
-            animation_owner_id: this.Main().ID(),
-            duration_in_milliseconds: 2000,
-            css_timing_function: `ease-in-out`,
-            css_direction: `normal`,
+        this.Animate_Enter_Left({
+            duration: 2000,
+            easing: `ease-in-out`,
         });
 
         return [

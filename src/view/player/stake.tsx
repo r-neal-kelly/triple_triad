@@ -154,11 +154,14 @@ export class Stake extends Component<Stake_Props>
             top = `${this.Y_Offset()}px`;
         }
 
-        let border: string;
+        let borderWidth: string;
+        let borderColor: string;
         if (model.Is_Selected()) {
-            border = `0.15vmin solid white`;
+            borderWidth = `0.15vmin`;
+            borderColor = `white`;
         } else {
-            border = `0.15vmin solid black`;
+            borderWidth = `0.15vmin`;
+            borderColor = `black`;
         }
 
         let cursor: string;
@@ -189,7 +192,9 @@ export class Stake extends Component<Stake_Props>
                 ${color.Alpha()}
             )`,
 
-            border: border,
+            borderStyle: `solid`,
+            borderWidth: borderWidth,
+            borderColor: borderColor,
 
             cursor: cursor,
         });
@@ -253,12 +258,34 @@ export class Stake extends Component<Stake_Props>
     {
         if (this.Is_Alive()) {
             if (stake_index === this.Index()) {
-                await this.Animate({
-                    animation_name: `Twinkle_Border`,
-                    animation_owner_id: this.Main().ID(),
-                    duration_in_milliseconds: 500,
-                    css_timing_function: `ease-in-out`,
-                });
+                await this.Animate_Keyframes(
+                    [
+                        {
+                            offset: 0.00,
+                            borderColor: `white`,
+                        },
+                        {
+                            offset: 0.25,
+                            borderColor: `black`,
+                        },
+                        {
+                            offset: 0.50,
+                            borderColor: `white`,
+                        },
+                        {
+                            offset: 0.75,
+                            borderColor: `black`,
+                        },
+                        {
+                            offset: 1.00,
+                            borderColor: `white`,
+                        },
+                    ],
+                    {
+                        duration: 500,
+                        easing: `ease-in-out`,
+                    },
+                );
                 if (this.Is_Alive()) {
                     await Wait(100);
                     if (this.Is_Alive()) {
@@ -266,6 +293,9 @@ export class Stake extends Component<Stake_Props>
                             cell_index: cell_index,
                             duration: 500,
                         });
+                        if (this.Is_Alive()) {
+                            this.Change_Style(`borderColor`, `black`);
+                        }
                     }
                 }
             }

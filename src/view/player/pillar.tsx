@@ -181,7 +181,7 @@ export class Pillar extends Component<Pillar_Props>
         if (this.Is_Alive()) {
             const model: Model.Player.Instance = this.Model();
             if (model.Arena().Is_On_First_Turn()) {
-                await this.Animate_Opacity_Fade_In({
+                await this.Animate_Fade_In({
                     duration: 750,
                     easing: `ease-in-out`,
                 });
@@ -221,7 +221,7 @@ export class Pillar extends Component<Pillar_Props>
                     duration: 750,
                 });
             } else {
-                await this.Animate_Opacity_Fade_Out({
+                await this.Animate_Fade_Out({
                     duration: 750,
                     easing: `ease-in-out`,
                 });

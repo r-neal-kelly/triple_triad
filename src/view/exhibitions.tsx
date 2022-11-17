@@ -195,7 +195,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Animate_Opacity_Fade_In({
+            await this.Animate_Fade_In({
                 duration: FADE_IN_DURATION,
                 easing: `ease-in-out`,
             });
@@ -209,7 +209,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_Opacity_Fade_Out({
+            await this.Animate_Fade_Out({
                 duration: FADE_OUT_DURATION,
                 easing: `ease-in-out`,
             });
@@ -244,59 +244,43 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
             const methods: Array<() => Promise<[void, void]>> = [
                 () => Promise.all([
-                    previous.Animate({
-                        animation_name: `Exit_Right`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    previous.Animate_Exit_Right({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
-                    current.Animate({
-                        animation_name: `Enter_Left`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    current.Animate_Enter_Left({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
                 ]),
                 () => Promise.all([
-                    previous.Animate({
-                        animation_name: `Exit_Bottom`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    previous.Animate_Exit_Bottom({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
-                    current.Animate({
-                        animation_name: `Enter_Top`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    current.Animate_Enter_Top({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
                 ]),
                 () => Promise.all([
-                    previous.Animate({
-                        animation_name: `Exit_Left`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    previous.Animate_Exit_Left({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
-                    current.Animate({
-                        animation_name: `Enter_Right`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    current.Animate_Enter_Right({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
                 ]),
                 () => Promise.all([
-                    previous.Animate({
-                        animation_name: `Exit_Top`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    previous.Animate_Exit_Top({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
-                    current.Animate({
-                        animation_name: `Enter_Bottom`,
-                        animation_owner_id: this.Main().ID(),
-                        duration_in_milliseconds: 2000,
-                        css_timing_function: `ease-in-out`,
+                    current.Animate_Enter_Bottom({
+                        duration: 2000,
+                        easing: `ease-in-out`,
                     }),
                 ]),
             ];

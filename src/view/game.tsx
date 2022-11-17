@@ -1937,7 +1937,7 @@ export class Game extends Component<Game_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_Opacity_Fade_Out({
+            await this.Animate_Fade_Out({
                 duration: 1000,
                 easing: `ease-in-out`,
             });

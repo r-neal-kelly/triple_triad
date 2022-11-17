@@ -366,29 +366,28 @@ class Title_Text extends Component<Title_Text_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Animation({
-            animation_name: `Flash`,
-            animation_body: `
-                0% {
-                    background-position: right;
-                    color: rgba(255, 255, 255, 0.0);
-                }
-
-                20% {
-                    color: rgba(255, 255, 255, 0.0);
-                }
-
-                100% {
-                    background-position: left;
-                    color: rgba(255, 255, 255, 1.0);
-                }
-            `,
-        });
-
-        this.Animate({
-            animation_name: `Flash`,
-            duration_in_milliseconds: 4000,
-        });
+        this.Animate_Keyframes(
+            [
+                {
+                    offset: 0.0,
+                    backgroundPosition: `right`,
+                    color: `rgba(255, 255, 255, 0.0)`,
+                },
+                {
+                    offset: 0.2,
+                    color: `rgba(255, 255, 255, 0.0)`,
+                },
+                {
+                    offset: 1.0,
+                    backgroundPosition: `left`,
+                    color: `rgba(255, 255, 255, 1.0)`,
+                },
+            ],
+            {
+                duration: 3000,
+                easing: `ease-in-out`,
+            },
+        );
 
         return [];
     }
