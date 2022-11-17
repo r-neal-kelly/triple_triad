@@ -589,6 +589,13 @@ export class Menu extends Component<Menu_Props>
     override On_Restyle():
         Component_Styles
     {
+        let cursor: string;
+        if (this.is_hidden) {
+            cursor = `pointer`;
+        } else {
+            cursor = `default`;
+        }
+
         return ({
             width: `${this.Width()}px`,
             height: `${this.Height()}px`,
@@ -597,6 +604,8 @@ export class Menu extends Component<Menu_Props>
             left: `0`,
             top: `0`,
             zIndex: `1`,
+
+            cursor: cursor,
         });
     }
 
@@ -858,6 +867,8 @@ export class Content extends Component<Content_Props>
             zIndex: `0`,
 
             backgroundColor: `rgba(0, 0, 0, 0.4)`,
+
+            cursor: `pointer`,
         });
     }
 

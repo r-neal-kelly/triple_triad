@@ -369,7 +369,7 @@ export class Cell extends Component<Cell_Props>
                                 } as Event.Board_Change_Score_Data,
                                 is_atomic: false,
                             }),
-                            this.Animate_Keyframes(
+                            this.Animate(
                                 [
                                     {
                                         offset: 0.0,
@@ -540,7 +540,7 @@ export class Cell extends Component<Cell_Props>
             from_position,
         )
 
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,

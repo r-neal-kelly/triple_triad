@@ -258,7 +258,7 @@ export class Stake extends Component<Stake_Props>
     {
         if (this.Is_Alive()) {
             if (stake_index === this.Index()) {
-                await this.Animate_Keyframes(
+                await this.Animate(
                     [
                         {
                             offset: 0.00,

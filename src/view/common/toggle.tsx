@@ -323,7 +323,7 @@ class Toggle_Cover extends Component<Toggle_Cover_Props>
 
         const toggle: Toggle<Toggle_Props> = this.Parent();
         if (toggle.Is_Alive()) {
-            toggle.On_Toggle(event);
+            await toggle.On_Toggle(event);
         }
     }
 }

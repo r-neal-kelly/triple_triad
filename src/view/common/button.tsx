@@ -149,9 +149,9 @@ export class Button<Props extends Button_Props> extends Component<Props>
             alignSelf: `center`,
             justifySelf: `center`,
 
+            borderStyle: `solid`,
             borderWidth: `0.6vmin`,
             borderRadius: `0`,
-            borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: this.CSS_Background_Color(),
@@ -164,36 +164,6 @@ export class Button<Props extends Button_Props> extends Component<Props>
 
             cursor: `pointer`,
         });
-    }
-
-    override On_Life():
-        Array<Event.Listener_Info>
-    {
-        // we'll eventually make these CSS variables that we can more efficiently change
-        this.Change_Animation({
-            animation_name: `Activate`,
-            animation_body: `
-                0% {
-                    background-color: ${this.CSS_Background_Color()};
-                    color: ${this.CSS_Text_Color()};
-                    font-size: ${this.CSS_Text_Size()};
-                }
-            
-                50% {
-                    background-color: ${this.CSS_Activated_Background_Color()};
-                    color: ${this.CSS_Activated_Text_Color()};
-                    font-size: ${this.CSS_Activated_Text_Size()};
-                }
-
-                100% {
-                    background-color: ${this.CSS_Background_Color()};
-                    color: ${this.CSS_Text_Color()};
-                    font-size: ${this.CSS_Text_Size()};
-                }
-            `,
-        });
-
-        return [];
     }
 
     async On_Activate(event: React.SyntheticEvent):
@@ -257,14 +227,34 @@ class Button_Cover extends Component<Button_Cover_Props>
 
         const button: Button<Button_Props> = this.Parent();
         if (button.Is_Alive()) {
-            await button.Animate({
-                animation_name: `Activate`,
-                duration_in_milliseconds: 300,
-                css_timing_function: `ease`,
-                css_direction: `normal`,
-            });
+            await button.Animate(
+                [
+                    {
+                        offset: 0.00,
+                        backgroundColor: button.CSS_Background_Color(),
+                        color: button.CSS_Text_Color(),
+                        fontSize: button.CSS_Text_Size(),
+                    },
+                    {
+                        offset: 0.50,
+                        backgroundColor: button.CSS_Activated_Background_Color(),
+                        color: button.CSS_Activated_Text_Color(),
+                        fontSize: button.CSS_Activated_Text_Size(),
+                    },
+                    {
+                        offset: 1.00,
+                        backgroundColor: button.CSS_Background_Color(),
+                        color: button.CSS_Text_Color(),
+                        fontSize: button.CSS_Text_Size(),
+                    },
+                ],
+                {
+                    duration: 300,
+                    easing: `ease`,
+                },
+            );
             if (button.Is_Alive()) {
-                button.On_Activate(event);
+                await button.On_Activate(event);
             }
         }
     }

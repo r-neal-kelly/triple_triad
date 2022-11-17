@@ -276,6 +276,8 @@ class Title_Area extends Component<Title_Area_Props>
             justifySelf: `center`,
 
             fontSize: `5em`,
+
+            cursor: `pointer`,
         });
     }
 
@@ -366,7 +368,7 @@ class Title_Text extends Component<Title_Text_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Animate_Keyframes(
+        this.Animate(
             [
                 {
                     offset: 0.0,
@@ -495,6 +497,8 @@ class Buttons extends Component<Buttons_Props>
 
             alignSelf: `center`,
             justifySelf: `center`,
+
+            cursor: `pointer`,
         });
     }
 

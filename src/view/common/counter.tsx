@@ -249,9 +249,9 @@ class Value extends Component<Value_Props>
             alignSelf: `center`,
             justifySelf: `center`,
 
+            borderStyle: `solid`,
             borderWidth: `0.6vmin 0`,
             borderRadius: `0`,
-            borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: `transparent`,
@@ -350,9 +350,9 @@ class Decrementor extends Component<Decrementor_Props>
             alignSelf: `center`,
             justifySelf: `center`,
 
+            borderStyle: `solid`,
             borderWidth: `0.6vmin`,
             borderRadius: `0`,
-            borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: background_color,
@@ -365,34 +365,6 @@ class Decrementor extends Component<Decrementor_Props>
 
             cursor: cursor,
         });
-    }
-
-    override On_Life():
-        Array<Event.Listener_Info>
-    {
-        const counter: Counter<Counter_Props> = this.Counter();
-
-        this.Change_Animation({
-            animation_name: `Activate_Enabled`,
-            animation_body: `
-                0% {
-                    background-color: ${counter.CSS_Enabled_Background_Color()};
-                    color: ${counter.CSS_Enabled_Text_Color()};
-                }
-            
-                50% {
-                    background-color: ${counter.CSS_Activated_Enabled_Background_Color()};
-                    color: ${counter.CSS_Activated_Enabled_Text_Color()};
-                }
-
-                100% {
-                    background-color: ${counter.CSS_Enabled_Background_Color()};
-                    color: ${counter.CSS_Enabled_Text_Color()};
-                }
-            `,
-        });
-
-        return [];
     }
 }
 
@@ -466,17 +438,37 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
 
         const counter: Counter<Counter_Props> = this.Counter();
         if (counter.Is_Alive() && counter.Can_Decrement()) {
-            const decrementor: Decrementor = this.Decrementor();
-            if (decrementor.Is_Alive()) {
-                await decrementor.Animate({
-                    animation_name: `Activate_Enabled`,
-                    duration_in_milliseconds: 200,
-                    css_timing_function: `ease`,
-                    css_direction: `normal`,
-                });
-                if (counter.Is_Alive() && decrementor.Is_Alive()) {
-                    counter.On_Decrement(event);
-                }
+            await counter.On_Decrement(event);
+            if (counter.Is_Alive()) {
+                await this.Decrementor().Animate(
+                    [
+                        {
+                            offset: 0.00,
+                            backgroundColor: counter.CSS_Enabled_Background_Color(),
+                            color: counter.CSS_Enabled_Text_Color(),
+                        },
+                        {
+                            offset: 0.50,
+                            backgroundColor: counter.CSS_Activated_Enabled_Background_Color(),
+                            color: counter.CSS_Activated_Enabled_Text_Color(),
+                        },
+                        counter.Can_Decrement() ?
+                            {
+                                offset: 1.00,
+                                backgroundColor: counter.CSS_Enabled_Background_Color(),
+                                color: counter.CSS_Enabled_Text_Color(),
+                            } :
+                            {
+                                offset: 1.00,
+                                backgroundColor: counter.CSS_Disabled_Background_Color(),
+                                color: counter.CSS_Disabled_Text_Color(),
+                            },
+                    ],
+                    {
+                        duration: 300,
+                        easing: `ease`,
+                    },
+                );
             }
         }
     }
@@ -566,9 +558,9 @@ class Incrementor extends Component<Incrementor_Props>
             alignSelf: `center`,
             justifySelf: `center`,
 
+            borderStyle: `solid`,
             borderWidth: `0.6vmin`,
             borderRadius: `0`,
-            borderStyle: `solid`,
             borderColor: `rgba(255, 255, 255, 0.5)`,
 
             backgroundColor: background_color,
@@ -581,34 +573,6 @@ class Incrementor extends Component<Incrementor_Props>
 
             cursor: cursor,
         });
-    }
-
-    override On_Life():
-        Array<Event.Listener_Info>
-    {
-        const counter: Counter<Counter_Props> = this.Counter();
-
-        this.Change_Animation({
-            animation_name: `Activate_Enabled`,
-            animation_body: `
-                0% {
-                    background-color: ${counter.CSS_Enabled_Background_Color()};
-                    color: ${counter.CSS_Enabled_Text_Color()};
-                }
-            
-                50% {
-                    background-color: ${counter.CSS_Activated_Enabled_Background_Color()};
-                    color: ${counter.CSS_Activated_Enabled_Text_Color()};
-                }
-
-                100% {
-                    background-color: ${counter.CSS_Enabled_Background_Color()};
-                    color: ${counter.CSS_Enabled_Text_Color()};
-                }
-            `,
-        });
-
-        return [];
     }
 }
 
@@ -682,17 +646,36 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
 
         const counter: Counter<Counter_Props> = this.Counter();
         if (counter.Is_Alive() && counter.Can_Increment()) {
-            const incrementor: Incrementor = this.Incrementor();
-            if (incrementor.Is_Alive()) {
-                await incrementor.Animate({
-                    animation_name: `Activate_Enabled`,
-                    duration_in_milliseconds: 200,
-                    css_timing_function: `ease`,
-                    css_direction: `normal`,
-                });
-                if (counter.Is_Alive() && incrementor.Is_Alive()) {
-                    counter.On_Increment(event);
-                }
+            await counter.On_Increment(event);
+            if (counter.Is_Alive()) {
+                await this.Incrementor().Animate(
+                    [
+                        {
+                            offset: 0.00,
+                            backgroundColor: counter.CSS_Enabled_Background_Color(),
+                            color: counter.CSS_Enabled_Text_Color(),
+                        },
+                        {
+                            offset: 0.50,
+                            backgroundColor: counter.CSS_Activated_Enabled_Background_Color(),
+                            color: counter.CSS_Activated_Enabled_Text_Color(),
+                        },
+                        counter.Can_Increment() ?
+                            {
+                                offset: 1.00,
+                                backgroundColor: counter.CSS_Enabled_Background_Color(),
+                                color: counter.CSS_Enabled_Text_Color(),
+                            } : {
+                                offset: 1.00,
+                                backgroundColor: counter.CSS_Disabled_Background_Color(),
+                                color: counter.CSS_Disabled_Text_Color(),
+                            },
+                    ],
+                    {
+                        duration: 300,
+                        easing: `ease`,
+                    },
+                );
             }
         }
     }

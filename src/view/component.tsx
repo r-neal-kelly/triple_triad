@@ -4,7 +4,6 @@ import ReactDom from "react-dom";
 import { Integer } from "../types";
 import { Index } from "../types";
 import { Float } from "../types";
-import { Name } from "../types";
 
 import { Assert } from "../utils";
 import { Wait } from "../utils";
@@ -18,17 +17,6 @@ function New_Component_ID():
 {
     return new_component_id++;
 }
-
-type Animation_Name = Name;
-type Component_Animation_Rule = {
-    index: Index,
-    end_styles: Component_Styles,
-}
-const COMPONENT_ANIMATION_RULES: {
-    [index: Component_ID]: {
-        [index: Animation_Name]: Component_Animation_Rule
-    }
-} = {};
 
 export type Component_Styles = {
     [index: string]: string,
@@ -88,8 +76,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
     {
         super(props);
 
-        COMPONENT_ANIMATION_RULES[this.id] = {};
-
         this.styles = Object.assign({
             boxSizing: `border-box`,
 
@@ -100,6 +86,8 @@ export class Component<T extends Component_Props> extends React.Component<T>
             backgroundRepeat: `no-repeat`,
             backgroundPosition: `center`,
             backgroundSize: `100% 100%`,
+
+            cursor: `default`,
 
             WebkitUserSelect: `none`,
             MozUserSelect: `none`,
@@ -441,95 +429,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return new Error(`Component is not rendered.`);
     }
 
-    Change_Animation(
-        {
-            animation_name,
-            animation_body,
-            end_styles = {},
-        }: {
-            animation_name: Animation_Name,
-            animation_body: string,
-            end_styles?: Component_Styles,
-        },
-    ):
-        void
-    {
-        const sheet: CSSStyleSheet =
-            this.Some_Stylesheet().sheet as CSSStyleSheet;
-        Assert(sheet != null);
-
-        let rule_index: Index;
-        if (COMPONENT_ANIMATION_RULES[this.id][animation_name] != null) {
-            rule_index = COMPONENT_ANIMATION_RULES[this.id][animation_name].index;
-            sheet.deleteRule(rule_index);
-        } else {
-            rule_index = sheet.cssRules.length;
-        }
-
-        const rule: Component_Animation_Rule = {
-            index: rule_index,
-            end_styles: Object.assign({}, end_styles),
-        };
-        Object.freeze(rule.end_styles);
-        Object.freeze(rule);
-
-        COMPONENT_ANIMATION_RULES[this.id][animation_name] = rule;
-        sheet.insertRule(
-            `@keyframes ${animation_name}_${this.ID()} {
-                ${animation_body}
-            }`,
-            rule_index,
-        );
-    }
-
     async Animate(
-        {
-            animation_name,
-            animation_owner_id = this.ID(),
-            duration_in_milliseconds,
-            css_iteration_count = `1`,
-            css_timing_function = `ease`,
-            css_direction = `normal`,
-        }: {
-            animation_name: Animation_Name,
-            animation_owner_id?: Component_ID,
-            duration_in_milliseconds: Integer,
-            css_iteration_count?: string,
-            css_timing_function?: string,
-            css_direction?: string,
-        },
-    ):
-        Promise<void>
-    {
-        Assert(this.Is_Alive());
-        Assert(css_iteration_count !== `infinite`); // we can add an Animate_Forever later
-
-        const element: HTMLElement = this.Maybe_Element() as HTMLElement; // Is_Alive !== Has_Element
-        if (element) {
-            element.style.animationName = `${animation_name}_${animation_owner_id}`;
-            element.style.animationDuration = `${duration_in_milliseconds}ms`;
-            element.style.animationIterationCount = css_iteration_count;
-            element.style.animationTimingFunction = css_timing_function;
-            element.style.animationDirection = css_direction;
-
-            await Wait(duration_in_milliseconds);
-
-            element.style.animationName = ``;
-            element.style.animationDuration = ``;
-            element.style.animationIterationCount = ``;
-            element.style.animationTimingFunction = ``;
-            element.style.animationDirection = ``;
-
-            const end_styles: Component_Styles =
-                COMPONENT_ANIMATION_RULES[animation_owner_id][animation_name].end_styles;
-            for (const [key, value] of Object.entries(end_styles)) {
-                this.styles[key] = value;
-                (element.style as any)[key] = value;
-            }
-        }
-    }
-
-    async Animate_Keyframes(
         keyframes: Array<Keyframe>,
         options: KeyframeEffectOptions,
     ):
@@ -610,7 +510,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -630,7 +530,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -650,7 +550,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -672,7 +572,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -694,7 +594,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -716,7 +616,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -738,7 +638,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -760,7 +660,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -782,7 +682,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
@@ -804,7 +704,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     ):
         Promise<void>
     {
-        await this.Animate_Keyframes(
+        await this.Animate(
             [
                 {
                     offset: 0.0,
