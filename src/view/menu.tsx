@@ -89,11 +89,11 @@ export class Menu_Measurements
             this.height;
 
         {
-            const square_button_max: Float = 50;
-            this.square_button_size = Math.min(Percent(6, min_size), square_button_max);
-            this.square_button_border_width = Math.min(Percent(0.5, min_size), square_button_max / 12);
-            this.square_button_padding = Math.min(Percent(1, min_size), square_button_max / 6);
-            this.square_button_offset = Math.min(Percent(2, min_size), square_button_max / 3);
+            const square_button_max: Float = 80;
+            this.square_button_size = Math.min(Percent(10, min_size), square_button_max);
+            this.square_button_border_width = Math.min(Percent(0.5, min_size), square_button_max / 20);
+            this.square_button_padding = Math.min(Percent(1, min_size), square_button_max / 10);
+            this.square_button_offset = Math.min(Percent(2.5, min_size), square_button_max / 4);
         }
 
         this.top_width = this.width;
