@@ -1,6 +1,7 @@
 import { Index } from "../types";
 import { Float } from "../types";
 
+import { Assert } from "../utils";
 import { Random_Integer_Exclusive } from "../utils";
 
 import * as Model from "../model";
@@ -108,7 +109,24 @@ export class Exhibitions extends Component<Exhibitions_Props>
                 </div>
             );
         } else {
-            return null;
+            const current_exhibition_index: Model.Exhibition.Index =
+                this.Model().Current_Exhibition_Index() as Model.Exhibition.Index;
+            Assert(current_exhibition_index != null);
+
+            return (
+                <div
+                    className={`Exhibitions`}
+                >
+                    <Exhibition
+                        key={`exhibition_${current_exhibition_index}`}
+                        ref={ref => this.exhibitions[current_exhibition_index] = ref}
+
+                        model={model.Exhibition(current_exhibition_index)}
+                        parent={this}
+                        event_grid={this.Exhibition_Event_Grid(current_exhibition_index)}
+                    />
+                </div>
+            );
         }
     }
 
@@ -132,7 +150,22 @@ export class Exhibitions extends Component<Exhibitions_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Change_Style(`display`, `none`);
+        this.Animate(
+            [
+                {
+                    offset: 0.0,
+                    opacity: `0%`,
+                },
+                {
+                    offset: 1.0,
+                    opacity: `100%`,
+                },
+            ],
+            {
+                duration: this.Main().Animation_Duration(FADE_IN_DURATION),
+                easing: `ease-in-out`,
+            },
+        );
 
         return [
             {
@@ -197,24 +230,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
         if (this.Is_Alive()) {
             this.is_started = true;
             await this.Refresh();
-
-            this.Change_Style(`display`, ``);
-            await this.Animate(
-                [
-                    {
-                        offset: 0.0,
-                        opacity: `0%`,
-                    },
-                    {
-                        offset: 1.0,
-                        opacity: `100%`,
-                    },
-                ],
-                {
-                    duration: this.Main().Animation_Duration(FADE_IN_DURATION),
-                    easing: `ease-in-out`,
-                },
-            );
         }
     }
 

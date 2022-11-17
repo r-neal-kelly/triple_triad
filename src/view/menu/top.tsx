@@ -392,35 +392,6 @@ class Title_Text extends Component<Title_Text_Props>
             textAlign: `center`,
         });
     }
-
-    override On_Life():
-        Array<Event.Listener_Info>
-    {
-        this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    backgroundPosition: `right`,
-                    color: `rgba(255, 255, 255, 0.0)`,
-                },
-                {
-                    offset: 0.2,
-                    color: `rgba(255, 255, 255, 0.0)`,
-                },
-                {
-                    offset: 1.0,
-                    backgroundPosition: `left`,
-                    color: `rgba(255, 255, 255, 1.0)`,
-                },
-            ],
-            {
-                duration: this.Main().Animation_Duration(3000),
-                easing: `ease-in-out`,
-            },
-        );
-
-        return [];
-    }
 }
 
 type Buttons_Props = {

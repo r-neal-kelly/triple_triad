@@ -225,7 +225,48 @@ export class Main extends Component<Main_Props>
             await Wait(1);
 
             if (this.Is_Alive()) {
+                const fade_in_promise: Promise<void> = this.Animate(
+                    [
+                        {
+                            offset: 0.0,
+                            opacity: `0%`,
+                        },
+                        {
+                            offset: 1.0,
+                            opacity: `100%`,
+                        },
+                    ],
+                    {
+                        duration: this.Animation_Duration(3000),
+                        easing: `ease-in-out`,
+                    },
+                );
+
+                await this.Menu().Content().Top().Title_Area().Text().Animate(
+                    [
+                        {
+                            offset: 0.0,
+                            backgroundPosition: `right`,
+                            color: `rgba(255, 255, 255, 0.0)`,
+                        },
+                        {
+                            offset: 0.2,
+                            color: `rgba(255, 255, 255, 0.0)`,
+                        },
+                        {
+                            offset: 1.0,
+                            backgroundPosition: `left`,
+                            color: `rgba(255, 255, 255, 1.0)`,
+                        },
+                    ],
+                    {
+                        duration: this.Main().Animation_Duration(2000),
+                        easing: `ease-in-out`,
+                    },
+                );
+
                 await Promise.all([
+                    fade_in_promise,
                     this.Send({
                         name_affix: Event.START_EXHIBITIONS,
                         name_suffixes: [
@@ -235,22 +276,6 @@ export class Main extends Component<Main_Props>
                         } as Event.Start_Exhibitions_Data,
                         is_atomic: true,
                     }),
-                    this.Animate(
-                        [
-                            {
-                                offset: 0.0,
-                                opacity: `0%`,
-                            },
-                            {
-                                offset: 1.0,
-                                opacity: `100%`,
-                            },
-                        ],
-                        {
-                            duration: this.Animation_Duration(3000),
-                            easing: `ease-in-out`,
-                        },
-                    ),
                 ]);
 
                 while (this.Is_Alive() && model.Isnt_In_Game()) {
