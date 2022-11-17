@@ -8,7 +8,6 @@ import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
 
-import { Main } from "./main";
 import { Exhibitions } from "./exhibitions";
 import { Game } from "./game";
 
@@ -21,12 +20,6 @@ type Exhibition_Props = {
 export class Exhibition extends Component<Exhibition_Props>
 {
     private game: Game | null = null;
-
-    Main():
-        Main
-    {
-        return this.Exhibitions().Main();
-    }
 
     Exhibitions():
         Exhibitions

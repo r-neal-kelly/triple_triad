@@ -157,7 +157,9 @@ export class Top extends Component<Top_Props>
     {
         if (this.Is_Alive()) {
             if (this.Is_Alive()) {
-                await this.Fade_And_Move_Out(1000);
+                await this.Fade_And_Move_Out(
+                    this.Main().Animation_Duration(1000),
+                );
             }
         }
     }
@@ -167,59 +169,62 @@ export class Top extends Component<Top_Props>
     ):
         Promise<void>
     {
-        function On_Frame(
-            {
-                elapsed,
-            }: Component_Animation_Frame,
-            state: {
-                element: HTMLElement,
-                duration: Integer,
-                plot: Array<{
-                    x: Float,
-                    y: Float,
-                }>,
-            },
-        ):
-            boolean
-        {
-            if (elapsed >= state.duration) {
+        if (this.Is_Alive()) {
+            const element: HTMLElement = this.Some_Element();
+
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame,
+                    {
+                        element: element,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            Math.min(1.0 / (duration / 15), 1.0),
+                            100.0,
+                            0.0, 1.0,
+                            0.72, 1.0,
+                            -0.38, 0.0,
+                            -1.0, 0.0,
+                        ),
+                    },
+                );
+            } else {
                 element.style.opacity = `0%`;
                 element.style.left = `-100%`;
-
-                return false;
-            } else {
-                const index: Index =
-                    Math.floor(elapsed * state.plot.length / state.duration);
-
-                state.element.style.opacity =
-                    `${state.plot[index].y}%`;
-                state.element.style.left =
-                    `${state.plot[index].x}%`;
-
-                return true;
             }
-        }
 
-        const element: HTMLElement = this.Some_Element();
-        if (duration === 0) {
-            element.style.opacity = `0%`;
-            element.style.left = `-100%`;
-        } else {
-            await this.Animate_By_Frame(
-                On_Frame,
+            function On_Frame(
                 {
-                    element: element,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15),
-                        100.0,
-                        0.0, 1.0,
-                        0.72, 1.0,
-                        -0.38, 0.0,
-                        -1.0, 0.0,
-                    ),
+                    elapsed,
+                }: Component_Animation_Frame,
+                state: {
+                    element: HTMLElement,
+                    duration: Integer,
+                    plot: Array<{
+                        x: Float,
+                        y: Float,
+                    }>,
                 },
-            );
+            ):
+                boolean
+            {
+                if (elapsed >= state.duration) {
+                    element.style.opacity = `0%`;
+                    element.style.left = `-100%`;
+
+                    return false;
+                } else {
+                    const index: Index =
+                        Math.floor(elapsed * state.plot.length / state.duration);
+
+                    state.element.style.opacity =
+                        `${state.plot[index].y}%`;
+                    state.element.style.left =
+                        `${state.plot[index].x}%`;
+
+                    return true;
+                }
+            }
         }
     }
 }
@@ -409,7 +414,7 @@ class Title_Text extends Component<Title_Text_Props>
                 },
             ],
             {
-                duration: 3000,
+                duration: this.Main().Animation_Duration(3000),
                 easing: `ease-in-out`,
             },
         );

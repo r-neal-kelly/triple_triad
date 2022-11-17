@@ -6,8 +6,8 @@ import * as Event from "../../../event";
 import { Component } from "../../../component";
 import { Component_Styles } from "../../../component";
 import { Toggle } from "../../../common/toggle";
+import { Counter } from "../../../common/counter";
 
-import { Main } from "../../../main";
 import { Menu } from "../../../menu";
 import { Menu_Measurements } from "../../../menu";
 import { Options } from "../options";
@@ -23,12 +23,7 @@ export class General extends Component<General_Props>
 {
     private title: Title | null = null;
     private display: Display | null = null;
-
-    Main():
-        Main
-    {
-        return this.Menu().Main();
-    }
+    private animation_time_counter: Animation_Time_Counter | null = null;
 
     Menu():
         Menu
@@ -52,6 +47,18 @@ export class General extends Component<General_Props>
         Title
     {
         return this.Try_Object(this.title);
+    }
+
+    Display():
+        Display
+    {
+        return this.Try_Object(this.display);
+    }
+
+    Animation_Time_Counter():
+        Animation_Time_Counter
+    {
+        return this.Try_Object(this.animation_time_counter);
     }
 
     Measurements():
@@ -108,6 +115,13 @@ export class General extends Component<General_Props>
                     parent={this}
                     event_grid={event_grid}
                 />
+                <Animation_Time_Counter
+                    ref={ref => this.animation_time_counter = ref}
+
+                    model={model}
+                    parent={this}
+                    event_grid={event_grid}
+                />
             </div>
         );
     }
@@ -118,7 +132,7 @@ export class General extends Component<General_Props>
         return ({
             display: `grid`,
             gridTemplateColumns: `1fr`,
-            gridTemplateRows: `1fr 1fr 1fr`,
+            gridTemplateRows: `1fr 1fr 1fr 1fr`,
             gridGap: `
                 ${this.Row_Gap()}px
                 ${this.Column_Gap()}px
@@ -434,12 +448,6 @@ type Display_Best_Fit_Toggle_Props = {
 
 class Display_Best_Fit_Toggle extends Toggle<Display_Best_Fit_Toggle_Props>
 {
-    Main():
-        Main
-    {
-        return this.Menu().Main();
-    }
-
     Menu():
         Menu
     {
@@ -560,12 +568,6 @@ type Display_Horizontal_Toggle_Props = {
 
 class Display_Horizontal_Toggle extends Toggle<Display_Horizontal_Toggle_Props>
 {
-    Main():
-        Main
-    {
-        return this.Menu().Main();
-    }
-
     Menu():
         Menu
     {
@@ -686,12 +688,6 @@ type Display_Vertical_Toggle_Props = {
 
 class Display_Vertical_Toggle extends Toggle<Display_Vertical_Toggle_Props>
 {
-    Main():
-        Main
-    {
-        return this.Menu().Main();
-    }
-
     Menu():
         Menu
     {
@@ -799,6 +795,81 @@ class Display_Vertical_Toggle extends Toggle<Display_Vertical_Toggle_Props>
                     } as Event.Remeasure_Exhibitions_Data,
                     is_atomic: true,
                 });
+            }
+        }
+    }
+}
+
+type Animation_Time_Counter_Props = {
+    model: Model.Options;
+    parent: General;
+    event_grid: Event.Grid;
+}
+
+class Animation_Time_Counter extends Counter<Animation_Time_Counter_Props>
+{
+    override Name():
+        string
+    {
+        return `Animation_Time_Counter`;
+    }
+
+    override Text():
+        string
+    {
+        return `Animation Time`;
+    }
+
+    override Count():
+        string
+    {
+        return `${this.Model().Animation_Time().toFixed(1)}x`;
+    }
+
+    override Can_Decrement():
+        boolean
+    {
+        return this.Model().Can_Decrement_Animation_Time();
+    }
+
+    override Can_Increment():
+        boolean
+    {
+        return this.Model().Can_Increment_Animation_Time();
+    }
+
+    override CSS_Width():
+        string
+    {
+        return `70%`;
+    }
+
+    override CSS_Height():
+        string
+    {
+        return `90%`;
+    }
+
+    override async On_Decrement(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Decrement_Animation_Time()) {
+                model.Decrement_Animation_Time();
+                await this.Refresh();
+            }
+        }
+    }
+
+    override async On_Increment(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        if (this.Is_Alive()) {
+            const model: Model.Options = this.Model();
+            if (model.Can_Increment_Animation_Time()) {
+                model.Increment_Animation_Time();
+                await this.Refresh();
             }
         }
     }

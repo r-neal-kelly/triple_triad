@@ -249,7 +249,7 @@ class Button_Cover extends Component<Button_Cover_Props>
                     },
                 ],
                 {
-                    duration: 300,
+                    duration: this.Main().Animation_Duration(300),
                     easing: `ease`,
                 },
             );

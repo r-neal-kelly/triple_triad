@@ -1,3 +1,4 @@
+import { Integer } from "../types";
 import { Float } from "../types";
 
 import { Assert } from "../utils";
@@ -46,6 +47,12 @@ export class Main extends Component<Main_Props>
         return this.Try_Object(this.props.root);
     }
 
+    override Main():
+        Main
+    {
+        return this;
+    }
+
     Menu():
         Menu
     {
@@ -76,16 +83,12 @@ export class Main extends Component<Main_Props>
         return this.current_height;
     }
 
-    CSS_Width():
-        string
+    Animation_Duration(base_animation_duration: Integer):
+        Integer
     {
-        return `${this.Width()}px`;
-    }
+        const model: Model.Options = this.Model().Options();
 
-    CSS_Height():
-        string
-    {
-        return `${this.Height()}px`;
+        return Math.round(model.Animation_Time() * base_animation_duration);
     }
 
     override On_Refresh():
@@ -141,8 +144,8 @@ export class Main extends Component<Main_Props>
         Component_Styles
     {
         return ({
-            width: this.CSS_Width(),
-            height: this.CSS_Height(),
+            width: `${this.Width()}px`,
+            height: `${this.Height()}px`,
 
             position: `relative`,
 
@@ -180,10 +183,22 @@ export class Main extends Component<Main_Props>
                         } as Event.Start_Exhibitions_Data,
                         is_atomic: true,
                     }),
-                    this.Animate_Fade_In({
-                        duration: 3000,
-                        easing: `ease-in-out`,
-                    }),
+                    this.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: this.Animation_Duration(3000),
+                            easing: `ease-in-out`,
+                        },
+                    ),
                 ]);
 
                 this.While_Alive();
@@ -239,7 +254,7 @@ export class Main extends Component<Main_Props>
         this.current_width = 0;
     }
 
-    async While_Alive():
+    private async While_Alive():
         Promise<void>
     {
         while (this.Is_Alive()) {
@@ -282,7 +297,7 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Start_New_Game(
+    private async On_Start_New_Game(
         {
         }: Event.Start_New_Game_Data
     ):
@@ -346,7 +361,7 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Rematch_Game(
+    private async On_Rematch_Game(
         {
         }: Event.Rematch_Game_Data,
     ):
@@ -361,7 +376,7 @@ export class Main extends Component<Main_Props>
         }
     }
 
-    async On_Exit_Game(
+    private async On_Exit_Game(
         {
         }: Event.Exit_Game_Data,
     ):
@@ -386,10 +401,22 @@ export class Main extends Component<Main_Props>
                         } as Event.Start_Exhibitions_Data,
                         is_atomic: true,
                     }),
-                    this.Animate_Fade_In({
-                        duration: 3000,
-                        easing: `ease-in-out`,
-                    }),
+                    this.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: this.Animation_Duration(3000),
+                            easing: `ease-in-out`,
+                        },
+                    ),
                 ]);
             }
         }

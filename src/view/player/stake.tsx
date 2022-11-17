@@ -2,7 +2,6 @@ import { Integer } from "../../types";
 import { Index } from "../../types";
 import { Float } from "../../types";
 
-import { Assert } from "../../utils";
 import { Wait } from "../../utils";
 import { Plot_Bezier_Curve_4 } from "../../utils";
 
@@ -13,7 +12,6 @@ import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
 
-import { Main } from "../main";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
@@ -38,12 +36,6 @@ export class Stake extends Component<Stake_Props>
         Float
     {
         return 0.48;
-    }
-
-    Main():
-        Main
-    {
-        return this.Arena().Main();
     }
 
     Arena():
@@ -282,7 +274,7 @@ export class Stake extends Component<Stake_Props>
                         },
                     ],
                     {
-                        duration: 600,
+                        duration: this.Main().Animation_Duration(600),
                         easing: `ease-in-out`,
                     },
                 );
@@ -291,7 +283,7 @@ export class Stake extends Component<Stake_Props>
                     if (this.Is_Alive()) {
                         await this.Move_To_Cell({
                             cell_index: cell_index,
-                            duration: 500,
+                            duration: this.Main().Animation_Duration(500),
                         });
                         if (this.Is_Alive()) {
                             this.Change_Style(`borderColor`, `black`);
@@ -313,8 +305,6 @@ export class Stake extends Component<Stake_Props>
     ):
         Promise<void>
     {
-        Assert(duration > 0);
-
         if (this.Is_Alive()) {
             const hand_element: HTMLElement =
                 this.Player_Hand().Some_Element();
@@ -335,24 +325,38 @@ export class Stake extends Component<Stake_Props>
             stake_element.style.top = `${stake_old_top}px`;
 
             hand_element.style.zIndex = `1`;
-            await this.Animate_By_Frame(
-                On_Frame,
-                {
-                    stake_element: stake_element,
-                    stake_old_left: stake_old_left,
-                    stake_old_top: stake_old_top,
-                    cell_element: cell_element,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15),
-                        1.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
-            );
+
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame,
+                    {
+                        stake_element: stake_element,
+                        stake_old_left: stake_old_left,
+                        stake_old_top: stake_old_top,
+                        cell_element: cell_element,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            Math.min(1.0 / (duration / 15), 1.0),
+                            1.0,
+                            0.0, 0.0,
+                            0.42, 0.0,
+                            0.58, 1.0,
+                            1.0, 1.0,
+                        ),
+                    },
+                );
+            } else {
+                const cell_rect: DOMRect =
+                    cell_element.getBoundingClientRect();
+                const stake_new_left: Float =
+                    cell_rect.left;
+                const stake_new_top: Float =
+                    cell_rect.top;
+
+                stake_element.style.left = `${stake_new_left}px`;
+                stake_element.style.top = `${stake_new_top}px`;
+            }
+
             hand_element.style.zIndex = `0`;
 
             function On_Frame(

@@ -12,6 +12,30 @@ import * as Player from "./player";
 
 export class Options
 {
+    static Default_Animation_Time():
+        Float
+    {
+        return 1.0;
+    }
+
+    static Min_Animation_Time():
+        Float
+    {
+        return 0.0;
+    }
+
+    static Max_Animation_Time():
+        Float
+    {
+        return 2.0;
+    }
+
+    static Animation_Time_Interval():
+        Float
+    {
+        return 0.1;
+    }
+
     static Min_Player_Count():
         Player.Count
     {
@@ -122,6 +146,8 @@ export class Options
     private measurement: Enum.Measurement;
     private use_small_board: boolean;
 
+    private animation_time: Float;
+
     private player_types: Array<Player.Type>;
 
     private player_color_palette: Float;
@@ -150,6 +176,8 @@ export class Options
 
         this.measurement = measurement;
         this.use_small_board = use_small_board;
+
+        this.animation_time = Options.Default_Animation_Time();
 
         this.player_types = [];
         this.player_types.push(Player.Type.HUMAN);
@@ -218,6 +246,46 @@ export class Options
         boolean
     {
         return this.use_small_board;
+    }
+
+    Animation_Time():
+        Float
+    {
+        return this.animation_time;
+    }
+
+    Can_Decrement_Animation_Time():
+        boolean
+    {
+        return this.animation_time > Options.Min_Animation_Time();
+    }
+
+    Can_Increment_Animation_Time():
+        boolean
+    {
+        return this.animation_time < Options.Max_Animation_Time();
+    }
+
+    Decrement_Animation_Time():
+        void
+    {
+        Assert(this.Can_Decrement_Animation_Time());
+
+        this.animation_time -= Options.Animation_Time_Interval();
+        if (this.animation_time < Options.Min_Animation_Time()) {
+            this.animation_time = Options.Min_Animation_Time();
+        }
+    }
+
+    Increment_Animation_Time():
+        void
+    {
+        Assert(this.Can_Increment_Animation_Time());
+
+        this.animation_time += Options.Animation_Time_Interval();
+        if (this.animation_time > Options.Max_Animation_Time()) {
+            this.animation_time = Options.Max_Animation_Time();
+        }
     }
 
     Player_Count():

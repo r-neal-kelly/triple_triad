@@ -1,5 +1,3 @@
-import { Integer } from "../../types";
-
 import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Props } from "../component";
@@ -58,9 +56,9 @@ export class Counter<Props extends Counter_Props> extends Component<Props>
     }
 
     Count():
-        Integer
+        string
     {
-        return 0;
+        return `0`;
     }
 
     Can_Decrement():
@@ -465,7 +463,7 @@ class Decrementor_Cover extends Component<Decrementor_Cover_Props>
                             },
                     ],
                     {
-                        duration: 300,
+                        duration: this.Main().Animation_Duration(300),
                         easing: `ease`,
                     },
                 );
@@ -672,7 +670,7 @@ class Incrementor_Cover extends Component<Incrementor_Cover_Props>
                             },
                     ],
                     {
-                        duration: 300,
+                        duration: this.Main().Animation_Duration(300),
                         easing: `ease`,
                     },
                 );

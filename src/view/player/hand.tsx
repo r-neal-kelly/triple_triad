@@ -2,7 +2,6 @@ import { Integer } from "../../types";
 import { Index } from "../../types";
 import { Float } from "../../types";
 
-import { Assert } from "../../utils";
 import { Plot_Bezier_Curve_4 } from "../../utils";
 
 import * as Model from "../../model";
@@ -11,6 +10,7 @@ import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
+
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Player } from "../player";
@@ -172,7 +172,7 @@ export class Hand extends Component<Hand_Props>
         if (this.Is_Alive()) {
             await this.Scroll_To_Stake({
                 stake_index: stake_index,
-                duration: 100,
+                duration: this.Main().Animation_Duration(100),
             });
         }
     }
@@ -199,30 +199,79 @@ export class Hand extends Component<Hand_Props>
     ):
         Promise<void>
     {
-        Assert(duration > 0);
-
         if (this.Is_Alive()) {
-            await this.Animate_By_Frame(
-                On_Frame.bind(this),
-                {
-                    stake_index: stake_index,
-                    // We store this as a ratio so that if a resize occurs
-                    // or the view mode shifts from vertical to horizontal
-                    // that we can complete the animation faithfully
-                    from_scroll_ratio: this.Measurements().Is_Vertical() ?
-                        this.Some_Element().scrollLeft / this.Max_Scroll_Left() :
-                        this.Some_Element().scrollTop / this.Max_Scroll_Top(),
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15),
-                        1.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
-            );
+            const from_scroll_ratio = this.Measurements().Is_Vertical() ?
+                this.Some_Element().scrollLeft / this.Max_Scroll_Left() :
+                this.Some_Element().scrollTop / this.Max_Scroll_Top();
+
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame.bind(this),
+                    {
+                        stake_index: stake_index,
+                        // We store this as a ratio so that if a resize occurs
+                        // or the view mode shifts from vertical to horizontal
+                        // that we can complete the animation faithfully
+                        from_scroll_ratio: from_scroll_ratio,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            Math.min(1.0 / (duration / 15), 1.0),
+                            1.0,
+                            0.0, 0.0,
+                            0.42, 0.0,
+                            0.58, 1.0,
+                            1.0, 1.0,
+                        ),
+                    },
+                );
+            } else {
+                const hand: Hand = this;
+                const stake: Stake = hand.Stake(stake_index);
+                const hand_element: HTMLElement = hand.Some_Element();
+                if (hand.Measurements().Is_Vertical()) {
+                    const max_scroll_left: Float = hand.Max_Scroll_Left();
+                    const from_scroll_left: Float = max_scroll_left * from_scroll_ratio;
+                    const hand_width: Float = hand.Width();
+                    const stake_width: Float = stake.Width();
+                    const hand_x1: Float = from_scroll_left;
+                    const hand_x2: Float = hand_x1 + hand_width;
+                    const stake_x1: Float = stake.X_Offset();
+                    const stake_x2: Float = stake_x1 + stake_width;
+                    const stake_x_offset_multiplier: Float = Stake.X_Offset_Multiplier();
+                    const stake_x_offset: Float = stake_x_offset_multiplier < 0.5 ?
+                        stake_width * stake_x_offset_multiplier :
+                        stake_width - stake_width * stake_x_offset_multiplier;
+
+                    if (stake_x1 - stake_x_offset < hand_x1) {
+                        hand_element.scrollLeft =
+                            from_scroll_left + (stake_x1 - stake_x_offset - hand_x1);
+                    } else if (stake_x2 > hand_x2) {
+                        hand_element.scrollLeft =
+                            from_scroll_left + (stake_x2 - hand_x2);
+                    }
+                } else {
+                    const max_scroll_top: Float = hand.Max_Scroll_Top();
+                    const from_scroll_top: Float = max_scroll_top * from_scroll_ratio;
+                    const hand_height: Float = hand.Height();
+                    const stake_height: Float = stake.Height();
+                    const hand_y1: Float = from_scroll_top;
+                    const hand_y2: Float = hand_y1 + hand_height;
+                    const stake_y1: Float = stake.Y_Offset();
+                    const stake_y2: Float = stake_y1 + stake_height;
+                    const stake_y_offset_multiplier: Float = Stake.Y_Offset_Multiplier();
+                    const stake_y_offset: Float = stake_y_offset_multiplier < 0.5 ?
+                        stake_height * stake_y_offset_multiplier :
+                        stake_height - stake_height * stake_y_offset_multiplier;
+
+                    if (stake_y1 - stake_y_offset < hand_y1) {
+                        hand_element.scrollTop =
+                            from_scroll_top + (stake_y1 - stake_y_offset - hand_y1);
+                    } else if (stake_y2 > hand_y2) {
+                        hand_element.scrollTop =
+                            from_scroll_top + (stake_y2 - hand_y2);
+                    }
+                }
+            }
 
             function On_Frame(
                 this: Hand,

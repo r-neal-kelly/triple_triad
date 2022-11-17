@@ -13,6 +13,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+
 import { Main } from "./main";
 import { Exhibition } from "./exhibition";
 import { Arena } from "./arena";
@@ -1773,16 +1774,6 @@ export class Game extends Component<Game_Props>
         return PLAYER_GROUP_COUNT;
     }
 
-    Main():
-        Main
-    {
-        if (this.Is_Exhibition()) {
-            return this.Exhibition().Main();
-        } else {
-            return this.Parent() as Main;
-        }
-    }
-
     Exhibition():
         Exhibition
     {
@@ -1937,10 +1928,22 @@ export class Game extends Component<Game_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_Fade_Out({
-                duration: 1000,
-                easing: `ease-in-out`,
-            });
+            await this.Animate(
+                [
+                    {
+                        offset: 0.0,
+                        opacity: `100%`,
+                    },
+                    {
+                        offset: 1.0,
+                        opacity: `0%`,
+                    },
+                ],
+                {
+                    duration: this.Main().Animation_Duration(1000),
+                    easing: `ease-in-out`,
+                },
+            );
         }
     }
 }

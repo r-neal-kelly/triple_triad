@@ -8,6 +8,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+
 import { Main } from "./main";
 import { Exhibition } from "./exhibition";
 
@@ -29,12 +30,6 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
     private is_switching: boolean = false;
     private last_switch_method_index: Index = Number.MAX_SAFE_INTEGER;
-
-    Main():
-        Main
-    {
-        return this.Parent();
-    }
 
     Exhibition(exhibition_index: Model.Exhibition.Index):
         Exhibition
@@ -195,10 +190,22 @@ export class Exhibitions extends Component<Exhibitions_Props>
     {
         if (this.Is_Alive()) {
             this.Change_Style(`display`, ``);
-            await this.Animate_Fade_In({
-                duration: FADE_IN_DURATION,
-                easing: `ease-in-out`,
-            });
+            await this.Animate(
+                [
+                    {
+                        offset: 0.0,
+                        opacity: `0%`,
+                    },
+                    {
+                        offset: 1.0,
+                        opacity: `100%`,
+                    },
+                ],
+                {
+                    duration: this.Main().Animation_Duration(FADE_IN_DURATION),
+                    easing: `ease-in-out`,
+                },
+            );
         }
     }
 
@@ -209,10 +216,22 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            await this.Animate_Fade_Out({
-                duration: FADE_OUT_DURATION,
-                easing: `ease-in-out`,
-            });
+            await this.Animate(
+                [
+                    {
+                        offset: 0.0,
+                        opacity: `100%`,
+                    },
+                    {
+                        offset: 1.0,
+                        opacity: `0%`,
+                    },
+                ],
+                {
+                    duration: this.Main().Animation_Duration(FADE_OUT_DURATION),
+                    easing: `ease-in-out`,
+                },
+            );
             if (this.Is_Alive()) {
                 this.Change_Style(`display`, `none`);
             }
@@ -244,44 +263,156 @@ export class Exhibitions extends Component<Exhibitions_Props>
 
             const methods: Array<() => Promise<[void, void]>> = [
                 () => Promise.all([
-                    previous.Animate_Exit_Right({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
-                    current.Animate_Enter_Left({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
+                    previous.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                left: `0%`,
+                                opacity: `100%`,
+                            },
+                            {
+                                offset: 1.0,
+                                left: `100%`,
+                                opacity: `0%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
+                    current.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                left: `-100%`,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                left: `0%`,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
                 ]),
                 () => Promise.all([
-                    previous.Animate_Exit_Bottom({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
-                    current.Animate_Enter_Top({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
+                    previous.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                top: `0%`,
+                                opacity: `100%`,
+                            },
+                            {
+                                offset: 1.0,
+                                top: `100%`,
+                                opacity: `0%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
+                    current.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                top: `-100%`,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                top: `0%`,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
                 ]),
                 () => Promise.all([
-                    previous.Animate_Exit_Left({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
-                    current.Animate_Enter_Right({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
+                    previous.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                left: `0%`,
+                                opacity: `100%`,
+                            },
+                            {
+                                offset: 1.0,
+                                left: `-100%`,
+                                opacity: `0%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
+                    current.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                left: `100%`,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                left: `0%`,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
                 ]),
                 () => Promise.all([
-                    previous.Animate_Exit_Top({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
-                    current.Animate_Enter_Bottom({
-                        duration: 2000,
-                        easing: `ease-in-out`,
-                    }),
+                    previous.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                top: `0%`,
+                                opacity: `100%`,
+                            },
+                            {
+                                offset: 1.0,
+                                top: `-100%`,
+                                opacity: `0%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
+                    current.Animate(
+                        [
+                            {
+                                offset: 0.0,
+                                top: `100%`,
+                                opacity: `0%`,
+                            },
+                            {
+                                offset: 1.0,
+                                top: `0%`,
+                                opacity: `100%`,
+                            },
+                        ],
+                        {
+                            duration: 2000,
+                            easing: `ease-in-out`,
+                        },
+                    ),
                 ]),
             ];
 

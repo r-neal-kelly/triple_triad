@@ -1,4 +1,3 @@
-import { Integer } from "../../../../types";
 import { Float } from "../../../../types";
 
 import * as Model from "../../../../model";
@@ -793,9 +792,9 @@ class Player_Counter extends Counter<Player_Counter_Props>
     }
 
     override Count():
-        Integer
+        string
     {
-        return this.Model().Player_Count();
+        return this.Model().Player_Count().toString();
     }
 
     override Can_Decrement():
@@ -896,9 +895,9 @@ class Palette_Counter extends Counter<Palette_Counter_Props>
     }
 
     override Count():
-        Integer
+        string
     {
-        return this.Model().Player_Color_Palette_Index();
+        return this.Model().Player_Color_Palette_Index().toString();
     }
 
     override Can_Decrement():
@@ -999,9 +998,9 @@ class Saturation_Counter extends Counter<Saturation_Counter_Props>
     }
 
     override Count():
-        Integer
+        string
     {
-        return this.Model().Player_Color_Saturation_Index();
+        return this.Model().Player_Color_Saturation_Index().toString();
     }
 
     override Can_Decrement():
@@ -1102,9 +1101,9 @@ class Lightness_Counter extends Counter<Lightness_Counter_Props>
     }
 
     override Count():
-        Integer
+        string
     {
-        return this.Model().Player_Color_Lightness_Index();
+        return this.Model().Player_Color_Lightness_Index().toString();
     }
 
     override Can_Decrement():

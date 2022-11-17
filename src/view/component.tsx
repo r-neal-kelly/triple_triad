@@ -10,6 +10,8 @@ import { Wait } from "../utils";
 
 import * as Event from "./event";
 
+import { Main } from "./main";
+
 export type Component_ID = Integer;
 let new_component_id = 0;
 function New_Component_ID():
@@ -290,6 +292,12 @@ export class Component<T extends Component_Props> extends React.Component<T>
         return this.id;
     }
 
+    Main():
+        Main
+    {
+        return this.Parent().Main();
+    }
+
     Style(style_name_in_camel_case: string):
         string
     {
@@ -503,222 +511,6 @@ export class Component<T extends Component_Props> extends React.Component<T>
                 }
             }
         }
-    }
-
-    async Animate_Fade_In(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    opacity: `0%`,
-                },
-                {
-                    offset: 1.0,
-                    opacity: `100%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Fade_Out(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    opacity: `100%`,
-                },
-                {
-                    offset: 1.0,
-                    opacity: `0%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Enter_Left(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    left: `-100%`,
-                    opacity: `0%`,
-                },
-                {
-                    offset: 1.0,
-                    left: `0%`,
-                    opacity: `100%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Enter_Top(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    top: `-100%`,
-                    opacity: `0%`,
-                },
-                {
-                    offset: 1.0,
-                    top: `0%`,
-                    opacity: `100%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Enter_Right(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    left: `100%`,
-                    opacity: `0%`,
-                },
-                {
-                    offset: 1.0,
-                    left: `0%`,
-                    opacity: `100%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Enter_Bottom(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    top: `100%`,
-                    opacity: `0%`,
-                },
-                {
-                    offset: 1.0,
-                    top: `0%`,
-                    opacity: `100%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Exit_Left(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    left: `0%`,
-                    opacity: `100%`,
-                },
-                {
-                    offset: 1.0,
-                    left: `-100%`,
-                    opacity: `0%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Exit_Top(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    top: `0%`,
-                    opacity: `100%`,
-                },
-                {
-                    offset: 1.0,
-                    top: `-100%`,
-                    opacity: `0%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Exit_Right(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    left: `0%`,
-                    opacity: `100%`,
-                },
-                {
-                    offset: 1.0,
-                    left: `100%`,
-                    opacity: `0%`,
-                },
-            ],
-            options,
-        );
-    }
-
-    async Animate_Exit_Bottom(
-        options: KeyframeEffectOptions,
-    ):
-        Promise<void>
-    {
-        await this.Animate(
-            [
-                {
-                    offset: 0.0,
-                    top: `0%`,
-                    opacity: `100%`,
-                },
-                {
-                    offset: 1.0,
-                    top: `100%`,
-                    opacity: `0%`,
-                },
-            ],
-            options,
-        );
     }
 
     async Animate_By_Frame<State>(

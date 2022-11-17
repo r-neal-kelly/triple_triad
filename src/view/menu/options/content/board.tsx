@@ -1,4 +1,3 @@
-import { Integer } from "../../../../types";
 import { Float } from "../../../../types";
 
 import * as Model from "../../../../model";
@@ -241,9 +240,9 @@ class Row_Counter extends Counter<Row_Counter_Props>
     }
 
     override Count():
-        Integer
+        string
     {
-        return this.Model().Rules().Row_Count();
+        return this.Model().Rules().Row_Count().toString();
     }
 
     override Can_Decrement():
@@ -328,9 +327,9 @@ class Column_Counter extends Counter<Column_Counter_Props>
     }
 
     override Count():
-        Integer
+        string
     {
-        return this.Model().Rules().Column_Count();
+        return this.Model().Rules().Column_Count().toString();
     }
 
     override Can_Decrement():

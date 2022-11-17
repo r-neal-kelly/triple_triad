@@ -2,7 +2,6 @@ import { Integer } from "../../types";
 import { Index } from "../../types";
 import { Float } from "../../types";
 
-import { Assert } from "../../utils";
 import { Plot_Bezier_Curve_4 } from "../../utils";
 
 import * as Model from "../../model";
@@ -12,7 +11,6 @@ import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
 
-import { Main } from "../main";
 import { Game } from "../game";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
@@ -31,12 +29,6 @@ export class Pillar extends Component<Pillar_Props>
         Float
     {
         return 0.7;
-    }
-
-    Main():
-        Main
-    {
-        return this.Game().Main();
     }
 
     Game():
@@ -181,10 +173,22 @@ export class Pillar extends Component<Pillar_Props>
         if (this.Is_Alive()) {
             const model: Model.Player.Instance = this.Model();
             if (model.Arena().Is_On_First_Turn()) {
-                await this.Animate_Fade_In({
-                    duration: 750,
-                    easing: `ease-in-out`,
-                });
+                await this.Animate(
+                    [
+                        {
+                            offset: 0.0,
+                            opacity: `0%`,
+                        },
+                        {
+                            offset: 1.0,
+                            opacity: `100%`,
+                        },
+                    ],
+                    {
+                        duration: this.Main().Animation_Duration(750),
+                        easing: `ease-in-out`,
+                    },
+                );
             }
         }
     }
@@ -218,13 +222,25 @@ export class Pillar extends Component<Pillar_Props>
             if (next_player_index != null) {
                 await this.Move_To_Player({
                     player_index: next_player_index as Model.Player.Index,
-                    duration: 750,
+                    duration: this.Main().Animation_Duration(750),
                 });
             } else {
-                await this.Animate_Fade_Out({
-                    duration: 750,
-                    easing: `ease-in-out`,
-                });
+                await this.Animate(
+                    [
+                        {
+                            offset: 0.0,
+                            opacity: `100%`,
+                        },
+                        {
+                            offset: 1.0,
+                            opacity: `0%`,
+                        },
+                    ],
+                    {
+                        duration: this.Main().Animation_Duration(750),
+                        easing: `ease-in-out`,
+                    },
+                );
             }
         }
     }
@@ -240,8 +256,6 @@ export class Pillar extends Component<Pillar_Props>
     ):
         Promise<void>
     {
-        Assert(duration > 0);
-
         if (this.Is_Alive()) {
             const old_player: Player = this.Player();
             const new_player: Player = this.Arena().Player(player_index);
@@ -263,21 +277,41 @@ export class Pillar extends Component<Pillar_Props>
 
             const group_element: HTMLElement = this.Group().Some_Element();
             group_element.style.zIndex = `-1`;
-            await this.Animate_By_Frame(
-                On_Frame.bind(this),
-                {
-                    direction: current_direction,
-                    duration: duration,
-                    plot: Plot_Bezier_Curve_4(
-                        1.0 / (duration / 15),
-                        1.0,
-                        0.0, 0.0,
-                        0.42, 0.0,
-                        0.58, 1.0,
-                        1.0, 1.0,
-                    ),
-                },
-            );
+
+            if (duration > 0) {
+                await this.Animate_By_Frame(
+                    On_Frame.bind(this),
+                    {
+                        direction: current_direction,
+                        duration: duration,
+                        plot: Plot_Bezier_Curve_4(
+                            Math.min(1.0 / (duration / 15), 1.0),
+                            1.0,
+                            0.0, 0.0,
+                            0.42, 0.0,
+                            0.58, 1.0,
+                            1.0, 1.0,
+                        ),
+                    },
+                );
+            } else {
+                const new_player_rect: DOMRect =
+                    new_player_element.getBoundingClientRect();
+
+                pillar_element.style.left = `${new_player_rect.left}px`;
+                pillar_element.style.top = `${new_player_rect.top}px`;
+
+                if (current_direction === Model.Enum.Direction.LEFT) {
+                    pillar_element.style.backgroundPosition = `0% 0%`;
+                } else if (current_direction === Model.Enum.Direction.TOP) {
+                    pillar_element.style.backgroundPosition = `0% 0%`;
+                } else if (current_direction === Model.Enum.Direction.RIGHT) {
+                    pillar_element.style.backgroundPosition = `100% 0%`;
+                } else {
+                    pillar_element.style.backgroundPosition = `0% 100%`;
+                }
+            }
+
             // See After_Player_Start_Turn for why we don't do this here
             //group_element.style.zIndex = `1`;
 

@@ -11,6 +11,7 @@ import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
 import { Component_Animation_Frame } from "../component";
+
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
@@ -180,7 +181,7 @@ export class Score_Bar extends Component<Score_Bar_Props>
                 model.Score_Percent(score_index_to_increment);
 
             await this.Modify({
-                duration: 300, // this is the same time as the cell flash, we should conjoin the two
+                duration: this.Main().Animation_Duration(300),
                 decrement_index: score_index_to_decrement,
                 decrement_from: decrement_from,
                 decrement_to: decrement_to,
@@ -217,6 +218,7 @@ export class Score_Bar extends Component<Score_Bar_Props>
                 this.Score(decrement_index).Some_Element();
             const increment_element: HTMLElement =
                 this.Score(increment_index).Some_Element();
+
             if (duration > 0) {
                 await this.Animate_By_Frame(
                     On_Frame.bind(this),
@@ -231,7 +233,7 @@ export class Score_Bar extends Component<Score_Bar_Props>
                         increment_delta: increment_to - increment_from,
                         duration: duration,
                         plot: Plot_Bezier_Curve_4(
-                            1.0 / (duration / 15 - 1),
+                            Math.min(1.0 / (duration / 15), 1.0),
                             1.0,
                             0.0, 0.0,
                             0.42, 0.0,

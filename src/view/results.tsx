@@ -7,7 +7,6 @@ import { Component } from "./component";
 import { Component_Styles } from "./component";
 import { Button } from "./common/button";
 
-import { Main } from "./main";
 import { Game } from "./game";
 import { Arena } from "./arena";
 
@@ -21,12 +20,6 @@ export class Results extends Component<Results_Props>
 {
     private banner: Banner | null = null;
     private buttons: Buttons | null = null;
-
-    Main():
-        Main
-    {
-        return this.Game().Main();
-    }
 
     Game():
         Game
@@ -169,10 +162,22 @@ export class Results extends Component<Results_Props>
             this.Change_Style(`opacity`, `0%`);
             await this.Refresh();
             if (this.Is_Alive()) {
-                await this.Animate_Fade_In({
-                    duration: 2000,
-                    easing: `ease-in-out`,
-                });
+                await this.Animate(
+                    [
+                        {
+                            offset: 0.0,
+                            opacity: `0%`,
+                        },
+                        {
+                            offset: 1.0,
+                            opacity: `100%`,
+                        },
+                    ],
+                    {
+                        duration: this.Main().Animation_Duration(2000),
+                        easing: `ease-in-out`,
+                    },
+                );
             }
         }
     }
@@ -188,12 +193,6 @@ class Banner extends Component<Banner_Props>
 {
     private winner: Winner | null = null;
     private draws: Draws | null = null;
-
-    Main():
-        Main
-    {
-        return this.Arena().Main();
-    }
 
     Arena():
         Arena
@@ -286,10 +285,24 @@ class Banner extends Component<Banner_Props>
     override On_Life():
         Array<Event.Listener_Info>
     {
-        this.Animate_Enter_Left({
-            duration: 2000,
-            easing: `ease-in-out`,
-        });
+        this.Animate(
+            [
+                {
+                    offset: 0.0,
+                    left: `-100%`,
+                    opacity: `0%`,
+                },
+                {
+                    offset: 1.0,
+                    left: `0%`,
+                    opacity: `100%`,
+                },
+            ],
+            {
+                duration: this.Main().Animation_Duration(2000),
+                easing: `ease-in-out`,
+            },
+        );
 
         return [
         ];

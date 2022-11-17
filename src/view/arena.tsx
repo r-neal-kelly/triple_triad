@@ -10,7 +10,6 @@ import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
 
-import { Main } from "./main";
 import { Game } from "./game";
 import { Game_Measurements } from "./game";
 import { Group as Player_Group } from "./player/group";
@@ -90,12 +89,6 @@ export class Arena extends Component<Arena_Props>
 
     private card_images: Arena_Card_Images =
         new Arena_Card_Images(this.Model());
-
-    Main():
-        Main
-    {
-        return this.Game().Main();
-    }
 
     Game():
         Game
@@ -313,10 +306,22 @@ export class Arena extends Component<Arena_Props>
             const current_player_index: Model.Player.Index = this.Model().Current_Player_Index();
 
             this.Change_Style(`visibility`, `visible`);
-            await this.Animate_Fade_In({
-                duration: 1000,
-                easing: `ease-in-out`,
-            });
+            await this.Animate(
+                [
+                    {
+                        offset: 0.0,
+                        opacity: `0%`,
+                    },
+                    {
+                        offset: 1.0,
+                        opacity: `100%`,
+                    },
+                ],
+                {
+                    duration: this.Main().Animation_Duration(1000),
+                    easing: `ease-in-out`,
+                },
+            );
 
             if (this.Is_Alive()) {
                 this.Start_Scrolling_Player_Names();

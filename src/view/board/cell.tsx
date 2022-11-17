@@ -9,7 +9,6 @@ import * as Event from "../event";
 import { Component } from "../component";
 import { Component_Styles } from "../component";
 
-import { Main } from "../main";
 import { Game_Measurements } from "../game";
 import { Arena } from "../arena";
 import { Board } from "../board";
@@ -30,12 +29,6 @@ export class Cell extends Component<Cell_Props>
 {
     private current_color: Model.Color.HSLA | null = null;
     private popups: Array<JSX.Element> | null = null;
-
-    Main():
-        Main
-    {
-        return this.Arena().Main();
-    }
 
     Arena():
         Arena
@@ -385,7 +378,7 @@ export class Cell extends Component<Cell_Props>
                                     },
                                 ],
                                 {
-                                    duration: 300,
+                                    duration: this.Main().Animation_Duration(300),
                                     easing: `ease-in`,
                                 },
                             ),
@@ -552,7 +545,7 @@ export class Cell extends Component<Cell_Props>
                 },
             ],
             {
-                duration: animation_duration,
+                duration: this.Main().Animation_Duration(animation_duration),
                 easing: `ease-in-out`,
             },
         );

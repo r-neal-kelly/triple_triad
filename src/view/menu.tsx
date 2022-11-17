@@ -518,12 +518,6 @@ export class Menu extends Component<Menu_Props>
     private is_hidden: boolean = false;
     private is_disabled: boolean = false;
 
-    Main():
-        Main
-    {
-        return this.Parent();
-    }
-
     Content():
         Content
     {
@@ -745,12 +739,6 @@ export class Content extends Component<Content_Props>
     private top: Top | null = null;
     private options: Options.Instance | null = null;
     private help: Help.Instance | null = null;
-
-    Main():
-        Main
-    {
-        return this.Menu().Main();
-    }
 
     Menu():
         Menu
