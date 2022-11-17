@@ -10,8 +10,6 @@ import { Wait } from "../utils";
 
 import * as Event from "./event";
 
-import { Main } from "./main";
-
 export type Component_ID = Integer;
 let new_component_id = 0;
 function New_Component_ID():
@@ -293,7 +291,7 @@ export class Component<T extends Component_Props> extends React.Component<T>
     }
 
     Main():
-        Main
+        any
     {
         return this.Parent().Main();
     }

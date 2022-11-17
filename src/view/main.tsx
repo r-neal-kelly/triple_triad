@@ -9,6 +9,7 @@ import * as Model from "../model";
 import * as Event from "./event";
 import { Component } from "./component";
 import { Component_Styles } from "./component";
+
 import { Menu } from "./menu"
 import { Exhibitions } from "./exhibitions";
 import { Game } from "./game";
@@ -48,7 +49,7 @@ export class Main extends Component<Main_Props>
     }
 
     override Main():
-        Main
+        any
     {
         return this;
     }
