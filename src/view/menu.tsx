@@ -100,8 +100,8 @@ export class Menu_Measurements
         this.top_height = this.height;
         this.top_title_area_width = this.top_width;
         this.top_title_area_height = Percent(40, this.top_height);
-        this.top_buttons_width = this.top_width;
-        this.top_buttons_height = this.top_height - this.top_title_area_height;
+        this.top_buttons_width = Percent(40, this.top_width);
+        this.top_buttons_height = Percent(96, this.top_height - this.top_title_area_height);
 
         const sub_width: Float = Percent(90, this.width);
         const sub_height: Float = Percent(90, this.height);

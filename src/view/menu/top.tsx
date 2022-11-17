@@ -75,6 +75,7 @@ export class Top extends Component<Top_Props>
         return (
             <div
                 className={`Top`}
+                onClick={event => this.On_Click(event)}
             >
                 <Title_Area
                     ref={ref => this.title_area = ref}
@@ -112,6 +113,8 @@ export class Top extends Component<Top_Props>
             height: `${this.Height()}px`,
 
             position: `relative`,
+
+            cursor: `pointer`,
         });
     }
 
@@ -124,6 +127,26 @@ export class Top extends Component<Top_Props>
                 event_handler: this.On_Close_Menus,
             },
         ]);
+    }
+
+    async On_Click(event: React.SyntheticEvent):
+        Promise<void>
+    {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.Is_Alive()) {
+            if (event.target === this.Some_Element()) {
+                await this.Send({
+                    name_affix: Event.HIDE_MENUS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                    } as Event.Hide_Menus_Data,
+                    is_atomic: true,
+                });
+            }
+        }
     }
 
     async On_Close_Menus(
@@ -455,7 +478,6 @@ class Buttons extends Component<Buttons_Props>
         return (
             <div
                 className={`Buttons`}
-                onClick={event => this.On_Click(event)}
             >
                 <New_Game_Button
                     ref={ref => this.new_game = ref}
@@ -493,33 +515,10 @@ class Buttons extends Component<Buttons_Props>
 
             width: `${this.Width()}px`,
             height: `${this.Height()}px`,
-            padding: `2%`,
 
             alignSelf: `center`,
             justifySelf: `center`,
-
-            cursor: `pointer`,
         });
-    }
-
-    async On_Click(event: React.SyntheticEvent):
-        Promise<void>
-    {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.Is_Alive()) {
-            if (event.target === this.Some_Element()) {
-                await this.Send({
-                    name_affix: Event.HIDE_MENUS,
-                    name_suffixes: [
-                    ],
-                    data: {
-                    } as Event.Hide_Menus_Data,
-                    is_atomic: true,
-                });
-            }
-        }
     }
 }
 
@@ -546,7 +545,7 @@ class New_Game_Button extends Button<New_Game_Button_Props>
     override CSS_Width():
         string
     {
-        return `40%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -612,7 +611,7 @@ class Options_Button extends Button<Options_Button_Props>
     override CSS_Width():
         string
     {
-        return `40%`;
+        return `100%`;
     }
 
     override CSS_Height():
@@ -678,7 +677,7 @@ class Help_Button extends Button<Help_Button_Props>
     override CSS_Width():
         string
     {
-        return `40%`;
+        return `100%`;
     }
 
     override CSS_Height():
