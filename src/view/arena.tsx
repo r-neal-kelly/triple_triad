@@ -141,12 +141,6 @@ export class Arena extends Component<Arena_Props>
         return this.Game().Is_Exhibition();
     }
 
-    Is_Visible():
-        boolean
-    {
-        return this.Game().Is_Visible();
-    }
-
     Card_Images():
         Arena_Card_Images
     {
@@ -268,10 +262,7 @@ export class Arena extends Component<Arena_Props>
             Promise<void>
         {
             this.Change_Style(`visibility`, `hidden`);
-            if (this.Is_Visible()) {
-                // See main's While_Alive loop for more info about this optimization
-                await this.Card_Images().Load();
-            }
+            await this.Card_Images().Load();
             if (this.Is_Alive()) {
                 this.Send({
                     name_affix: Event.GAME_START,

@@ -2,6 +2,7 @@ import { Index } from "../types";
 import { Float } from "../types";
 
 import { Assert } from "../utils";
+import { Wait } from "../utils";
 import { Random_Integer_Exclusive } from "../utils";
 
 import * as Model from "../model";
@@ -28,9 +29,11 @@ export class Exhibitions extends Component<Exhibitions_Props>
         new Array(this.Model().Exhibition_Count()).fill(null);
     private exhibition_event_grids: Array<Event.Grid> =
         Array.from(new Array(this.Model().Exhibition_Count()).fill(null).map(() => new Event.Grid()));
+    private renderable_exhibitions: Set<Model.Exhibition.Index> =
+        new Set([this.Model().Current_Exhibition_Index() as Model.Exhibition.Index]);
 
     // should be added to model.
-    private is_started: boolean = false;
+    private is_running: boolean = false;
     private is_switching: boolean = false;
     private last_switch_method_index: Index = Number.MAX_SAFE_INTEGER;
 
@@ -80,54 +83,33 @@ export class Exhibitions extends Component<Exhibitions_Props>
         JSX.Element | null
     {
         const model: Model.Main = this.Model();
-        const exhibition_count: Model.Exhibition.Count = model.Exhibition_Count();
 
-        if (this.is_started) {
-            return (
-                <div
-                    className={`Exhibitions`}
-                >
+        return (
+            <div
+                className={`Exhibitions`}
+            >
+                {
+                    Array.from(this.renderable_exhibitions).map((
+                        exhibition_index: Model.Exhibition.Index,
+                    ):
+                        JSX.Element =>
                     {
-                        Array(exhibition_count).fill(null).map((
-                            _: null,
-                            exhibition_index: Model.Exhibition.Index,
-                        ):
-                            JSX.Element =>
-                        {
-                            return (
-                                <Exhibition
-                                    key={`exhibition_${exhibition_index}`}
-                                    ref={ref => this.exhibitions[exhibition_index] = ref}
+                        Assert(exhibition_index != null);
 
-                                    model={model.Exhibition(exhibition_index)}
-                                    parent={this}
-                                    event_grid={this.Exhibition_Event_Grid(exhibition_index)}
-                                />
-                            );
-                        })
-                    }
-                </div>
-            );
-        } else {
-            const current_exhibition_index: Model.Exhibition.Index =
-                this.Model().Current_Exhibition_Index() as Model.Exhibition.Index;
-            Assert(current_exhibition_index != null);
+                        return (
+                            <Exhibition
+                                key={`exhibition_${exhibition_index}`}
+                                ref={ref => this.exhibitions[exhibition_index] = ref}
 
-            return (
-                <div
-                    className={`Exhibitions`}
-                >
-                    <Exhibition
-                        key={`exhibition_${current_exhibition_index}`}
-                        ref={ref => this.exhibitions[current_exhibition_index] = ref}
-
-                        model={model.Exhibition(current_exhibition_index)}
-                        parent={this}
-                        event_grid={this.Exhibition_Event_Grid(current_exhibition_index)}
-                    />
-                </div>
-            );
-        }
+                                model={model.Exhibition(exhibition_index)}
+                                parent={this}
+                                event_grid={this.Exhibition_Event_Grid(exhibition_index)}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
     }
 
     override On_Restyle():
@@ -228,8 +210,8 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
-            this.is_started = true;
-            await this.Refresh();
+            this.is_running = true;
+            this.While_Running();
         }
     }
 
@@ -240,6 +222,7 @@ export class Exhibitions extends Component<Exhibitions_Props>
         Promise<void>
     {
         if (this.Is_Alive()) {
+            this.is_running = false;
             await this.Animate(
                 [
                     {
@@ -469,6 +452,50 @@ export class Exhibitions extends Component<Exhibitions_Props>
                     height: 0,
                 } as Event.Resize_Data,
             );
+        }
+    }
+
+    async While_Running():
+        Promise<void>
+    {
+        const model: Model.Main = this.Model();
+
+        while (this.Is_Alive() && this.is_running) {
+            const next_exhibition_index: Model.Exhibition.Index =
+                model.Next_Exhibition_Index() as Model.Exhibition.Index;
+            Assert(next_exhibition_index != null);
+
+            if (this.renderable_exhibitions.has(next_exhibition_index)) {
+                await Wait(5000);
+            } else {
+                this.renderable_exhibitions.add(next_exhibition_index);
+
+                await Promise.all([
+                    this.Refresh(),
+                    Wait(5000),
+                ]);
+            }
+
+            if (this.Is_Alive() && this.is_running) {
+                const previous_exhibition: Model.Exhibition.Instance =
+                    model.Current_Exhibition() as Model.Exhibition.Instance;
+                this.Model().Change_Exhibition();
+                const current_exhibition: Model.Exhibition.Instance =
+                    model.Current_Exhibition() as Model.Exhibition.Instance;
+                Assert(previous_exhibition != null);
+                Assert(current_exhibition != null);
+
+                await this.Send({
+                    name_affix: Event.SWITCH_EXHIBITIONS,
+                    name_suffixes: [
+                    ],
+                    data: {
+                        previous_exhibition,
+                        current_exhibition,
+                    } as Event.Switch_Exhibitions_Data,
+                    is_atomic: true,
+                });
+            }
         }
     }
 }

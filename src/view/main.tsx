@@ -1,7 +1,6 @@
 import { Integer } from "../types";
 import { Float } from "../types";
 
-import { Assert } from "../utils";
 import { Wait } from "../utils";
 
 import * as Model from "../model";
@@ -13,7 +12,6 @@ import { Component_Styles } from "./component";
 import { Menu } from "./menu"
 import { Exhibitions } from "./exhibitions";
 import { Game } from "./game";
-import { Arena } from "./arena";
 
 type Main_Props = {
     root: HTMLElement;
@@ -161,7 +159,7 @@ export class Main extends Component<Main_Props>
     {
         this.resize_observer.observe(this.Root());
 
-        this.While_Alive_Out_Of_Game();
+        this.On_Menu_And_Exhibitions();
 
         return [
             {
@@ -212,7 +210,7 @@ export class Main extends Component<Main_Props>
         this.current_width = 0;
     }
 
-    private async While_Alive_Out_Of_Game():
+    private async On_Menu_And_Exhibitions():
         Promise<void>
     {
         const model: Model.Main = this.Model();
@@ -277,44 +275,6 @@ export class Main extends Component<Main_Props>
                         is_atomic: true,
                     }),
                 ]);
-
-                while (this.Is_Alive() && model.Isnt_In_Game()) {
-                    if (this.exhibitions != null) {
-                        // We're deferring card_images from being loaded until they are
-                        // going to be in the next exhibition. This cuts down on potential bandwidth usage.
-                        const next_exhibition_index: Model.Exhibition.Index =
-                            model.Next_Exhibition_Index() as Model.Exhibition.Index;
-                        Assert(next_exhibition_index != null);
-                        const next_exhibition_game_arena: Arena =
-                            this.Exhibitions().Exhibition(next_exhibition_index).Game().Arena();
-                        await Promise.all([
-                            next_exhibition_game_arena.Card_Images().Load(),
-                            Wait(5000),
-                        ]);
-                        if (this.Is_Alive() && model.Isnt_In_Game()) {
-                            const previous_exhibition: Model.Exhibition.Instance =
-                                model.Current_Exhibition() as Model.Exhibition.Instance;
-                            this.Model().Change_Exhibition();
-                            const current_exhibition: Model.Exhibition.Instance =
-                                model.Current_Exhibition() as Model.Exhibition.Instance;
-                            Assert(previous_exhibition != null);
-                            Assert(current_exhibition != null);
-
-                            await this.Send({
-                                name_affix: Event.SWITCH_EXHIBITIONS,
-                                name_suffixes: [
-                                ],
-                                data: {
-                                    previous_exhibition,
-                                    current_exhibition,
-                                } as Event.Switch_Exhibitions_Data,
-                                is_atomic: true,
-                            });
-                        }
-                    } else {
-                        await Wait(5000);
-                    }
-                }
             }
         }
     }
@@ -413,7 +373,7 @@ export class Main extends Component<Main_Props>
 
             await this.Refresh();
             if (this.Is_Alive()) {
-                this.While_Alive_Out_Of_Game()
+                this.On_Menu_And_Exhibitions();
             }
         }
     }
